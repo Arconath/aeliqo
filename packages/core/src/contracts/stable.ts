@@ -20,8 +20,10 @@ export function stableJson(value: unknown, cache?: CanonicalCache): string {
 export const versionRefKey = (ref: { readonly id: string; readonly revision: string }): string =>
   JSON.stringify([ref.id, ref.revision]);
 
-export const resultRefKey = (ref: ResultRef): string =>
-  JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+type ResultRefParts = Omit<ResultRef, 'sourceLineage'> & { readonly sourceLineage?: string | undefined };
+
+export const resultRefKey = (ref: ResultRefParts): string =>
+  JSON.stringify([ref.id, ref.revision, ref.sourceLineage ?? null, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 
 export function compareText(left: string, right: string): number {
   if (left < right) return -1;

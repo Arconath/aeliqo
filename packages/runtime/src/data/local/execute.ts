@@ -43,7 +43,7 @@ export async function* executeLocalData(
   request: unknown,
   context: ReadContext = {},
 ): AsyncGenerator<DataResultEvent> {
-  const loaded = loadExecutionHandle(state, request, Date.now());
+  const loaded = loadExecutionHandle(state, request, state.now(), state.workNow());
   if (!loaded.ok) {
     yield loaded.error;
     return;
@@ -66,6 +66,12 @@ export async function* executeLocalData(
     budget: prepared.value.budget,
     startedAt: prepared.value.handle.startedAt,
     context,
+    grant: prepared.value.grant,
+    cursorExpiresAt: prepared.value.handle.stored.cursorExpiresAt,
+    now: state.workNow,
+    cursorNow: state.now(),
+    cursorStore: state.cursorStore,
+    maxCursorEntries: state.maxCursors,
   });
   if (!events.ok) {
     yield outcomeError(
@@ -79,7 +85,12 @@ export async function* executeLocalData(
   yield* emitEvents(state, events.value, loaded.value.input.requestId, context, prepared.value);
 }
 
-function loadExecutionHandle(state: LocalDataServiceState, request: unknown, startedAt: number): ExecutionLoad {
+function loadExecutionHandle(
+  state: LocalDataServiceState,
+  request: unknown,
+  currentTime: number,
+  startedAt: number,
+): ExecutionLoad {
   const fallbackRequestId = requestIdFromUnknown(request);
   const parsed = parseAcceptedQuery(request);
   if (!parsed.ok)
@@ -89,7 +100,7 @@ function loadExecutionHandle(state: LocalDataServiceState, request: unknown, sta
     };
   const input = parsed.value;
   const stored = state.plans.get(input.planDigest);
-  const planError = acceptedPlanError(stored, input);
+  const planError = acceptedPlanError(stored, input, currentTime);
   if (planError !== undefined)
     return { ok: false, error: resultError(input.requestId, planError.code, planError.message) };
   const currentPlanError = currentPlanErrorMessage(state, stored!);
@@ -115,9 +126,10 @@ function requestIdFromUnknown(request: unknown): string {
 function acceptedPlanError(
   stored: StoredPlan | undefined,
   input: AcceptedQuery,
+  now: number,
 ): { readonly code: string; readonly message: string } | undefined {
   if (stored === undefined) return unknownPlanError();
-  if (Date.now() >= stored.accepted.expiresAt) return expiredPlanError();
+  if (now >= stored.accepted.expiresAt) return expiredPlanError();
   if (!sameAccepted(stored.accepted, input)) return unknownPlanError();
   return undefined;
 }
@@ -172,7 +184,7 @@ async function authorizeExecution(
   handle: ExecutionHandle,
   context: ReadContext,
 ): Promise<Outcome<AuthorizedExecution>> {
-  const remaining = handle.input.effectiveBudget.maxMilliseconds - (Date.now() - handle.startedAt);
+  const remaining = handle.input.effectiveBudget.maxMilliseconds - (state.workNow() - handle.startedAt);
   const grant = await authorizeWithDeadline(
     state.options.authorize,
     'execute',
@@ -195,7 +207,7 @@ async function authorizeExecution(
   );
   if (budget.maxColumns < handle.stored.logical.output.fields.length)
     return failure('data.budget', 'The current authorization has a tighter projection budget.');
-  if (Date.now() - handle.startedAt > budget.maxMilliseconds)
+  if (state.workNow() - handle.startedAt > budget.maxMilliseconds)
     return failure('data.budget', 'Execution exceeded the effective time budget before reading rows.');
   return { ok: true, value: { grant: grant.value, budget } };
 }
@@ -220,6 +232,8 @@ function validateExecutionGrant(
     grant.policyRevision !== handle.stored.accepted.policyRevision
   )
     return failure('data.denied', 'The execution authorization scope or policy revision changed.');
+  if ((grant.cursorPartition ?? grant.scopeDigest) !== handle.stored.cursorPartition)
+    return failure('data.denied', 'The execution authorization cursor partition changed.');
   return { ok: true, value: undefined };
 }
 
@@ -268,7 +282,7 @@ async function prepareAuthorizedSource(
     { planDigest: handle.stored.accepted.planDigest, requestId: input.requestId },
     'result',
     context,
-    authorized.budget.maxMilliseconds - (Date.now() - handle.startedAt),
+    authorized.budget.maxMilliseconds - (state.workNow() - handle.startedAt),
   );
   if (!resultId.ok) return resultId;
   if (!isCurrentHandle(state, handle))
@@ -282,6 +296,7 @@ async function prepareAuthorizedSource(
     policyContext(context),
     handle.startedAt,
     authorized.budget,
+    state.workNow,
     () => isCurrentHandle(state, handle),
   );
   if (!source.ok) return source;
@@ -297,11 +312,11 @@ function evaluateExecution(
   context: ReadContext,
 ): EvaluatedResult {
   const { handle, planner, source, grant, budget } = execution;
-  const clock = () => (typeof globalThis.performance?.now === 'function' ? globalThis.performance.now() : Date.now());
+  const clock = state.workNow;
   const evaluated = planner.evaluate(handle.stored.logical, source, {
     cancellation: { aborted: context.signal?.aborted === true },
     clock,
-    maxMilliseconds: Math.max(1, budget.maxMilliseconds - (Date.now() - handle.startedAt)),
+    maxMilliseconds: Math.max(1, budget.maxMilliseconds - (state.workNow() - handle.startedAt)),
     maxRows: planner.limits.maxRows,
     maxBytes: planner.limits.maxBytes,
     maxOperations: planner.limits.maxOperations,
@@ -354,7 +369,7 @@ function emissionError(
   if (context.signal?.aborted) return resultError(requestId, 'data.aborted', 'The result execution was cancelled.');
   if (!isCurrentHandle(state, execution.handle))
     return resultError(requestId, 'data.stale-plan', 'The catalog or source changed while emitting the response.');
-  if (Date.now() - execution.handle.startedAt > execution.budget.maxMilliseconds)
+  if (state.workNow() - execution.handle.startedAt > execution.budget.maxMilliseconds)
     return resultError(
       requestId,
       'data.budget',

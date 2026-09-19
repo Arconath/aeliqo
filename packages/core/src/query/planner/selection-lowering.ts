@@ -13,24 +13,31 @@ function meaningByRef(
   return [...catalog.meanings, ...definitions].find((meaning) => relationKey(meaning) === key);
 }
 
-function aggregateFromMeaning(meaning: MeaningDefinition): QueryOutcome<AggregateSpec> {
+function aggregateFromMeaning(meaning: MeaningDefinition, query: QuerySpec): QueryOutcome<AggregateSpec> {
   if (meaning.implementation.kind === 'host-capability')
-    return unsupported(
-      'host-capability',
-      `Meaning ${meaning.id}@${meaning.revision} is host-backed and has no local expression.`,
-      ['Use the source capability executor.'],
-    );
+    return unsupported('host-capability', `Host: ${meaning.id}@${meaning.revision}.`, ['Use executor.']);
   const expression = meaning.implementation.expression;
   if (expression.kind !== 'call')
-    return unsupported(
-      'meaning-aggregate',
-      `Meaning ${meaning.id}@${meaning.revision} is not an explicit aggregate call.`,
-      ['Supply an approved aggregate meaning.'],
-    );
-  return {
-    ok: true,
-    value: { id: meaning.id, label: meaning.label, function: expression.function, arguments: expression.arguments },
+    return unsupported('meaning-aggregate', `Not aggregate: ${meaning.id}@${meaning.revision}.`, ['Use aggregate.']);
+  if (meaning.aggregation === 'semi-additive' && query.timeBucket === undefined)
+    return unsupported('semi-additive-time', `Bucket: ${meaning.id}@${meaning.revision}.`);
+  const value: AggregateSpec = {
+    id: meaning.id,
+    label: meaning.label,
+    function: expression.function,
+    arguments: expression.arguments,
+    semantics: {
+      meaning: { id: meaning.id, revision: meaning.revision },
+      aggregation: meaning.aggregation,
+      aggregationDimensions: meaning.aggregationDimensions,
+      missingPolicy: meaning.missingPolicy,
+      output: meaning.output,
+      ...(meaning.aggregation === 'semi-additive'
+        ? { timeExpression: { kind: 'field' as const, ref: query.timeBucket!.field } }
+        : {}),
+    },
   };
+  return { ok: true, value };
 }
 
 export function bucketFieldExpression(
@@ -107,7 +114,7 @@ function lowerAggregates(
         'measures',
         index,
       ]);
-    const aggregate = aggregateFromMeaning(meaning);
+    const aggregate = aggregateFromMeaning(meaning, query);
     if (!aggregate.ok) return aggregate;
     items.push(aggregate.value);
   }

@@ -1,4 +1,4 @@
-import type { Catalog, Outcome } from '../../contracts/types.js';
+import type { Catalog, MeaningDefinition, Outcome } from '../../contracts/types.js';
 import type { FunctionRegistry } from '../../expressions/types.js';
 import { DEFAULT_LIMITS } from '../planner.js';
 import type { LogicalPlan, PlanNode, QueryExecutionContext, QueryLimits, QueryResult, QuerySource } from '../types.js';
@@ -51,9 +51,10 @@ function verifyPlan(
   catalog: Catalog,
   registry: FunctionRegistry,
   limits: QueryLimits,
+  definitions: readonly MeaningDefinition[],
 ): Outcome<LogicalPlan> {
   try {
-    return validateLogicalPlan(plan as unknown, catalog, registry, limits);
+    return validateLogicalPlan(plan as unknown, catalog, registry, limits, definitions);
   } catch {
     return failure('query.plan', 'Logical plan validation failed safely at the untrusted boundary.');
   }
@@ -223,12 +224,13 @@ export function evaluateLogicalPlan(
   registry: FunctionRegistry,
   context: QueryExecutionContext = {},
   limits: QueryLimits = DEFAULT_LIMITS,
+  definitions: readonly MeaningDefinition[] = [],
 ): Outcome<QueryResult> {
   const prepared = prepareExecution(context, limits);
   if (!prepared.ok) return prepared;
   const sourceEnvelope = validateSourceEnvelope(source);
   if (!sourceEnvelope.ok) return sourceEnvelope;
-  const verified = verifyPlan(plan, catalog, registry, limits);
+  const verified = verifyPlan(plan, catalog, registry, limits, definitions);
   if (!verified.ok) return verified;
   const authorized = authorizePlan(verified.value, source, catalog, prepared.value.context);
   if (!authorized.ok) return authorized;

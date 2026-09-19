@@ -9,6 +9,7 @@ export type {
   DataServiceCoverage,
   DataServiceSourceBinding,
   DataSurfaceBindings,
+  StableOrderField,
   DataSurfaceRequest,
   ExternalOwnership,
   ExternalSurfaceSnapshot,

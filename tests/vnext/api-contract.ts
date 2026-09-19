@@ -221,14 +221,23 @@ export interface SurfaceReadContext {
 
 export interface DataServiceCoverage {
   readonly fields: readonly string[];
+  readonly relations?: readonly VersionRef[];
+  readonly metrics?: readonly VersionRef[];
   readonly operators: readonly ('eq' | 'contains')[];
   readonly pagination: 'snapshot' | 'keyset';
-  readonly stableOrder: readonly string[];
+  readonly stableOrder: readonly (string | StableOrderField)[];
+  readonly stableOrderIdentity?: readonly string[];
   readonly sorting: 'stable-fields-only' | 'unsupported';
   readonly aggregation: 'registered-only' | 'unsupported';
   readonly streaming: 'finite' | 'incremental';
   readonly updates: 'snapshot-replace' | 'live';
   readonly unsupported: readonly ('sorting' | 'aggregation' | 'streaming' | 'live-updates')[];
+}
+
+export interface StableOrderField {
+  readonly field: string;
+  readonly direction: 'asc' | 'desc';
+  readonly nulls: 'first' | 'last';
 }
 
 export interface DataServiceSourceBinding<S> {

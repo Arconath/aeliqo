@@ -1,6 +1,7 @@
 import type { Catalog, Outcome, ResultRef } from '@aeliqo/core';
 import type { LogicalPlan } from '@aeliqo/core/query';
 import type { LocalDataServiceOptions, LocalSnapshot, MeaningRegistration, PlanAcceptance } from '../types.js';
+import type { CursorStore } from './cursor.js';
 import { canonical, isSafePositive } from './shared.js';
 import { normalizeSnapshot, normalizeSourceLimits } from './source.js';
 import type { SourceLimits } from './shared.js';
@@ -9,10 +10,14 @@ import type { PlanDependencies } from './query-planning.js';
 
 const DEFAULT_PLAN_TTL_MS = 5 * 60_000;
 const DEFAULT_MAX_PLANS = 256;
+const DEFAULT_MAX_CURSORS = 1024;
 const DEFAULT_MAX_SOURCE_REVISIONS = 256;
 
 export interface StoredPlan {
   readonly accepted: PlanAcceptance;
+  readonly cursorExpiresAt: number;
+  readonly cursorPartition: string;
+  readonly cursorOffset?: number;
   readonly logical: LogicalPlan;
   readonly dependencies: PlanDependencies;
   readonly scanEntities: readonly string[];
@@ -26,6 +31,11 @@ export interface LocalDataServiceState {
   readonly plans: Map<string, StoredPlan>;
   readonly registeredBundles: Map<string, MeaningRegistration>;
   readonly planTtlMs: number;
+  readonly cursorTtlMs: number;
+  readonly now: () => number;
+  readonly workNow: () => number;
+  readonly cursorStore: CursorStore;
+  readonly maxCursors: number;
   readonly maxPlans: number;
   readonly maxSourceRevisions: number;
   readonly revisionHistory: Set<string>;
@@ -46,9 +56,13 @@ export function createLocalDataServiceState(
   const snapshot = normalizeSnapshot(options.snapshot, sourceLimits, { rejectExecutableToJSON });
   const fixedCatalog = normalizeFixedCatalog(fixedCatalogInput, snapshot.catalog);
   const planTtlMs = options.planTtlMs ?? DEFAULT_PLAN_TTL_MS;
+  const cursorTtlMs = options.cursorTtlMs ?? planTtlMs;
+  const now = options.now ?? (() => Date.now());
+  const workNow = options.workNow ?? monotonicNow;
   const maxPlans = options.maxPlans ?? DEFAULT_MAX_PLANS;
+  const maxCursors = options.maxCursors ?? DEFAULT_MAX_CURSORS;
   const maxSourceRevisions = options.maxSourceRevisions ?? DEFAULT_MAX_SOURCE_REVISIONS;
-  validatePlanLimits(planTtlMs, maxPlans, maxSourceRevisions);
+  validatePlanLimits(planTtlMs, cursorTtlMs, maxPlans, maxCursors, maxSourceRevisions, now, workNow);
   return {
     options,
     sourceLimits,
@@ -58,6 +72,11 @@ export function createLocalDataServiceState(
     plans: new Map(),
     registeredBundles: new Map(),
     planTtlMs,
+    cursorTtlMs,
+    now,
+    workNow,
+    cursorStore: new Map(),
+    maxCursors,
     maxPlans,
     maxSourceRevisions,
     revisionHistory: new Set([snapshot.sourceRevision]),
@@ -73,12 +92,31 @@ function normalizeFixedCatalog(input: Catalog | undefined, snapshot: Catalog): C
   return snapshot;
 }
 
-function validatePlanLimits(planTtlMs: number, maxPlans: number, maxSourceRevisions: number): void {
-  if (!isSafePositive(planTtlMs) || planTtlMs > 86_400_000)
-    throw new TypeError('planTtlMs must be a bounded positive duration.');
-  if (!isSafePositive(maxPlans) || maxPlans > 10_000) throw new TypeError('maxPlans must be a bounded positive count.');
-  if (!isSafePositive(maxSourceRevisions) || maxSourceRevisions > 10_000)
-    throw new TypeError('maxSourceRevisions must be a bounded positive count.');
+function validatePlanLimits(
+  planTtlMs: number,
+  cursorTtlMs: number,
+  maxPlans: number,
+  maxCursors: number,
+  maxSourceRevisions: number,
+  now: () => number,
+  workNow: () => number,
+): void {
+  validateBoundedPositive(planTtlMs, 86_400_000, 'planTtlMs must be a bounded positive duration.');
+  validateBoundedPositive(cursorTtlMs, 86_400_000, 'cursorTtlMs must be a bounded positive duration.');
+  if (typeof now !== 'function') throw new TypeError('now must be a host clock function.');
+  if (typeof workNow !== 'function') throw new TypeError('workNow must be a host monotonic clock function.');
+  validateBoundedPositive(maxPlans, 10_000, 'maxPlans must be a bounded positive count.');
+  validateBoundedPositive(maxCursors, 100_000, 'maxCursors must be a bounded positive count.');
+  validateBoundedPositive(maxSourceRevisions, 10_000, 'maxSourceRevisions must be a bounded positive count.');
+}
+
+function validateBoundedPositive(value: number, maximum: number, message: string): void {
+  if (!isSafePositive(value) || value > maximum) throw new TypeError(message);
+}
+
+function monotonicNow(): number {
+  const clock = globalThis.performance?.now;
+  return typeof clock === 'function' ? clock.call(globalThis.performance) : Date.now();
 }
 
 export function reapExpiredPlans(state: LocalDataServiceState, now: number): void {

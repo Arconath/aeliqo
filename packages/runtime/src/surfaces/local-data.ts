@@ -28,11 +28,23 @@ export interface CreateLocalDataBindingInput<S> {
 }
 
 function immutableCoverage(coverage: DataServiceCoverage): DataServiceCoverage {
+  const stableOrder = coverage.stableOrder.map((order) =>
+    typeof order === 'string' ? order : Object.freeze({ ...order }),
+  );
   return Object.freeze({
     ...coverage,
     fields: Object.freeze([...coverage.fields]),
+    ...(coverage.relations === undefined
+      ? {}
+      : { relations: Object.freeze(coverage.relations.map((relation) => Object.freeze({ ...relation }))) }),
+    ...(coverage.metrics === undefined
+      ? {}
+      : { metrics: Object.freeze(coverage.metrics.map((metric) => Object.freeze({ ...metric }))) }),
     operators: Object.freeze([...coverage.operators]),
-    stableOrder: Object.freeze([...coverage.stableOrder]),
+    stableOrder: Object.freeze(stableOrder),
+    ...(coverage.stableOrderIdentity === undefined
+      ? {}
+      : { stableOrderIdentity: Object.freeze([...coverage.stableOrderIdentity]) }),
     unsupported: Object.freeze([...coverage.unsupported]),
   });
 }

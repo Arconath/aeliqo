@@ -52,6 +52,10 @@ export abstract class ResultHandleBase implements InternalResultHandle, ResultSu
       catalogRevision: input.catalogRevision,
       functionRegistryDigest: input.functionRegistryDigest,
       sourceRevision: input.sourceRevision,
+      ...(input.sourceLineage === undefined ? {} : { sourceLineage: input.sourceLineage }),
+      ...(input.planDigest === undefined ? {} : { planDigest: input.planDigest }),
+      ...(input.resultShape === undefined ? {} : { resultShape: input.resultShape }),
+      ...(input.lineageDigest === undefined ? {} : { lineageDigest: input.lineageDigest }),
       outputId: input.outputId,
       taskId: input.taskId,
     });
@@ -280,5 +284,5 @@ export abstract class ResultHandleBase implements InternalResultHandle, ResultSu
     return this.superseded;
   }
 
-  abstract ingest(raw: unknown): Outcome<ResultEvent>;
+  abstract ingest(raw: unknown): Promise<Outcome<ResultEvent>>;
 }

@@ -4,7 +4,7 @@ import type { AeliqoDataStatus } from '../data/types.js';
 import type { AeliqoDataResolvedNode } from './data-registry.js';
 import type { AeliqoDataHostRequestHandler, AeliqoDataRenderContext } from './data-renderer-types.js';
 
-const RESULT_REF_KEYS = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'] as const;
+const RESULT_REF_KEYS = ['id', 'revision', 'sourceLineage', 'outputId', 'queryDigest', 'scopeDigest'] as const;
 
 /**
  * Read only plain data records at the event boundary.  Event details come
@@ -55,6 +55,7 @@ export function resultRef(value: unknown): ResultRef | undefined {
   return {
     id: candidate.id as string,
     revision: candidate.revision as string,
+    sourceLineage: candidate.sourceLineage as string,
     outputId: candidate.outputId as string,
     queryDigest: candidate.queryDigest as string,
     scopeDigest: candidate.scopeDigest as string,

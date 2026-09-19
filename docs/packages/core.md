@@ -125,10 +125,54 @@ currency, metrics, relationships, pagination/coverage, or business IDs; those
 remain explicit host/resource and binding contracts. The same helper is
 re-exported from `@aeliqo/core` for root consumers.
 
+## Remote capability and analytics semantics
+
+A remote Catalog declares only operations the source can execute. A capability
+may name registered metrics and one pagination contract:
+
+```ts
+const capability = {
+  ref: { id: 'people.remote', revision: '1' },
+  entity: 'people',
+  operators: [{ id: 'eq', revision: '1' }],
+  fields: ['id', 'name', 'team'],
+  relations: [],
+  metrics: [{ id: 'people.global-count', revision: '1' }],
+  pagination: {
+    mode: 'snapshot',
+    stableOrder: [{ field: 'id', direction: 'asc', nulls: 'last' }],
+    identity: ['id'],
+  },
+  maxOutputRows: 10_000,
+} satisfies Catalog['capabilities'][number];
+```
+
+Catalog validation resolves every capability field, relation, and metric.
+Pagination identity must match the entity identity, and the stable order must
+end with that identity as its deterministic tie-breaker. Snapshot and keyset
+modes are different contracts; a source must not relabel an offset cursor as a
+live keyset cursor.
+
+Registered analytics keep meaning metadata in the validated logical plan.
+Semi-additive measures require an explicit time bucket and select one
+unambiguous period-end row using that requested temporal expression. Ratio-of-sums, mean-of-rates, count, and nested
+aggregates apply the meaning's missing-value policy; propagating aggregate
+meanings declare nullable outputs. Units and currencies must
+match unless a reviewed conversion meaning explicitly defines the conversion.
+A partial page cannot be promoted to a complete global aggregate; complete
+analytics require complete source coverage or server-provided computed
+evidence tied to the exact query and meaning revision.
+
 References must be namespaced and versioned. Intent and view references can
 only name capabilities and views declared by the same feature. Capability
 `kind` is explicit because a schema shape does not imply read, status, command,
 cancel, or output semantics.
+
+`ResultRef` also carries `sourceLineage`: a stable source identity distinct from
+the revision. Preserve it when forwarding result references, including task
+inputs, result events, and presentation bindings. A mixed-consistency Result
+must state the same immutable lineage so consumers can distinguish an advancing
+live source from an unrelated source that reused a revision label.
 
 ## Explicit subpaths
 

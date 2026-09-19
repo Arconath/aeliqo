@@ -143,7 +143,7 @@ function meaning(id: string, expression: MeaningExpression): MeaningDefinition {
     revision: '1',
     label: id,
     explanation: `Meaning ${id}`,
-    output: { value: 'integer', nullable: false },
+    output: { value: 'integer', nullable: true },
     implementation: { kind: 'expression', expression },
     dependencies: [],
     functionRegistryDigest: registry.digest,

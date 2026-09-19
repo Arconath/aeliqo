@@ -145,6 +145,104 @@ adapter remains responsible for mounting and disposing this same controller;
 it does not create a second local-data path. The helper is also re-exported
 from `@aeliqo/runtime` for root consumers.
 
+`LocalDataServiceOptions.now` supplies the absolute clock used for plan and
+cursor expiry. `workNow` is a separate monotonic clock for request and evaluator
+time budgets, which prevents a fixed wall-clock test from disabling bounded
+work. Production applications should normally use both defaults; inject them
+only for deterministic host tests.
+
+Local continuation tokens are cryptographically random, opaque references to
+host-held cursor metadata. Set `ReadGrant.cursorPartition` from authenticated
+host identity when `scopeDigest` alone is not a unique principal partition; the
+value is never accepted from the query payload. The registry is bounded by
+`maxCursors` (1,024 by default, at most 100,000) and removes expired or oldest
+entries. A continuation must still be present when its next plan is accepted;
+that accepted plan then pins the validated offset, so later registry eviction
+cannot silently restart at the first page. This registry stores continuation
+metadata only—it is not a second row or result cache.
+
+### Remote HTTP data
+
+Use the same `DataService` boundary for remote data. The application server
+owns authentication and returns trusted read context; browser fields that look
+like a principal, tenant, grant, or policy are never authority:
+
+```ts
+import { createDataHttpHandler } from '@aeliqo/runtime/data';
+
+export const handleData = createDataHttpHandler({
+  service: applicationDataService,
+  authenticate: async (request) => {
+    const session = await sessions.read(request.headers.get('authorization'));
+    return session === undefined
+      ? { ok: false, diagnostics: [deniedDiagnostic] }
+      : { ok: true, value: { principal: session.principal } };
+  },
+  allowedOrigin: 'https://app.example',
+  maxRequestBytes: 100_000,
+  maxRequestMilliseconds: 30_000,
+});
+```
+
+Mount `handleData(request)` in the host's Fetch-compatible route, then create
+the browser client and use it in the ordinary surface binding:
+
+```ts
+import { createHttpDataService } from '@aeliqo/runtime/data';
+
+const peopleData = createHttpDataService({
+  baseUrl: 'https://app.example/api/aeliqo-data',
+  headers: { 'x-csrf-token': csrfToken },
+});
+
+const bindings: DataSurfaceBindings<PeopleState> = {
+  initialState: { rows: [] },
+  source: {
+    kind: 'data-service',
+    service: peopleData,
+    coverage: declaredCoverage,
+    normalize: normalizePeopleResults,
+  },
+};
+```
+
+The server's `describe`, `plan`, and `execute` implementation must enforce its
+declared fields, operators, relations, metrics, ordering, and page size. An
+unsupported query returns a structured diagnostic; it is never emulated by
+fetching the full source into the browser. Descriptors distinguish complete
+coverage from a partial page and distinguish unknown, estimated, and exact
+population counts. A scalar global aggregate is accepted only when the trusted
+accepted plan pins `resultShape: "global-aggregate"`; descriptor evidence alone
+never authorizes the scalar-count exception. The accepted plan also carries an
+immutable `sourceLineage` and canonical result-input `lineageDigest`. Result
+cache keys and descriptors must match those pins, so a same-scope result from a
+different source lineage or an injected upstream reference is rejected.
+
+Continuation cursors are opaque. Bind them to the authenticated principal
+partition, full task/output target, normalized query and order, catalog,
+schema, meaning, source lineage and revision, policy, consistency mode, and
+expiry. Snapshot cursors pin one source snapshot. Live keyset cursors carry the final stable identity
+anchor and continue after it when earlier rows are inserted; do not implement
+live pagination as an offset. Cancellation from the HTTP client must reach the
+source iterator. All successful events still flow through the runtime's one
+ResultStore and Region path; an A→B→A activation creates a fresh Result wrapper
+and rechecks authority before eligible cached values can be reused.
+
+For a complete runnable transport, use `examples/reference-host`. Its `server.mjs`
+mounts `createLocalDataService` behind `createDataHttpHandler` on an ephemeral
+localhost port. Its `verify.mjs` consumes that server with
+`createHttpDataService`, checks descriptor and row parity against the local
+service, verifies semantic aggregates, and closes the server. Run it from the
+workspace with:
+
+```sh
+pnpm --filter @aeliqo/reference-host test
+```
+
+The reference data and authentication are synthetic. A production host must
+replace the demo authenticator and authorization policy rather than accepting
+browser-supplied principal, scope, policy, or credential fields.
+
 ## Application scopes (vNext candidate)
 
 `createScope` coordinates a trusted host-owned workspace or account selection.

@@ -1,5 +1,5 @@
 import { parseResultEvent, WIRE_LIMITS } from '@aeliqo/core';
-import type { Contract, Diagnostic, ResultRef } from '@aeliqo/core';
+import type { Contract, Diagnostic, Result, ResultRef } from '@aeliqo/core';
 
 type ResultEvent = Contract<'result-event'>;
 type TerminalResultEvent = Extract<ResultEvent, { readonly kind: 'complete' | 'error' }>;
@@ -17,6 +17,10 @@ export interface ResultStreamContext {
   readonly queryDigest: string;
   readonly scopeDigest: string;
   readonly outputId: string;
+  /** Accepted source revision; stream descriptors cannot choose another one. */
+  readonly sourceRevision: string;
+  /** Accepted stable source identity; revisions may advance only in a new plan. */
+  readonly sourceLineage: string;
   readonly populationDigest?: string;
   readonly limits: ResultStreamLimits;
   readonly signal?: AbortSignal;
@@ -40,9 +44,21 @@ function sameRef(left: ResultRef, right: ResultRef): boolean {
   return (
     left.id === right.id &&
     left.revision === right.revision &&
+    left.sourceLineage === right.sourceLineage &&
     left.outputId === right.outputId &&
     left.queryDigest === right.queryDigest &&
     left.scopeDigest === right.scopeDigest
+  );
+}
+
+function matchesContext(descriptor: Result, context: ResultStreamContext): boolean {
+  const { ref } = descriptor;
+  return (
+    ref.queryDigest === context.queryDigest &&
+    ref.scopeDigest === context.scopeDigest &&
+    ref.outputId === context.outputId &&
+    matchesSourceRevision(ref.revision, descriptor.consistency, context) &&
+    ref.sourceLineage === context.sourceLineage
   );
 }
 
@@ -137,12 +153,8 @@ class ResultStreamValidator {
   private acceptDescriptor(event: Extract<ResultEvent, { readonly kind: 'descriptor' }>): ResultEvent {
     if (this.reference !== undefined) fail('data.stream-descriptor', 'A result stream has more than one descriptor.');
     const { ref, coverage, counts } = event.descriptor;
-    if (
-      ref.queryDigest !== this.context.queryDigest ||
-      ref.scopeDigest !== this.context.scopeDigest ||
-      ref.outputId !== this.context.outputId
-    )
-      fail('data.stream-scope', 'Result descriptor does not match the accepted query, output and authorization scope.');
+    if (!matchesContext(event.descriptor, this.context))
+      fail('data.stream-scope', 'Result descriptor does not match the accepted query, source or authorization scope.');
     this.reference = ref;
     this.population = coverage.kind === 'unknown' ? undefined : coverage.populationDigest;
     if (this.context.populationDigest !== undefined && this.population !== this.context.populationDigest)
@@ -204,6 +216,16 @@ class ResultStreamValidator {
     if (this.population !== undefined && coverage.kind !== 'unknown' && coverage.populationDigest !== this.population)
       fail('data.stream-population', 'Result stream population changed at completion.');
   }
+}
+
+function matchesSourceRevision(
+  revision: string,
+  consistency: Result['consistency'],
+  context: ResultStreamContext,
+): boolean {
+  if (revision === context.sourceRevision) return true;
+  if (consistency.kind !== 'mixed' || consistency.sourceLineage !== context.sourceLineage) return false;
+  return Object.values(consistency.sourceRevisions).includes(revision);
 }
 
 function assertNever(value: never): never {

@@ -17,6 +17,7 @@ export async function authorizedSource(
   context: ReadContext,
   startedAt: number,
   budget: QueryBudget,
+  workNow: () => number,
   current: () => boolean,
 ): Promise<Outcome<QuerySource>> {
   const relations = createRelations();
@@ -29,6 +30,7 @@ export async function authorizedSource(
       context,
       startedAt,
       budget,
+      workNow,
       current,
     );
     if (!rows.ok) return rows;
@@ -64,11 +66,12 @@ async function authorizeEntityRows(
   context: ReadContext,
   startedAt: number,
   budget: QueryBudget,
+  workNow: () => number,
   current: () => boolean,
 ): Promise<Outcome<readonly DataRecord[]>> {
   const authorized: DataRecord[] = [];
   for (const row of rows) {
-    const decision = await authorizeRow(entityId, row, grant, query, context, startedAt, budget, current);
+    const decision = await authorizeRow(entityId, row, grant, query, context, startedAt, budget, workNow, current);
     if (!decision.ok) return decision;
     if (decision.value) authorized.push(row);
   }
@@ -83,12 +86,13 @@ async function authorizeRow(
   context: ReadContext,
   startedAt: number,
   budget: QueryBudget,
+  workNow: () => number,
   current: () => boolean,
 ): Promise<Outcome<boolean>> {
-  const active = canAuthorizeRow(context, startedAt, budget);
+  const active = canAuthorizeRow(context, startedAt, budget, workNow);
   if (!active.ok) return active;
   if (grant.rowPolicy === undefined) return { ok: true, value: true };
-  const remaining = budget.maxMilliseconds - (Date.now() - startedAt);
+  const remaining = budget.maxMilliseconds - (workNow() - startedAt);
   if (remaining <= 0) return failure('data.budget', ROW_TIME_BUDGET_ERROR);
   const deadline = makeDeadline(context, remaining);
   const permission = await evaluateRowPolicy(grant, entityId, row, query, context, deadline.signal);
@@ -102,9 +106,14 @@ async function authorizeRow(
   return { ok: true, value: permission.value };
 }
 
-function canAuthorizeRow(context: ReadContext, startedAt: number, budget: QueryBudget): Outcome<void> {
+function canAuthorizeRow(
+  context: ReadContext,
+  startedAt: number,
+  budget: QueryBudget,
+  workNow: () => number,
+): Outcome<void> {
   if (context.signal?.aborted) return failure('data.aborted', 'The result execution was cancelled.');
-  if (Date.now() - startedAt > budget.maxMilliseconds) return failure('data.budget', ROW_TIME_BUDGET_ERROR);
+  if (workNow() - startedAt > budget.maxMilliseconds) return failure('data.budget', ROW_TIME_BUDGET_ERROR);
   return { ok: true, value: undefined };
 }
 

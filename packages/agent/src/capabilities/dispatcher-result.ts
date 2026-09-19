@@ -110,6 +110,7 @@ function validResultRef(ref: ResultRef): boolean {
   return (
     validId(ref.id) &&
     validId(ref.revision) &&
+    (ref.sourceLineage === undefined || validId(ref.sourceLineage)) &&
     validId(ref.outputId) &&
     validId(ref.queryDigest) &&
     validId(ref.scopeDigest)
@@ -120,6 +121,7 @@ function freezeResultRef(ref: ResultRef): ResultRef {
   return Object.freeze({
     id: ref.id,
     revision: ref.revision,
+    ...(ref.sourceLineage === undefined ? {} : { sourceLineage: ref.sourceLineage }),
     outputId: ref.outputId,
     queryDigest: ref.queryDigest,
     scopeDigest: ref.scopeDigest,

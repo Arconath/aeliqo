@@ -1,6 +1,7 @@
 import type { Expression, SemanticType } from '../../contracts/types.js';
 import { checkExpression } from '../../expressions/check.js';
 import type { FunctionRegistry, TypedExpression } from '../../expressions/types.js';
+import { sameTemporal, sameUnit } from '../../semantics/type-utils.js';
 import type { PredicateSpec, QueryField, QueryOutcome, QuerySchema } from '../types.js';
 import { failure, findField, PLAN_ENTITY, syntheticCatalog, syntheticId, unsupported } from './shared.js';
 
@@ -75,16 +76,8 @@ export function resolveExpression(
   };
 }
 
-function sameUnit(left: SemanticType['unit'], right: SemanticType['unit']): boolean {
-  return left?.dimension === right?.dimension && left?.currency === right?.currency && left?.symbol === right?.symbol;
-}
-
-function sameTemporal(left: SemanticType['temporal'], right: SemanticType['temporal']): boolean {
-  return left?.calendar === right?.calendar && left?.timezone === right?.timezone && left?.grain === right?.grain;
-}
-
 export function sameTypeFamily(left: SemanticType, right: SemanticType): boolean {
-  return left.value === right.value && sameUnit(left.unit, right.unit) && sameTemporal(left.temporal, right.temporal);
+  return left.value === right.value && sameUnit(left, right) && sameTemporal(left, right);
 }
 
 function validatePredicateGroup(

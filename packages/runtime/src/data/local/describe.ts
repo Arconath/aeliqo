@@ -7,7 +7,8 @@ import type { LocalDataServiceState } from './service-state.js';
 import { authorizeWithDeadline } from './authorization.js';
 import { minBudget, DEFAULT_BUDGET } from './budget.js';
 import { allowedTarget, mergeCatalogPage } from './access.js';
-import { decodeCursor } from './cursor.js';
+import { isSnapshotCursor, resolveCursor } from './cursor.js';
+import type { CursorValue } from './cursor.js';
 import { canonical, failure, isSafePositive, policyContext } from './shared.js';
 
 interface PreparedDescription {
@@ -24,7 +25,7 @@ export async function describeLocalData(
   request: unknown,
   context: ReadContext = {},
 ): Promise<Outcome<CatalogPage>> {
-  const prepared = await prepareDescription(state, request, context, Date.now());
+  const prepared = await prepareDescription(state, request, context, state.workNow());
   if (!prepared.ok) return prepared;
   return createCatalogPage(state, prepared.value, context);
 }
@@ -85,7 +86,7 @@ async function createCatalogPage(
   context: ReadContext,
 ): Promise<Outcome<CatalogPage>> {
   const { input, grant, budget, startedAt, initialCatalog, initialSnapshot } = prepared;
-  if (exceededTimeBudget(startedAt, budget))
+  if (exceededTimeBudget(startedAt, budget, state.workNow))
     return failure('data.budget', 'Discovery exceeded the effective time budget.', ['budget']);
   const pageSize = catalogPageSize(input.pageSize, budget);
   if (!pageSize.ok) return pageSize;
@@ -99,11 +100,16 @@ async function createCatalogPage(
     pageSize.value,
     state.snapshot.sourceRevision,
     grant.scopeDigest,
+    state.now() + state.cursorTtlMs,
+    grant.cursorPartition ?? grant.scopeDigest,
+    state.cursorStore,
+    state.now(),
+    state.maxCursors,
   );
   const catalog = parseCatalog(page.catalog);
   if (!catalog.ok) return failure('data.catalog', 'The authorized catalog projection is not canonical.');
   if (context.signal?.aborted) return failure('data.aborted', 'The catalog request was cancelled.');
-  if (exceededTimeBudget(startedAt, budget))
+  if (exceededTimeBudget(startedAt, budget, state.workNow))
     return failure('data.budget', 'Discovery exceeded the effective time budget.', ['budget']);
   if (!isCurrentCatalog(state, initialCatalog, initialSnapshot))
     return failure('data.stale-catalog', 'The catalog or source changed while the catalog page was being built.');
@@ -120,16 +126,9 @@ function catalogPageSize(requested: number | undefined, budget: QueryBudget): Ou
 
 function catalogPageOffset(input: CatalogRequest, state: LocalDataServiceState, grant: ReadGrant): Outcome<number> {
   if (input.cursor === undefined) return { ok: true, value: 0 };
-  const cursor = decodeCursor(input.cursor);
-  if (
-    cursor?.kind === 'catalog' &&
-    cursor.catalogRevision === state.currentCatalog.revision &&
-    cursor.scopeDigest === grant.scopeDigest &&
-    cursor.policyRevision === grant.policyRevision &&
-    cursor.sourceRevision === state.snapshot.sourceRevision &&
-    cursor.target === canonical(input.target)
-  )
-    return { ok: true, value: cursor.offset };
+  const partition = grant.cursorPartition ?? grant.scopeDigest;
+  const cursor = resolveCursor(input.cursor, partition, state.cursorStore, state.now());
+  if (catalogCursorPinsMatch(cursor, input, state, grant)) return { ok: true, value: cursor.offset };
   return failure(
     'data.stale-cursor',
     'The catalog cursor does not belong to the current catalog, source, target or authorization scope.',
@@ -137,8 +136,28 @@ function catalogPageOffset(input: CatalogRequest, state: LocalDataServiceState, 
   );
 }
 
-function exceededTimeBudget(startedAt: number, budget: QueryBudget): boolean {
-  return Date.now() - startedAt > budget.maxMilliseconds;
+function catalogCursorPinsMatch(
+  cursor: CursorValue | undefined,
+  input: CatalogRequest,
+  state: LocalDataServiceState,
+  grant: ReadGrant,
+): cursor is CursorValue {
+  if (!isSnapshotCursor(cursor, 'catalog')) return false;
+  if (!catalogCursorRevisionsMatch(cursor, state, grant)) return false;
+  if (cursor.target !== canonical(input.target)) return false;
+  return cursor.expiresAt === undefined || cursor.expiresAt > state.now();
+}
+
+function catalogCursorRevisionsMatch(cursor: CursorValue, state: LocalDataServiceState, grant: ReadGrant): boolean {
+  if (cursor.catalogRevision !== state.currentCatalog.revision) return false;
+  if (cursor.scopeDigest !== grant.scopeDigest) return false;
+  if (cursor.policyRevision !== grant.policyRevision) return false;
+  if (cursor.sourceRevision !== state.snapshot.sourceRevision) return false;
+  return cursor.snapshotId === state.snapshot.sourceRevision;
+}
+
+function exceededTimeBudget(startedAt: number, budget: QueryBudget, now: () => number): boolean {
+  return now() - startedAt > budget.maxMilliseconds;
 }
 
 function assembleCatalogPage(

@@ -57,6 +57,47 @@ function makeCatalog(overrides: Partial<Catalog> = {}): Catalog {
   };
 }
 
+function capabilityMeaning(): MeaningDefinition {
+  return {
+    id: 'employees.count',
+    revision: '1',
+    label: 'Employee count',
+    explanation: 'Count of employees in the authorized population.',
+    output: { value: 'integer', nullable: false },
+    implementation: {
+      kind: 'expression',
+      expression: { kind: 'literal', value: 1, type: { value: 'integer', nullable: false } },
+    },
+    dependencies: [],
+    functionRegistryDigest: 'core-standard-1',
+    origin: 'system',
+    lifecycle: 'active',
+    scope: 'organization',
+    authority: 'approved',
+    aggregation: 'additive',
+    aggregationDimensions: [],
+    missingPolicy: 'reject',
+  };
+}
+
+function dataCapability(overrides: Partial<Catalog['capabilities'][number]> = {}): Catalog['capabilities'][number] {
+  return {
+    ref: { id: 'employees.read', revision: '1' },
+    entity: 'employees',
+    operators: [],
+    fields: ['employee.id', 'numerator'],
+    relations: [],
+    metrics: [{ id: 'employees.count', revision: '1' }],
+    pagination: {
+      mode: 'snapshot',
+      stableOrder: [{ field: 'employee.id', direction: 'asc', nulls: 'last' }],
+      identity: ['employee.id'],
+    },
+    maxOutputRows: 100,
+    ...overrides,
+  };
+}
+
 function standard() {
   const registry = createStandardFunctionRegistry();
   if (!registry.ok) throw new Error('standard registry fixture failed');
@@ -72,6 +113,63 @@ function call(id: string, arguments_: readonly Expression[]): Expression {
 }
 
 describe('typed semantic expressions', () => {
+  it('validates capability metrics and deterministic pagination against the entity', () => {
+    const valid = createCatalogIndex(
+      makeCatalog({ meanings: [capabilityMeaning()], capabilities: [dataCapability()] }),
+    );
+    expect(valid.ok).toBe(true);
+
+    const missingMetric = createCatalogIndex(
+      makeCatalog({
+        meanings: [capabilityMeaning()],
+        capabilities: [dataCapability({ metrics: [{ id: 'missing', revision: '1' }] })],
+      }),
+    );
+    expect(missingMetric.ok ? '' : missingMetric.diagnostics[0]?.code).toBe('semantic.capability-metric');
+
+    const missingRelation = createCatalogIndex(
+      makeCatalog({
+        meanings: [capabilityMeaning()],
+        capabilities: [dataCapability({ relations: [{ id: 'missing', revision: '1' }] })],
+      }),
+    );
+    expect(missingRelation.ok ? '' : missingRelation.diagnostics[0]?.code).toBe('semantic.capability-relation');
+
+    const unknownOrderField = createCatalogIndex(
+      makeCatalog({
+        meanings: [capabilityMeaning()],
+        capabilities: [
+          dataCapability({
+            pagination: {
+              mode: 'snapshot',
+              stableOrder: [{ field: 'missing', direction: 'asc', nulls: 'last' }],
+              identity: ['employee.id'],
+            },
+          }),
+        ],
+      }),
+    );
+    expect(unknownOrderField.ok ? '' : unknownOrderField.diagnostics[0]?.code).toBe(
+      'semantic.capability-pagination-field',
+    );
+
+    const unstableOrder = createCatalogIndex(
+      makeCatalog({
+        meanings: [capabilityMeaning()],
+        capabilities: [
+          dataCapability({
+            pagination: {
+              mode: 'keyset',
+              stableOrder: [{ field: 'numerator', direction: 'asc', nulls: 'last' }],
+              identity: ['employee.id'],
+            },
+          }),
+        ],
+      }),
+    );
+    expect(unstableOrder.ok ? '' : unstableOrder.diagnostics[0]?.code).toBe('semantic.capability-pagination-order');
+  });
+
   it('treats unit symbols and currency qualifiers as part of unit identity', () => {
     const catalog = makeCatalog();
     const registry = standard();

@@ -1,4 +1,4 @@
-import type { Catalog, Outcome } from '../../contracts/types.js';
+import type { Catalog, MeaningDefinition, Outcome } from '../../contracts/types.js';
 import { inspectWire } from '../../contracts/ingress.js';
 import { WIRE_LIMITS } from '../../contracts/limits.js';
 import type { FunctionRegistry } from '../../expressions/types.js';
@@ -98,6 +98,7 @@ function validateNodeInputs(
   nodes: ReadonlyMap<string, ValidNode>,
   registry: FunctionRegistry,
   catalog: Catalog,
+  definitions: readonly MeaningDefinition[],
 ): Outcome<void> {
   const planNodes = nodePlanMap(nodes);
   for (const node of nodes.values()) {
@@ -105,7 +106,7 @@ function validateNodeInputs(
       if (!planNodes.has(inputId)) return failure('query.plan', `Logical plan input ${inputId} is missing.`);
     }
     const inputs = node.inputs.map((inputId) => planNodes.get(inputId)!);
-    const checked = validateNode(node, inputs, catalog, registry);
+    const checked = validateNode(node, inputs, nodes, catalog, registry, definitions);
     if (!checked.ok) return checked;
   }
   return { ok: true, value: undefined };
@@ -208,12 +209,13 @@ function validatePlanNodes(
   limits: QueryLimits,
   registry: FunctionRegistry,
   catalog: Catalog,
+  definitions: readonly MeaningDefinition[],
 ): Outcome<Map<string, ValidNode>> {
   if (plan.nodes.length > limits.maxNodes)
     return failure('query.budget', 'Logical plan exceeds the effective node budget.');
   const map = buildNodeMap(plan.nodes, catalog);
   if (!map.ok) return map;
-  const inputs = validateNodeInputs(map.value, registry, catalog);
+  const inputs = validateNodeInputs(map.value, registry, catalog, definitions);
   if (!inputs.ok) return inputs;
   return map;
 }
@@ -234,12 +236,13 @@ export function validateLogicalPlan(
   catalog: Catalog,
   registry: FunctionRegistry,
   limits: QueryLimits,
+  definitions: readonly MeaningDefinition[] = [],
 ): Outcome<LogicalPlan> {
   const envelope = validateWireEnvelope(input);
   if (!envelope.ok) return envelope;
   const header = validatePlanHeader(envelope.value, catalog, registry);
   if (!header.ok) return header;
-  const nodeMap = validatePlanNodes(header.value, limits, registry, catalog);
+  const nodeMap = validatePlanNodes(header.value, limits, registry, catalog, definitions);
   if (!nodeMap.ok) return nodeMap;
   const nodes = nodePlanMap(nodeMap.value);
   const graph = validateGraph(nodes, header.value.root, limits.maxDepth);

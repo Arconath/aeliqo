@@ -157,13 +157,22 @@ describe('local analytical ADC adapter', () => {
       version: '1',
       requestId: 'page-plan-2',
       catalogRevision: catalog.revision,
-      target: { taskId: 'page-plan-2', outputId: 'events-output' },
+      target: { taskId: 'page-plan', outputId: 'events-output' },
       query: query({ page: { size: 1, cursor: complete.cursor } }),
       budget,
     });
     expect(second.ok).toBe(true);
     if (!second.ok) throw new Error(second.diagnostics[0]?.message);
     expect(second.value.queryDigest).toBe(planned.value.queryDigest);
+    const differentTask = await service.plan({
+      version: '1',
+      requestId: 'page-plan-different-task',
+      catalogRevision: catalog.revision,
+      target: { taskId: 'different-task', outputId: 'events-output' },
+      query: query({ page: { size: 1, cursor: complete.cursor } }),
+      budget,
+    });
+    expect(differentTask).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
   });
 
   it('denies a predicate field even when the field is not projected', async () => {

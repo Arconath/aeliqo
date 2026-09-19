@@ -1,6 +1,6 @@
-import type { Catalog, Expression, Outcome, VersionRef } from '../../contracts/types.js';
+import type { Catalog, Expression, MeaningDefinition, Outcome, VersionRef } from '../../contracts/types.js';
 import type { FunctionRegistry } from '../../expressions/types.js';
-import type { PlanNode, PlanOperation, PredicateSpec, QuerySchema } from '../types.js';
+import type { GroupKeySpec, PlanNode, PlanOperation, PredicateSpec, QuerySchema } from '../types.js';
 import {
   failure,
   fieldKey,
@@ -13,12 +13,12 @@ import {
   type PlanRecord,
 } from './shared.js';
 import {
-  aggregateExpressionShape,
   catalogSchema,
   compatibleSemanticTypes,
   expressionFields,
   planFields,
   predicateFields,
+  validateAggregateSemantics,
   validQuerySchema,
 } from './validation-common.js';
 
@@ -32,8 +32,10 @@ export type ValidNode = PlanRecord & {
 interface NodeValidationContext {
   readonly node: ValidNode;
   readonly inputRelations: readonly PlanNode[];
+  readonly nodes: ReadonlyMap<string, ValidNode>;
   readonly catalog: Catalog;
   readonly registry: FunctionRegistry;
+  readonly definitions: readonly MeaningDefinition[];
 }
 
 type NodeValidator = (context: NodeValidationContext) => Outcome<void>;
@@ -247,7 +249,37 @@ function validateGroup(context: NodeValidationContext): Outcome<void> {
   return failure('query.plan', 'Group output schema does not match its keys.');
 }
 
-function validateAggregateItem(item: unknown, registry: FunctionRegistry): Outcome<string> {
+function aggregateExpressionSchema(context: NodeValidationContext, input: PlanNode): QuerySchema {
+  if (input.op === 'group' && input.inputs.length === 1) {
+    const population = context.nodes.get(input.inputs[0]!);
+    if (population !== undefined) return population.output;
+  }
+  return input.output;
+}
+
+function trustedGroupKeys(context: NodeValidationContext, input: PlanNode): readonly GroupKeySpec[] {
+  if (input.op !== 'group' || input.inputs.length !== 1 || !Array.isArray(input.keys)) return [];
+  const population = context.nodes.get(input.inputs[0]!);
+  return input.keys.map((key) => {
+    const groupField = input.output.fields.find((field) => field.id === key.id);
+    if (groupField === undefined || !['date', 'instant'].includes(groupField.type.value)) return key;
+    if (population?.op !== 'time-bucket' || !Array.isArray(population.items) || key.expression.kind !== 'field')
+      return key;
+    const bucket = population.items.find(
+      (item) => isRecord(item) && item.id === key.expression.ref && isRecord(item.expression),
+    );
+    return bucket === undefined ? key : { ...key, expression: bucket.expression as Expression };
+  });
+}
+
+function validateAggregateItem(
+  item: unknown,
+  schema: QuerySchema,
+  registry: FunctionRegistry,
+  catalog: Catalog,
+  definitions: readonly MeaningDefinition[],
+  groupKeys: readonly GroupKeySpec[],
+): Outcome<string> {
   if (
     !isRecord(item) ||
     !planId(item.id) ||
@@ -257,16 +289,25 @@ function validateAggregateItem(item: unknown, registry: FunctionRegistry): Outco
   )
     return failure('query.plan', 'Aggregate item is invalid.');
   for (const argument of item.arguments) {
-    const checked = aggregateExpressionShape(argument as Expression, registry);
+    const checked = expressionFields(schema, argument as Expression, registry);
     if (!checked.ok) return checked;
   }
+  const semantics = validateAggregateSemantics(item, schema, catalog, definitions, groupKeys);
+  if (!semantics.ok) return semantics;
   return { ok: true, value: item.id };
 }
 
-function validateAggregateItems(items: readonly unknown[], registry: FunctionRegistry): Outcome<string[]> {
+function validateAggregateItems(
+  items: readonly unknown[],
+  schema: QuerySchema,
+  registry: FunctionRegistry,
+  catalog: Catalog,
+  definitions: readonly MeaningDefinition[],
+  groupKeys: readonly GroupKeySpec[],
+): Outcome<string[]> {
   const ids = new Set<string>();
   for (const item of items) {
-    const checked = validateAggregateItem(item, registry);
+    const checked = validateAggregateItem(item, schema, registry, catalog, definitions, groupKeys);
     if (!checked.ok) return checked;
     if (ids.has(checked.value)) return failure('query.plan', 'Aggregate item identifiers must be unique.');
     ids.add(checked.value);
@@ -275,12 +316,14 @@ function validateAggregateItems(items: readonly unknown[], registry: FunctionReg
 }
 
 function validateAggregate(context: NodeValidationContext): Outcome<void> {
-  const { node, registry } = context;
+  const { node, registry, catalog, definitions } = context;
   const input = inputFor(context);
   if (!input.ok) return input;
   if (node.inputs.length !== 1 || !Array.isArray(node.items))
     return failure('query.plan', 'Aggregate node shape is invalid.');
-  const itemIds = validateAggregateItems(node.items, registry);
+  const expressionSchema = aggregateExpressionSchema(context, input.value);
+  const groupKeys = trustedGroupKeys(context, input.value);
+  const itemIds = validateAggregateItems(node.items, expressionSchema, registry, catalog, definitions, groupKeys);
   if (!itemIds.ok) return itemIds;
   const expected = [...input.value.output.fields.map((field) => field.id), ...itemIds.value];
   const actual = node.output.fields.map((field) => field.id);
@@ -414,10 +457,12 @@ function validateJoin(context: NodeValidationContext): Outcome<void> {
 export function validateNode(
   node: PlanRecord,
   inputRelations: readonly PlanNode[],
+  nodes: ReadonlyMap<string, ValidNode>,
   catalog: Catalog,
   registry: FunctionRegistry,
+  definitions: readonly MeaningDefinition[] = [],
 ): Outcome<void> {
   if (!validNodeShape(node, catalog)) return failure('query.plan', 'Plan node shape is invalid.');
-  const context = { node, inputRelations, catalog, registry };
+  const context = { node, inputRelations, nodes, catalog, registry, definitions };
   return NODE_VALIDATORS[node.op](context);
 }

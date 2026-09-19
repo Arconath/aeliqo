@@ -106,6 +106,7 @@ function sameResultRef(left: ResolvedResult['ref'], right: ResolvedResult['ref']
   return (
     left.id === right.id &&
     left.revision === right.revision &&
+    left.sourceLineage === right.sourceLineage &&
     left.outputId === right.outputId &&
     left.queryDigest === right.queryDigest &&
     left.scopeDigest === right.scopeDigest

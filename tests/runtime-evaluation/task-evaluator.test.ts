@@ -115,6 +115,10 @@ async function materializeSeed(
     catalogRevision: accepted.catalogRevision,
     functionRegistryDigest: accepted.functionRegistryDigest,
     sourceRevision: accepted.sourceRevision,
+    sourceLineage: accepted.sourceLineage,
+    planDigest: accepted.planDigest,
+    resultShape: accepted.resultShape,
+    lineageDigest: accepted.lineageDigest,
     outputId: accepted.target.outputId,
     taskId: accepted.requestId,
     requestId: accepted.requestId,
@@ -515,6 +519,7 @@ describe('runtime named-output and cohort evaluation', () => {
     const source: ResultRef = {
       id: 'digest-result',
       revision: '1',
+      sourceLineage: 'source-1',
       outputId: 'output',
       queryDigest: 'query',
       scopeDigest: 'scope-public',

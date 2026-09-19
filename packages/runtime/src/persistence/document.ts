@@ -69,9 +69,12 @@ function validReadSetRevisions(record: Record<string, unknown>, fields: readonly
 function validReadSetResult(value: unknown, scopeDigest: unknown): value is Record<string, unknown> {
   if (!recordValue(value)) return false;
   const fields = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
+  const keys = Object.keys(value);
   return (
-    Object.keys(value).length === fields.length &&
+    keys.length === fields.length + (value.sourceLineage === undefined ? 0 : 1) &&
+    keys.every((field) => field === 'sourceLineage' || fields.includes(field)) &&
     fields.every((field) => validId(value[field])) &&
+    (value.sourceLineage === undefined || validId(value.sourceLineage)) &&
     value.scopeDigest === scopeDigest
   );
 }
@@ -127,13 +130,7 @@ const HISTORY_FIELDS = [
 ] as const;
 
 function validChangedResult(value: unknown, scopeDigest: string): value is Record<string, unknown> {
-  if (!recordValue(value)) return false;
-  const fields = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
-  return (
-    Object.keys(value).length === fields.length &&
-    fields.every((field) => validId(value[field])) &&
-    value.scopeDigest === scopeDigest
-  );
+  return validReadSetResult(value, scopeDigest);
 }
 
 function validChangedResults(value: unknown, scopeDigest: string): boolean {

@@ -1,8 +1,15 @@
 import { scalarIdentity, validateScalar, WIRE_LIMITS } from '@aeliqo/core';
 import type { Result } from '@aeliqo/core';
 import type { Outcome, ResultCell } from './internal-types.js';
-import { failure, isKnownCoverage, sameRef, sameRefParts } from './store-utils.js';
+import { failure, isKnownCoverage, lineageDigest, sameRef, sameRefParts } from './store-utils.js';
 import type { ResultBatch, ResultCacheKey, ResultEvent } from './types.js';
+
+function matchesAcceptedRevision(descriptor: Result, key: ResultCacheKey): boolean {
+  if (descriptor.ref.revision === key.sourceRevision) return true;
+  if (descriptor.consistency.kind !== 'mixed' || descriptor.consistency.sourceLineage !== key.sourceLineage)
+    return false;
+  return Object.values(descriptor.consistency.sourceRevisions).includes(descriptor.ref.revision);
+}
 
 function validateDescriptorPins(
   descriptor: Result,
@@ -13,6 +20,8 @@ function validateDescriptorPins(
     return failure('data.result-task', 'The result descriptor belongs to another task.');
   if (!sameRefParts(descriptor.ref, key))
     return failure('data.result-scope', 'The result descriptor does not match the authorized result pins.');
+  if (key.planDigest !== undefined && !matchesAcceptedRevision(descriptor, key))
+    return failure('data.result-lineage', 'The result descriptor does not match the accepted source revision.');
   if (
     populationDigest !== undefined &&
     (!isKnownCoverage(descriptor.coverage) || descriptor.coverage.populationDigest !== populationDigest)
@@ -48,11 +57,15 @@ function validateDescriptorSchema(descriptor: Result): Outcome<void> {
   return validateFieldReferences(descriptor.rowGrain, 'row grain', fields);
 }
 
-function validateDescriptorCounts(descriptor: Result): Outcome<void> {
+function validateDescriptorCounts(descriptor: Result, key: ResultCacheKey): Outcome<void> {
   if (descriptor.counts.loaded > WIRE_LIMITS.array)
     return failure('data.result-budget', 'The result loaded count exceeds the bounded result limit.');
   const population = descriptor.counts.population;
-  if (population.kind === 'exact' && population.value < descriptor.counts.loaded)
+  if (
+    population.kind === 'exact' &&
+    population.value < descriptor.counts.loaded &&
+    !isProvenGlobalAggregate(descriptor, key, descriptor.counts.loaded)
+  )
     return failure('data.result-count', 'The loaded count cannot exceed its exact population count.');
   return { ok: true, value: undefined };
 }
@@ -86,6 +99,11 @@ function validateDescriptorConsistency(descriptor: Result, key: ResultCacheKey):
     !Object.values(descriptor.consistency.sourceRevisions).includes(key.sourceRevision)
   )
     return failure('data.result-consistency', 'The result snapshot does not include the pinned source revision.');
+  if (
+    descriptor.consistency.kind === 'mixed' &&
+    (key.sourceLineage === undefined || descriptor.consistency.sourceLineage !== key.sourceLineage)
+  )
+    return failure('data.result-consistency', 'Mixed result consistency is not bound to the accepted source lineage.');
   return { ok: true, value: undefined };
 }
 
@@ -100,8 +118,10 @@ function validateDescriptorEvidence(descriptor: Result, key: ResultCacheKey): Ou
   return { ok: true, value: undefined };
 }
 
-function validateDescriptorLineage(descriptor: Result, key: ResultCacheKey): Outcome<void> {
+function validateLineageEdges(descriptor: Result, key: ResultCacheKey): Outcome<void> {
   for (const edge of descriptor.lineage) {
+    if (edge.output !== descriptor.ref.outputId)
+      return failure('data.result-lineage', 'Result lineage has an unrelated output binding.');
     for (const ref of edge.inputs) {
       if (ref.scopeDigest !== key.scopeDigest)
         return failure('data.result-lineage', 'Result lineage belongs to another authorization scope.');
@@ -110,16 +130,29 @@ function validateDescriptorLineage(descriptor: Result, key: ResultCacheKey): Out
   return { ok: true, value: undefined };
 }
 
-export function validateResultDescriptor(
+async function validateDescriptorLineage(descriptor: Result, key: ResultCacheKey): Promise<Outcome<void>> {
+  if (key.sourceLineage !== undefined && descriptor.ref.sourceLineage !== key.sourceLineage)
+    return failure('data.result-lineage', 'The result descriptor belongs to a different source lineage.');
+  if (descriptor.lineage.length > 0 && key.lineageDigest === undefined)
+    return failure('data.result-lineage', 'Result lineage requires an accepted plan proof.');
+  const recomputed = await lineageDigest(descriptor.ref.outputId, descriptor.lineage);
+  if (key.lineageDigest !== undefined && (recomputed === undefined || descriptor.lineageDigest !== recomputed))
+    return failure('data.result-lineage', 'Result lineage proof does not match its declared inputs.');
+  if (key.lineageDigest !== undefined && descriptor.lineageDigest !== key.lineageDigest)
+    return failure('data.result-lineage', 'Result lineage does not match the accepted plan.');
+  return validateLineageEdges(descriptor, key);
+}
+
+export async function validateResultDescriptor(
   descriptor: Result,
   key: ResultCacheKey,
   populationDigest: string | undefined,
-): Outcome<void> {
+): Promise<Outcome<void>> {
   const pins = validateDescriptorPins(descriptor, key, populationDigest);
   if (!pins.ok) return pins;
   const schema = validateDescriptorSchema(descriptor);
   if (!schema.ok) return schema;
-  const counts = validateDescriptorCounts(descriptor);
+  const counts = validateDescriptorCounts(descriptor, key);
   if (!counts.ok) return counts;
   const coverage = validateDescriptorCoverage(descriptor);
   if (!coverage.ok) return coverage;
@@ -269,18 +302,42 @@ function validateCountPopulation(final: Result['coverage'], count: Result['count
 }
 
 function validateCompleteCount(
+  descriptor: Result,
+  key: ResultCacheKey,
   final: Result['coverage'],
   count: Result['counts']['population'],
   loadedRows: number,
 ): Outcome<void> {
-  if (final.kind === 'complete' && count.kind === 'exact' && count.value !== loadedRows)
+  if (
+    final.kind === 'complete' &&
+    count.kind === 'exact' &&
+    count.value !== loadedRows &&
+    !isProvenGlobalAggregate(descriptor, key, loadedRows)
+  )
     return failure('data.result-count', 'Complete coverage must contain the exact population row count.');
   return { ok: true, value: undefined };
+}
+
+function isProvenGlobalAggregate(descriptor: Result, key: ResultCacheKey, loadedRows: number): boolean {
+  if (
+    loadedRows !== 1 ||
+    descriptor.coverage.kind !== 'complete' ||
+    descriptor.identity.length !== 0 ||
+    descriptor.rowGrain.length !== 0 ||
+    key.resultShape !== 'global-aggregate' ||
+    key.planDigest === undefined ||
+    key.sourceLineage === undefined ||
+    descriptor.ref.sourceLineage !== key.sourceLineage ||
+    descriptor.fields.length === 0
+  )
+    return false;
+  return descriptor.fields.every((field) => field.role === 'measure');
 }
 
 export function validateResultCompletion(
   event: Extract<ResultEvent, { readonly kind: 'complete' }>,
   descriptor: Result,
+  key: ResultCacheKey,
   populationDigest: string | undefined,
   loadedRows: number,
 ): Outcome<void> {
@@ -292,5 +349,5 @@ export function validateResultCompletion(
   if (!accepted.ok) return accepted;
   const population = validateCountPopulation(event.finalCoverage, descriptor.counts.population);
   if (!population.ok) return population;
-  return validateCompleteCount(event.finalCoverage, descriptor.counts.population, loadedRows);
+  return validateCompleteCount(descriptor, key, event.finalCoverage, descriptor.counts.population, loadedRows);
 }

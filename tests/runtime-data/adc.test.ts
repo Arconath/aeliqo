@@ -417,7 +417,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-page-2',
       catalogRevision: 'catalog-1',
-      target: { taskId: 'plan-page-2', outputId: 'employees-output' },
+      target: { taskId: 'plan-page-1', outputId: 'employees-output' },
       query: query({ page: { size: 1, cursor: complete.cursor } }),
       budget,
     });

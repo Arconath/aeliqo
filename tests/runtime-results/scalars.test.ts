@@ -17,7 +17,14 @@ const key: ResultBeginInput = {
   requestId: 'request',
   populationDigest: 'population',
 };
-const ref = { id: 'result', revision: 'source', outputId: 'rows', queryDigest: 'query', scopeDigest: 'scope' };
+const ref = {
+  id: 'result',
+  revision: 'source',
+  sourceLineage: 'source',
+  outputId: 'rows',
+  queryDigest: 'query',
+  scopeDigest: 'scope',
+};
 async function accept(ids: readonly string[]) {
   const handle = createResultStore().begin(key);
   const coverage = { kind: 'complete', populationDigest: 'population' } as const;

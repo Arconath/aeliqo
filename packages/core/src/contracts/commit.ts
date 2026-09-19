@@ -20,6 +20,19 @@ const failure = (code: string, message: string): Outcome<never> => ({
   diagnostics: [{ code, message, retryable: false }],
 });
 
+type ParsedResultRef = Omit<ResultRef, 'sourceLineage'> & { readonly sourceLineage?: string | undefined };
+
+function ownResultRef(ref: ParsedResultRef): ResultRef {
+  return Object.freeze({
+    id: ref.id,
+    revision: ref.revision,
+    ...(ref.sourceLineage === undefined ? {} : { sourceLineage: ref.sourceLineage }),
+    outputId: ref.outputId,
+    queryDigest: ref.queryDigest,
+    scopeDigest: ref.scopeDigest,
+  });
+}
+
 function parsePins(input: unknown): Outcome<CommitPreconditions> {
   const wire = inspectWire(input);
   if (!wire.ok) return wire;
@@ -38,7 +51,7 @@ function parsePins(input: unknown): Outcome<CommitPreconditions> {
   }
   return {
     ok: true,
-    value: Object.freeze({ ...pins, results: Object.freeze(pins.results.map((ref) => Object.freeze(ref))) }),
+    value: Object.freeze({ ...pins, results: Object.freeze(pins.results.map(ownResultRef)) }),
   };
 }
 
@@ -93,5 +106,5 @@ export function validateCommitReadSet(
   const required = z.safeParse(requiredRefsSchema, requiredWire.value);
   if (!required.success)
     return failure('commit.invalid-dependencies', 'The required result dependencies are not valid bounded references.');
-  return validateParsedCommitReadSet(expected.value, current.value, required.data);
+  return validateParsedCommitReadSet(expected.value, current.value, required.data.map(ownResultRef));
 }

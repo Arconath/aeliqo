@@ -15,7 +15,14 @@ const REQUIRED_BEGIN_FIELDS = [
   'requestId',
 ] as const;
 
-const OPTIONAL_BEGIN_FIELDS = new Set(['policyRevision', 'populationDigest']);
+const OPTIONAL_BEGIN_FIELDS = new Set([
+  'policyRevision',
+  'populationDigest',
+  'sourceLineage',
+  'planDigest',
+  'resultShape',
+  'lineageDigest',
+]);
 const ALLOWED_BEGIN_FIELDS = new Set([...REQUIRED_BEGIN_FIELDS, ...OPTIONAL_BEGIN_FIELDS]);
 
 export function makeDiagnostic(code: string, message: string): Diagnostic {
@@ -59,6 +66,19 @@ function canonical(value: unknown): string {
     .join(',')}}`;
 }
 
+export async function lineageDigest(
+  output: string,
+  lineage: readonly { readonly output: string; readonly inputs: readonly unknown[] }[],
+): Promise<string | undefined> {
+  const subtle = globalThis.crypto?.subtle;
+  if (subtle === undefined) return undefined;
+  const inputs = lineage.flatMap((edge) => edge.inputs);
+  const bytes = new Uint8Array(await subtle.digest('SHA-256', new TextEncoder().encode(canonical({ output, inputs }))));
+  let encoded = '';
+  for (const byte of bytes) encoded += byte.toString(16).padStart(2, '0');
+  return `lineage-${encoded}`;
+}
+
 export function byteLength(value: unknown): number {
   const encoded = JSON.stringify(value);
   return encoded === undefined ? Number.MAX_SAFE_INTEGER : new TextEncoder().encode(encoded).byteLength;
@@ -86,6 +106,11 @@ function validatePrincipalKey(value: unknown): void {
 
 function validateBeginProperty(name: string, value: unknown): void {
   if (OPTIONAL_BEGIN_FIELDS.has(name) && value === undefined) return;
+  if (name === 'resultShape') {
+    if (value !== 'rows' && value !== 'global-aggregate')
+      throw new TypeError('resultShape must be an accepted result shape.');
+    return;
+  }
   if (name === 'principalKey') {
     validatePrincipalKey(value);
     return;
@@ -121,6 +146,10 @@ export function slotKey(input: ResultCacheKey): string {
     input.catalogRevision,
     input.functionRegistryDigest,
     input.sourceRevision,
+    input.sourceLineage ?? null,
+    input.planDigest ?? null,
+    input.resultShape ?? null,
+    input.lineageDigest ?? null,
     input.outputId,
     input.taskId,
   ]);
@@ -130,6 +159,7 @@ export function sameRef(left: ResultRef, right: ResultRef): boolean {
   return (
     left.id === right.id &&
     left.revision === right.revision &&
+    left.sourceLineage === right.sourceLineage &&
     left.outputId === right.outputId &&
     left.queryDigest === right.queryDigest &&
     left.scopeDigest === right.scopeDigest

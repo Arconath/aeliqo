@@ -66,7 +66,7 @@ export function eventIdentity(event: InteractionEvent, sourcePortId: string | un
 }
 
 export function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([ref.id, ref.revision, ref.sourceLineage, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 }
 
 export function routeKey(route: InteractionRoute): string {

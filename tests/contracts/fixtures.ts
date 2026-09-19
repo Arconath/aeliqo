@@ -9,6 +9,7 @@
 export const ref = {
   id: 'result-1',
   revision: 'r1',
+  sourceLineage: 'source-r1',
   outputId: 'rows',
   queryDigest: 'query-1',
   scopeDigest: 'scope-1',

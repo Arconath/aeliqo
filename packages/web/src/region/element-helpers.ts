@@ -44,6 +44,7 @@ function resultRef(value: unknown): value is ResultRef {
       candidate !== undefined &&
       typeof candidate.id === 'string' &&
       typeof candidate.revision === 'string' &&
+      typeof candidate.sourceLineage === 'string' &&
       typeof candidate.outputId === 'string' &&
       typeof candidate.queryDigest === 'string' &&
       typeof candidate.scopeDigest === 'string'

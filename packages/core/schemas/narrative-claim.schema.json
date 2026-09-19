@@ -38,6 +38,12 @@
                   "maxLength": 160,
                   "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
                 },
+                "sourceLineage": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160,
+                  "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+                },
                 "outputId": {
                   "type": "string",
                   "minLength": 1,
@@ -449,6 +455,12 @@
                   "maxLength": 160,
                   "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
                 },
+                "sourceLineage": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160,
+                  "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+                },
                 "outputId": {
                   "type": "string",
                   "minLength": 1,
@@ -781,6 +793,12 @@
                   "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
                 },
                 "revision": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160,
+                  "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+                },
+                "sourceLineage": {
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 160,
@@ -1175,6 +1193,12 @@
                 "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
               },
               "revision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160,
+                "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+              },
+              "sourceLineage": {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 160,

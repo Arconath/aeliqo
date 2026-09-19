@@ -1074,9 +1074,9 @@ const installedBinding = createLocalDataBinding({
   feature: peopleFeature,
   snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-1', records: {people: []}},
   initialState: {rows: []},
-  coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
+  coverage: {fields: ['id', 'name'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
   normalize: async () => ({rows: []}),
-  serviceOptions: {maxSourceRevisions: 2},
+  serviceOptions: {maxSourceRevisions: 2, maxCursors: 4, now: () => 1_000, workNow: () => performance.now(), authorize: () => ({ok: true, value: {scopeDigest: 'local', cursorPartition: 'local-principal-v1', policyRevision: '1'}})},
 });
 const installedBindingInput: CreateLocalDataBindingInput<PeopleState> = {
   feature: peopleFeature,
@@ -1091,14 +1091,14 @@ const invalidBindingOptions = {...installedBindingInput, serviceOptions: {snapsh
 // @ts-expect-error The binding snapshot is the sole trusted snapshot input.
 createLocalDataBinding(invalidBindingOptions);
 // @ts-expect-error The binding owns its snapshot; serviceOptions cannot replace it.
-createLocalDataBinding({feature: peopleFeature, snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-1', records: {people: []}}, initialState: {rows: []}, coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async () => ({rows: []}), serviceOptions: {snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'forged', records: {people: []}}}});
+createLocalDataBinding({feature: peopleFeature, snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-1', records: {people: []}}, initialState: {rows: []}, coverage: {fields: ['id', 'name'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async () => ({rows: []}), serviceOptions: {snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'forged', records: {people: []}}}});
 declare const peopleData: DataService;
 const peopleBindings: DataSurfaceBindings<PeopleState> = {
   initialState: {rows: []},
   source: {
     kind: 'data-service',
     service: peopleData,
-    coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
+    coverage: {fields: ['id', 'name'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
     normalize: async () => ({rows: []}),
   },
 };
@@ -1202,9 +1202,15 @@ const feature = defineDataFeature({id: 'people', schema: z.object({id: z.string(
 const functions = createQueryFunctionRegistry({version: '2'});
 assert.equal(functions.ok, true);
 const snapshot = {catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}};
-const binding = createLocalDataBinding({feature, snapshot, initialState: {rows: []}, coverage: {fields: ['id', 'team'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async events => {const rows = []; for await (const event of events) if (event.kind === 'batch') rows.push(...event.rows); return {rows};}, serviceOptions: {functionRegistry: functions.value, authorize: () => ({ok: true, value: {scopeDigest: 'local', policyRevision: '1'}}), maxSourceRevisions: 3}});
+const binding = createLocalDataBinding({feature, snapshot, initialState: {rows: []}, coverage: {fields: ['id', 'team'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async events => {const rows = []; for await (const event of events) if (event.kind === 'batch') rows.push(...event.rows); return {rows};}, serviceOptions: {functionRegistry: functions.value, authorize: () => ({ok: true, value: {scopeDigest: 'local', cursorPartition: 'local-principal-v1', policyRevision: '1'}}), maxSourceRevisions: 3, maxCursors: 4, now: () => 1_000, workNow: () => performance.now()}});
 const data = binding.service;
 assert.equal(data, binding.source.service);
+assert.equal(binding.source.coverage.stableOrder[0].field, 'id');
+assert.equal(binding.source.coverage.stableOrder[0].direction, 'asc');
+assert.equal(binding.source.coverage.stableOrder[0].nulls, 'last');
+assert.deepEqual(binding.source.coverage.stableOrderIdentity, ['id']);
+assert(Object.isFrozen(binding.source.coverage));
+assert(Object.isFrozen(binding.source.coverage.stableOrder));
 const runtime = createAeliqoRuntime({runtimeId: 'installed-runtime', resources: [{resource: feature.resource, data}], authority: {read: () => ({ok: true, value: {principalKey: 'local', scopeDigest: 'local', policyRevision: '1', experienceRevision: '1', grants: ['catalog.read', 'task.evaluate', 'result.inspect'], readContext: {principal: 'local'}}})}});
 const scope = runtime.createLocalSurfaceScope({id: 'installed-scope', allowedFeatures: ['people', 'report']});
 const bindings = binding;

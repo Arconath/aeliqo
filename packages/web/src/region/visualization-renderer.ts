@@ -65,7 +65,7 @@ function resultRef(value: unknown): ResultRef | undefined {
   if (!parsed.ok || parsed.value === null || typeof parsed.value !== 'object' || Array.isArray(parsed.value))
     return undefined;
   const candidate = parsed.value as Record<string, unknown>;
-  const keys = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
+  const keys = ['id', 'revision', 'sourceLineage', 'outputId', 'queryDigest', 'scopeDigest'];
   if (
     Object.keys(candidate).length !== keys.length ||
     keys.some((key) => typeof candidate[key] !== 'string' || (candidate[key] as string).length === 0)

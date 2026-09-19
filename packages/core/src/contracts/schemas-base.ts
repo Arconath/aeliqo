@@ -98,6 +98,20 @@ export const catalogSchema = object({
       operators: refs,
       fields: ids,
       relations: refs,
+      metrics: optional(refs),
+      pagination: optional(
+        object({
+          mode: z.enum(['snapshot', 'keyset']),
+          stableOrder: array(
+            object({
+              field: idSchema,
+              direction: z.enum(['asc', 'desc']),
+              nulls: z.enum(['first', 'last']),
+            }),
+          ),
+          identity: ids,
+        }),
+      ),
       maxOutputRows: positiveCount,
     }),
   ),
@@ -136,6 +150,8 @@ export const predicateSchema = z.discriminatedUnion('op', [
 export const resultRefSchema = object({
   id: idSchema,
   revision: revisionSchema,
+  /** Immutable source stream identity when the producer has one. */
+  sourceLineage: optional(idSchema),
   outputId: idSchema,
   queryDigest: idSchema,
   scopeDigest: idSchema,

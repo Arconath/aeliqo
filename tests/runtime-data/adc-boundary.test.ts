@@ -144,6 +144,25 @@ function finalEvent(events: readonly ResultEvent[]) {
   return event;
 }
 
+function testCanonical(value: unknown): string {
+  if (value === null) return 'null';
+  if (typeof value !== 'object') return JSON.stringify(value) ?? 'undefined';
+  if (Array.isArray(value)) return `[${value.map(testCanonical).join(',')}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${testCanonical(record[key])}`)
+    .join(',')}}`;
+}
+
+function recomputeLegacyCursorProof(cursor: Record<string, unknown>, partition: string): string {
+  const { proof: _proof, ...unsigned } = cursor;
+  let hash = 2_166_136_261;
+  const text = `${partition}:${testCanonical(unsigned)}`;
+  for (let index = 0; index < text.length; index += 1) hash = Math.imul(hash ^ text.charCodeAt(index), 16_777_619);
+  return `cursor-proof-${(hash >>> 0).toString(16).padStart(8, '0')}`;
+}
+
 describe('adversarial local ADC authorization and result boundaries', () => {
   it('fails closed for omitted field-scope entities and hides their discovery metadata', async () => {
     const service = createLocalDataService({
@@ -265,7 +284,7 @@ describe('adversarial local ADC authorization and result boundaries', () => {
 
     const secondPlan = await accepted(
       service,
-      'page-final',
+      'page-first',
       makeQuery({
         order: [{ field: 'id', direction: 'asc', nulls: 'last' }],
         page: { size: 2, cursor: firstComplete.cursor },
@@ -367,7 +386,7 @@ describe('adversarial local ADC authorization and result boundaries', () => {
       version: '1',
       requestId: 'cursor-filter-changed',
       catalogRevision: 'catalog-1',
-      target: { taskId: 'cursor-filter-changed', outputId: 'employees-output' },
+      target: { taskId: 'cursor-filter-first', outputId: 'employees-output' },
       query: {
         ...filtered,
         where: { op: 'compare', field: 'amount', comparison: 'gt', value: { decimal: '2.0' } },
@@ -388,10 +407,234 @@ describe('adversarial local ADC authorization and result boundaries', () => {
       version: '1',
       requestId: 'cursor-scope-changed',
       catalogRevision: 'catalog-1',
-      target: { taskId: 'cursor-scope-changed', outputId: 'employees-output' },
+      target: { taskId: 'cursor-scope-first', outputId: 'employees-output' },
       query: { ...filtered, page: { size: 1, cursor: scopedComplete.cursor } },
       budget,
     });
     expect(changedScope).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
+  });
+
+  it('binds local cursors to the trusted principal partition and expires them', async () => {
+    let now = Date.now();
+    const service = createLocalDataService({
+      snapshot: snapshot(),
+      cursorTtlMs: 10,
+      now: () => now,
+      authorize: ({ context }) =>
+        allow('scope-shared', {
+          policyRevision: 'policy-shared',
+          ...(context.principal === 'alice'
+            ? { cursorPartition: 'partition-alice' }
+            : { cursorPartition: 'partition-bob' }),
+        }),
+    });
+    const query = makeQuery({ order: [{ field: 'id', direction: 'asc', nulls: 'last' }], page: { size: 1 } });
+    const first = await accepted(service, 'partition-first', query, { principal: 'alice' });
+    const firstComplete = finalEvent(await collect(service.execute(first, { principal: 'alice' })));
+    expect(firstComplete.cursor).toBeTypeOf('string');
+    if (firstComplete.cursor === undefined) return;
+    expect(firstComplete.cursor).toMatch(/^cursor-/u);
+    const forgedCursor = 'cursor-forged-visible-payload';
+    const forgedOutcome = await service.plan(
+      {
+        version: '1',
+        requestId: 'partition-first',
+        catalogRevision: 'catalog-1',
+        target: { taskId: 'partition-first', outputId: 'employees-output' },
+        query: { ...query, page: { size: 1, cursor: forgedCursor } },
+        budget,
+      },
+      { principal: 'alice' },
+    );
+    expect(forgedOutcome).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
+
+    const crossPrincipal = await service.plan(
+      {
+        version: '1',
+        requestId: 'partition-first',
+        catalogRevision: 'catalog-1',
+        target: { taskId: 'partition-first', outputId: 'employees-output' },
+        query: { ...query, page: { size: 1, cursor: firstComplete.cursor } },
+        budget,
+      },
+      { principal: 'bob' },
+    );
+    expect(crossPrincipal).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
+
+    now += 11;
+    const expired = await service.plan(
+      {
+        version: '1',
+        requestId: 'partition-first',
+        catalogRevision: 'catalog-1',
+        target: { taskId: 'partition-first', outputId: 'employees-output' },
+        query: { ...query, page: { size: 1, cursor: firstComplete.cursor } },
+        budget,
+      },
+      { principal: 'alice' },
+    );
+    expect(expired).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
+  });
+
+  it('rejects a cursor whose visible fields and legacy proof are recomputed by a client', async () => {
+    const service = createLocalDataService({
+      snapshot: snapshot(),
+      authorize: () => allow('scope-shared', { policyRevision: 'policy-shared', cursorPartition: 'partition-alice' }),
+    });
+    const query = makeQuery({ order: [{ field: 'id', direction: 'asc', nulls: 'last' }], page: { size: 1 } });
+    const first = await accepted(service, 'recomputed-cursor', query, { principal: 'alice' });
+    const complete = finalEvent(await collect(service.execute(first, { principal: 'alice' })));
+    expect(complete.cursor).toBeTypeOf('string');
+    if (complete.cursor === undefined) return;
+    const forged: Record<string, unknown> = {
+      version: 1,
+      mode: 'snapshot',
+      kind: 'data',
+      queryDigest: first.queryDigest,
+      scopeDigest: 'scope-shared',
+      policyRevision: 'policy-shared',
+      sourceRevision: 'source-1',
+      snapshotId: 'source-1',
+      orderDigest: testCanonical(query.order),
+      catalogRevision: 'catalog-1',
+      target: testCanonical({ taskId: 'recomputed-cursor', outputId: 'employees-output' }),
+      offset: 2,
+      expiresAt: Date.now() + 10_000,
+    };
+    forged.proof = recomputeLegacyCursorProof(forged, 'partition-alice');
+    const outcome = await service.plan(
+      {
+        version: '1',
+        requestId: 'recomputed-cursor',
+        catalogRevision: 'catalog-1',
+        target: { taskId: 'recomputed-cursor', outputId: 'employees-output' },
+        query: { ...query, page: { size: 1, cursor: Buffer.from(JSON.stringify(forged)).toString('base64url') } },
+        budget,
+      },
+      { principal: 'alice' },
+    );
+    expect(outcome).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
+  });
+
+  it('binds accepted plans to the trusted cursor partition at execute time', async () => {
+    const service = createLocalDataService({
+      snapshot: snapshot(),
+      now: () => 1_000,
+      authorize: ({ context }) =>
+        allow('scope-shared', {
+          policyRevision: 'policy-shared',
+          cursorPartition: context.principal === 'alice' ? 'partition-alice' : 'partition-bob',
+        }),
+    });
+    const planned = await accepted(service, 'plan-principal-binding', makeQuery(), { principal: 'alice' });
+    const events = await collect(service.execute(planned, { principal: 'bob' }));
+    expect(events[0]).toMatchObject({ kind: 'error', error: { code: 'data.denied' } });
+  });
+
+  it('retains overlapping equivalent plans for distinct trusted cursor partitions', async () => {
+    const service = createLocalDataService({
+      snapshot: snapshot(),
+      now: () => 1_000,
+      authorize: ({ context }) =>
+        allow('scope-shared', {
+          policyRevision: 'policy-shared',
+          cursorPartition: context.principal === 'alice' ? 'partition-alice' : 'partition-bob',
+        }),
+    });
+    const query = makeQuery({ order: [{ field: 'id', direction: 'asc', nulls: 'last' }] });
+    const request = {
+      version: '1' as const,
+      requestId: 'equivalent-plan',
+      catalogRevision: 'catalog-1',
+      target: { taskId: 'equivalent-plan', outputId: 'employees-output' },
+      query,
+      budget,
+    };
+    const planAlice = await service.plan(request, { principal: 'alice' });
+    const planBob = await service.plan(request, { principal: 'bob' });
+    expect(planAlice.ok).toBe(true);
+    expect(planBob.ok).toBe(true);
+    if (!planAlice.ok || !planBob.ok) return;
+    expect(planAlice.value.planDigest).not.toBe(planBob.value.planDigest);
+    const aliceEvents = await collect(service.execute(planAlice.value, { principal: 'alice' }));
+    const bobEvents = await collect(service.execute(planBob.value, { principal: 'bob' }));
+    expect(aliceEvents[0]).toMatchObject({ kind: 'descriptor' });
+    expect(bobEvents[0]).toMatchObject({ kind: 'descriptor' });
+  });
+
+  it('retains a validated continuation offset when the host cursor registry evicts its token', async () => {
+    const service = createLocalDataService({ snapshot: snapshot(), maxCursors: 1 });
+    const query = makeQuery({ order: [{ field: 'id', direction: 'asc', nulls: 'last' }], page: { size: 1 } });
+    const first = await accepted(service, 'eviction-first', query);
+    const firstComplete = finalEvent(await collect(service.execute(first)));
+    expect(firstComplete.cursor).toBeTypeOf('string');
+    if (firstComplete.cursor === undefined) return;
+    const continuation = await accepted(service, 'eviction-first', {
+      ...query,
+      page: { size: 1, cursor: firstComplete.cursor },
+    });
+    const other = await accepted(service, 'eviction-other', query);
+    await collect(service.execute(other));
+    const second = await collect(service.execute(continuation));
+    expect(rowsFrom(second)).toEqual(['e-2']);
+  });
+
+  it('applies the same partition and expiry binding to discovery cursors', async () => {
+    let now = Date.now();
+    const service = createLocalDataService({
+      snapshot: snapshot(),
+      cursorTtlMs: 10,
+      now: () => now,
+      authorize: ({ context }) =>
+        allow('catalog-shared', {
+          policyRevision: 'catalog-policy',
+          cursorPartition: context.principal === 'alice' ? 'catalog-alice' : 'catalog-bob',
+        }),
+    });
+    const request = {
+      version: '1' as const,
+      requestId: 'catalog-first',
+      catalogRevision: null,
+      target: { kind: 'catalog' as const },
+      budget,
+      pageSize: 1,
+    };
+    const first = await service.describe(request, { principal: 'alice' });
+    expect(first.ok).toBe(true);
+    if (!first.ok || first.value.nextCursor === undefined) return;
+    expect(first.value.nextCursor).toMatch(/^cursor-/u);
+    const continuation = {
+      ...request,
+      requestId: 'catalog-continuation',
+      catalogRevision: first.value.catalogRevision,
+      cursor: first.value.nextCursor,
+    };
+    const crossPrincipal = await service.describe(continuation, { principal: 'bob' });
+    expect(crossPrincipal).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
+    now += 11;
+    const expired = await service.describe(continuation, { principal: 'alice' });
+    expect(expired).toMatchObject({ ok: false, diagnostics: [{ code: 'data.stale-cursor' }] });
+  });
+
+  it('keeps elapsed budgets live when the expiry clock is held constant', async () => {
+    const wallNow = Date.now();
+    let planning = true;
+    let workReads = 0;
+    const workNow = () => {
+      if (planning) return 0;
+      workReads += 1;
+      return workReads === 1 ? 0 : 10_000;
+    };
+    const service = createLocalDataService({
+      snapshot: snapshot(),
+      planTtlMs: 10_000,
+      now: () => wallNow,
+      workNow,
+    });
+    const planned = await accepted(service, 'constant-expiry-clock', makeQuery(), undefined);
+    expect(planned).toBeDefined();
+    planning = false;
+    const events = await collect(service.execute(planned));
+    expect(events[0]).toMatchObject({ kind: 'error', error: { code: 'data.budget' } });
   });
 });

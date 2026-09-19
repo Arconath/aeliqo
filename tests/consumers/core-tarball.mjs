@@ -278,11 +278,33 @@ const catalogInput = {
   ],
   relationships: [],
   meanings: [],
-  capabilities: [],
+  capabilities: [
+    {
+      ref: { id: 'employees.remote', revision: '1' },
+      entity: 'employee',
+      operators: [],
+      fields: ['employee.id'],
+      relations: [],
+      metrics: [],
+      pagination: {
+        mode: 'snapshot',
+        stableOrder: [{ field: 'employee.id', direction: 'asc', nulls: 'last' }],
+        identity: ['employee.id'],
+      },
+      maxOutputRows: 100,
+    },
+  ],
 };
 const resultInput = {
   version: '1',
-  ref: { id: 'result-1', revision: '1', outputId: 'table', queryDigest: 'query-1', scopeDigest: 'scope-1' },
+  ref: {
+    id: 'result-1',
+    revision: '1',
+    sourceLineage: 'source-1',
+    outputId: 'table',
+    queryDigest: 'query-1',
+    scopeDigest: 'scope-1',
+  },
   taskId: 'task-1',
   fields: [],
   identity: [],
@@ -1695,6 +1717,10 @@ await writeFile(
   join(consumerDirectory, 'index.html'),
   '<!doctype html><html><body><script type="module" src="/bundle-entry.js"></script></body></html>',
 );
+await writeFile(
+  join(consumerDirectory, 'browser-fixtures.json'),
+  JSON.stringify({ commitPins, documents, t05: t05Fixtures, t04: t04Fixtures }),
+);
 // Keep generic parsing and agent contracts in Node; this browser budget covers typed core imports.
 await writeFile(
   join(consumerDirectory, 'bundle-entry.js'),
@@ -1729,10 +1755,9 @@ const validWire = parseWireValue('{"requestId":"one"}');
 if (!validWire.ok || validWire.value.requestId !== 'one' ||
     parseWireValue('{"requestId":"one","requestId":"two"}').ok ||
     parseWireValue({requestId:undefined}).ok) throw new Error('Browser wire parser regression');
-const commitPins = ${JSON.stringify(commitPins)};
-const documents = ${fixtureSource};
-const t05 = ${t05FixtureSource};
-const t04 = ${t04FixtureSource};
+const {commitPins, documents, t05, t04} = await fetch(
+  new URL('./browser-fixtures.json', import.meta.url),
+).then((response) => response.json());
 ${queryConsumerSource}
 const installedQueryResult = runInstalledQuery();
 ${graphConsumerSource}

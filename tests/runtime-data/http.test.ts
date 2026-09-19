@@ -31,10 +31,13 @@ const accepted: AcceptedQuery = {
   target: planning.target,
   catalogRevision: catalog.revision,
   sourceRevision: 'source-r1',
+  sourceLineage: 'source-r1',
   scopeDigest: ref.scopeDigest,
   queryDigest: ref.queryDigest,
   planDigest: 'plan-1',
   populationDigest: 'population-1',
+  lineageDigest: 'lineage-8fc01d2fba0d26c09f33133179d4af54be4f7e2dd5280639a10ae763b8f5b1c6',
+  resultShape: 'rows',
   expiresAt: 9_000_000_000_000,
   functionRegistryDigest: catalog.functionRegistryDigest,
   query,
@@ -51,7 +54,12 @@ const page = {
   target: discovery.target,
   effectiveBudget: budget,
 } as const;
-const valid = [resultEvents.descriptor, resultEvents.batch, resultEvents.complete];
+const acceptedRef = { ...ref, revision: accepted.sourceRevision, sourceLineage: accepted.sourceLineage };
+const valid = [
+  { ...resultEvents.descriptor, descriptor: { ...resultEvents.descriptor.descriptor, ref: acceptedRef } },
+  { ...resultEvents.batch, result: acceptedRef },
+  { ...resultEvents.complete, result: acceptedRef },
+];
 const content = (value: unknown, status = 200) =>
   new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
 const ndjson = (events: readonly unknown[]) =>

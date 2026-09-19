@@ -35,6 +35,22 @@ description: 'The 0.4 release consolidates the public site, documents all compon
   addresses across explicit source revisions, and rejects same-revision or
   catalog conflicts atomically. This candidate remains unpublished and
   undeployed.
+- Remote data now uses the same validated `DataService`, ResultStore, and
+  Region path as local data. Catalog capabilities declare metrics and stable
+  snapshot or keyset pagination; cursors are partitioned by authority and pin
+  target, query, ordering, semantic revisions, consistency, and expiry.
+  Expiry uses a wall clock while request work retains a separate monotonic
+  budget clock. Local continuation metadata is kept in a bounded host registry;
+  an accepted continuation plan pins its validated offset so registry eviction
+  cannot restart the query from the first page.
+  Partial pages preserve unknown or estimated population metadata, and only a
+  server-proven aggregate may claim complete global coverage. The localhost
+  protocol fixtures remain synthetic; this candidate is still unpublished and
+  undeployed.
+- Semantic aggregate plans now retain and revalidate their registered meaning
+  binding. Semi-additive period-end selection is deterministic, ratios and
+  variadic means keep their registered behavior, and nested/count aggregates
+  apply the meaning's missing-value policy instead of silently weakening it.
 - `@aeliqo/core` now provides bounded `inferLocalDataShape` diagnostics for
   declared or structurally inferred scalar fields; it does not infer authority,
   coverage, relationships, or business identity. The two helpers remain part

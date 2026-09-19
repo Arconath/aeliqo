@@ -1,7 +1,7 @@
 import type { Diagnostic, Outcome } from '@aeliqo/core';
 import { WIRE_LIMITS } from '@aeliqo/core';
 import { DataStreamError } from './stream.js';
-import type { ResultStreamLimits } from './stream.js';
+import type { ResultStreamContext, ResultStreamLimits } from './stream.js';
 import type { AcceptedQuery, DataErrorPayload, HttpDataPaths, QueryBudget, ResultEvent } from './types.js';
 
 export const DEFAULT_PATHS: HttpDataPaths = Object.freeze({
@@ -261,12 +261,14 @@ export function streamContext(
   accepted: AcceptedQuery,
   life: Lifetime,
   limits: ResultStreamLimits = DEFAULT_RESPONSE_LIMITS,
-) {
+): ResultStreamContext {
   return {
     requestId: accepted.requestId,
     queryDigest: accepted.queryDigest,
     scopeDigest: accepted.scopeDigest,
     outputId: accepted.target.outputId,
+    sourceRevision: accepted.sourceRevision,
+    sourceLineage: accepted.sourceLineage,
     populationDigest: accepted.populationDigest,
     limits: {
       bytes: Math.min(limits.bytes, accepted.effectiveBudget.maxBytes),

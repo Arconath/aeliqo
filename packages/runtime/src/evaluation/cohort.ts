@@ -72,7 +72,12 @@ function authorityCheck(request: CohortRequest, context: CohortResolverContext, 
 
 function validSourceRef(ref: ResultRef): boolean {
   return (
-    safeId(ref.id) && safeId(ref.revision) && safeId(ref.outputId) && safeId(ref.queryDigest) && safeId(ref.scopeDigest)
+    safeId(ref.id) &&
+    safeId(ref.revision) &&
+    safeId(ref.sourceLineage) &&
+    safeId(ref.outputId) &&
+    safeId(ref.queryDigest) &&
+    safeId(ref.scopeDigest)
   );
 }
 
