@@ -916,7 +916,7 @@ function runInstalledPresentationResolver(resolve, context, registry, current) {
       runtimeId: 'installed-runtime',
       scopeInstanceId: 'installed-scope',
       activationEpoch: 1,
-      surfaceId: 'installed-surface',
+      surfaceId: context.task.regionId,
       surfaceGeneration: 1,
     },
     state: 'active',

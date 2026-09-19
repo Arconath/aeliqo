@@ -231,7 +231,7 @@ type ResolverIngress =
       readonly clarification?: PresentationClarification;
       readonly request: PresentationCompositionRequest;
       readonly registry: PresentationResolverInput['registry'];
-      readonly target: PresentationTargetEvidence;
+      readonly surfaceId: string;
     }
   | { readonly ok: false; readonly decision: PresentationDecision };
 
@@ -284,7 +284,7 @@ function resolverIngress(input: PresentationResolverInput): ResolverIngress {
     candidates,
     request,
     registry: fields.registry,
-    target,
+    surfaceId: target.address.surfaceId,
     ...(clarification === undefined ? {} : { clarification }),
   };
 }
@@ -303,7 +303,7 @@ export function resolvePresentation(input: PresentationResolverInput): Presentat
       prepared,
       prepared.diagnostics.some((item) => item.code === 'experience.representation-conflict'),
     );
-  if (prepared.value.prepared.constraints.task.regionId !== ingress.target.address.surfaceId)
+  if (prepared.value.prepared.constraints.task.regionId !== ingress.surfaceId)
     return unsupported('presentation.target-mismatch');
   const clarification = clarificationDecision(ingress.clarification, prepared.value);
   if (clarification !== undefined) return clarification;
