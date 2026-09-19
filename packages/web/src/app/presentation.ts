@@ -1,5 +1,5 @@
 import { resolvePresentation } from '@aeliqo/core/presentation';
-import type { Diagnostic, Intent, Outcome, Result, Task } from '@aeliqo/core';
+import type { Diagnostic, Intent, Result, Task } from '@aeliqo/core';
 import type {
   PresentationEnvironment,
   PresentationClarification,
@@ -12,8 +12,8 @@ import { canonicalViewId, recipeSupports, standardDataRecipe, standardRecipeCand
 import type { RecipeDefinition, RecipePresentationPolicy } from '../recipes/types.js';
 import type { AeliqoRegionResult } from '../region/types.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
-import { createFormBindings } from './form-bindings.js';
-import type { AeliqoFormState, WebRenderReceipt } from './types.js';
+import { beginPresentation, presentationCurrent, type PresentationOperation } from './presentation-operation.js';
+import type { WebRenderReceipt } from './types.js';
 import {
   diagnostic,
   environmentFor,
@@ -308,24 +308,30 @@ type RuntimeCommit =
   | { readonly ok: true; readonly value: CommittedPresentation }
   | { readonly ok: false; readonly receipt: WebRenderReceipt };
 
+function commitWasCancelled(operation: PresentationOperation, diagnostics: readonly Diagnostic[]): boolean {
+  const code = diagnostics[0]?.code;
+  return operation.signal.aborted || code?.includes('stale') === true || code?.includes('cancelled') === true;
+}
+
 async function commitRuntime(
   context: WebAppContext,
   region: WebRegion,
   receipt: RuntimeCommittedReceipt,
   requestId: string,
   prepared: PreparedPresentation,
-  signal?: AbortSignal,
+  operation: PresentationOperation,
 ): Promise<RuntimeCommit> {
+  if (!operation.active()) return { ok: false, receipt: cancelledPresentation(receipt, requestId) };
   const committed = await context.runtime.commitPresentation({
     regionId: region.id,
     requestId,
     task: receipt.task,
     presentation: prepared.presentation.plan,
-    ...(signal === undefined ? {} : { signal }),
+    signal: operation.signal,
   });
+  if (!operation.active()) return { ok: false, receipt: cancelledPresentation(receipt, requestId) };
   if (!committed.ok) {
-    const stale = committed.diagnostics[0]?.code.includes('stale') === true;
-    const status = stale ? 'cancelled' : 'failed';
+    const status = commitWasCancelled(operation, committed.diagnostics) ? 'cancelled' : 'failed';
     return { ok: false, receipt: failedAfterRuntime(status, receipt, requestId, committed.diagnostics) };
   }
   const task = committed.value.state?.task;
@@ -355,6 +361,7 @@ async function applyCommittedPresentation(
   expectedSequence: number,
   prepared: PreparedPresentation,
   committed: CommittedPresentation,
+  operation: PresentationOperation,
 ): Promise<WebRenderReceipt> {
   const previous = {
     presentation: region.element.presentation,
@@ -362,7 +369,7 @@ async function applyCommittedPresentation(
     interaction: region.element.interaction,
   };
   const changesTask = taskChanged(region, receipt);
-  if (region.sequence !== expectedSequence) return cancelledPresentation(receipt, requestId);
+  if (!presentationCurrent(region, expectedSequence, operation)) return cancelledPresentation(receipt, requestId);
   try {
     region.element.viewRenderers = context.views;
     region.element.results = resultBindings;
@@ -370,12 +377,12 @@ async function applyCommittedPresentation(
     region.element.presentation = committed.presentation;
     await region.element.updateComplete;
   } catch {
-    if (region.sequence === expectedSequence) restoreElement(region, previous);
+    if (presentationCurrent(region, expectedSequence, operation)) restoreElement(region, previous);
     return failedAfterRuntime('failed', receipt, requestId, [
       diagnostic('web.app.renderer', 'The renderer failed; the previous UI was restored.'),
     ]);
   }
-  if (region.sequence !== expectedSequence) return cancelledPresentation(receipt, requestId);
+  if (!presentationCurrent(region, expectedSequence, operation)) return cancelledPresentation(receipt, requestId);
   if (changesTask) resetInteraction(region);
   return {
     status: 'renderer-ready',
@@ -396,9 +403,9 @@ async function commitPresentation(
   requestId: string,
   expectedSequence: number,
   prepared: PreparedPresentation,
-  signal?: AbortSignal,
+  operation: PresentationOperation,
 ): Promise<WebRenderReceipt> {
-  const committed = await commitRuntime(context, region, receipt, requestId, prepared, signal);
+  const committed = await commitRuntime(context, region, receipt, requestId, prepared, operation);
   if (!committed.ok) return committed.receipt;
   return applyCommittedPresentation(
     context,
@@ -409,6 +416,7 @@ async function commitPresentation(
     expectedSequence,
     prepared,
     committed.value,
+    operation,
   );
 }
 
@@ -424,77 +432,31 @@ export async function present(
   signal?: AbortSignal,
 ): Promise<WebRenderReceipt> {
   if (region.sequence !== expectedSequence) return cancelledPresentation(receipt, requestId);
-  const prepared = preparePresentation(
-    context,
-    region,
-    receipt,
-    resultBindings,
-    descriptors,
-    requestId,
-    expectedSequence,
-    inputs,
-  );
-  if (!prepared.ok) return failedAfterRuntime(prepared.status, receipt, requestId, prepared.diagnostics);
-  return commitPresentation(
-    context,
-    region,
-    receipt,
-    resultBindings,
-    requestId,
-    expectedSequence,
-    prepared.value,
-    signal,
-  );
-}
-
-function formStateFailure(code: string, message: string): Outcome<never> {
-  return { ok: false, diagnostics: [diagnostic(code, message)] };
-}
-
-async function readFormState(
-  context: WebAppContext,
-  region: WebRegion,
-  intent: Extract<Intent, { readonly kind: 'create' | 'edit' }>,
-  task: Extract<Task, { readonly kind: 'form' }>,
-  resource: NonNullable<ReturnType<WebAppContext['resources']['get']>>,
-  signal?: AbortSignal,
-): Promise<Outcome<AeliqoFormState>> {
-  const adapter = context.options.formState;
-  if (adapter === undefined) {
-    if (intent.kind === 'edit')
-      return formStateFailure(
-        'web.form-state.required',
-        'Edit requires a trusted formState adapter to load current values and entity revision.',
-      );
-    return { ok: true, value: { values: {}, entityRevision: 'new' } };
-  }
-  const fallback = new AbortController();
+  const operation = beginPresentation(region, signal);
   try {
-    return await adapter.read({
-      regionId: region.id,
-      resource,
-      intent,
-      task,
-      signal: signal ?? fallback.signal,
-    });
-  } catch {
-    return formStateFailure('web.form-state.failed', 'The trusted formState adapter failed safely.');
+    if (!presentationCurrent(region, expectedSequence, operation)) return cancelledPresentation(receipt, requestId);
+    const prepared = preparePresentation(
+      context,
+      region,
+      receipt,
+      resultBindings,
+      descriptors,
+      requestId,
+      expectedSequence,
+      inputs,
+    );
+    if (!prepared.ok) return failedAfterRuntime(prepared.status, receipt, requestId, prepared.diagnostics);
+    return await commitPresentation(
+      context,
+      region,
+      receipt,
+      resultBindings,
+      requestId,
+      expectedSequence,
+      prepared.value,
+      operation,
+    );
+  } finally {
+    operation.close();
   }
-}
-
-export async function resolveFormBindings(
-  context: WebAppContext,
-  region: WebRegion,
-  receipt: RuntimeCommittedReceipt,
-  signal?: AbortSignal,
-): Promise<Outcome<AeliqoInputBindings | undefined>> {
-  if (receipt.task.kind !== 'form') return { ok: true, value: undefined };
-  if (receipt.intent.kind !== 'create' && receipt.intent.kind !== 'edit')
-    return formStateFailure('web.form-state.intent', 'A form Task requires a create or edit intent.');
-  const resource = context.resources.get(region.resourceId);
-  if (resource === undefined)
-    return formStateFailure('web.form-state.resource', 'The mounted form resource is unavailable.');
-  const state = await readFormState(context, region, receipt.intent, receipt.task, resource, signal);
-  if (!state.ok) return state;
-  return createFormBindings(resource, receipt.intent, receipt.task, state.value);
 }

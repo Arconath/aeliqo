@@ -25,6 +25,8 @@ export interface WebRegion {
   readonly element: AeliqoRegionElement;
   resize?: ResizeObserver;
   resizeFrame?: number;
+  /** Cancels an in-flight presentation before it can publish after a newer render. */
+  presentationAbort?: AbortController;
   sequence: number;
   category: 'wide' | 'narrow' | 'unknown';
   composing: boolean;

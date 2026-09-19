@@ -2,6 +2,7 @@ import type { RuntimeRegionState } from '@aeliqo/runtime/app';
 import type { AeliqoApp } from './types.js';
 import { cancelActiveAction } from './interaction.js';
 import type { WebAppContext, WebRegion } from './context.js';
+import { cancelPendingPresentation } from './presentation-operation.js';
 
 type StateListener = Parameters<AeliqoApp['subscribe']>[1];
 
@@ -42,6 +43,7 @@ export function subscribeRegion(context: WebAppContext, regionId: string, listen
 
 function releaseRegion(context: WebAppContext, region: WebRegion): void {
   region.sequence++;
+  cancelPendingPresentation(region);
   cancelActiveAction(region);
   if (region.resizeFrame !== undefined) {
     region.target.ownerDocument.defaultView?.cancelAnimationFrame(region.resizeFrame);

@@ -510,6 +510,115 @@ describe('0.3 standard recipes', () => {
     expect(elementState.results).toBe(bindings);
   });
 
+  it('cancels a delayed stale presentation before it can publish over a newer renderer-ready Region', async () => {
+    const fixture = input('browse', 800);
+    if (fixture.result === undefined) throw new Error('The browse fixture must materialize a Result.');
+    const resource = defineResource({
+      id: 'people',
+      revision: 'catalog-1',
+      label: 'person',
+      schema: z.object({ id: z.string(), name: z.string() }),
+      identity: ['id'],
+      presentation: { allowedViews: ['table', 'cards'] },
+      fields: { id: { label: 'ID' }, name: { label: 'Name' } },
+    });
+    const bindings = [{ ref: fixture.result.ref, rows: [{ id: 'p-1', name: 'Ada' }] }];
+    const elementState = {
+      presentation: undefined as ValidatedPresentation | undefined,
+      results: [] as readonly (typeof bindings)[number][],
+      interaction: undefined,
+      updateComplete: Promise.resolve(),
+    };
+    const target = {
+      lang: '',
+      ownerDocument: { documentElement: { lang: 'en-US' }, defaultView: null },
+      getBoundingClientRect: () => ({ width: 800, height: 600 }),
+    } as unknown as HTMLElement;
+    const region = {
+      id: 'main',
+      resourceId: 'people',
+      target,
+      element: elementState,
+      sequence: 1,
+      category: 'wide',
+      composing: false,
+      pendingAdapt: false,
+      actionPending: false,
+      actionSequence: 0,
+      values: new Map(),
+      drafts: new Map(),
+    } as unknown as WebRegion;
+    let delayedStarted!: () => void;
+    const delayed = new Promise<void>((resolve) => (delayedStarted = resolve));
+    const published: string[] = [];
+    const runtime = {
+      snapshot: () => ({ region: { readSet: { ...current, dataRevision: 1 } } }),
+      commitPresentation: async (request: {
+        readonly requestId: string;
+        readonly signal?: AbortSignal;
+        readonly task: Task;
+        readonly presentation: unknown;
+      }) => {
+        if (request.requestId === 'stale') {
+          delayedStarted();
+          await new Promise<void>((resolve) => {
+            if (request.signal?.aborted) resolve();
+            else request.signal?.addEventListener('abort', () => resolve(), { once: true });
+          });
+          return {
+            ok: false as const,
+            diagnostics: [
+              { code: 'runtime.region-cancelled', message: 'The stale commit was cancelled.', retryable: false },
+            ],
+          };
+        }
+        published.push(request.requestId);
+        return {
+          ok: true as const,
+          value: { state: { task: request.task, presentation: request.presentation } },
+        };
+      },
+    } as unknown as AeliqoRuntime;
+    const context = {
+      options: {},
+      runtime,
+      resources: new Map([[resource.id, resource]]),
+      recipes: [standardDataRecipe],
+      views: [],
+      regions: new Map(),
+      stateListeners: new Map(),
+      disposed: false,
+    } as unknown as WebAppContext;
+    const receipt = {
+      status: 'committed',
+      requestId: 'runtime-request',
+      regionId: 'main',
+      intent: fixture.intent,
+      task: fixture.task,
+      outputs: [],
+      region: { id: 'main', readSet: { ...current, dataRevision: 1 } },
+      diagnostics: [],
+    } as unknown as RuntimeCommittedReceipt;
+
+    const stale = present(context, region, receipt, bindings, [fixture.result], 'stale', 1);
+    const reachedCommit = await Promise.race([
+      delayed.then(() => true),
+      stale.then(() => false),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 100)),
+    ]);
+    expect(reachedCommit).toBe(true);
+    region.sequence = 2;
+    const currentRender = await present(context, region, receipt, bindings, [fixture.result], 'current', 2);
+    const staleRender = await stale;
+
+    expect(staleRender).toMatchObject({ status: 'cancelled', requestId: 'stale' });
+    expect(currentRender).toMatchObject({ status: 'renderer-ready', requestId: 'current' });
+    expect(published).toEqual(['current']);
+    expect(elementState.presentation).toBe(
+      currentRender.status === 'renderer-ready' ? currentRender.presentation : undefined,
+    );
+  });
+
   it('treats an incompatible preferred view as a preference and falls back safely', () => {
     const outcome = standardDataRecipe.build(input('compare', 320, 'cards'));
     expect(outcome.ok && outcome.value.nodes[0]?.representation.id).toBe('data.table');
