@@ -4,7 +4,7 @@ import { authorizeMeaningActivation, validateMeaningBundle } from '@aeliqo/core/
 import type { MeaningActivationReceipt, MeaningBundle } from '@aeliqo/core/semantics';
 import type { LocalSnapshot, MeaningRegistration } from '../types.js';
 import type { LocalDataServiceState } from './service-state.js';
-import { freezeCatalog, isSourceCapacityError, normalizeSnapshot } from './source.js';
+import { freezeCatalog, isSourceCapacityError, normalizeSnapshot, sourceDiagnosticCode } from './source.js';
 import { canonical, failure, freezeDeep } from './shared.js';
 
 interface ActivationControl {
@@ -47,11 +47,17 @@ export function replaceLocalSnapshot(state: LocalDataServiceState, next: LocalSn
 
 function normalizeReplacementSnapshot(state: LocalDataServiceState, next: LocalSnapshot) {
   try {
-    return { ok: true as const, value: normalizeSnapshot(next, state.sourceLimits) };
+    const normalized = normalizeSnapshot(next, state.sourceLimits, {
+      rejectExecutableToJSON: state.rejectExecutableToJSON,
+    });
+    const shape = state.snapshotValidator?.(normalized);
+    if (shape !== undefined && !shape.ok) return { ok: false as const, diagnostics: shape.diagnostics };
+    return { ok: true as const, value: normalized };
   } catch (error) {
     const capacity = isSourceCapacityError(error);
+    const sourceCode = sourceDiagnosticCode(error);
     return failure<ReturnType<typeof normalizeSnapshot>>(
-      capacity ? 'data.source-capacity' : 'data.source-shape',
+      capacity ? 'data.source-capacity' : (sourceCode ?? 'data.source-shape'),
       capacity
         ? 'The replacement source snapshot exceeds the configured bounded source capacity.'
         : 'The replacement source snapshot is not a bounded canonical source.',

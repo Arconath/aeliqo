@@ -36,7 +36,6 @@ interface SurfaceControllerConfig<I, S> {
   ) => Promise<{
     readonly receipt: RuntimeRenderReceipt;
     readonly state?: S;
-    readonly publicationCheck?: () => string | undefined;
   }>;
   readonly teardown: () => void;
 }
@@ -49,12 +48,6 @@ interface PendingProposal<I> {
 
 function failure(status: Exclude<RequestResult['status'], 'committed' | 'proposed'>, diagnosticCode: string) {
   return { status, diagnosticCode } as RequestResult;
-}
-
-function phaseFor(status: RuntimeRenderReceipt['status']) {
-  if (status === 'committed') return 'ready' as const;
-  if (status === 'cancelled') return 'idle' as const;
-  return status;
 }
 
 function requestWasCancelled(disposed: boolean, expectedSequence: number, sequence: number, signal: AbortSignal) {
@@ -251,7 +244,6 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
           outcome as {
             readonly receipt: RuntimeRenderReceipt;
             readonly state?: S;
-            readonly publicationCheck?: () => string | undefined;
           },
           before,
         );
@@ -276,7 +268,6 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     | {
         readonly receipt: RuntimeRenderReceipt;
         readonly state?: S;
-        readonly publicationCheck?: () => string | undefined;
       }
   > {
     if (this.config.feature.kind === 'data') return this.config.runData!(intent as Intent, signal);
@@ -289,13 +280,12 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     result: {
       readonly receipt: RuntimeRenderReceipt;
       readonly state?: S;
-      readonly publicationCheck?: () => string | undefined;
     },
     before: SurfaceSnapshot<I, S>,
   ): RequestResult {
     const { receipt } = result;
     if (receipt.status !== 'committed') {
-      this.publish({ ...before, phase: phaseFor(receipt.status) });
+      this.publishPrepared(before);
       return failure(receipt.status, receipt.diagnostics[0]?.code ?? `surface.${receipt.status}`);
     }
     if (result.state === undefined) {
@@ -304,11 +294,6 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     }
     const revision = nextRevision(this.snapshot.revision);
     const prepared = freezeSnapshot({ ...this.snapshot, revision, phase: 'ready', intent, state: result.state });
-    const publicationDiagnostic = result.publicationCheck?.();
-    if (publicationDiagnostic !== undefined) {
-      this.publish(before);
-      return failure('cancelled', publicationDiagnostic);
-    }
     this.publishPrepared(prepared);
     return { status: 'committed', revision };
   }

@@ -5,6 +5,8 @@ import type {
   RuntimeRenderReceipt,
   RuntimeResourceBinding,
 } from '../app/types.js';
+import type { MaterializedTaskOutput } from '../evaluation/types.js';
+import type { RuntimeRenderPrepare } from '../app/runtime-render.js';
 import type { ResultEvent } from '../results/types.js';
 import { readSourceRevisionPin } from '../data/local/source-pin.js';
 import { SurfaceControllerImpl } from './controller.js';
@@ -29,7 +31,7 @@ interface RuntimeSurfacePorts {
     input: { readonly regionId: string; readonly resourceId: string },
     binding: RuntimeResourceBinding,
   ) => Outcome<RuntimeRegionState>;
-  readonly render: (input: RuntimeRenderInput) => Promise<RuntimeRenderReceipt>;
+  readonly render: (input: RuntimeRenderInput, prepare?: RuntimeRenderPrepare) => Promise<RuntimeRenderReceipt>;
   readonly unmount: (regionId: string) => boolean;
 }
 
@@ -102,29 +104,53 @@ export class RuntimeSurfaceFactory {
 
   private dataRunner(input: SurfaceInput, regionId: string) {
     return async (intent: Intent, signal: AbortSignal) => {
-      const receipt = await this.ports.render({ regionId, intent, signal });
-      if (receipt.status !== 'committed') return { receipt };
       const binding = input.bindings as DataSurfaceBindings<unknown>;
-      const state = await binding.source.normalize(resultEvents(receipt), { scope: input.scope.getSnapshot(), signal });
-      return {
-        receipt,
-        state,
-        publicationCheck: () => sourcePublicationDiagnostic(receipt, binding.source.service),
-      };
+      let state: unknown;
+      const receipt = await this.ports.render({ regionId, intent, signal }, async ({ outputs }) => {
+        try {
+          state = await binding.source.normalize(resultEvents(outputs), {
+            scope: input.scope.getSnapshot(),
+            signal,
+          });
+        } catch {
+          return {
+            ok: false,
+            diagnostics: [
+              {
+                code: 'runtime.render-failed',
+                message: 'The local result could not be normalized safely.',
+                retryable: false,
+              },
+            ],
+          };
+        }
+        const publicationDiagnostic = sourcePublicationDiagnostic(outputs, binding.source.service);
+        if (publicationDiagnostic !== undefined)
+          return {
+            ok: false,
+            diagnostics: [
+              {
+                code: publicationDiagnostic,
+                message: 'The local source changed before Region publication.',
+                retryable: false,
+              },
+            ],
+          };
+        return { ok: true, value: undefined };
+      });
+      if (receipt.status !== 'committed') return { receipt };
+      return { receipt, state };
     };
   }
 }
 
 function sourcePublicationDiagnostic(
-  receipt: Extract<RuntimeRenderReceipt, { readonly status: 'committed' }>,
+  outputs: readonly MaterializedTaskOutput[],
   service: DataSurfaceBindings<unknown>['source']['service'],
 ): string | undefined {
   const sourcePin = readSourceRevisionPin(service);
   if (sourcePin.kind === 'invalid') return 'runtime.render-stale';
-  if (
-    sourcePin.kind === 'current' &&
-    receipt.outputs.some((output) => output.handle.key.sourceRevision !== sourcePin.value)
-  )
+  if (sourcePin.kind === 'current' && outputs.some((output) => output.handle.key.sourceRevision !== sourcePin.value))
     return 'runtime.render-stale';
   return undefined;
 }
@@ -140,10 +166,8 @@ function initialIntent(input: SurfaceInput, ownership: SurfaceOwnership<unknown,
   return { version: '1', id: 'surface-request-0', resource: input.feature.id, kind: 'browse' } satisfies Intent;
 }
 
-async function* resultEvents(
-  receipt: Extract<RuntimeRenderReceipt, { readonly status: 'committed' }>,
-): AsyncIterable<ResultEvent> {
-  for (const output of receipt.outputs) {
+async function* resultEvents(outputs: readonly MaterializedTaskOutput[]): AsyncIterable<ResultEvent> {
+  for (const output of outputs) {
     const snapshot = output.handle.snapshot();
     if (snapshot.descriptor !== undefined) yield { kind: 'descriptor', descriptor: snapshot.descriptor };
     for (const batch of snapshot.batches) yield batch;

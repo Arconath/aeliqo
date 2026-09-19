@@ -20,8 +20,21 @@ interface ByteBudget {
 
 class SourceCapacityError extends TypeError {}
 
+class SourceValidationError extends TypeError {
+  constructor(
+    readonly code: string,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 export function isSourceCapacityError(error: unknown): boolean {
   return error instanceof SourceCapacityError;
+}
+
+export function sourceDiagnosticCode(error: unknown): string | undefined {
+  return error instanceof SourceValidationError ? error.code : undefined;
 }
 
 export const DEFAULT_SOURCE_LIMITS: SourceLimits = Object.freeze({ rows: WIRE_LIMITS.array, bytes: WIRE_LIMITS.bytes });
@@ -249,6 +262,7 @@ function normalizeEntityRows(
   rows: readonly DataRecord[],
   entity: CatalogEntity,
   budget: ByteBudget,
+  rejectExecutableToJSON: boolean,
 ): readonly DataRecord[] {
   if (!Array.isArray(rows)) throw new TypeError(`Rows for ${entityId} must be an array.`);
   if (rows.length > budget.limits.rows - budget.rows)
@@ -260,7 +274,7 @@ function normalizeEntityRows(
   const normalized: DataRecord[] = [];
   for (const [rowIndex, row] of rows.entries()) {
     if (rowIndex > 0) addCount(budget, 1);
-    normalized.push(normalizeRow(row, rowIndex, entity, fields, identityKeys, budget));
+    normalized.push(normalizeRow(row, rowIndex, entity, fields, identityKeys, budget, rejectExecutableToJSON));
   }
   return Object.freeze(normalized);
 }
@@ -272,8 +286,9 @@ function normalizeRow(
   fields: ReadonlyMap<string, CatalogEntity['fields'][number]>,
   identityKeys: Set<string>,
   budget: ByteBudget,
+  rejectExecutableToJSON: boolean,
 ): DataRecord {
-  const captured = capturePlainRecord(row, entity.id);
+  const captured = capturePlainRecord(row, entity.id, rejectExecutableToJSON);
   const keys = Object.keys(captured);
   if (keys.length > WIRE_LIMITS.properties)
     throw new TypeError(`Row for ${entity.id} exceeds the bounded field limit.`);
@@ -311,7 +326,14 @@ function captureSourceValue(value: unknown, entityId: string, fieldId: string): 
   return Object.freeze(copy);
 }
 
-function capturePlainRecord(row: unknown, entityId: string): DataRecord {
+function skipExecutableToJSON(key: string, value: unknown, reject: boolean): boolean {
+  if (key !== 'toJSON' || typeof value !== 'function') return false;
+  if (reject)
+    throw new SourceValidationError('data.shape-executable', 'Local rows cannot provide executable toJSON hooks.');
+  return true;
+}
+
+function capturePlainRecord(row: unknown, entityId: string, rejectExecutableToJSON: boolean): DataRecord {
   if (row === null || typeof row !== 'object' || Array.isArray(row))
     throw new TypeError(`Row for ${entityId} must be a plain object.`);
   const prototype = Object.getPrototypeOf(row);
@@ -323,7 +345,7 @@ function capturePlainRecord(row: unknown, entityId: string): DataRecord {
     const descriptor = Object.getOwnPropertyDescriptor(row, key);
     if (descriptor === undefined || !('value' in descriptor))
       throw new TypeError(`Row for ${entityId} contains an accessor field.`);
-    if (key === 'toJSON' && typeof descriptor.value === 'function') continue;
+    if (skipExecutableToJSON(key, descriptor.value, rejectExecutableToJSON)) continue;
     captured[key] = captureSourceValue(descriptor.value, entityId, key) as DataValue;
   }
   return captured;
@@ -388,7 +410,11 @@ function freezeDeep<T>(value: T): T {
   return value;
 }
 
-export function normalizeSnapshot(snapshot: LocalSnapshot, sourceLimits: SourceLimits): StoredSnapshot {
+export function normalizeSnapshot(
+  snapshot: LocalSnapshot,
+  sourceLimits: SourceLimits,
+  options: { readonly rejectExecutableToJSON?: boolean } = {},
+): StoredSnapshot {
   const capturedSnapshot = captureSnapshotInput(snapshot);
   const catalog = catalogForSnapshot(capturedSnapshot.catalog);
   assertSafeId(capturedSnapshot.sourceRevision, 'sourceRevision');
@@ -402,7 +428,7 @@ export function normalizeSnapshot(snapshot: LocalSnapshot, sourceLimits: SourceL
     if (entity === undefined) throw new TypeError(`Rows reference unknown entity ${entityId}.`);
     if (Object.keys(records).length > 0) addCount(budget, 1);
     addBytes(budget, entityId);
-    records[entityId] = normalizeEntityRows(entityId, rows, entity, budget);
+    records[entityId] = normalizeEntityRows(entityId, rows, entity, budget, options.rejectExecutableToJSON === true);
   }
   return Object.freeze({
     catalog: freezeCatalog(catalog),

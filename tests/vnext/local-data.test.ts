@@ -1,10 +1,10 @@
 import { expect, it } from 'vitest';
 import { z } from 'zod';
-import { inferLocalDataShape } from '@aeliqo/core/features';
+import { defineDataFeature, inferLocalDataShape } from '@aeliqo/core/features';
 import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import type { MeaningDefinition } from '@aeliqo/core';
-import { createLocalDataBinding } from '@aeliqo/runtime';
-import type { DataRecord, LocalSnapshot } from '@aeliqo/runtime/data';
+import { createAeliqoRuntime, createLocalDataBinding } from '@aeliqo/runtime';
+import type { DataRecord, LocalDataService, LocalSnapshot } from '@aeliqo/runtime/data';
 import { DEFAULT_BUDGET, createLocalDataService } from '@aeliqo/runtime/data';
 import { createPeopleFixture } from './fixtures/people.js';
 import { createScopeFixture } from './fixtures/scope.js';
@@ -178,6 +178,95 @@ it('rejects a same-revision catalog change as an atomic source conflict', () => 
   });
   expect(f.source.catalog.entities.find((entity) => entity.id === 'people')?.label).toBe('people');
   f.dispose();
+});
+
+it('revalidates the mounted feature schema on every source replacement', async () => {
+  const feature = defineDataFeature({
+    id: 'nullable-people',
+    schema: z.object({ id: z.string(), note: z.string().nullable() }),
+    identity: ['id'],
+  });
+  const snapshot: LocalSnapshot = {
+    catalog: feature.catalog,
+    sourceRevision: 'nullable-source-1',
+    records: { 'nullable-people': [{ id: '1', note: null }] },
+  };
+  const functionRegistry = createQueryFunctionRegistry({ version: '2' });
+  if (!functionRegistry.ok) throw new Error(functionRegistry.diagnostics[0].message);
+  const binding = createLocalDataBinding({
+    feature,
+    snapshot,
+    initialState: { rows: [] as readonly { id: string; note: string | null }[] },
+    coverage: {
+      fields: ['id', 'note'],
+      operators: ['eq'],
+      pagination: 'snapshot',
+      stableOrder: ['id'],
+      sorting: 'stable-fields-only',
+      aggregation: 'unsupported',
+      streaming: 'finite',
+      updates: 'snapshot-replace',
+      unsupported: ['aggregation', 'streaming', 'live-updates'],
+    },
+    normalize: async (events) => {
+      const rows: { id: string; note: string | null }[] = [];
+      for await (const event of events) {
+        if (event.kind === 'batch') rows.push(...(event.rows as { id: string; note: string | null }[]));
+      }
+      return { rows: Object.freeze(rows) };
+    },
+    serviceOptions: {
+      functionRegistry: functionRegistry.value,
+      authorize: ({ context }) =>
+        context.principal === 'local-user'
+          ? { ok: true, value: { scopeDigest: 'nullable-scope', policyRevision: 'nullable-policy' } }
+          : { ok: false, diagnostics: [{ code: 'data.denied', message: 'Denied.', retryable: false }] },
+    },
+  });
+  const runtime = createAeliqoRuntime({
+    runtimeId: 'nullable-runtime',
+    resources: [{ resource: feature.resource, data: binding.service }],
+    authority: {
+      read: () => ({
+        ok: true,
+        value: {
+          principalKey: 'local-user',
+          scopeDigest: 'nullable-scope',
+          policyRevision: 'nullable-policy',
+          experienceRevision: 'nullable-experience',
+          grants: ['catalog.read', 'task.evaluate', 'result.inspect'],
+          readContext: { principal: 'local-user' },
+        },
+      }),
+    },
+  });
+  const scope = runtime.createLocalSurfaceScope({ id: 'nullable-scope', allowedFeatures: [feature.id] });
+  const surface = runtime.createSurface({
+    scope,
+    id: 'nullable-surface',
+    feature,
+    bindings: binding,
+  });
+  await expect(surface.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'committed' });
+  const before = surface.getSnapshot();
+  const rejected = binding.service.replaceSnapshot({
+    catalog: feature.catalog,
+    sourceRevision: 'nullable-source-2',
+    records: { 'nullable-people': [{ id: '1' }] },
+  });
+  expect(rejected).toMatchObject({ ok: false, diagnostics: [{ code: 'data.shape-inconsistent' }] });
+  expect(binding.service.sourceRevision).toBe('nullable-source-1');
+  expect(surface.getSnapshot()).toBe(before);
+  const executable = binding.service.replaceSnapshot({
+    catalog: feature.catalog,
+    sourceRevision: 'nullable-source-3',
+    records: { 'nullable-people': [{ id: '1', note: null, toJSON: () => ({}) }] },
+  } as never);
+  expect(executable).toMatchObject({ ok: false, diagnostics: [{ code: 'data.shape-executable' }] });
+  expect(binding.service.sourceRevision).toBe('nullable-source-1');
+  expect(surface.getSnapshot()).toBe(before);
+  runtime.dispose();
+  scope.dispose();
 });
 
 it('rejects historical source revision replay and bounds revision lifetime', async () => {
@@ -438,6 +527,19 @@ it('captures source descriptor values before validation and never executes row a
     snapshot: { ...f.initialSnapshot, records: { people: [throwingGet] } },
   });
   expect(source.sourceRevision).toBe(f.initialSnapshot.sourceRevision);
+  expect(() =>
+    createLocalDataBinding({
+      feature: f.feature,
+      snapshot: {
+        ...f.initialSnapshot,
+        records: { people: [{ id: 'proxy', name: 'Proxy', team: 'Design', toJSON: () => ({}) }] },
+      } as never,
+      initialState: f.bindings.initialState,
+      coverage: f.bindings.source.coverage,
+      normalize: f.bindings.source.normalize,
+      serviceOptions: { functionRegistry: functions.value },
+    }),
+  ).toThrow(/data\.shape-executable/u);
   const inheritedDecimal = Object.create({
     toJSON: () => {
       throw new Error('toJSON must not run');
@@ -741,6 +843,23 @@ it('rejects callback identities that do not resolve to one real scalar field', (
       getRowId: (row) => (row as { id: string }).id,
     }),
   ).toMatchObject({ ok: false, diagnostics: [{ code: 'data.identity-duplicate' }] });
+  expect(
+    inferLocalDataShape({
+      id: 'mirrored-single',
+      rows: [{ id: 'one', code: 'one' }],
+      getRowId: (row) => (row as { id: string }).id,
+    }),
+  ).toMatchObject({ ok: true, value: { identity: ['id'] } });
+  expect(
+    inferLocalDataShape({
+      id: 'mirrored-rows',
+      rows: [
+        { id: 'one', code: 'one' },
+        { id: 'two', code: 'two' },
+      ],
+      getRowId: (row) => (row as { id: string }).id,
+    }),
+  ).toMatchObject({ ok: true, value: { identity: ['id'] } });
 });
 
 it('reports bounded value and identifier diagnostics without throwing on non-JSON rows', () => {
@@ -1217,35 +1336,105 @@ it('fences a local source change during surface normalization before state publi
   f.dispose();
 });
 
+it('preserves the prior Region when a source changes during a refresh normalization', async () => {
+  const f = createPeopleFixture();
+  const surface = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'normalize-prior',
+    feature: f.feature,
+    bindings: f.bindings,
+  });
+  await expect(surface.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'committed' });
+  const priorSurface = surface.getSnapshot();
+  const priorRuntime = f.runtime.snapshot('surface-1');
+  let started!: () => void;
+  const startedPromise = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  let release!: () => void;
+  f.setNormalizeWaiter(async () => {
+    started();
+    await new Promise<void>((resolveRelease) => {
+      release = resolveRelease;
+    });
+  });
+  const pending = surface.request({ kind: 'browse' });
+  await startedPromise;
+  expect(f.source.replaceSnapshot(f.updatedSnapshot)).toMatchObject({ ok: true });
+  release();
+  await expect(pending).resolves.toMatchObject({ status: 'cancelled', diagnosticCode: 'runtime.render-stale' });
+  expect(surface.getSnapshot()).toBe(priorSurface);
+  expect(f.runtime.snapshot('surface-1')).toBe(priorRuntime);
+  f.dispose();
+});
+
 it('rechecks the source pin at the final synchronous surface publication seam', async () => {
   const f = createPeopleFixture();
-  let armed = false;
   let replaced = false;
   f.setNormalizeWaiter(async () => {
-    armed = true;
-  });
-  const service = new Proxy(f.source, {
-    get: (target, property, receiver) => {
-      if (property === 'sourceRevision' && armed && !replaced) {
-        replaced = true;
-        expect(target.replaceSnapshot(f.updatedSnapshot)).toMatchObject({ ok: true });
-      }
-      return Reflect.get(target, property, receiver);
-    },
-  });
-  const binding = Object.freeze({
-    ...f.bindings,
-    source: Object.freeze({ ...f.bindings.source, service }),
+    if (!replaced) {
+      replaced = true;
+      expect(f.source.replaceSnapshot(f.updatedSnapshot)).toMatchObject({ ok: true });
+    }
   });
   const surface = f.runtime.createSurface({
     scope: f.scope,
     id: 'publication-seam',
     feature: f.feature,
-    bindings: binding,
+    bindings: f.bindings,
   });
   const result = await surface.request({ kind: 'browse' });
   expect(replaced).toBe(true);
   expect(result).toMatchObject({ status: 'cancelled', diagnosticCode: 'runtime.render-stale' });
   expect(surface.getSnapshot().state.rows).toEqual([]);
+  f.dispose();
+});
+
+it('does not publish when normalization disposes the surface before Region commit', async () => {
+  const f = createPeopleFixture();
+  let surface!: ReturnType<typeof f.runtime.createSurface>;
+  let disposeOnNormalize = false;
+  surface = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'publication-dispose',
+    feature: f.feature,
+    bindings: f.bindings,
+  });
+  await expect(surface.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'committed' });
+  disposeOnNormalize = true;
+  f.setNormalizeWaiter(async () => {
+    if (disposeOnNormalize) surface.dispose();
+  });
+  const result = await surface.request({ kind: 'browse' });
+  expect(result.status).not.toBe('committed');
+  expect(surface.getSnapshot().phase).toBe('disposed');
+  expect(f.runtime.snapshot('surface-1')).toBeUndefined();
+  f.dispose();
+});
+
+it('does not inspect sourceRevision on an unbranded custom data service', async () => {
+  const f = createPeopleFixture();
+  let reads = 0;
+  const custom = { ...f.source } as LocalDataService;
+  Object.defineProperty(custom, 'sourceRevision', {
+    configurable: true,
+    get: () => {
+      reads += 1;
+      throw new Error('custom sourceRevision must not be inspected');
+    },
+  });
+  const binding = Object.freeze({
+    ...f.bindings,
+    service: custom,
+    source: Object.freeze({ ...f.bindings.source, service: custom }),
+  });
+  const surface = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'unbranded-source',
+    feature: f.feature,
+    bindings: binding,
+  });
+  await expect(surface.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'committed' });
+  expect(reads).toBe(0);
   f.dispose();
 });

@@ -2,51 +2,17 @@ import type { LocalDataFieldKind, LocalDataShapeField, LocalDataShapeInput } fro
 import type { Diagnostic, Outcome } from '../contracts/types.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
 import { rowObject, validIdentifier } from './local-shape-capture.js';
+import { identityFromRow } from './local-shape-identity.js';
+import { canonicalIdentity, decimal, instant } from './local-shape-scalars.js';
 
 export interface InspectedShape {
   readonly fields: readonly LocalDataShapeField[];
   readonly identity: readonly string[];
 }
 
-interface IdentityValue {
-  readonly value: string;
-  readonly raw?: unknown;
-}
-
 function failure(code: string, message: string, path: readonly (string | number)[] = []): Outcome<never> {
   const diagnostic: Diagnostic = { code, message, path, retryable: false };
   return { ok: false, diagnostics: [diagnostic] };
-}
-
-function decimalObject(value: unknown): object | undefined {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  try {
-    const prototype = Object.getPrototypeOf(value);
-    if (prototype !== Object.prototype && prototype !== null) return undefined;
-    const keys = Reflect.ownKeys(value);
-    if (keys.length !== 1 || keys[0] !== 'decimal') return undefined;
-    return value;
-  } catch {
-    return undefined;
-  }
-}
-
-function decimalText(value: unknown): string | undefined {
-  const decimalValue = decimalObject(value);
-  if (decimalValue === undefined) return undefined;
-  try {
-    const descriptor = Object.getOwnPropertyDescriptor(decimalValue, 'decimal');
-    if (descriptor === undefined || !('value' in descriptor) || typeof descriptor.value !== 'string') return undefined;
-    if (descriptor.value.length > 512 || !/^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(descriptor.value))
-      return undefined;
-    return descriptor.value;
-  } catch {
-    return undefined;
-  }
-}
-
-function decimal(value: unknown): boolean {
-  return decimalText(value) !== undefined;
 }
 
 function kindOf(value: unknown): LocalDataFieldKind | undefined {
@@ -56,95 +22,6 @@ function kindOf(value: unknown): LocalDataFieldKind | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) return Number.isSafeInteger(value) ? 'integer' : 'float';
   if (decimal(value)) return 'decimal';
   return undefined;
-}
-
-function instant(value: string): string | undefined {
-  const parts = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-](\d{2}):(\d{2}))$/u.exec(value);
-  if (parts === null) return undefined;
-  const milliseconds = Date.parse(`${parts[1]}T${parts[2]}:${parts[3]}:${parts[4]}${parts[6]}`);
-  if (!Number.isSafeInteger(milliseconds)) return undefined;
-  return `instant:${milliseconds}:${(parts[5] ?? '').replace(/0+$/u, '')}`;
-}
-
-function canonicalDecimal(value: unknown): string | undefined {
-  const text = decimalText(value);
-  if (text === undefined) return undefined;
-  const negative = text.startsWith('-');
-  const unsigned = negative ? text.slice(1) : text;
-  const [whole, fraction = ''] = unsigned.split('.');
-  const trimmed = fraction.replace(/0+$/u, '');
-  if (whole === '0' && trimmed.length === 0) return 'decimal:0';
-  return `decimal:${negative ? '-' : ''}${whole}${trimmed.length === 0 ? '' : `.${trimmed}`}`;
-}
-
-function canonicalPrimitive(value: unknown, kind?: LocalDataFieldKind): string {
-  if (typeof value === 'number' && Object.is(value, -0)) return `${kind ?? 'number'}:0`;
-  if (typeof value === 'string') return `${kind ?? 'text'}:${value}`;
-  if (typeof value === 'boolean') return `${kind ?? 'boolean'}:${value ? 'true' : 'false'}`;
-  if (typeof value === 'number') return `${kind ?? 'number'}:${String(value)}`;
-  return 'unsupported';
-}
-
-function canonicalIdentity(value: unknown, kind?: LocalDataFieldKind): string {
-  if (kind === 'decimal') {
-    const decimalValue = canonicalDecimal(value);
-    if (decimalValue !== undefined) return decimalValue;
-  }
-  if (kind === 'instant' && typeof value === 'string') return instant(value) ?? `text:${value}`;
-  return canonicalPrimitive(value, kind);
-}
-
-function usableIdentityValue(value: unknown): boolean {
-  return (
-    typeof value === 'string' ||
-    typeof value === 'boolean' ||
-    (typeof value === 'number' && Number.isFinite(value)) ||
-    decimal(value)
-  );
-}
-
-function callbackIdentity(
-  input: LocalDataShapeInput,
-  row: Record<string, unknown>,
-  index: number,
-): Outcome<IdentityValue> {
-  if (input.getRowId === undefined) return { ok: true, value: { value: '' } };
-  try {
-    const value = input.getRowId(row, index);
-    if (value === null || value === undefined || value === '')
-      return failure('data.identity-missing', `Local row ${index} has no usable identity.`);
-    if (!usableIdentityValue(value))
-      return failure('data.identity-ambiguous', `Local row ${index} identity must be a scalar field value.`);
-    return { ok: true, value: { value: canonicalIdentity(value), raw: value } };
-  } catch {
-    return failure('data.identity-missing', `Local row ${index} identity could not be read.`);
-  }
-}
-
-function fieldIdentity(
-  input: LocalDataShapeInput,
-  row: Record<string, unknown>,
-  index: number,
-  fields: ReadonlyMap<string, { readonly kind: LocalDataFieldKind | undefined }>,
-): Outcome<IdentityValue> {
-  if (input.identity === undefined || input.identity.length === 0) return { ok: true, value: { value: '' } };
-  const values: unknown[] = [];
-  for (const field of input.identity) {
-    if (!Object.hasOwn(row, field) || row[field] === null || row[field] === undefined)
-      return failure('data.identity-missing', `Local row ${index} is missing identity field ${field}.`);
-    values.push(canonicalIdentity(row[field], fields.get(field)?.kind));
-  }
-  return { ok: true, value: { value: JSON.stringify(values) } };
-}
-
-function identityFromRow(
-  input: LocalDataShapeInput,
-  row: Record<string, unknown>,
-  index: number,
-  fields: ReadonlyMap<string, { readonly kind: LocalDataFieldKind | undefined }>,
-): Outcome<IdentityValue> {
-  if (input.getRowId !== undefined) return callbackIdentity(input, row, index);
-  return fieldIdentity(input, row, index, fields);
 }
 
 function jsonByteLength(value: unknown): Outcome<number> {
@@ -263,11 +140,13 @@ function inspectShapeRow(
   if (!identity.ok) return identity;
   let identityKey = identity.value.value;
   if (input.getRowId !== undefined && input.identity === undefined) {
-    const matches = [...state.identityCandidates].filter(
+    const matchingCandidates = [...state.identityCandidates].filter(
       (field) =>
         canonicalIdentity(row[field], state.fields.get(field)?.kind) ===
         canonicalIdentity(identity.value.raw, state.fields.get(field)?.kind),
     );
+    const accessed = identity.value.accessed ?? [];
+    const matches = accessed.length === 1 ? matchingCandidates.filter((field) => field === accessed[0]) : [];
     state.identityCandidates.clear();
     for (const field of matches) state.identityCandidates.add(field);
     state.callbackRows.push({ row, index });
@@ -451,7 +330,7 @@ function finishShape(
 ): Outcome<InspectedShape> {
   if (state.fields.size > limits.fields)
     return failure('data.shape-capacity', 'The inferred local shape exceeds its field bound.');
-  const output = [...state.fields.entries()].sort(([left], [right]) => left.localeCompare(right));
+  const output = [...state.fields.entries()].sort(([left], [right]) => compareFieldIds(left, right));
   const fields = finishFields(output);
   if (!fields.ok) return fields;
   const identity = finishIdentity(input, state);
@@ -460,6 +339,12 @@ function finishShape(
     ok: true,
     value: { fields: Object.freeze(fields.value), identity: Object.freeze(identity.value) },
   };
+}
+
+function compareFieldIds(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
 }
 
 function finishFields(

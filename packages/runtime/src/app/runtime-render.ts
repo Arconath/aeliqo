@@ -11,7 +11,7 @@ import type {
   RuntimeRenderReceipt,
 } from './types.js';
 import type { MountedRegion } from './runtime-state.js';
-import { diagnostic, linkedSignal, uniqueRefs } from './runtime-state.js';
+import { diagnostic, linkedSignal, statusFor, uniqueRefs } from './runtime-state.js';
 import type { RuntimeResourceBinding } from './types.js';
 import { readSourceRevisionPin } from '../data/local/source-pin.js';
 
@@ -42,8 +42,19 @@ interface EvaluationOutput {
   readonly evaluation?: TaskEvaluation;
 }
 
+interface RuntimeRenderPreparation {
+  readonly requestId: string;
+  readonly intent: Intent;
+  readonly task: Task;
+  readonly region: RegionSnapshot;
+  readonly outputs: readonly MaterializedTaskOutput[];
+}
+
+export type RuntimeRenderPrepare = (input: RuntimeRenderPreparation) => Promise<Outcome<void>>;
+
 interface RenderRequest {
   readonly slot: MountedRegion;
+  readonly beforeState: MountedRegion['state'];
   readonly sequence: number;
   readonly requestId: string;
   readonly signal: AbortSignal;
@@ -59,12 +70,12 @@ export class RuntimeRenderCoordinator {
     this.host = host;
   }
 
-  async render(input: RuntimeRenderInput): Promise<RuntimeRenderReceipt> {
+  async render(input: RuntimeRenderInput, prepare?: RuntimeRenderPrepare): Promise<RuntimeRenderReceipt> {
     const slot = this.host.getSlot(input.regionId);
     if (slot === undefined) return this.notMounted(input.regionId);
     const request = this.beginRequest(slot, input.signal);
     try {
-      const result = await this.execute(input, request);
+      const result = await this.execute(input, request, prepare);
       return result;
     } catch {
       return this.host.failReceipt(slot, request.sequence, request.requestId, [
@@ -91,6 +102,7 @@ export class RuntimeRenderCoordinator {
     slot.pendingRefs = [];
     const linked = linkedSignal(parent);
     slot.active = linked.controller;
+    const beforeState = slot.state;
     this.host.setState(slot, {
       regionId: slot.regionId,
       resourceId: slot.resourceId,
@@ -104,6 +116,7 @@ export class RuntimeRenderCoordinator {
     });
     return {
       slot,
+      beforeState,
       sequence: slot.sequence,
       requestId,
       signal: linked.controller.signal,
@@ -119,7 +132,11 @@ export class RuntimeRenderCoordinator {
     if (request.slot.active === request.controller) delete request.slot.active;
   }
 
-  private async execute(input: RuntimeRenderInput, request: RenderRequest): Promise<RuntimeRenderReceipt> {
+  private async execute(
+    input: RuntimeRenderInput,
+    request: RenderRequest,
+    prepare?: RuntimeRenderPrepare,
+  ): Promise<RuntimeRenderReceipt> {
     const { slot, sequence, requestId, signal } = request;
     const authority = this.host.preparePrincipal(slot, signal);
     if (!authority.ok) return this.fail(slot, sequence, requestId, authority.diagnostics);
@@ -129,7 +146,7 @@ export class RuntimeRenderCoordinator {
     if (!evaluated.ok) return this.fail(slot, sequence, requestId, evaluated.diagnostics, compiled.value.task);
     if (evaluated.value.evaluation !== undefined) request.evaluation = evaluated.value.evaluation;
     if (this.isCancelled(request)) return this.cancelled(slot, sequence, requestId, compiled.value.task);
-    return this.commitTask(request, compiled.value, evaluated.value.outputs);
+    return this.commitTask(request, compiled.value, evaluated.value.outputs, prepare);
   }
 
   private compile(input: RuntimeRenderInput, slot: MountedRegion, sequence: number): Outcome<CompiledIntent> {
@@ -190,6 +207,7 @@ export class RuntimeRenderCoordinator {
     request: RenderRequest,
     compiled: CompiledIntent,
     outputs: readonly MaterializedTaskOutput[],
+    prepare?: RuntimeRenderPrepare,
   ): Promise<RuntimeRenderReceipt> {
     const { slot, sequence, requestId } = request;
     slot.pendingRefs = outputs.map((output) => output.ref);
@@ -204,6 +222,28 @@ export class RuntimeRenderCoordinator {
         [diagnostic('runtime.region-stale', 'The Region has no active read set.')],
         compiled.task,
       );
+    if (prepare !== undefined) {
+      let prepared: Outcome<void>;
+      try {
+        prepared = await prepare({
+          requestId,
+          intent: compiled.intent,
+          task: compiled.task,
+          region: before,
+          outputs,
+        });
+      } catch {
+        return this.fail(
+          slot,
+          sequence,
+          requestId,
+          [diagnostic('runtime.render-failed', 'The pre-publication data preparation failed.')],
+          compiled.task,
+        );
+      }
+      if (!prepared.ok) return this.rejectPreparation(request, compiled.task, prepared.diagnostics);
+      if (this.isCancelled(request)) return this.cancelled(slot, sequence, requestId, compiled.task);
+    }
     const staged = await region.value.stage({
       requestId,
       expected: before.readSet,
@@ -221,6 +261,17 @@ export class RuntimeRenderCoordinator {
     });
     if (!committed.ok) return this.fail(slot, sequence, requestId, committed.diagnostics, compiled.task);
     return this.publishCommit(slot, requestId, compiled, outputs, committed.value);
+  }
+
+  private rejectPreparation(
+    request: RenderRequest,
+    task: Task,
+    diagnostics: RuntimeRenderReceipt['diagnostics'],
+  ): RuntimeRenderReceipt {
+    const { slot, sequence, requestId } = request;
+    if (slot.sequence !== sequence) return this.cancelled(slot, sequence, requestId, task);
+    this.host.setState(slot, request.beforeState);
+    return { status: statusFor(diagnostics), requestId, regionId: slot.regionId, diagnostics, task };
   }
 
   private ensureRegion(request: RenderRequest, task: Task): RegionOutcome<RegionHandle> {

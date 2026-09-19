@@ -1,9 +1,15 @@
 import type { DataFeatureDefinition } from '@aeliqo/core/features';
 import { inferLocalDataShape } from '@aeliqo/core/features';
+import type { Outcome } from '@aeliqo/core';
 import type { ActionPort } from '../actions/types.js';
 import { createFeatureLocalDataService } from '../data/local.js';
 import type { LocalDataService, LocalDataServiceOptions, LocalSnapshot, ResultEvent } from '../data/types.js';
-import { isSourceCapacityError, normalizeSnapshot, normalizeSourceLimits } from '../data/local/source.js';
+import {
+  isSourceCapacityError,
+  normalizeSnapshot,
+  normalizeSourceLimits,
+  sourceDiagnosticCode,
+} from '../data/local/source.js';
 import { canonical } from '../data/local/shared.js';
 import type { DataServiceCoverage, DataSurfaceBindings, SurfaceReadContext } from './types.js';
 
@@ -36,13 +42,21 @@ function validateFeatureSnapshot(input: CreateLocalDataBindingInput<unknown>): L
   const limits = normalizeSourceLimits(input.serviceOptions?.sourceLimits);
   let snapshot: LocalSnapshot;
   try {
-    snapshot = normalizeSnapshot(input.snapshot, limits);
+    snapshot = normalizeSnapshot(input.snapshot, limits, { rejectExecutableToJSON: true });
   } catch (error) {
-    const code = isSourceCapacityError(error) ? 'data.shape-capacity' : 'data.shape-inconsistent';
+    const code = isSourceCapacityError(error)
+      ? 'data.shape-capacity'
+      : (sourceDiagnosticCode(error) ?? 'data.shape-inconsistent');
     throw new TypeError(`${code}: The local binding snapshot could not be captured safely.`);
   }
   if (canonical(input.feature.catalog) !== canonical(snapshot.catalog))
     throw new TypeError('data.feature-catalog: The local source catalog must match the mounted data feature catalog.');
+  const shape = validateFeatureShape(input, snapshot);
+  if (!shape.ok) throw new TypeError(`${shape.diagnostics[0].code}: ${shape.diagnostics[0].message}`);
+  return snapshot;
+}
+
+function validateFeatureShape(input: CreateLocalDataBindingInput<unknown>, snapshot: LocalSnapshot): Outcome<void> {
   const rows = snapshot.records[input.feature.entity.id] ?? [];
   const shape = inferLocalDataShape({
     id: input.feature.id,
@@ -51,8 +65,8 @@ function validateFeatureSnapshot(input: CreateLocalDataBindingInput<unknown>): L
     identity: input.feature.identity,
     ...(input.serviceOptions?.sourceLimits === undefined ? {} : { limits: input.serviceOptions.sourceLimits }),
   });
-  if (!shape.ok) throw new TypeError(`${shape.diagnostics[0].code}: ${shape.diagnostics[0].message}`);
-  return snapshot;
+  if (!shape.ok) return { ok: false, diagnostics: shape.diagnostics };
+  return { ok: true, value: undefined };
 }
 
 /** Creates the single local DataService lowering used by scoped surfaces. */
@@ -64,6 +78,7 @@ export function createLocalDataBinding<S>(input: CreateLocalDataBindingInput<S>)
       snapshot,
     },
     input.feature.catalog,
+    (next) => validateFeatureShape(input as CreateLocalDataBindingInput<unknown>, next),
   );
   const source = Object.freeze({
     kind: 'data-service' as const,

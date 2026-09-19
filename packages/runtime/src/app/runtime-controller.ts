@@ -24,7 +24,7 @@ import type {
 import { readAuthority } from './runtime-authority.js';
 import { describeResource, resolveTrackedResult } from './runtime-resource.js';
 import { RuntimeRenderCoordinator } from './runtime-render.js';
-import type { RuntimeRenderHost } from './runtime-render.js';
+import type { RuntimeRenderHost, RuntimeRenderPrepare } from './runtime-render.js';
 import { createTrackedResultStore } from './runtime-result-store.js';
 import type { MountedRegion } from './runtime-state.js';
 import { diagnostic, failure, sameAuthority, sameTask, statusFor, uniqueRefs, validId } from './runtime-state.js';
@@ -71,7 +71,7 @@ export class RuntimeController implements RuntimeRenderHost {
     this.surfaceFactory = new RuntimeSurfaceFactory({
       runtimeId: options.runtimeId ?? `runtime-${nextRuntimeId++}`,
       mount: (input, binding) => this.mountSurface(input, binding),
-      render: (input) => this.render(input),
+      render: (input, prepare) => this.render(input, prepare),
       unmount: (regionId) => this.unmount(regionId),
     });
   }
@@ -160,8 +160,8 @@ export class RuntimeController implements RuntimeRenderHost {
     return { ok: true as const, value: state };
   }
 
-  render(input: RuntimeRenderInput): Promise<RuntimeRenderReceipt> {
-    return this.renderer.render(input);
+  render(input: RuntimeRenderInput, prepare?: RuntimeRenderPrepare): Promise<RuntimeRenderReceipt> {
+    return this.renderer.render(input, prepare);
   }
 
   context(regionId: string): Outcome<RuntimeResourceContext> {

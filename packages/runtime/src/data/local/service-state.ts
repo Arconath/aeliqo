@@ -1,6 +1,6 @@
-import type { Catalog, ResultRef } from '@aeliqo/core';
+import type { Catalog, Outcome, ResultRef } from '@aeliqo/core';
 import type { LogicalPlan } from '@aeliqo/core/query';
-import type { LocalDataServiceOptions, MeaningRegistration, PlanAcceptance } from '../types.js';
+import type { LocalDataServiceOptions, LocalSnapshot, MeaningRegistration, PlanAcceptance } from '../types.js';
 import { canonical, isSafePositive } from './shared.js';
 import { normalizeSnapshot, normalizeSourceLimits } from './source.js';
 import type { SourceLimits } from './shared.js';
@@ -29,6 +29,8 @@ export interface LocalDataServiceState {
   readonly maxPlans: number;
   readonly maxSourceRevisions: number;
   readonly revisionHistory: Set<string>;
+  readonly snapshotValidator?: (snapshot: LocalSnapshot) => Outcome<void>;
+  readonly rejectExecutableToJSON: boolean;
   snapshot: StoredSnapshot;
   currentCatalog: Catalog;
   readonly fixedCatalog?: Catalog;
@@ -37,9 +39,11 @@ export interface LocalDataServiceState {
 export function createLocalDataServiceState(
   options: LocalDataServiceOptions,
   fixedCatalogInput?: Catalog,
+  snapshotValidator?: (snapshot: LocalSnapshot) => Outcome<void>,
+  rejectExecutableToJSON = false,
 ): LocalDataServiceState {
   const sourceLimits = normalizeSourceLimits(options.sourceLimits);
-  const snapshot = normalizeSnapshot(options.snapshot, sourceLimits);
+  const snapshot = normalizeSnapshot(options.snapshot, sourceLimits, { rejectExecutableToJSON });
   const fixedCatalog = normalizeFixedCatalog(fixedCatalogInput, snapshot.catalog);
   const planTtlMs = options.planTtlMs ?? DEFAULT_PLAN_TTL_MS;
   const maxPlans = options.maxPlans ?? DEFAULT_MAX_PLANS;
@@ -57,6 +61,8 @@ export function createLocalDataServiceState(
     maxPlans,
     maxSourceRevisions,
     revisionHistory: new Set([snapshot.sourceRevision]),
+    ...(snapshotValidator === undefined ? {} : { snapshotValidator }),
+    rejectExecutableToJSON,
   };
 }
 
