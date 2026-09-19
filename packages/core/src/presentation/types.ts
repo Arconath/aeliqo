@@ -154,6 +154,8 @@ export interface PresentationCompositionRequest {
   readonly preconditions: CommitPreconditions;
   readonly context: PresentationContext;
   readonly candidates?: readonly {
+    /** Optional stable provenance label used in composition receipts and rejections. */
+    readonly id?: string;
     readonly source: 'explicit' | 'pattern';
     readonly pattern?: VersionRef;
     readonly plan: PresentationPlan;
@@ -165,6 +167,8 @@ export interface PresentationCompositionRequest {
 export interface PresentationComposition {
   readonly status: 'composed' | 'search-exhausted' | 'conflict';
   readonly presentation?: ValidatedPresentation;
+  /** Internal deterministic provenance label for the selected composition candidate. */
+  readonly selectedCandidate?: string;
   readonly expansions: number;
   readonly rejected: readonly {
     readonly candidate: string;

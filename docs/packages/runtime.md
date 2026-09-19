@@ -248,11 +248,21 @@ browser-supplied principal, scope, policy, or credential fields.
 `createPresentationAdaptationController` routes each adaptive decision through
 the pure core `resolvePresentation` facade, then retains the runtime's existing
 queue, Region fence, stage/commit, and renderer rollback boundaries. A host may
-supply `PresentationAdaptationContext.target` with its current immutable
-runtime/scope/activation/surface address and `active`, `stale`, or `revoked`
-evidence. Stale or revoked evidence fails before staging or rendering. Legacy
-Region-only callers receive a controller-local active target and remain fenced
-by the Region snapshot and commit read set.
+supply `PresentationAdaptationOptions.target` with an immutable expected
+runtime/scope/activation/surface address and a synchronous `read()` that returns
+current `active`, `stale`, or `revoked` evidence. The controller requires an
+exact five-field address match and reads it again at commit. Stale, revoked, or
+mismatched evidence fails without publication. Legacy Region-only callers
+receive a controller-local active target and remain fenced by the Region
+snapshot and commit read set.
+
+When a host supplies target evidence, its `surfaceId` must identify the
+controller's Region and every address field must match the expected target. A
+mismatched active target is treated as stale and cannot stage or render into
+another Region. Existing adaptation candidate lists do not
+carry resolver IDs, so the adapter assigns collision-free deterministic IDs by
+list position before entering the resolver. A non-empty authored list remains
+complete: rejection does not trigger registry suggestion fallback.
 
 Target evidence is not authority. Hosts must still authorize the scope and
 surface and must not mark an old A-B-A address active. The resolver chooses a

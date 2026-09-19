@@ -3,9 +3,9 @@ import { inspectWire } from '../contracts/ingress.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
 import { diagnosticSchema, idSchema, versionRefSchema } from '../contracts/schemas.js';
 import { compareText, stableJson, versionRefKey } from '../contracts/stable.js';
-import type { Diagnostic, Outcome, PresentationPlan } from '../contracts/types.js';
+import type { Diagnostic, Outcome } from '../contracts/types.js';
 import { composePresentation } from './compose.js';
-import { prepareComposition } from './compose-session.js';
+import { prepareComposition, type CompositionState } from './compose-session.js';
 import { freezePresentation } from './registry.js';
 import type {
   PresentationClarification,
@@ -20,6 +20,9 @@ import type {
 
 const resolverRef = { id: 'aeliqo.presentation.resolver', revision: '1' } as const;
 const choiceLimit = 16;
+const resolverIdSchema = z
+  .string()
+  .check(z.minLength(1), z.maxLength(WIRE_LIMITS.id), z.regex(/^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/u));
 const targetSchema = z.strictObject({
   address: z.strictObject({
     runtimeId: idSchema,
@@ -31,17 +34,17 @@ const targetSchema = z.strictObject({
   state: z.enum(['active', 'stale', 'revoked']),
 });
 const candidateSchema = z.strictObject({
-  id: idSchema,
+  id: resolverIdSchema,
   source: z.enum(['explicit', 'pattern']),
   pattern: z.optional(versionRefSchema),
   plan: z.unknown(),
 });
 const choiceSchema = z.strictObject({
-  id: idSchema,
+  id: resolverIdSchema,
   label: z.string().check(z.minLength(1), z.maxLength(WIRE_LIMITS.label)),
 });
 const clarificationSchema = z.strictObject({
-  kind: idSchema,
+  kind: z.enum(['measure', 'time']),
   diagnostic: diagnosticSchema,
   choices: z.array(choiceSchema).check(z.minLength(1), z.maxLength(choiceLimit)),
 });
@@ -49,7 +52,7 @@ const clarificationSchema = z.strictObject({
 type OwnedCandidate = PresentationResolverCandidate;
 
 function diagnostic(code: string): Diagnostic {
-  return freezePresentation({ code, message: 'Presentation resolution is unsupported.', retryable: false });
+  return freezePresentation({ code, message: 'Presentation unsupported.', retryable: false });
 }
 
 function unsupported(
@@ -110,10 +113,48 @@ function parseClarification(input: unknown): PresentationClarification | undefin
     kind: clarification.kind,
     diagnostic: {
       code: clarification.diagnostic.code,
-      message: 'Additional semantic input is required.',
+      message: 'Semantic input is required.',
       retryable: clarification.diagnostic.retryable,
     },
     choices,
+  });
+}
+
+function authorizedClarification(
+  clarification: PresentationClarification,
+  prepared: CompositionState,
+): PresentationClarification | undefined {
+  const kind = clarification.kind;
+  const expectedCode = `presentation.ambiguous-${kind}`;
+  const recipeCode = `web.recipe.needs-input.${kind}`;
+  if (clarification.diagnostic.code !== expectedCode && clarification.diagnostic.code !== recipeCode) return undefined;
+  const allowed = new Set(
+    prepared.prepared.results.flatMap((result) =>
+      result.fields
+        .filter((field) =>
+          kind === 'time'
+            ? field.type.value === 'date' || field.type.value === 'instant'
+            : field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value),
+        )
+        .map((field) => field.id),
+    ),
+  );
+  if (clarification.choices.some((choice) => !allowed.has(choice.id))) return undefined;
+  return clarification;
+}
+
+function clarificationDecision(
+  clarification: PresentationClarification | undefined,
+  prepared: CompositionState,
+): PresentationDecision | undefined {
+  if (clarification === undefined) return undefined;
+  const authorized = authorizedClarification(clarification, prepared);
+  if (authorized === undefined) return unsupported('presentation.clarification');
+  return freezePresentation({
+    status: 'needs-input',
+    diagnostic: authorized.diagnostic,
+    choices: authorized.choices,
+    reasons: reasonsFor([authorized.diagnostic]),
   });
 }
 
@@ -151,40 +192,24 @@ function unsupportedDiagnostic(
   return status === 'search-exhausted' ? 'presentation.search-exhausted' : 'presentation.unsupported';
 }
 
-function selectedCandidate(
-  plan: PresentationPlan,
-  candidates: readonly OwnedCandidate[],
-  id: string,
-  revision: string,
-  preconditions: PresentationResolverInput['preconditions'],
-): string {
-  const key = stableJson(plan);
-  const match = candidates.find((candidate) => stableJson({ ...candidate.plan, id, revision, preconditions }) === key);
-  return match?.id ?? 'registered';
+function candidateId(label: string | undefined, candidates: readonly OwnedCandidate[]): string {
+  if (label === undefined) return 'registered';
+  if (candidates.some((candidate) => candidate.id === label)) return label;
+  const match = /^candidate\.(\d+)$/u.exec(label);
+  if (match === null) return 'registered';
+  return candidates[Number(match[1])]?.id ?? 'registered';
 }
 
 function compositionCandidate(
   candidate: OwnedCandidate,
 ): NonNullable<PresentationCompositionRequest['candidates']>[number] {
   return candidate.pattern === undefined
-    ? { source: candidate.source, plan: candidate.plan }
-    : { source: candidate.source, pattern: candidate.pattern, plan: candidate.plan };
+    ? { id: candidate.id, source: candidate.source, plan: candidate.plan }
+    : { id: candidate.id, source: candidate.source, pattern: candidate.pattern, plan: candidate.plan };
 }
 
-function explicitPin(context: PresentationResolverInput['context']): boolean {
-  try {
-    return context.task.viewPreference?.strength === 'explicit';
-  } catch {
-    return false;
-  }
-}
-
-function withPinReason(
-  reasons: readonly PresentationReason[],
-  context: PresentationResolverInput['context'],
-): readonly PresentationReason[] {
-  if (!explicitPin(context) || reasons.some((reason) => reason.code === 'presentation.pin-incompatible'))
-    return reasons;
+function withPinReason(reasons: readonly PresentationReason[], hasPinConflict: boolean): readonly PresentationReason[] {
+  if (!hasPinConflict || reasons.some((reason) => reason.code === 'presentation.pin-incompatible')) return reasons;
   return freezePresentation(
     [...reasons, { code: 'presentation.pin-incompatible' }].sort((left, right) =>
       compareText(left.code + '\u0000' + (left.candidate ?? ''), right.code + '\u0000' + (right.candidate ?? '')),
@@ -194,9 +219,9 @@ function withPinReason(
 
 function compositionFailure(
   outcome: Extract<Outcome<unknown>, { readonly ok: false }>,
-  context: PresentationResolverInput['context'],
+  hasPinConflict = false,
 ): PresentationDecision {
-  const reasons = withPinReason(reasonsFor(outcome.diagnostics), context);
+  const reasons = withPinReason(reasonsFor(outcome.diagnostics), hasPinConflict);
   return freezePresentation({
     status: 'unsupported',
     diagnostic: diagnostic(outcome.diagnostics[0]!.code),
@@ -243,17 +268,16 @@ export function resolvePresentation(input: PresentationResolverInput): Presentat
   const ingress = resolverIngress(input);
   if (!ingress.ok) return ingress.decision;
   const prepared = prepareComposition(ingress.request, input.registry);
-  if (!prepared.ok) return compositionFailure(prepared, input.context);
-  if (ingress.clarification !== undefined)
-    return freezePresentation({
-      status: 'needs-input',
-      diagnostic: ingress.clarification.diagnostic,
-      choices: ingress.clarification.choices,
-      reasons: reasonsFor([ingress.clarification.diagnostic]),
-    });
+  if (!prepared.ok)
+    return compositionFailure(
+      prepared,
+      prepared.diagnostics.some((item) => item.code === 'experience.representation-conflict'),
+    );
+  const clarification = clarificationDecision(ingress.clarification, prepared.value);
+  if (clarification !== undefined) return clarification;
 
   const composition = composePresentation(ingress.request, input.registry);
-  if (!composition.ok) return compositionFailure(composition, input.context);
+  if (!composition.ok) return compositionFailure(composition);
   const rejections = rejectionsFor(composition.value.rejected, ingress.candidates);
   const rejectionReasons = freezePresentation(
     rejections.flatMap((rejection) => rejection.codes.map((code) => ({ code, candidate: rejection.candidate }))),
@@ -263,7 +287,10 @@ export function resolvePresentation(input: PresentationResolverInput): Presentat
       status: 'unsupported',
       diagnostic: diagnostic(unsupportedDiagnostic(rejections, composition.value.status)),
       rejections,
-      reasons: withPinReason(rejectionReasons, input.context),
+      reasons: withPinReason(
+        rejectionReasons,
+        prepared.value.prepared.constraints.task.viewPreference?.strength === 'explicit',
+      ),
     });
   const pins = prepared.value.requestPins;
   return freezePresentation({
@@ -273,13 +300,7 @@ export function resolvePresentation(input: PresentationResolverInput): Presentat
     receipt: {
       resolver: resolverRef,
       request: { id: prepared.value.id, revision: prepared.value.revision },
-      selectedCandidate: selectedCandidate(
-        composition.value.presentation.plan,
-        ingress.candidates,
-        prepared.value.id,
-        prepared.value.revision,
-        pins,
-      ),
+      selectedCandidate: candidateId(composition.value.selectedCandidate, ingress.candidates),
       examinedCandidates: composition.value.expansions,
       pins: {
         taskRevision: pins.taskRevision,
@@ -288,7 +309,10 @@ export function resolvePresentation(input: PresentationResolverInput): Presentat
         functionRegistryDigest: pins.functionRegistryDigest,
         policyRevision: pins.policyRevision,
       },
-      rules: explicitPin(input.context) ? ['task.viewPreference.explicit'] : [],
+      rules:
+        prepared.value.prepared.constraints.task.viewPreference?.strength === 'explicit'
+          ? ['task.viewPreference.explicit']
+          : [],
     },
   });
 }

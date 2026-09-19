@@ -175,6 +175,7 @@ export interface AeliqoRegionAdaptationOptions {
   readonly element: AeliqoRegionElement;
   readonly region: RegionHandle;
   readonly registry: Parameters<typeof createPresentationAdaptationController>[0]['registry'];
+  readonly target?: Parameters<typeof createPresentationAdaptationController>[0]['target'];
   readonly baseContext: PresentationAdaptationContextSource;
   readonly readContext?: PresentationAdaptationContextSource;
   readonly renderer?: RuntimePresentationRenderer;
@@ -421,6 +422,7 @@ function createAdaptationController(
   return createPresentationAdaptationController({
     region: options.region,
     registry: options.registry,
+    ...(options.target === undefined ? {} : { target: options.target }),
     baseContext: options.baseContext,
     ...(readContext === undefined ? {} : { readContext }),
     renderer,

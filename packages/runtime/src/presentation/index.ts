@@ -8,6 +8,7 @@ export type {
   PresentationAdaptationRequestOptions,
   PresentationAdaptationResult,
   PresentationAdaptationStatus,
+  PresentationAdaptationTarget,
 } from './adaptation.js';
 export {
   createCallbackPresentationRenderer,

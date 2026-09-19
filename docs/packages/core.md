@@ -213,6 +213,14 @@ stable IDs as the tie-breaker. Inputs and outputs are normalized and bounded;
 candidate work is capped, and exhaustion returns `unsupported` rather than a
 truncated ready result.
 
+Every resolver candidate must have a unique stable `id`; that ID is preserved
+in ready receipts and rejection explanations, including candidates expanded by
+a registered pattern. The lower-level composition request also accepts an
+optional candidate `id` for provenance. Resolver calls with authored candidates
+evaluate that complete list only. Registry suggestion search is used only when
+the resolver candidate list is empty, so a rejected authored plan cannot be
+silently replaced by an unrelated registered suggestion.
+
 An `explicit` task view preference is a hard compatibility gate. An unknown,
 disallowed, stale, or incompatible explicit view returns `unsupported` rather
 than silently selecting an alternative. A `preferred` view is only a ranking

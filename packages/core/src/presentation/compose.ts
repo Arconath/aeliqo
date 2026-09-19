@@ -64,7 +64,7 @@ function validateCandidate(
     reject(state, label, checked.diagnostics);
     return false;
   }
-  consider(state, checked.value, candidateIsIncumbent);
+  consider(state, checked.value, candidateIsIncumbent, label);
   return true;
 }
 
@@ -80,10 +80,6 @@ function contextHasRenderer(capabilities: readonly VersionRef[], ref: VersionRef
   } catch {
     return false;
   }
-}
-
-function patternLabel(candidate: CompositionCandidate): string {
-  return 'pattern.' + candidate.pattern!.id;
 }
 
 function expandPattern(state: CompositionState, pattern: PresentationPatternManifest): Outcome<unknown> {
@@ -103,11 +99,10 @@ function expandPattern(state: CompositionState, pattern: PresentationPatternMani
 
 function processPatternCandidate(
   state: CompositionState,
-  candidate: CompositionCandidate,
   pattern: PresentationPatternManifest | undefined,
+  label: string,
 ): void {
   if (!spend(state)) return;
-  const label = patternLabel(candidate);
   if (pattern === undefined) {
     reject(state, label, [
       { code: 'presentation.pattern', message: 'The registered pattern is unavailable.', retryable: false },
@@ -134,16 +129,17 @@ function processCandidate(state: CompositionState, input: unknown, index: number
     return;
   }
   const candidate = input as CompositionCandidate;
+  const candidateIndex = candidate.id ?? 'candidate.' + index;
   const pattern = validPattern(candidate, state.registry.patterns ?? [], state.prepared);
   if (!pattern.ok) {
-    reject(state, 'candidate.' + index, pattern.diagnostics);
+    reject(state, candidateIndex, pattern.diagnostics);
     return;
   }
   if (candidate.source === 'pattern') {
-    processPatternCandidate(state, candidate, pattern.value);
+    processPatternCandidate(state, pattern.value, candidate.id ?? 'pattern.' + candidate.pattern!.id);
     return;
   }
-  validateCandidate(state, candidate.plan, 'candidate.' + index, {}, false, false, true);
+  validateCandidate(state, candidate.plan, candidateIndex, {}, false, false, true);
 }
 
 function processExplicitCandidates(state: CompositionState): void {
@@ -327,6 +323,7 @@ function finishAtExpansionLimit(state: CompositionState): Outcome<PresentationCo
     value: freezePresentation({
       status: 'search-exhausted',
       ...(presentation === undefined ? {} : { presentation }),
+      ...(state.best === undefined ? {} : { selectedCandidate: state.best.label }),
       expansions: state.expansions,
       rejected: state.rejected,
     }),
@@ -342,6 +339,7 @@ function finishComposition(state: CompositionState): Outcome<PresentationComposi
     value: freezePresentation({
       status,
       ...(presentation === undefined ? {} : { presentation }),
+      ...(state.best === undefined ? {} : { selectedCandidate: state.best.label }),
       expansions: state.expansions,
       rejected: state.rejected,
     }),

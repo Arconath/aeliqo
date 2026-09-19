@@ -1,4 +1,8 @@
-import { resolvePresentation } from '../../packages/core/src/presentation/index.js';
+import {
+  createPresentationRegistry,
+  resolvePresentation,
+  type PresentationPatternManifest,
+} from '../../packages/core/src/presentation/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { presentationPlan } from '../contracts/fixtures.js';
 import {
@@ -13,6 +17,20 @@ import {
 } from './fixtures/presentation.js';
 
 describe('resolvePresentation', () => {
+  function patternRegistry(
+    expand: PresentationPatternManifest['expand'],
+    matches: PresentationPatternManifest['matches'],
+  ) {
+    const pattern: PresentationPatternManifest = {
+      ref: { id: 'preset.authored', revision: '1' },
+      expand,
+      matches,
+    };
+    const installed = createPresentationRegistry([manifest(tableRef), manifest(listRef)], [], [pattern]);
+    if (!installed.ok) throw new Error(JSON.stringify(installed.diagnostics));
+    return { installed: installed.value, pattern };
+  }
+
   it('returns one frozen ready plan through the shared validator', () => {
     const decision = resolvePresentation(fixture());
 
@@ -68,8 +86,23 @@ describe('resolvePresentation', () => {
   });
 
   it('returns only an explicit bounded clarification for semantic ambiguity', () => {
+    const ordinary = context();
+    const authorizedResult = ordinary.results[0]!;
     const decision = resolvePresentation(
       fixture({
+        context: {
+          ...ordinary,
+          results: [
+            {
+              ...authorizedResult,
+              fields: [
+                ...authorizedResult.fields,
+                { id: 'profit', label: 'Profit', type: { value: 'decimal', nullable: false }, role: 'measure' },
+                { id: 'revenue', label: 'Revenue', type: { value: 'decimal', nullable: false }, role: 'measure' },
+              ],
+            },
+          ],
+        },
         clarification: {
           kind: 'measure',
           diagnostic: { code: 'presentation.ambiguous-measure', message: 'Choose a measure.', retryable: false },
@@ -83,13 +116,37 @@ describe('resolvePresentation', () => {
 
     expect(decision).toMatchObject({
       status: 'needs-input',
-      diagnostic: { message: 'Additional semantic input is required.' },
+      diagnostic: { message: 'Semantic input is required.' },
       choices: [
         { id: 'profit', label: 'profit' },
         { id: 'revenue', label: 'revenue' },
       ],
     });
     expect(JSON.stringify(decision)).not.toMatch(/secret|cookie|script/u);
+  });
+
+  it('rejects untrusted resolver identifiers and unrelated clarification metadata without reflecting them', () => {
+    const candidateSecret = 'https://secret.invalid/<script>';
+    const choiceSecret = 'bearer-private-choice';
+    const unsafeCandidate = resolvePresentation(
+      fixture({ candidates: [{ ...candidate('safe'), id: candidateSecret }] }),
+    );
+    const unrelatedChoice = resolvePresentation(
+      fixture({
+        clarification: {
+          kind: 'measure',
+          diagnostic: { code: 'presentation.ambiguous-measure', message: 'secret', retryable: false },
+          choices: [{ id: choiceSecret, label: choiceSecret }],
+        },
+      }),
+    );
+
+    expect(unsafeCandidate).toMatchObject({ status: 'unsupported', diagnostic: { code: 'presentation.candidates' } });
+    expect(unrelatedChoice).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.clarification' },
+    });
+    expect(JSON.stringify([unsafeCandidate, unrelatedChoice])).not.toMatch(/secret|script|bearer/u);
   });
 
   it('applies eligibility before quality ranking', () => {
@@ -130,7 +187,7 @@ describe('resolvePresentation', () => {
     for (const decision of [disallowed, stale, inactive, revoked]) expect(decision.status).toBe('unsupported');
   });
 
-  it('does not replace an authored rejected candidate with a registry suggestion', () => {
+  it('deliberately does not silently fall back to a registry suggestion after an authored candidate is rejected', () => {
     const suggestible = { ...manifest(tableRef), suggestConfig: () => ({ ok: true as const, value: {} }) };
     const rejected = resolvePresentation(
       fixture({
@@ -140,8 +197,85 @@ describe('resolvePresentation', () => {
     );
     const generated = resolvePresentation(fixture({ registry: registry([suggestible]), candidates: [] }));
 
-    expect(rejected).toMatchObject({ status: 'unsupported', diagnostic: { code: 'presentation.renderer' } });
-    expect(generated.status).toBe('ready');
+    expect(rejected).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.renderer' },
+      rejections: [{ candidate: 'unknown', codes: ['presentation.renderer'] }],
+      reasons: [{ candidate: 'unknown', code: 'presentation.renderer' }],
+    });
+    expect(generated).toMatchObject({ status: 'ready', receipt: { selectedCandidate: 'registered' } });
+  });
+
+  it('preserves the supplied ID when an authored pattern candidate is accepted', () => {
+    const expanded = candidate('expanded', tableRef).plan;
+    const { installed, pattern } = patternRegistry(
+      () => ({ ok: true, value: expanded }),
+      () => true,
+    );
+    const ordinary = context();
+    const decision = resolvePresentation(
+      fixture({
+        registry: installed,
+        context: {
+          ...ordinary,
+          experience: {
+            ...ordinary.experience,
+            allowedPatterns: [pattern.ref.id],
+            composition: { ...ordinary.experience.composition, allowWithoutPreset: false },
+          },
+        },
+        candidates: [
+          {
+            id: 'authored-pattern-choice',
+            source: 'pattern',
+            pattern: pattern.ref,
+            plan: candidate('placeholder').plan,
+          },
+        ],
+      }),
+    );
+
+    expect(decision).toMatchObject({
+      status: 'ready',
+      receipt: { selectedCandidate: 'authored-pattern-choice' },
+    });
+  });
+
+  it('maps a rejected authored pattern to its supplied ID rather than an internal index', () => {
+    const expanded = candidate('expanded', tableRef).plan;
+    const { installed, pattern } = patternRegistry(
+      () => ({ ok: true, value: expanded }),
+      () => false,
+    );
+    const ordinary = context();
+    const decision = resolvePresentation(
+      fixture({
+        registry: installed,
+        context: {
+          ...ordinary,
+          experience: {
+            ...ordinary.experience,
+            allowedPatterns: [pattern.ref.id],
+            composition: { ...ordinary.experience.composition, allowWithoutPreset: false },
+          },
+        },
+        candidates: [
+          {
+            id: 'authored-pattern-rejected',
+            source: 'pattern',
+            pattern: pattern.ref,
+            plan: candidate('placeholder').plan,
+          },
+        ],
+      }),
+    );
+
+    expect(decision).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.pattern-required' },
+      rejections: [{ candidate: 'authored-pattern-rejected', codes: ['presentation.pattern-required'] }],
+      reasons: [{ code: 'presentation.pattern-required', candidate: 'authored-pattern-rejected' }],
+    });
   });
 
   it('honors a compatible hard pin and does not fall through from an incompatible pin', () => {
@@ -172,6 +306,31 @@ describe('resolvePresentation', () => {
       status: 'unsupported',
       reasons: expect.arrayContaining([{ code: 'presentation.pin-incompatible' }]),
     });
+  });
+
+  it('does not label unrelated stale or preparation failures as pin-incompatible', () => {
+    const ordinary = context();
+    const pinned = {
+      ...ordinary,
+      task: { ...ordinary.task, viewPreference: { representation: tableRef.id, strength: 'explicit' as const } },
+    };
+    const stale = resolvePresentation(
+      fixture({
+        context: pinned,
+        preconditions: { ...presentationPlan.preconditions, catalogRevision: 'catalog-old' },
+      }),
+    );
+    const mismatchedCurrent = resolvePresentation(
+      fixture({
+        context: { ...pinned, current: { ...pinned.current, regionRevision: 'region-new' } },
+      }),
+    );
+
+    expect(stale).toMatchObject({ status: 'unsupported', diagnostic: { code: 'commit.stale' } });
+    expect(mismatchedCurrent).toMatchObject({ status: 'unsupported', diagnostic: { code: 'commit.stale' } });
+    for (const decision of [stale, mismatchedCurrent]) {
+      expect(decision.reasons).not.toContainEqual({ code: 'presentation.pin-incompatible' });
+    }
   });
 
   it('treats a soft preference as ranking input without bypassing renderer eligibility', () => {

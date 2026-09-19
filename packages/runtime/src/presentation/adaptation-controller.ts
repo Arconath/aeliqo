@@ -232,7 +232,7 @@ class PresentationAdaptationControllerImpl implements PresentationAdaptationCont
       preconditions: semanticReadSet(stage.readSet),
       context: stage.context,
       registry: this.options.registry,
-      target: resolverTarget(before, stage.refreshed.target),
+      target: resolverTarget(before, this.options.target),
       candidates: resolverCandidates(stage.refreshed.candidates),
     });
     if (decision.status !== 'ready') return composeDone({ ok: false, diagnostics: [decision.diagnostic] });
@@ -413,6 +413,8 @@ class PresentationAdaptationControllerImpl implements PresentationAdaptationCont
         'runtime.presentation-transition-blocked',
         'The presentation transition is blocked by an active interaction.',
       );
+    if (resolverTarget(before, this.options.target).state !== 'active')
+      return adaptationFailure('presentation.target-inactive', 'The presentation target is inactive.');
     if (!sameSnapshot(before, this.options.region.snapshot()))
       return adaptationFailure(
         'runtime.presentation-stale',

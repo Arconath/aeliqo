@@ -31,6 +31,7 @@ interface RankedCandidate {
   readonly presentation: ValidatedPresentation;
   readonly score: number;
   readonly incumbent: boolean;
+  readonly label: string;
 }
 
 export interface CompositionState {
@@ -136,11 +137,17 @@ export function reject(state: CompositionState, candidate: string, diagnostics: 
   state.rejected.push({ candidate, diagnostics });
 }
 
-export function consider(state: CompositionState, presentation: ValidatedPresentation, incumbent: boolean): void {
+export function consider(
+  state: CompositionState,
+  presentation: ValidatedPresentation,
+  incumbent: boolean,
+  label: string,
+): void {
   const next: RankedCandidate = {
     presentation,
     score: candidateScore(presentation, state.prepared, state.request.context.incumbent),
     incumbent,
+    label,
   };
   if (betterCandidate(next, state.best, state.canonicalCache)) state.best = next;
 }

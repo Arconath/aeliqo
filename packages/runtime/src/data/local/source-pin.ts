@@ -11,10 +11,9 @@ export function brandLocalDataService<T extends object>(service: T, readRevision
 }
 
 export function readSourceRevisionPin(data: DataService): SourceRevisionPin {
+  const read = data !== null && typeof data === 'object' ? LOCAL_DATA_SERVICE_READERS.get(data) : undefined;
+  if (read === undefined) return { kind: 'absent' };
   try {
-    if (data === null || typeof data !== 'object') return { kind: 'absent' };
-    const read = LOCAL_DATA_SERVICE_READERS.get(data);
-    if (read === undefined) return { kind: 'absent' };
     const value = read();
     return typeof value === 'string' && value.length > 0 ? { kind: 'current', value } : { kind: 'invalid' };
   } catch {
