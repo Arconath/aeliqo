@@ -10,6 +10,8 @@
     "playground:local": "pnpm site:build && pnpm --dir apps/site start",
     "check": "python3 scripts/quality.py",
     "test:release-tooling": "node --test tests/release/*.test.mjs",
+    "test:vnext": "pnpm build:runtime && vitest run --config tests/vnext/vitest.config.mjs && tsc -p tests/vnext/tsconfig.json --noEmit",
+    "test:vnext:browser": "pnpm build:platform && playwright test --config tests/vnext/playwright.config.mjs",
     "test:package-notices": "node tests/consumers/public-package-notices.mjs",
     "knip": "knip",
     "release:registry-check": "node scripts/release/check-registry-availability.mjs",

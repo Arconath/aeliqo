@@ -7,6 +7,11 @@
       "timeoutSeconds": 120
     },
     {
+      "kind": "unit",
+      "argv": ["pnpm", "test:vnext"],
+      "timeoutSeconds": 180
+    },
+    {
       "kind": "packages",
       "argv": ["pnpm", "test:package-notices"],
       "timeoutSeconds": 600
