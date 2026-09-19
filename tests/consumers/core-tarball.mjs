@@ -824,7 +824,7 @@ function runInstalledInteractionGraph(validateInteractionGraph, parseInteraction
 }
 const graphConsumerSource = runInstalledInteractionGraph.toString();
 
-function runInstalledPresentation(createPresentationRegistry, documents, current) {
+function runInstalledPresentation(createPresentationRegistry, documents, current, resolve) {
   const operation = { id: 'read', revision: '1' };
   const resultDescriptor = { ...documents.result, fields: documents.catalog.entities[0].fields };
   const manifest = (id, container) => ({
@@ -899,9 +899,54 @@ function runInstalledPresentation(createPresentationRegistry, documents, current
     ).ok
   )
     throw new Error('Installed presentation accepted stale state');
-  return { noPreset: true, unknownSSR: true, coverageChecked: true, staleRejected: true };
+  const resolver =
+    resolve === undefined ? undefined : runInstalledPresentationResolver(resolve, context, registered.value, current);
+  return {
+    noPreset: true,
+    unknownSSR: true,
+    coverageChecked: true,
+    staleRejected: true,
+    ...(resolver === undefined ? {} : resolver),
+  };
+}
+
+function runInstalledPresentationResolver(resolve, context, registry, current) {
+  const target = {
+    address: {
+      runtimeId: 'installed-runtime',
+      scopeInstanceId: 'installed-scope',
+      activationEpoch: 1,
+      surfaceId: 'installed-surface',
+      surfaceGeneration: 1,
+    },
+    state: 'active',
+  };
+  const resolved = resolve({
+    id: 'installed-resolver',
+    revision: '1',
+    preconditions: current,
+    context,
+    registry,
+    target,
+    candidates: [],
+  });
+  if (resolved.status !== 'ready' || !Object.isFrozen(resolved.plan.plan))
+    throw new Error('Installed presentation resolver did not return a validated ready plan');
+  const inactive = resolve({
+    id: 'installed-resolver-inactive',
+    revision: '1',
+    preconditions: current,
+    context,
+    registry,
+    target: { ...target, state: 'stale' },
+    candidates: [],
+  });
+  if (inactive.status !== 'unsupported' || inactive.diagnostic.code !== 'presentation.target-inactive')
+    throw new Error('Installed presentation resolver accepted inactive target evidence');
+  return { resolverReady: true, inactiveTargetRejected: true };
 }
 const presentationConsumerSource = runInstalledPresentation.toString();
+const presentationResolverConsumerSource = runInstalledPresentationResolver.toString();
 
 function runInstalledAgentContracts(parseContract, serializeContract, compareScalars, resultRef) {
   const type = { value: 'decimal', nullable: false };
@@ -952,6 +997,7 @@ import {
 } from '@aeliqo/core';
 import {
   composePresentation,
+  resolvePresentation,
   validatePresentationPlan,
   createPresentationRegistry,
 } from '@aeliqo/core/presentation';
@@ -1299,6 +1345,7 @@ import {
 import {
   createPresentationRegistry,
   composePresentation,
+  resolvePresentation,
   validatePresentationPlan,
 } from '@aeliqo/core/presentation';
 import {
@@ -1620,9 +1667,16 @@ assert.equal(runInstalledInteractionGraph(validateInteractionGraph,
   parseInteractionState).selectionEquivalence,
   true);
 ${presentationConsumerSource}
-assert.equal(runInstalledPresentation(createPresentationRegistry,
+${presentationResolverConsumerSource}
+const installedPresentation = runInstalledPresentation(createPresentationRegistry,
   documents,
-  commitPins).noPreset,
+  commitPins,
+  resolvePresentation);
+assert.equal(installedPresentation.noPreset,
+  true);
+assert.equal(installedPresentation.resolverReady,
+  true);
+assert.equal(installedPresentation.inactiveTargetRejected,
   true);
 ${agentConsumerSource}
 assert.equal(runInstalledAgentContracts(parseContract,

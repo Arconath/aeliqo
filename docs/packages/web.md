@@ -32,11 +32,12 @@ Registration is explicit so server module evaluation does not touch
 ## Adaptive recipe policy
 
 The application facade derives a presentation policy from each mounted
-resource's `presentation.allowedViews`. Standard recipes choose only canonical
-representations permitted by that policy, and final plan validation applies the
-same restriction to custom recipes. For example, a resource that allows only
-`table` stays in `data.table` even when a narrow container would normally favor
-cards.
+resource's `presentation.allowedViews`. Standard recipes author deterministic
+canonical candidates and configurations; the shared core resolver performs the
+single eligibility and ranking decision before any runtime or renderer commit.
+The same validation applies to custom recipe candidates. For example, a
+resource that allows only `table` stays in `data.table` even when a narrow
+container would otherwise make cards more suitable.
 
 Direct recipe consumers can pass the optional policy explicitly:
 
@@ -68,6 +69,10 @@ requested result fields. It prefers a field with the semantic `time` role and
 requires exactly one requested numeric `measure`. Multiple eligible time or
 measure fields return a `web.recipe.needs-input.*` diagnostic so the application
 can ask for a choice instead of plotting an arbitrary numeric field.
+An explicit view pin is a hard gate and never falls through to another recipe
+candidate. A preferred view remains a ranking input and may fall back only to a
+fully eligible candidate. Direct `RecipeDefinition.build` calls remain a
+source-compatible candidate-authoring API; they are not a commit decision.
 
 ## Component entry points
 

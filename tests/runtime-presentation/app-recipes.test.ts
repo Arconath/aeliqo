@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defineResource, type Intent, type Result, type Task } from '../../packages/core/src/index.js';
 import {
+  resolvePresentation,
   validatePresentationPlan,
   type PresentationEnvironment,
   type ValidatedPresentation,
@@ -9,6 +10,7 @@ import type { AeliqoRuntime, RuntimeCommittedReceipt } from '../../packages/runt
 import { html } from 'lit';
 import * as z from 'zod';
 import { defineView, standardDataRecipe, standardFormRecipe } from '../../packages/web/src/recipes/index.js';
+import { standardRecipeCandidates } from '../../packages/web/src/recipes/standard.js';
 import {
   experience,
   presentationPolicy,
@@ -202,13 +204,99 @@ function trendInput(requestedMeasures: readonly [string, ...string[]]) {
     intent,
     task,
     result: trendResult,
-    current,
+    current: { ...current, results: [trendResult.ref] },
     environment: environment(800),
     availableViews: [],
   };
 }
 
+function resolveStandard(context: ReturnType<typeof input> | ReturnType<typeof trendInput>) {
+  if (context.result === undefined) throw new Error('Expected a materialized standard result.');
+  const row = Object.fromEntries(
+    context.result.fields.map((field) => [
+      field.id,
+      field.type.value === 'date'
+        ? '2026-01-01'
+        : field.type.value === 'decimal'
+          ? { decimal: '1' }
+          : ['integer', 'float'].includes(field.type.value)
+            ? 1
+            : field.id,
+    ]),
+  );
+  const registry = createAeliqoPresentationRegistry({
+    data: [{ result: context.result, rows: [row] }],
+    resolveEntity: () => 'people',
+  });
+  expect(registry.ok).toBe(true);
+  if (!registry.ok) throw new Error('Expected the standard presentation registry.');
+  const authored = standardRecipeCandidates(context as unknown as Parameters<typeof standardRecipeCandidates>[0]);
+  expect(authored.ok).toBe(true);
+  if (!authored.ok) throw new Error('Expected standard candidates.');
+  return resolvePresentation({
+    id: 'web-test',
+    revision: context.task.revision,
+    preconditions: context.current,
+    context: {
+      task: context.task,
+      experience: experience(registry.value, context.current.experienceRevision),
+      results: [context.result],
+      current: context.current,
+      environment: context.environment,
+      rendererCapabilities: registry.value.manifests.map((manifest) => manifest.ref),
+      stateMappingCapabilities: registry.value.stateMappings?.map((mapping) => mapping.ref) ?? [],
+    },
+    registry: registry.value,
+    target: {
+      address: {
+        runtimeId: 'runtime-1',
+        scopeInstanceId: 'scope-1',
+        activationEpoch: 1,
+        surfaceId: 'main',
+        surfaceGeneration: 1,
+      },
+      state: 'active',
+    },
+    ...authored.value,
+  });
+}
+
 describe('0.3 standard recipes', () => {
+  it('authors candidates and lets the core resolver adapt wide and narrow browse views', () => {
+    const wide = resolveStandard(input('browse', 1_280));
+    const narrow = resolveStandard(input('browse', 360));
+
+    expect(wide.status === 'ready' && wide.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+    expect(narrow.status === 'ready' && narrow.plan.plan.nodes[0]?.representation.id).toBe('data.card-collection');
+  });
+
+  it('does not fall back when an explicit view pin is operation-incompatible', () => {
+    const context = input('compare', 320);
+    const task: Task = {
+      ...context.task,
+      viewPreference: { representation: 'data.card-collection', strength: 'explicit' },
+    };
+
+    const decision = resolveStandard({ ...context, task });
+
+    expect(decision.status).toBe('unsupported');
+    if (decision.status === 'unsupported')
+      expect(decision.reasons.map((reason) => reason.code)).toContain('presentation.pin-incompatible');
+  });
+
+  it('returns a stable authorized measure clarification through the resolver seam', () => {
+    const decision = resolveStandard(trendInput(['headcount', 'capacity']));
+
+    expect(decision).toMatchObject({
+      status: 'needs-input',
+      diagnostic: { code: 'web.recipe.needs-input.measure' },
+      choices: [
+        { id: 'capacity', label: 'capacity' },
+        { id: 'headcount', label: 'headcount' },
+      ],
+    });
+  });
+
   it('adapts browse from a table to cards using container width without a model call', () => {
     const wide = standardDataRecipe.build(input('browse', 1_280));
     const narrow = standardDataRecipe.build(input('browse', 360));

@@ -7,7 +7,9 @@ import {
   type VersionRef,
 } from '@aeliqo/core';
 import type {
+  PresentationEnvironment,
   PresentationManifest,
+  PresentationQuality,
   PresentationValues,
   ResolvedPresentationConfig,
   ValidatedPresentation,
@@ -255,6 +257,7 @@ function buildManifest(
   options: AeliqoDataRegistryOptions,
 ): PresentationManifest {
   const helper = createAeliqoDataRegistry(options);
+  const assess = adaptiveQuality(component);
   return freeze({
     ref: AELIQO_DATA_REFS[component],
     configSchema: AELIQO_DATA_CONFIG_SCHEMAS[component],
@@ -265,7 +268,37 @@ function buildManifest(
     visibility: 'leaf',
     extension: false,
     resolveConfig: (values, result) => configFor(component, values, result, bindings, helper),
+    ...(assess === undefined ? {} : { assess: (_config, _result, environment) => assess(environment) }),
   });
+}
+
+function adaptiveQuality(
+  component: DataManifestComponent,
+): ((environment: PresentationEnvironment) => Outcome<PresentationQuality>) | undefined {
+  if (component === 'cardCollection')
+    return (environment) => {
+      const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 640;
+      return {
+        ok: true,
+        value: {
+          taskFit: narrow ? 90 : 75,
+          informationDensity: narrow ? 70 : 60,
+          interactionEffort: narrow ? 5 : 10,
+          legibilityPenalty: 0,
+        },
+      };
+    };
+  if (component === 'recordList')
+    return () => ({
+      ok: true,
+      value: { taskFit: 80, informationDensity: 55, interactionEffort: 5, legibilityPenalty: 0 },
+    });
+  if (component === 'detail')
+    return () => ({
+      ok: true,
+      value: { taskFit: 95, informationDensity: 70, interactionEffort: 5, legibilityPenalty: 0 },
+    });
+  return undefined;
 }
 
 /** Build the eight canonical data manifests that complement the existing data.table@1 manifest. */

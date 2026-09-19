@@ -55,6 +55,11 @@ description: 'The 0.4 release consolidates the public site, documents all compon
   declared or structurally inferred scalar fields; it does not infer authority,
   coverage, relationships, or business identity. The two helpers remain part
   of the unpublished vNext candidate.
+- `@aeliqo/core/presentation` now exposes the pure `resolvePresentation`
+  decision facade. It returns a validated `ready` plan, structured
+  `needs-input` choices, or bounded `unsupported` reasons from supplied
+  evidence only; target evidence is not authority, explicit view pins do not
+  silently fall back, and preferred pins only influence deterministic ranking.
 
 ## 0.4.2
 

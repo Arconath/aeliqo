@@ -1,5 +1,10 @@
 import type { PresentationComposition, PresentationCompositionRequest } from '@aeliqo/core/presentation';
-import type { PresentationContext, PresentationEnvironment, PresentationRegistry } from '@aeliqo/core/presentation';
+import type {
+  PresentationContext,
+  PresentationEnvironment,
+  PresentationRegistry,
+  PresentationTargetEvidence,
+} from '@aeliqo/core/presentation';
 import type { RegionHandle, RegionOutcome, RegionSnapshot } from '../regions/types.js';
 import type { PresentationNavigationState, PresentationRenderer } from './renderer.js';
 
@@ -9,6 +14,8 @@ type AdaptationContextFields = Omit<PresentationContext, 'task' | 'current' | 'i
 export type PresentationAdaptationContext = AdaptationContextFields &
   Partial<Pick<PresentationContext, 'environment' | 'transitionBlocked' | 'explicitTransition'>> & {
     readonly candidates?: PresentationCompositionRequest['candidates'];
+    /** Optional host evidence for the core resolver; legacy region handles retain their existing fence. */
+    readonly target?: PresentationTargetEvidence;
   };
 
 export interface PresentationAdaptationReadInput {

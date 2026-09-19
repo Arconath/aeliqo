@@ -1,8 +1,14 @@
-import { validatePresentationPlan } from '@aeliqo/core/presentation';
+import { resolvePresentation } from '@aeliqo/core/presentation';
 import type { Diagnostic, Intent, Outcome, Result, Task } from '@aeliqo/core';
-import type { PresentationEnvironment, PresentationRegistry, ValidatedPresentation } from '@aeliqo/core/presentation';
+import type {
+  PresentationEnvironment,
+  PresentationClarification,
+  PresentationRegistry,
+  PresentationResolverCandidate,
+  ValidatedPresentation,
+} from '@aeliqo/core/presentation';
 import type { RuntimeCommittedReceipt } from '@aeliqo/runtime/app';
-import { recipeSupports } from '../recipes/standard.js';
+import { recipeSupports, standardDataRecipe, standardRecipeCandidates } from '../recipes/standard.js';
 import type { RecipeDefinition, RecipePresentationPolicy } from '../recipes/types.js';
 import type { AeliqoRegionResult } from '../region/types.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
@@ -122,15 +128,18 @@ function preparedDependencies(
   };
 }
 
-function validatedPlan(
+function sameRecipe(left: RecipeDefinition, right: RecipeDefinition): boolean {
+  return left.ref.id === right.ref.id && left.ref.revision === right.ref.revision && left.build === right.build;
+}
+
+function recipeContext(
   receipt: RuntimeCommittedReceipt,
-  descriptors: readonly Result[],
   inputs: AeliqoInputBindings | undefined,
   views: readonly AeliqoViewDefinition[],
   prepared: PreparedDependencies,
-): { readonly ok: true; readonly value: ValidatedPresentation } | PreparationFailure {
+): Parameters<RecipeDefinition['build']>[0] {
   const current = withoutDataRevision(prepared.current);
-  const plan = prepared.recipe.build({
+  return {
     intent: receipt.intent,
     task: receipt.task,
     ...(prepared.result === undefined ? {} : { result: prepared.result }),
@@ -140,16 +149,54 @@ function validatedPlan(
     availableViews: views,
     ...(prepared.policy === undefined ? {} : { presentationPolicy: prepared.policy }),
     ...(prepared.incumbent === undefined ? {} : { incumbent: prepared.incumbent }),
-  });
+  };
+}
+
+function authoredCandidates(
+  recipe: RecipeDefinition,
+  context: Parameters<RecipeDefinition['build']>[0],
+):
+  | {
+      readonly ok: true;
+      readonly candidates: readonly PresentationResolverCandidate[];
+      readonly clarification?: PresentationClarification;
+    }
+  | PreparationFailure {
+  if (sameRecipe(recipe, standardDataRecipe)) {
+    const authored = standardRecipeCandidates(context);
+    if (!authored.ok) return { ok: false, status: 'unsupported', diagnostics: authored.diagnostics };
+    return { ok: true, ...authored.value };
+  }
+  const plan = recipe.build(context);
   if (!plan.ok) {
     const status = plan.diagnostics.some((item) => item.code.startsWith('web.recipe.needs-input.'))
       ? 'needs-input'
       : 'unsupported';
     return { ok: false, status, diagnostics: plan.diagnostics };
   }
-  const checked = validatePresentationPlan(
-    plan.value,
-    {
+  return {
+    ok: true,
+    candidates: [{ id: `recipe.${recipe.ref.id}.${recipe.ref.revision}`, source: 'explicit', plan: plan.value }],
+  };
+}
+
+function resolvedPlan(
+  receipt: RuntimeCommittedReceipt,
+  descriptors: readonly Result[],
+  inputs: AeliqoInputBindings | undefined,
+  views: readonly AeliqoViewDefinition[],
+  prepared: PreparedDependencies,
+  requestId: string,
+  surfaceGeneration: number,
+): { readonly ok: true; readonly value: ValidatedPresentation } | PreparationFailure {
+  const current = withoutDataRevision(prepared.current);
+  const authored = authoredCandidates(prepared.recipe, recipeContext(receipt, inputs, views, prepared));
+  if (!authored.ok) return authored;
+  const decision = resolvePresentation({
+    id: requestId,
+    revision: receipt.task.revision,
+    preconditions: current,
+    context: {
       task: receipt.task,
       experience: experience(prepared.registry, prepared.current.experienceRevision, prepared.policy),
       results: descriptors,
@@ -159,10 +206,26 @@ function validatedPlan(
       stateMappingCapabilities: prepared.registry.stateMappings?.map((mapping) => mapping.ref) ?? [],
       ...(prepared.incumbent === undefined ? {} : { incumbent: prepared.incumbent }),
     },
-    prepared.registry,
-  );
-  if (!checked.ok) return { ok: false, status: 'unsupported', diagnostics: checked.diagnostics };
-  return { ok: true, value: checked.value };
+    registry: prepared.registry,
+    target: {
+      address: {
+        runtimeId: 'aeliqo.web.runtime',
+        scopeInstanceId: `region.${receipt.regionId}`,
+        activationEpoch: 1,
+        surfaceId: receipt.regionId,
+        surfaceGeneration,
+      },
+      state: 'active',
+    },
+    candidates: authored.candidates,
+    ...(authored.clarification === undefined ? {} : { clarification: authored.clarification }),
+  });
+  if (decision.status === 'ready') return { ok: true, value: decision.plan };
+  return {
+    ok: false,
+    status: decision.status,
+    diagnostics: [decision.diagnostic],
+  };
 }
 
 function preparePresentation(
@@ -171,11 +234,21 @@ function preparePresentation(
   receipt: RuntimeCommittedReceipt,
   resultBindings: readonly AeliqoRegionResult[],
   descriptors: readonly Result[],
+  requestId: string,
+  surfaceGeneration: number,
   inputs?: AeliqoInputBindings,
 ): Preparation {
   const dependencies = preparedDependencies(context, region, receipt, resultBindings, descriptors, inputs);
   if (!dependencies.ok) return dependencies;
-  const validated = validatedPlan(receipt, descriptors, inputs, context.views, dependencies.value);
+  const validated = resolvedPlan(
+    receipt,
+    descriptors,
+    inputs,
+    context.views,
+    dependencies.value,
+    requestId,
+    surfaceGeneration,
+  );
   if (!validated.ok) return validated;
   return {
     ok: true,
@@ -342,7 +415,16 @@ export async function present(
   signal?: AbortSignal,
 ): Promise<WebRenderReceipt> {
   if (region.sequence !== expectedSequence) return cancelledPresentation(receipt, requestId);
-  const prepared = preparePresentation(context, region, receipt, resultBindings, descriptors, inputs);
+  const prepared = preparePresentation(
+    context,
+    region,
+    receipt,
+    resultBindings,
+    descriptors,
+    requestId,
+    expectedSequence,
+    inputs,
+  );
   if (!prepared.ok) return failedAfterRuntime(prepared.status, receipt, requestId, prepared.diagnostics);
   return commitPresentation(
     context,

@@ -169,6 +169,41 @@ describe('presentation adaptation runtime', () => {
     controller.dispose();
   });
 
+  it('does not stage or render when the core resolver rejects stale target evidence', async () => {
+    const { region, registry } = setup();
+    const applied: PresentationProjectionState[] = [];
+    const controller = createPresentationAdaptationController({
+      region,
+      registry,
+      baseContext: {
+        ...baseContext(),
+        target: {
+          address: {
+            runtimeId: 'runtime-1',
+            scopeInstanceId: 'scope-1',
+            activationEpoch: 1,
+            surfaceId: 'region-1',
+            surfaceGeneration: 1,
+          },
+          state: 'stale',
+        },
+      },
+      renderer: createCallbackPresentationRenderer({
+        apply: (next) => {
+          applied.push(next);
+        },
+      }),
+      dwellMs: 0,
+    });
+
+    const outcome = await controller.request(environment(800));
+
+    expect(outcome).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.target-inactive' }] });
+    expect(region.snapshot().state?.presentation).toBeUndefined();
+    expect(applied).toEqual([]);
+    controller.dispose();
+  });
+
   it('treats text scale as an accessibility change even with a fixed container', async () => {
     const { region, registry } = setup();
     let reads = 0;

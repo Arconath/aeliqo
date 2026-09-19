@@ -243,6 +243,21 @@ The reference data and authentication are synthetic. A production host must
 replace the demo authenticator and authorization policy rather than accepting
 browser-supplied principal, scope, policy, or credential fields.
 
+## Presentation adaptation
+
+`createPresentationAdaptationController` routes each adaptive decision through
+the pure core `resolvePresentation` facade, then retains the runtime's existing
+queue, Region fence, stage/commit, and renderer rollback boundaries. A host may
+supply `PresentationAdaptationContext.target` with its current immutable
+runtime/scope/activation/surface address and `active`, `stale`, or `revoked`
+evidence. Stale or revoked evidence fails before staging or rendering. Legacy
+Region-only callers receive a controller-local active target and remain fenced
+by the Region snapshot and commit read set.
+
+Target evidence is not authority. Hosts must still authorize the scope and
+surface and must not mark an old A-B-A address active. The resolver chooses a
+validated plan only; the controller remains the sole publication boundary.
+
 ## Application scopes (vNext candidate)
 
 `createScope` coordinates a trusted host-owned workspace or account selection.

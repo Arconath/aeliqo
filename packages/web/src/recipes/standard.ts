@@ -1,10 +1,18 @@
 import type { Diagnostic, Outcome, PresentationPlan, ReadonlyJsonValue, VersionRef } from '@aeliqo/core';
-import type { PresentationStateMappingManifest, PresentationValues } from '@aeliqo/core/presentation';
+import type {
+  PresentationClarification,
+  PresentationResolverCandidate,
+  PresentationValues,
+} from '@aeliqo/core/presentation';
 import { AELIQO_CONFIG_SCHEMAS, AELIQO_OPERATION_REFS, AELIQO_PRESENTATION_REFS } from '../region/registry.js';
 import { AELIQO_DATA_CONFIG_SCHEMAS, AELIQO_DATA_REFS } from '../region/data-registry.js';
-import { AELIQO_INPUT_REFS } from '../input/manifest.js';
 import { defineRecipe } from './define.js';
 import type { RecipeContext, RecipeDefinition } from './types.js';
+import { standardFormRecipe } from './standard-form.js';
+import { standardStateMapping } from './standard-state.js';
+
+export { standardFormRecipe } from './standard-form.js';
+export { STANDARD_STATE_MAPPINGS } from './standard-state.js';
 
 interface ViewChoice {
   readonly ref: VersionRef;
@@ -194,6 +202,11 @@ type SelectedView = {
   readonly values: PresentationValues;
 };
 
+export interface StandardRecipeCandidates {
+  readonly candidates: readonly PresentationResolverCandidate[];
+  readonly clarification?: PresentationClarification;
+}
+
 function preferredView(context: RecipeContext, preferred: string): SelectedView | undefined {
   const known = aliases[preferred] ?? Object.values(aliases).find((candidate) => candidate.ref.id === preferred);
   const operation = context.task.needs[0]?.operation;
@@ -273,20 +286,19 @@ function selectedView(context: RecipeContext): Outcome<SelectedView> {
   }
   return viewForIntent(context);
 }
-function build(context: RecipeContext): Outcome<PresentationPlan> {
-  if (context.task.kind !== 'data' || context.result === undefined)
+
+function planForView(context: RecipeContext, view: SelectedView): Outcome<PresentationPlan> {
+  if (context.result === undefined)
     return failure('web.recipe.unsupported', 'Standard data recipes require a materialized data Task.');
-  const view = selectedView(context);
-  if (!view.ok) return view;
   const need = context.task.needs[0];
   if (need === undefined) return failure('web.recipe.need', 'The Task has no presentation need.');
   const stateTransfer: Array<PresentationPlan['stateTransfer'][number]> = [];
   if (context.incumbent !== undefined) {
     for (const node of context.incumbent.nodes) {
       const mapping =
-        sameRef(node.representation, view.value.ref) && node.role === view.value.role
+        sameRef(node.representation, view.ref) && node.role === view.role
           ? { id: 'aeliqo.state.identity', revision: '1' }
-          : stateMapping(node.representation, view.value.ref)?.ref;
+          : standardStateMapping(node.representation, view.ref)?.ref;
       if (mapping === undefined)
         return failure(
           'web.recipe.transition',
@@ -303,10 +315,10 @@ function build(context: RecipeContext): Outcome<PresentationPlan> {
     nodes: [
       {
         id: 'primary',
-        role: view.value.role,
-        representation: view.value.ref,
+        role: view.role,
+        representation: view.ref,
         result: context.result.ref,
-        config: { schema: view.value.schema, values: view.value.values },
+        config: { schema: view.schema, values: view.values },
         children: [],
       },
     ],
@@ -318,74 +330,135 @@ function build(context: RecipeContext): Outcome<PresentationPlan> {
   return { ok: true, value: plan };
 }
 
+function build(context: RecipeContext): Outcome<PresentationPlan> {
+  if (context.task.kind !== 'data' || context.result === undefined)
+    return failure('web.recipe.unsupported', 'Standard data recipes require a materialized data Task.');
+  const view = selectedView(context);
+  if (!view.ok) return view;
+  return planForView(context, view.value);
+}
+
 export const standardDataRecipe: RecipeDefinition = defineRecipe({
   ref: { id: 'aeliqo.recipe.data', revision: '1' },
   intents: ['browse', 'detail', 'compare', 'analyze'],
   build,
 });
 
-function buildForm(context: RecipeContext): Outcome<PresentationPlan> {
-  if (context.task.kind !== 'form' || context.inputBindings === undefined)
-    return failure('web.recipe.unsupported', 'Standard form recipes require host-owned form bindings.');
-  const form = context.inputBindings.inputs.find((binding) => binding.ref.id === AELIQO_INPUT_REFS.form.id);
-  if (
-    form === undefined ||
-    form.action === undefined ||
-    form.action.action.id !== context.task.action.id ||
-    form.action.action.revision !== context.task.action.revision
-  )
-    return failure('web.recipe.form-binding', 'The form action is not pinned to the compiled Task action.');
-  const fields = context.inputBindings.inputs.filter((binding) => binding.ref.id !== AELIQO_INPUT_REFS.form.id);
-  const nodes: PresentationPlan['nodes'] = [
-    {
-      id: 'form',
-      role: 'structure',
-      representation: AELIQO_INPUT_REFS.form,
-      config: {
-        schema: { id: 'input.form.config', revision: '1' },
-        values: { bindingRef: form.id, bindingRevision: context.inputBindings.revision },
-      },
-      children: fields.map((field) => field.id),
-    },
-    ...fields.map((field) => ({
-      id: field.id,
-      role: field.ref.id === AELIQO_INPUT_REFS.fieldGroup.id ? 'structure' : 'input',
-      representation: field.ref,
-      config: {
-        schema: { id: `${field.ref.id}.config`, revision: '1' },
-        values: { bindingRef: field.id, bindingRevision: context.inputBindings!.revision },
-      },
-      children: [],
-    })),
-  ];
+function authorableNames(kind: RecipeContext['intent']['kind']): readonly (keyof typeof aliases)[] {
+  switch (kind) {
+    case 'detail':
+      return ['detail', 'table', 'cards', 'list'];
+    case 'compare':
+      return ['table'];
+    case 'analyze':
+      return ['trend', 'table'];
+    default:
+      return ['table', 'cards', 'list'];
+  }
+}
+
+function unfilteredCustom(context: RecipeContext, preferred: string): SelectedView | undefined {
+  if (context.result === undefined) return undefined;
+  const definition = context.availableViews.find((view) => view.ref.id === preferred);
+  if (definition === undefined) return undefined;
+  const suggested = definition.manifest.suggestConfig?.(context.task.needs, context.result);
+  if (suggested !== undefined && !suggested.ok) return undefined;
   return {
-    ok: true,
-    value: {
-      id: `presentation-${context.task.id}`.slice(0, 160),
-      revision: context.task.revision,
-      rootId: 'form',
-      preconditions: context.current,
-      nodes,
-      links: [],
-      coverage: [],
-      stateTransfer:
-        context.incumbent === undefined
-          ? []
-          : context.incumbent.nodes.map((node) => ({
-              fromNode: node.id,
-              toNode: node.id,
-              mapping: { id: 'aeliqo.state.identity', revision: '1' },
-            })),
-      diagnostics: [],
-    },
+    ref: definition.ref,
+    schema: definition.manifest.configSchema,
+    role: definition.manifest.roles[0]!,
+    values: suggested?.value ?? {},
   };
 }
 
-export const standardFormRecipe: RecipeDefinition = defineRecipe({
-  ref: { id: 'aeliqo.recipe.form', revision: '1' },
-  intents: ['create', 'edit'],
-  build: buildForm,
-});
+function clarificationChoices(context: RecipeContext, kind: 'measure' | 'time') {
+  if (context.result === undefined) return [];
+  const requested = requestedFields(context);
+  const compatible = context.result.fields.filter((field) => {
+    if (kind === 'time') return field.type.value === 'date' || field.type.value === 'instant';
+    return field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value);
+  });
+  const requestedCompatible = compatible.filter((field) => requested.has(field.id));
+  return (requestedCompatible.length > 0 ? requestedCompatible : compatible)
+    .map((field) => ({ id: field.id, label: field.id }))
+    .sort((left, right) => left.id.localeCompare(right.id));
+}
+
+function trendClarification(context: RecipeContext, diagnostic: Diagnostic): PresentationClarification {
+  const kind = diagnostic.code.endsWith('.time') ? 'time' : 'measure';
+  return { kind, diagnostic, choices: clarificationChoices(context, kind) };
+}
+
+function authorKnownView(context: RecipeContext, name: keyof typeof aliases): Outcome<SelectedView> {
+  if (name !== 'trend') return { ok: true, value: viewWithValues(aliases[name]!, context) };
+  const config = trendConfig(context);
+  if (config.kind === 'needs-input') return { ok: false, diagnostics: [config.diagnostic] };
+  if (config.kind === 'unavailable')
+    return failure('web.recipe.needs-input.time', 'Choose a requested time field before rendering a trend.');
+  return { ok: true, value: { ...aliases.trend!, values: config.values } };
+}
+
+function resolverCandidate(
+  context: RecipeContext,
+  id: string,
+  view: SelectedView,
+): Outcome<PresentationResolverCandidate> {
+  const plan = planForView(context, view);
+  if (!plan.ok) return plan;
+  return { ok: true, value: { id, source: 'explicit', plan: plan.value } };
+}
+
+function appendPreferredCustom(
+  context: RecipeContext,
+  preferred: string | undefined,
+  preferredAlias: keyof typeof aliases | undefined,
+  candidates: PresentationResolverCandidate[],
+): Outcome<void> {
+  if (preferred === undefined || preferredAlias !== undefined) return { ok: true, value: undefined };
+  const customView = unfilteredCustom(context, preferred);
+  if (customView === undefined) return { ok: true, value: undefined };
+  const customCandidate = resolverCandidate(context, `custom.${preferred}`, customView);
+  if (!customCandidate.ok) return customCandidate;
+  candidates.push(customCandidate.value);
+  return { ok: true, value: undefined };
+}
+
+/** Author deterministic standard candidates; core remains the sole eligibility and ranking authority. */
+export function standardRecipeCandidates(context: RecipeContext): Outcome<StandardRecipeCandidates> {
+  if (context.task.kind !== 'data' || context.result === undefined)
+    return failure('web.recipe.unsupported', 'Standard data recipes require a materialized data Task.');
+  const candidates: PresentationResolverCandidate[] = [];
+  const names = new Set(authorableNames(context.intent.kind));
+  const preferred = context.task.viewPreference?.representation;
+  const preferredAlias = Object.entries(aliases).find(
+    ([name, view]) => name === preferred || view.ref.id === preferred,
+  )?.[0] as keyof typeof aliases | undefined;
+  if (preferredAlias !== undefined) names.add(preferredAlias);
+  let clarification: PresentationClarification | undefined;
+  for (const name of [...names].sort()) {
+    const view = authorKnownView(context, name);
+    if (!view.ok) {
+      const diagnostic = view.diagnostics[0]!;
+      if (name === 'trend') {
+        clarification = trendClarification(context, diagnostic);
+        continue;
+      }
+      return view;
+    }
+    const authored = resolverCandidate(context, `standard.${name}`, view.value);
+    if (!authored.ok) return authored;
+    candidates.push(authored.value);
+  }
+  const custom = appendPreferredCustom(context, preferred, preferredAlias, candidates);
+  if (!custom.ok) return custom;
+  return {
+    ok: true,
+    value: {
+      candidates: candidates.sort((left, right) => left.id.localeCompare(right.id)),
+      ...(clarification === undefined ? {} : { clarification }),
+    },
+  };
+}
 
 export const STANDARD_RECIPES: readonly RecipeDefinition[] = Object.freeze([standardDataRecipe, standardFormRecipe]);
 
@@ -400,29 +473,6 @@ export const STANDARD_VIEW_REFS = Object.freeze({
 /** Resolve a resource-facing standard alias to the canonical renderer representation ID. */
 export function canonicalViewId(view: string): string {
   return (aliases[view] ?? Object.values(aliases).find((candidate) => candidate.ref.id === view))?.ref.id ?? view;
-}
-
-export const STANDARD_STATE_MAPPINGS: readonly PresentationStateMappingManifest[] = Object.freeze([
-  {
-    ref: { id: 'aeliqo.web.table-to-cards', revision: '1' },
-    from: AELIQO_PRESENTATION_REFS.table,
-    to: AELIQO_DATA_REFS.cardCollection,
-    fromRole: 'table',
-    toRole: 'cardCollection',
-    kind: 'transfer',
-  },
-  {
-    ref: { id: 'aeliqo.web.cards-to-table', revision: '1' },
-    from: AELIQO_DATA_REFS.cardCollection,
-    to: AELIQO_PRESENTATION_REFS.table,
-    fromRole: 'cardCollection',
-    toRole: 'table',
-    kind: 'transfer',
-  },
-]);
-
-function stateMapping(from: VersionRef, to: VersionRef): PresentationStateMappingManifest | undefined {
-  return STANDARD_STATE_MAPPINGS.find((mapping) => sameRef(mapping.from, from) && sameRef(mapping.to, to));
 }
 
 export function recipeSupports(recipe: RecipeDefinition, kind: RecipeContext['intent']['kind']): boolean {

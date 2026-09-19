@@ -174,6 +174,52 @@ inputs, result events, and presentation bindings. A mixed-consistency Result
 must state the same immutable lineage so consumers can distinguish an advancing
 live source from an unrelated source that reused a revision label.
 
+## Presentation decisions
+
+Use `resolvePresentation` from `@aeliqo/core/presentation` when a host has
+already obtained authorized task, result, registry, policy, environment, target,
+and candidate evidence. It is a pure decision boundary: it never reads a
+browser, network, clock, model, cache, or host object, and it never commits or
+renders a plan.
+
+```ts
+import { resolvePresentation } from '@aeliqo/core/presentation';
+
+const decision = resolvePresentation({
+  id: 'people-browse',
+  revision: '1',
+  preconditions,
+  context,
+  registry,
+  target,
+  candidates,
+});
+
+if (decision.status === 'ready') commit(decision.plan.plan);
+if (decision.status === 'needs-input') promptFor(decision.choices);
+if (decision.status === 'unsupported') report(decision.diagnostic.code);
+```
+
+The supplied target is non-authoritative evidence: core rejects stale or
+revoked evidence but does not resolve a surface, grant access, or upgrade its
+state. The host remains responsible for authorization, scope fences, result
+materialization, and commit/renderer transactions.
+
+`ready` contains one validated plan and a bounded decision receipt;
+`needs-input` contains a stable, bounded set of typed choices; and
+`unsupported` contains a diagnostic plus candidate rejection codes. Candidate
+order cannot change an equivalent decision: eligibility precedes ranking, with
+stable IDs as the tie-breaker. Inputs and outputs are normalized and bounded;
+candidate work is capped, and exhaustion returns `unsupported` rather than a
+truncated ready result.
+
+An `explicit` task view preference is a hard compatibility gate. An unknown,
+disallowed, stale, or incompatible explicit view returns `unsupported` rather
+than silently selecting an alternative. A `preferred` view is only a ranking
+input: it never grants authority, renderer support, result coverage, or an
+operation capability. Missing semantic input is `needs-input`; it is not a
+license to choose the first available field or presentation.
+
 ## Explicit subpaths
 
 | Subpath                      | Contents                                                       |
@@ -186,7 +232,7 @@ live source from an unrelated source that reused a revision label.
 | `@aeliqo/core/semantics`     | Catalog indexes and meaning validation or activation           |
 | `@aeliqo/core/query`         | Query planning, logical plans, and evaluation                  |
 | `@aeliqo/core/interaction`   | Interaction graph and state contracts                          |
-| `@aeliqo/core/presentation`  | Presentation validation and composition                        |
+| `@aeliqo/core/presentation`  | Presentation validation, composition, and pure decisions       |
 | `@aeliqo/core/plot`          | Plot specifications and binding                                |
 | `@aeliqo/core/visualization` | Visualization specifications and binding                       |
 | `@aeliqo/core/agent`         | Agent proposal and authority wire types                        |
