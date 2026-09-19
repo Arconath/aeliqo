@@ -8,7 +8,7 @@ import type {
   ValidatedPresentation,
 } from '@aeliqo/core/presentation';
 import type { RuntimeCommittedReceipt } from '@aeliqo/runtime/app';
-import { recipeSupports, standardDataRecipe, standardRecipeCandidates } from '../recipes/standard.js';
+import { canonicalViewId, recipeSupports, standardDataRecipe, standardRecipeCandidates } from '../recipes/standard.js';
 import type { RecipeDefinition, RecipePresentationPolicy } from '../recipes/types.js';
 import type { AeliqoRegionResult } from '../region/types.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
@@ -180,6 +180,15 @@ function authoredCandidates(
   };
 }
 
+function resolverTask(task: Task): Task {
+  const preference = task.viewPreference;
+  if (preference === undefined) return task;
+  const representation = canonicalViewId(preference.representation);
+  return representation === preference.representation
+    ? task
+    : { ...task, viewPreference: { ...preference, representation } };
+}
+
 function resolvedPlan(
   receipt: RuntimeCommittedReceipt,
   descriptors: readonly Result[],
@@ -197,7 +206,7 @@ function resolvedPlan(
     revision: receipt.task.revision,
     preconditions: current,
     context: {
-      task: receipt.task,
+      task: resolverTask(receipt.task),
       experience: experience(prepared.registry, prepared.current.experienceRevision, prepared.policy),
       results: descriptors,
       current,

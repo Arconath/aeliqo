@@ -14,6 +14,7 @@ import {
   type PresentationProjectionState,
 } from '../../packages/runtime/src/presentation/index.js';
 import type { RegionHandle } from '../../packages/runtime/src/regions/index.js';
+import { resolverCandidates } from '../../packages/runtime/src/presentation/adaptation-resolver.js';
 import { presentationTask, ref, result } from '../contracts/fixtures.js';
 
 const read = { id: 'data.read', revision: '1' } as const;
@@ -381,6 +382,25 @@ describe('presentation adaptation runtime', () => {
     expect(applied).toHaveLength(1);
     expect(region.snapshot().state?.presentation?.nodes[0]?.representation.id).toBe(wide.ref.id);
     controller.dispose();
+  });
+
+  it('derives order-independent IDs and removes exact duplicate legacy candidates', () => {
+    const readSet = setup().region.snapshot().readSet;
+    if (readSet === undefined) throw new Error('The deterministic candidate fixture needs a read set.');
+    const { dataRevision: _dataRevision, ...preconditions } = readSet;
+    const wide = { source: 'explicit' as const, plan: planFor({ id: 'layout.wide', revision: '1' }, preconditions) };
+    const narrow = {
+      source: 'explicit' as const,
+      plan: planFor({ id: 'layout.narrow', revision: '1' }, preconditions),
+    };
+
+    const first = resolverCandidates([wide, narrow, wide]);
+    const reversed = resolverCandidates([wide, narrow, wide].reverse());
+
+    expect(reversed).toEqual(first);
+    expect(first).toHaveLength(2);
+    expect(new Set(first.map((candidate) => candidate.id)).size).toBe(2);
+    expect(first.every((candidate) => candidate.id.startsWith('legacy.'))).toBe(true);
   });
 
   it('treats text scale as an accessibility change even with a fixed container', async () => {

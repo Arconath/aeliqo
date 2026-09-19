@@ -92,7 +92,7 @@ export function fixture(overrides: Partial<PresentationResolverInput> = {}): Pre
         runtimeId: 'runtime',
         scopeInstanceId: 'scope',
         activationEpoch: 1,
-        surfaceId: 'people',
+        surfaceId: 'region-1',
         surfaceGeneration: 1,
       },
       state: 'active',

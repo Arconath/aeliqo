@@ -260,8 +260,9 @@ When a host supplies target evidence, its `surfaceId` must identify the
 controller's Region and every address field must match the expected target. A
 mismatched active target is treated as stale and cannot stage or render into
 another Region. Existing adaptation candidate lists do not
-carry resolver IDs, so the adapter assigns collision-free deterministic IDs by
-list position before entering the resolver. A non-empty authored list remains
+carry resolver IDs, so the adapter assigns deterministic IDs from canonical
+candidate content, collapses exact duplicates, and adds deterministic collision
+suffixes before entering the resolver. A non-empty authored list remains
 complete: rejection does not trigger registry suggestion fallback.
 
 Target evidence is not authority. Hosts must still authorize the scope and

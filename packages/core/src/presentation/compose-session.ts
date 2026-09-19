@@ -31,6 +31,7 @@ interface RankedCandidate {
   readonly presentation: ValidatedPresentation;
   readonly score: number;
   readonly incumbent: boolean;
+  readonly preferred: boolean;
   readonly label: string;
 }
 
@@ -147,6 +148,9 @@ export function consider(
     presentation,
     score: candidateScore(presentation, state.prepared, state.request.context.incumbent),
     incumbent,
+    preferred:
+      state.prepared.constraints.preferredRepresentation !== undefined &&
+      presentation.nodes.some((node) => node.manifest.id === state.prepared.constraints.preferredRepresentation),
     label,
   };
   if (betterCandidate(next, state.best, state.canonicalCache)) state.best = next;

@@ -201,14 +201,16 @@ if (decision.status === 'unsupported') report(decision.diagnostic.code);
 ```
 
 The supplied target is non-authoritative evidence: core rejects stale or
-revoked evidence but does not resolve a surface, grant access, or upgrade its
-state. The host remains responsible for authorization, scope fences, result
-materialization, and commit/renderer transactions.
+revoked evidence and requires its surface ID to match the validated task's
+region ID, but does not resolve a surface, grant access, or upgrade its state.
+The host remains responsible for authorization, the remaining immutable-address
+fields, scope fences, result materialization, and commit/renderer transactions.
 
 `ready` contains one validated plan and a bounded decision receipt;
 `needs-input` contains a stable, bounded set of typed choices; and
 `unsupported` contains a diagnostic plus candidate rejection codes. Candidate
 order cannot change an equivalent decision: eligibility precedes ranking, with
+an eligible soft task preference ranked before quality and continuity, then
 stable IDs as the tie-breaker. Inputs and outputs are normalized and bounded;
 candidate work is capped, and exhaustion returns `unsupported` rather than a
 truncated ready result.

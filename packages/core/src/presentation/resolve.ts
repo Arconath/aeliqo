@@ -165,17 +165,11 @@ function reasonsFor(diagnostics: readonly Diagnostic[], candidate?: string): rea
 
 function rejectionsFor(
   rejected: readonly { readonly candidate: string; readonly diagnostics: readonly Diagnostic[] }[],
-  candidates: readonly OwnedCandidate[],
 ): readonly PresentationRejection[] {
-  const candidateAt = (label: string): string => {
-    const match = /^candidate\.(\d+)$/u.exec(label);
-    if (match === null) return label;
-    return candidates[Number(match[1])]?.id ?? 'invalid-candidate';
-  };
   return freezePresentation(
     rejected
       .map(({ candidate, diagnostics }) => ({
-        candidate: candidateAt(candidate),
+        candidate,
         codes: [...new Set(diagnostics.map((item) => item.code))].sort(compareText),
         refs: [],
       }))
@@ -236,27 +230,63 @@ type ResolverIngress =
       readonly candidates: readonly OwnedCandidate[];
       readonly clarification?: PresentationClarification;
       readonly request: PresentationCompositionRequest;
+      readonly registry: PresentationResolverInput['registry'];
+      readonly target: PresentationTargetEvidence;
     }
   | { readonly ok: false; readonly decision: PresentationDecision };
 
+type ResolverFields = Pick<
+  PresentationResolverInput,
+  'id' | 'revision' | 'preconditions' | 'context' | 'registry' | 'target' | 'candidates' | 'clarification'
+>;
+
+function resolverFields(input: unknown): ResolverFields | undefined {
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
+  const values: Record<string, unknown> = {};
+  try {
+    for (const key of ['id', 'revision', 'preconditions', 'context', 'registry', 'target', 'candidates'] as const) {
+      const descriptor = Object.getOwnPropertyDescriptor(input, key);
+      if (descriptor === undefined || !('value' in descriptor)) return undefined;
+      values[key] = descriptor.value;
+    }
+    const clarification = Object.getOwnPropertyDescriptor(input, 'clarification');
+    if (clarification !== undefined) {
+      if (!('value' in clarification)) return undefined;
+      values.clarification = clarification.value;
+    }
+  } catch {
+    return undefined;
+  }
+  return values as unknown as ResolverFields;
+}
+
 function resolverIngress(input: PresentationResolverInput): ResolverIngress {
-  const target = parseTarget(input?.target);
+  const fields = resolverFields(input);
+  if (fields === undefined) return { ok: false, decision: unsupported('presentation.input') };
+  const target = parseTarget(fields.target);
   if (target === undefined) return { ok: false, decision: unsupported('presentation.target') };
   if (target.state !== 'active') return { ok: false, decision: unsupported('presentation.target-inactive') };
-  const candidates = parseCandidates(input?.candidates);
+  const candidates = parseCandidates(fields.candidates);
   if (candidates === undefined) return { ok: false, decision: unsupported('presentation.candidates') };
-  const clarification = parseClarification(input.clarification);
-  if (input.clarification !== undefined && clarification === undefined)
+  const clarification = parseClarification(fields.clarification);
+  if (fields.clarification !== undefined && clarification === undefined)
     return { ok: false, decision: unsupported('presentation.clarification') };
   const request: PresentationCompositionRequest = {
-    id: input.id,
-    revision: input.revision,
-    preconditions: input.preconditions,
-    context: input.context,
+    id: fields.id,
+    revision: fields.revision,
+    preconditions: fields.preconditions,
+    context: fields.context,
     candidates: candidates.map(compositionCandidate),
     searchRegistered: candidates.length === 0,
   };
-  return { ok: true, candidates, request, ...(clarification === undefined ? {} : { clarification }) };
+  return {
+    ok: true,
+    candidates,
+    request,
+    registry: fields.registry,
+    target,
+    ...(clarification === undefined ? {} : { clarification }),
+  };
 }
 
 /**
@@ -267,18 +297,20 @@ function resolverIngress(input: PresentationResolverInput): ResolverIngress {
 export function resolvePresentation(input: PresentationResolverInput): PresentationDecision {
   const ingress = resolverIngress(input);
   if (!ingress.ok) return ingress.decision;
-  const prepared = prepareComposition(ingress.request, input.registry);
+  const prepared = prepareComposition(ingress.request, ingress.registry);
   if (!prepared.ok)
     return compositionFailure(
       prepared,
       prepared.diagnostics.some((item) => item.code === 'experience.representation-conflict'),
     );
+  if (prepared.value.prepared.constraints.task.regionId !== ingress.target.address.surfaceId)
+    return unsupported('presentation.target-mismatch');
   const clarification = clarificationDecision(ingress.clarification, prepared.value);
   if (clarification !== undefined) return clarification;
 
-  const composition = composePresentation(ingress.request, input.registry);
+  const composition = composePresentation(ingress.request, ingress.registry);
   if (!composition.ok) return compositionFailure(composition);
-  const rejections = rejectionsFor(composition.value.rejected, ingress.candidates);
+  const rejections = rejectionsFor(composition.value.rejected);
   const rejectionReasons = freezePresentation(
     rejections.flatMap((rejection) => rejection.codes.map((code) => ({ code, candidate: rejection.candidate }))),
   );

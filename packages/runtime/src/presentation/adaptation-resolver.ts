@@ -1,3 +1,5 @@
+import { parseWireValue } from '@aeliqo/core/contracts';
+import type { PresentationPlan } from '@aeliqo/core';
 import type {
   PresentationComposition,
   PresentationResolverCandidate,
@@ -48,12 +50,67 @@ export function resolverTarget(
 export function resolverCandidates(
   candidates: PresentationAdaptationContext['candidates'],
 ): readonly PresentationResolverCandidate[] {
-  return (candidates ?? []).map((candidate, index) => ({
-    id: `candidate.${String(index).padStart(2, '0')}`,
-    source: candidate.source,
-    ...(candidate.pattern === undefined ? {} : { pattern: candidate.pattern }),
-    plan: candidate.plan,
-  }));
+  const parsed = parseWireValue(candidates ?? []);
+  if (!parsed.ok || !Array.isArray(parsed.value)) return [invalidCandidate()];
+  const safe = parsed.value.filter(isLegacyCandidate);
+  if (safe.length !== parsed.value.length) return [invalidCandidate()];
+  const entries = safe
+    .map((candidate) => ({ candidate, key: canonicalCandidate(candidate) }))
+    .sort((left, right) => compareCanonicalKey(left.key, right.key));
+  const unique = entries.filter((entry, index) => index === 0 || entry.key !== entries[index - 1]!.key);
+  const collisions = new Map<string, number>();
+  return unique.map(({ candidate, key }) => {
+    const digest = candidateDigest(key);
+    const collision = collisions.get(digest) ?? 0;
+    collisions.set(digest, collision + 1);
+    return {
+      id: legacyCandidateId(digest, collision),
+      source: candidate.source,
+      ...(candidate.pattern === undefined ? {} : { pattern: candidate.pattern }),
+      plan: candidate.plan,
+    };
+  });
+}
+
+function compareCanonicalKey(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
+function legacyCandidateId(digest: string, collision: number): string {
+  if (collision === 0) return `legacy.${digest}`;
+  return `legacy.${digest}.${collision}`;
+}
+
+function isLegacyCandidate(value: unknown): value is NonNullable<PresentationAdaptationContext['candidates']>[number] {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    (record.source === 'explicit' || record.source === 'pattern') &&
+    record.plan !== null &&
+    typeof record.plan === 'object' &&
+    !Array.isArray(record.plan)
+  );
+}
+
+function invalidCandidate(): PresentationResolverCandidate {
+  return { id: 'legacy.invalid', source: 'explicit', plan: {} as PresentationPlan };
+}
+
+function canonicalCandidate(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'null';
+  if (Array.isArray(value)) return `[${value.map(canonicalCandidate).join(',')}]`;
+  return `{${Object.keys(value as Record<string, unknown>)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalCandidate((value as Record<string, unknown>)[key])}`)
+    .join(',')}}`;
+}
+
+function candidateDigest(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+  return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
 export function compositionForDecision(

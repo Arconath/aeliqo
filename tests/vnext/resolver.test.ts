@@ -2,6 +2,7 @@ import {
   createPresentationRegistry,
   resolvePresentation,
   type PresentationPatternManifest,
+  type PresentationResolverInput,
 } from '../../packages/core/src/presentation/index.js';
 import { describe, expect, it, vi } from 'vitest';
 import { presentationPlan } from '../contracts/fixtures.js';
@@ -85,6 +86,18 @@ describe('resolvePresentation', () => {
     expect(first.reasons).toContainEqual({ candidate: 'unknown', code: 'presentation.renderer' });
   });
 
+  it('preserves candidate IDs that resemble internal positional labels', () => {
+    const decision = resolvePresentation(
+      fixture({ candidates: [candidate('candidate.1', { id: 'unknown.view', revision: '1' })] }),
+    );
+
+    expect(decision).toMatchObject({
+      status: 'unsupported',
+      rejections: [{ candidate: 'candidate.1', codes: ['presentation.renderer'] }],
+      reasons: [{ candidate: 'candidate.1', code: 'presentation.renderer' }],
+    });
+  });
+
   it('returns only an explicit bounded clarification for semantic ambiguity', () => {
     const ordinary = context();
     const authorizedResult = ordinary.results[0]!;
@@ -149,6 +162,24 @@ describe('resolvePresentation', () => {
     expect(JSON.stringify([unsafeCandidate, unrelatedChoice])).not.toMatch(/secret|script|bearer/u);
   });
 
+  it('rejects an accessor-bearing resolver envelope without invoking host code', () => {
+    let reads = 0;
+    const input = { ...fixture() } as PresentationResolverInput & { target: PresentationResolverInput['target'] };
+    Object.defineProperty(input, 'target', {
+      enumerable: true,
+      get() {
+        reads++;
+        throw new Error('host getter executed');
+      },
+    });
+
+    expect(resolvePresentation(input)).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.input' },
+    });
+    expect(reads).toBe(0);
+  });
+
   it('applies eligibility before quality ranking', () => {
     const eligible = manifest(tableRef, 1);
     const ineligible = manifest(listRef, 100);
@@ -185,6 +216,22 @@ describe('resolvePresentation', () => {
 
     expect(unknown).toMatchObject({ status: 'unsupported', diagnostic: { code: 'presentation.renderer' } });
     for (const decision of [disallowed, stale, inactive, revoked]) expect(decision.status).toBe('unsupported');
+  });
+
+  it('rejects active target evidence for a different task surface', () => {
+    const decision = resolvePresentation(
+      fixture({
+        target: {
+          ...fixture().target,
+          address: { ...fixture().target.address, surfaceId: 'another-region' },
+        },
+      }),
+    );
+
+    expect(decision).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.target-mismatch' },
+    });
   });
 
   it('deliberately does not silently fall back to a registry suggestion after an authored candidate is rejected', () => {
@@ -349,6 +396,24 @@ describe('resolvePresentation', () => {
     );
 
     expect(decision).toMatchObject({ status: 'ready', receipt: { selectedCandidate: 'table' } });
+  });
+
+  it('selects a compatible soft preference when competing candidates are both eligible', () => {
+    const preferredContext = context();
+    const decision = resolvePresentation(
+      fixture({
+        registry: registry([manifest(tableRef, 100), manifest(listRef, 0)]),
+        context: {
+          ...preferredContext,
+          task: {
+            ...preferredContext.task,
+            viewPreference: { representation: listRef.id, strength: 'preferred' },
+          },
+        },
+      }),
+    );
+
+    expect(decision).toMatchObject({ status: 'ready', receipt: { selectedCandidate: 'list' } });
   });
 
   it('explains an explicit pin that conflicts during candidate coverage validation', () => {
