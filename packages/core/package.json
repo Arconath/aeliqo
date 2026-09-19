@@ -37,6 +37,10 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
+    "./features": {
+      "types": "./dist/features/index.d.ts",
+      "import": "./dist/features/index.js"
+    },
     "./expressions": {
       "types": "./dist/expressions/index.d.ts",
       "import": "./dist/expressions/index.js"

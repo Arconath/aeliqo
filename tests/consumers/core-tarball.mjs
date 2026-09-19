@@ -126,6 +126,8 @@ assert.deepEqual(Object.keys(manifest.dependencies ?? {}), ['zod']);
 assert.deepEqual(Object.keys(manifest.peerDependencies ?? {}), []);
 assert.deepEqual(Object.keys(manifest.optionalDependencies ?? {}), []);
 assert.equal(manifest.exports?.['./schema']?.import, './dist/contracts/schemas.js');
+assert.equal(manifest.exports?.['./features']?.import, './dist/features/index.js');
+assert.equal(manifest.exports?.['./features']?.types, './dist/features/index.d.ts');
 assert.equal(typeof manifest.exports?.['./schemas/*'], 'string');
 assert.equal(manifest.exports?.['.'].import, './dist/index.js');
 assert.equal(manifest.exports?.['.'].types, './dist/index.d.ts');
@@ -925,6 +927,12 @@ import {
 import {
   validateInteractionGraph,
   } from '@aeliqo/core/interaction';
+import { z } from 'zod';
+import {
+  defineDataFeature,
+  defineFeature,
+} from '@aeliqo/core/features';
+import type { DataFeatureDefinition, FeatureIntentValue } from '@aeliqo/core/features';
 import {
   checkExpression,
   } from '@aeliqo/core/expressions';
@@ -980,6 +988,28 @@ import type {
   QueryResult,
   QuerySource,
 } from '@aeliqo/core/query';
+const installedPersonSchema = z.object({id:z.string(), name:z.string()});
+const installedPeopleFeature = defineDataFeature({id:'people',
+  schema:installedPersonSchema,
+  identity:['id']});
+const typedPeopleFeature: DataFeatureDefinition<typeof installedPersonSchema> = installedPeopleFeature;
+const installedJobFeature = defineFeature({id:'job',
+  capabilities:[{ref:{id:'job.status', revision:'1'},
+    kind:'status',
+    schema:z.object({jobId:z.string(), state:z.string()})}],
+  views:[{ref:{id:'job.progress', revision:'1'},
+    capabilities:[{id:'job.status', revision:'1'}]}],
+  intents:[{ref:{id:'job.configure', revision:'1'},
+    schema:z.object({template:z.string()}),
+    capabilities:[{id:'job.status', revision:'1'}],
+    views:[{id:'job.progress', revision:'1'}]}]});
+const parsedInstalledJob = installedJobFeature.parseIntent({intent:{id:'job.configure', revision:'1'},
+  input:{template:'invoice'}});
+// @ts-expect-error Data feature identities are immutable metadata.
+installedPeopleFeature.identity.push('name');
+// @ts-expect-error A typed job intent requires the declared input shape.
+const wrongInstalledJobInput: FeatureIntentValue<typeof installedJobFeature.intents> = {intent:{id:'job.configure', revision:'1'}, input:{template:7}};
+void [typedPeopleFeature, parsedInstalledJob, wrongInstalledJobInput];
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
 declare const visualizationResult: Result;
 const visualization: VisualizationSpec = {version: '1',

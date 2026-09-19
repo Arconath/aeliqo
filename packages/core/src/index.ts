@@ -9,3 +9,22 @@ export type {
   ResourcePresentationDefaults,
   StandardIntentKind,
 } from './app/types.js';
+export {
+  defineDataFeature,
+  defineFeature,
+  DATA_FEATURE_VIEW_ALIASES,
+  FeatureDefinitionError,
+} from './features/index.js';
+export type {
+  DataFeatureDefinition,
+  DataFeatureInput,
+  DataFeatureViewAlias,
+  FeatureCapabilityDefinition,
+  FeatureCapabilityKind,
+  FeatureDefinition,
+  FeatureIntentDefinition,
+  FeatureIntentValue,
+  FeatureViewDefinition,
+  NonDataFeatureDefinition,
+  NonDataFeatureInput,
+} from './features/index.js';

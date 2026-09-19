@@ -46,6 +46,10 @@ export default {
   ignoreBinaries: ['go', 'build'],
   ignoreFiles: ['**/*.fixture.*'],
   ignoreIssues: {
+    // T01 intentionally freezes a declaration-only public surface and complete
+    // consumer probes before the matching production modules land.
+    'tests/vnext/api-contract.ts': ['exports', 'types'],
+    'tests/vnext/types/advanced.tsx': ['exports', 'types'],
     'tests/**/fixtures/**': ['exports', 'types'],
     'tests/**/fixtures.{ts,tsx,js,mjs}': ['exports', 'types'],
     'tests/**/fixture.{ts,tsx,js,mjs}': ['exports', 'types'],

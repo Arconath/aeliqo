@@ -1,10 +1,19 @@
 ---
-id: "release-notes"
-path: "/ship/release-notes/"
-section: "Ship"
-title: "Aeliqo 0.4 release notes"
-description: "The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages."
+id: 'release-notes'
+path: '/ship/release-notes/'
+section: 'Ship'
+title: 'Aeliqo 0.4 release notes'
+description: 'The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages.'
 ---
+
+## vNext candidate (unreleased)
+
+- `@aeliqo/core/features` introduces immutable data and non-data feature
+  definitions. Data features lower through the existing resource/catalog path;
+  non-data features declare versioned intents, views, and bounded capability
+  schemas without fabricating relational data.
+- This candidate has not been published or deployed. Its runtime, React,
+  migration, and compatibility gates remain in progress.
 
 ## 0.4.2
 

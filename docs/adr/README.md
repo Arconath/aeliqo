@@ -15,3 +15,4 @@ ADR when the product changes.
 - [009 · Canonical schema](009-canonical-schema.md)
 - [010 · Replayable presentation plans](010-replayable-presentation-plans.md)
 - [011 · Aeliqo 0.4 product boundaries](011-aeliqo-0.4-product-boundaries.md)
+- [012 · Scoped surface API and compatibility boundary](012-scoped-surface-api.md)
