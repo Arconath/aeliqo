@@ -159,6 +159,45 @@ it.each(['throw', 'null', 'getter'] as const)(
   },
 );
 
+it('returns denied when transition preparation reentrantly invalidates A', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const a = f.currentOrders();
+  f.host.onPreparation('globex', () => f.scope.invalidate('revoked'));
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'denied',
+    diagnosticCode: 'scope.inactive',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'denied', selector: null, invalidationReason: 'revoked' });
+  expect(a.getSnapshot().phase).toBe('disposed');
+  expect(f.host.events).not.toContain('activate:globex');
+  expect(f.host.events).not.toContain('deactivate:globex');
+  expect(f.actions.hasActive()).toBe(false);
+  f.disposeRuntime();
+  expect(f.scope.getSnapshot().status).toBe('disposed');
+});
+
+it('returns disposed when transition preparation reentrantly disposes A', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const a = f.currentOrders();
+  f.host.onPreparation('globex', () => f.scope.dispose());
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'disposed',
+    diagnosticCode: 'scope.disposed',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null });
+  expect(a.getSnapshot().phase).toBe('disposed');
+  expect(f.host.events).not.toContain('activate:globex');
+  expect(f.host.events).not.toContain('deactivate:globex');
+  expect(f.actions.hasActive()).toBe(false);
+  const events = [...f.host.events];
+  f.disposeRuntime();
+  expect(f.host.events).toEqual(events);
+});
+
 it('keeps full lineage and parallel scope instances isolated for equal business IDs', async () => {
   const f = await createParallelScopeFixture();
   const parent = f.parentOrders;
@@ -407,6 +446,48 @@ it('recomputes the terminal result when post-commit B compensation disposes the 
   expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null });
   expect(f.host.events.filter((event) => event === 'deactivate:globex')).toHaveLength(1);
   expect(f.actions.hasActive()).toBe(false);
+  f.disposeRuntime();
+});
+
+it('returns disposed when failed-B publication is disposed from its second lifecycle fence', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  f.host.failActivate('globex', 'return');
+  let fenceCount = 0;
+  const unsubscribe = f.scope.subscribeFence!(() => {
+    fenceCount += 1;
+    if (fenceCount === 2) f.scope.dispose();
+  });
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'disposed',
+    diagnosticCode: 'scope.disposed',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null });
+  expect(f.host.events.filter((event) => event === 'activate:globex')).toHaveLength(1);
+  expect(f.host.events.filter((event) => event === 'deactivate:globex')).toHaveLength(1);
+  expect(f.actions.hasActive()).toBe(false);
+  unsubscribe();
+  f.disposeRuntime();
+});
+
+it('returns disposed when denied-state notification disposes failed B publication', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  f.host.failActivate('globex', 'return');
+  const unsubscribe = f.scope.subscribe(() => {
+    if (f.scope.getSnapshot().status === 'denied') f.scope.dispose();
+  });
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'disposed',
+    diagnosticCode: 'scope.disposed',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null });
+  expect(f.host.events.filter((event) => event === 'activate:globex')).toHaveLength(1);
+  expect(f.host.events.filter((event) => event === 'deactivate:globex')).toHaveLength(1);
+  expect(f.actions.hasActive()).toBe(false);
+  unsubscribe();
   f.disposeRuntime();
 });
 

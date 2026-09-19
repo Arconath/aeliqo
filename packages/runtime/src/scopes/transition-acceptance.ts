@@ -86,6 +86,14 @@ export async function prepareTransition(input: TransitionAcceptanceInput): Promi
     activationEpoch: input.capture.activationEpoch,
     leaveRevision: input.capture.leaveRevision,
   });
+  const interrupted = activationBoundaryFailure({
+    ...input.readState(),
+    id: input.id,
+    expectedResolution: state.resolution,
+    expectedSnapshot: state.snapshot,
+  });
+  if (interrupted !== undefined) return interrupted;
+  if (input.signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
   return prepared.ok ? input.activate() : input.retain(prepared);
 }
 
@@ -113,6 +121,14 @@ function publishedBoundaryFailure(input: TransitionCommitInput, epoch: number): 
     state.snapshot.activationEpoch !== epoch
   )
     return transitionFailure('stale', 'scope.transition-stale');
+  return undefined;
+}
+
+function failedBoundaryTerminal(input: TransitionCommitInput): ScopeTransitionResult | undefined {
+  const state = input.readState();
+  if (state.disposed || state.snapshot.status === 'disposed') return transitionFailure('disposed', 'scope.disposed');
+  if (state.snapshot.status === 'denied' && state.snapshot.invalidationReason !== undefined)
+    return transitionFailure('denied', 'scope.inactive');
   return undefined;
 }
 
@@ -152,7 +168,8 @@ export function commitTransition(input: TransitionCommitInput): ScopeTransitionR
     deactivate(input.resolution);
     failure = interrupted();
     if (failure !== undefined) return failure;
-    return input.failClosed(firstDiagnosticCode(activated.diagnostics, 'scope.activation-failed'));
+    const closed = input.failClosed(firstDiagnosticCode(activated.diagnostics, 'scope.activation-failed'));
+    return failedBoundaryTerminal(input) ?? closed;
   }
   const published = input.publish(epoch);
   return publishedBoundaryFailure(input, epoch) ?? published;
