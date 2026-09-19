@@ -118,6 +118,7 @@ describe('resolvePresentation', () => {
         },
         clarification: {
           kind: 'measure',
+          representation: tableRef,
           diagnostic: { code: 'presentation.ambiguous-measure', message: 'Choose a measure.', retryable: false },
           choices: [
             { id: 'revenue', label: 'https://secret.invalid/?cookie=session' },
@@ -148,6 +149,7 @@ describe('resolvePresentation', () => {
       fixture({
         clarification: {
           kind: 'measure',
+          representation: tableRef,
           diagnostic: { code: 'presentation.ambiguous-measure', message: 'secret', retryable: false },
           choices: [{ id: choiceSecret, label: choiceSecret }],
         },
@@ -194,6 +196,22 @@ describe('resolvePresentation', () => {
     });
 
     expect(resolvePresentation(fixture({ context: ordinary }))).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.input' },
+    });
+    expect(reads).toBe(0);
+  });
+
+  it('rejects a proxied nested context without invoking its value traps', () => {
+    let reads = 0;
+    const proxied = new Proxy(context(), {
+      get(target, property, receiver) {
+        reads++;
+        return Reflect.get(target, property, receiver);
+      },
+    });
+
+    expect(resolvePresentation(fixture({ context: proxied }))).toMatchObject({
       status: 'unsupported',
       diagnostic: { code: 'presentation.input' },
     });

@@ -378,15 +378,21 @@ function clarificationChoices(context: RecipeContext, kind: 'measure' | 'time') 
     if (kind === 'time') return field.type.value === 'date' || field.type.value === 'instant';
     return field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value);
   });
-  const requestedCompatible = compatible.filter((field) => requested.has(field.id));
-  return (requestedCompatible.length > 0 ? requestedCompatible : compatible)
+  return compatible
+    .filter((field) => requested.has(field.id))
     .map((field) => ({ id: field.id, label: field.id }))
     .sort((left, right) => left.id.localeCompare(right.id));
 }
 
 function trendClarification(context: RecipeContext, diagnostic: Diagnostic): PresentationClarification {
   const kind = diagnostic.code.endsWith('.time') ? 'time' : 'measure';
-  return { kind, diagnostic, choices: clarificationChoices(context, kind) };
+  return { kind, representation: aliases.trend!.ref, diagnostic, choices: clarificationChoices(context, kind) };
+}
+
+function authorable(context: RecipeContext, name: keyof typeof aliases): boolean {
+  const operation = context.task.needs[0]?.operation;
+  const view = aliases[name]!;
+  return operation !== undefined && allowed(context, view.ref) && supportsOperation(view.operations, operation);
 }
 
 function authorKnownView(context: RecipeContext, name: keyof typeof aliases): Outcome<SelectedView> {
@@ -435,7 +441,8 @@ export function standardRecipeCandidates(context: RecipeContext): Outcome<Standa
   )?.[0] as keyof typeof aliases | undefined;
   if (preferredAlias !== undefined) names.add(preferredAlias);
   let clarification: PresentationClarification | undefined;
-  for (const name of [...names].sort()) {
+  const eligibleNames = [...names].filter((name) => authorable(context, name)).sort();
+  for (const name of eligibleNames) {
     const view = authorKnownView(context, name);
     if (!view.ok) {
       const diagnostic = view.diagnostics[0]!;
@@ -472,7 +479,8 @@ export const STANDARD_VIEW_REFS = Object.freeze({
 
 /** Resolve a resource-facing standard alias to the canonical renderer representation ID. */
 export function canonicalViewId(view: string): string {
-  return (aliases[view] ?? Object.values(aliases).find((candidate) => candidate.ref.id === view))?.ref.id ?? view;
+  const alias = Object.hasOwn(aliases, view) ? aliases[view] : undefined;
+  return (alias ?? Object.values(aliases).find((candidate) => candidate.ref.id === view))?.ref.id ?? view;
 }
 
 export function recipeSupports(recipe: RecipeDefinition, kind: RecipeContext['intent']['kind']): boolean {

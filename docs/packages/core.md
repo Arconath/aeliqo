@@ -207,7 +207,8 @@ The host remains responsible for authorization, the remaining immutable-address
 fields, scope fences, result materialization, and commit/renderer transactions.
 
 `ready` contains one validated plan and a bounded decision receipt;
-`needs-input` contains a stable, bounded set of typed choices; and
+`needs-input` contains a stable, bounded set of typed choices tied to a
+registered, policy-eligible representation; and
 `unsupported` contains a diagnostic plus candidate rejection codes. Candidate
 order cannot change an equivalent decision: eligibility precedes ranking, with
 an eligible soft task preference ranked before quality and continuity, then

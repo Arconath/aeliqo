@@ -207,6 +207,8 @@ export interface PresentationChoice {
 /** Explicit missing semantics; resolver never infers a choice from descriptor order. */
 export interface PresentationClarification {
   readonly kind: string;
+  /** Registered representation that is otherwise eligible but needs this semantic choice. */
+  readonly representation: VersionRef;
   readonly diagnostic: import('../contracts/types.js').Diagnostic;
   readonly choices: readonly PresentationChoice[];
 }

@@ -45,6 +45,7 @@ const choiceSchema = z.strictObject({
 });
 const clarificationSchema = z.strictObject({
   kind: z.enum(['measure', 'time']),
+  representation: versionRefSchema,
   diagnostic: diagnosticSchema,
   choices: z.array(choiceSchema).check(z.minLength(1), z.maxLength(choiceLimit)),
 });
@@ -111,6 +112,7 @@ function parseClarification(input: unknown): PresentationClarification | undefin
     .sort((left, right) => compareText(left.id, right.id));
   return freezePresentation({
     kind: clarification.kind,
+    representation: clarification.representation,
     diagnostic: {
       code: clarification.diagnostic.code,
       message: 'Semantic input is required.',
@@ -120,6 +122,29 @@ function parseClarification(input: unknown): PresentationClarification | undefin
   });
 }
 
+function clarificationRepresentationEligible(
+  clarification: PresentationClarification,
+  prepared: CompositionState,
+): boolean {
+  const key = versionRefKey(clarification.representation);
+  const manifest = prepared.manifests.get(key);
+  const constraints = prepared.prepared.constraints;
+  if (
+    manifest === undefined ||
+    !prepared.prepared.rendererCapabilities.some((ref) => versionRefKey(ref) === key) ||
+    !constraints.allowedRepresentations.includes(manifest.ref.id) ||
+    (manifest.extension && !constraints.extensionAllowlist.some((ref) => versionRefKey(ref) === key))
+  )
+    return false;
+  const pin = constraints.task.viewPreference;
+  if (pin?.strength === 'explicit' && pin.representation !== manifest.ref.id) return false;
+  return constraints.taskNeeds
+    .filter((need) => need.required)
+    .every((need) =>
+      manifest.operations.some((operation) => versionRefKey(operation) === versionRefKey(need.operation)),
+    );
+}
+
 function authorizedClarification(
   clarification: PresentationClarification,
   prepared: CompositionState,
@@ -127,7 +152,11 @@ function authorizedClarification(
   const kind = clarification.kind;
   const expectedCode = `presentation.ambiguous-${kind}`;
   const recipeCode = `web.recipe.needs-input.${kind}`;
-  if (clarification.diagnostic.code !== expectedCode && clarification.diagnostic.code !== recipeCode) return undefined;
+  if (
+    (clarification.diagnostic.code !== expectedCode && clarification.diagnostic.code !== recipeCode) ||
+    !clarificationRepresentationEligible(clarification, prepared)
+  )
+    return undefined;
   const allowed = new Set(
     prepared.prepared.results.flatMap((result) =>
       result.fields
@@ -240,6 +269,8 @@ type ResolverFields = Pick<
   'id' | 'revision' | 'preconditions' | 'context' | 'registry' | 'target' | 'candidates' | 'clarification'
 >;
 
+type OwnedResolverRequest = Pick<PresentationCompositionRequest, 'id' | 'revision' | 'preconditions' | 'context'>;
+
 function resolverFields(input: unknown): ResolverFields | undefined {
   if (input === null || typeof input !== 'object' || Array.isArray(input)) return undefined;
   const values: Record<string, unknown> = {};
@@ -260,16 +291,26 @@ function resolverFields(input: unknown): ResolverFields | undefined {
   return values as unknown as ResolverFields;
 }
 
-function resolverIngress(input: PresentationResolverInput): ResolverIngress {
-  const fields = resolverFields(input);
-  if (fields === undefined) return { ok: false, decision: unsupported('presentation.input') };
-  const requestWire = inspectWire({
+function ownedResolverRequest(fields: ResolverFields): OwnedResolverRequest | undefined {
+  const inspected = inspectWire({
     id: fields.id,
     revision: fields.revision,
     preconditions: fields.preconditions,
     context: fields.context,
   });
-  if (!requestWire.ok) return { ok: false, decision: unsupported('presentation.input') };
+  if (!inspected.ok) return undefined;
+  try {
+    return structuredClone(inspected.value) as OwnedResolverRequest;
+  } catch {
+    return undefined;
+  }
+}
+
+function resolverIngress(input: PresentationResolverInput): ResolverIngress {
+  const fields = resolverFields(input);
+  if (fields === undefined) return { ok: false, decision: unsupported('presentation.input') };
+  const ownedRequest = ownedResolverRequest(fields);
+  if (ownedRequest === undefined) return { ok: false, decision: unsupported('presentation.input') };
   const target = parseTarget(fields.target);
   if (target === undefined) return { ok: false, decision: unsupported('presentation.target') };
   if (target.state !== 'active') return { ok: false, decision: unsupported('presentation.target-inactive') };
@@ -279,10 +320,7 @@ function resolverIngress(input: PresentationResolverInput): ResolverIngress {
   if (fields.clarification !== undefined && clarification === undefined)
     return { ok: false, decision: unsupported('presentation.clarification') };
   const request: PresentationCompositionRequest = {
-    id: fields.id,
-    revision: fields.revision,
-    preconditions: fields.preconditions,
-    context: fields.context,
+    ...ownedRequest,
     candidates: candidates.map(compositionCandidate),
     searchRegistered: candidates.length === 0,
   };

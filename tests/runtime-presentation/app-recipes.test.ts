@@ -210,7 +210,11 @@ function trendInput(requestedMeasures: readonly [string, ...string[]]) {
   };
 }
 
-function resolveStandard(context: ReturnType<typeof input> | ReturnType<typeof trendInput>) {
+function resolveStandard(
+  context: (ReturnType<typeof input> | ReturnType<typeof trendInput>) & {
+    readonly presentationPolicy?: { readonly allowedRepresentations: readonly string[] };
+  },
+) {
   if (context.result === undefined) throw new Error('Expected a materialized standard result.');
   const row = Object.fromEntries(
     context.result.fields.map((field) => [
@@ -239,7 +243,7 @@ function resolveStandard(context: ReturnType<typeof input> | ReturnType<typeof t
     preconditions: context.current,
     context: {
       task: context.task,
-      experience: experience(registry.value, context.current.experienceRevision),
+      experience: experience(registry.value, context.current.experienceRevision, context.presentationPolicy),
       results: [context.result],
       current: context.current,
       environment: context.environment,
@@ -295,6 +299,23 @@ describe('0.3 standard recipes', () => {
         { id: 'headcount', label: 'headcount' },
       ],
     });
+  });
+
+  it('does not prompt for a disallowed trend when an eligible table can present the task', () => {
+    const decision = resolveStandard({
+      ...trendInput(['headcount', 'capacity']),
+      presentationPolicy: { allowedRepresentations: ['data.table'] },
+    });
+
+    expect(decision).toMatchObject({ status: 'ready' });
+    if (decision.status === 'ready') expect(decision.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+  });
+
+  it('treats inherited object keys as unknown view preferences instead of executing alias lookups', () => {
+    const decision = resolveStandard(input('browse', 800, '__proto__'));
+
+    expect(decision).toMatchObject({ status: 'ready' });
+    if (decision.status === 'ready') expect(decision.plan.plan.nodes[0]?.representation.id).toBe('data.table');
   });
 
   it('adapts browse from a table to cards using container width without a model call', () => {
