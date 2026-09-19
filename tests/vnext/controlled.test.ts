@@ -81,3 +81,42 @@ it('ignores late host acceptance after controlled surface disposal', async () =>
   expect(disposed.phase).toBe('disposed');
   f.dispose();
 });
+
+it('retires a pending proposal and masks state when permission changes before acceptance', async () => {
+  const f = createControlledFixture();
+  const result = await f.surface.request({ kind: 'browse' });
+  if (result.status !== 'proposed') throw new Error('Expected a proposal.');
+  f.scope.setFeaturePermission('people', false);
+
+  await expect(f.hostStore.accept(result.proposalId)).resolves.toEqual({ status: 'accepted' });
+  expect(f.surface.getSnapshot()).toMatchObject({ phase: 'denied', state: { rows: [], selection: [] } });
+
+  f.scope.setFeaturePermission('people', true);
+  expect(f.surface.getSnapshot()).toMatchObject({ phase: 'denied', state: { rows: [], selection: [] } });
+  f.dispose();
+});
+
+it('detaches the external store when a listener throws during disposal', () => {
+  const f = createControlledFixture();
+  f.surface.subscribe(() => {
+    throw new Error('observer failure');
+  });
+  expect(f.hostStore.listenerCount()).toBe(1);
+
+  expect(() => f.surface.dispose()).not.toThrow();
+  expect(f.hostStore.listenerCount()).toBe(0);
+  f.dispose();
+});
+
+it('retires a proposal when the host callback throws', async () => {
+  const f = createControlledFixture({ throwAfterProposal: true });
+  const before = f.surface.getSnapshot();
+  const result = await f.surface.request({ kind: 'browse' });
+  expect(result).toEqual({ status: 'failed', diagnosticCode: 'surface.proposal-failed' });
+  const proposal = f.hostStore.proposals[0];
+  if (proposal === undefined) throw new Error('Expected the host to record the proposal before throwing.');
+
+  await expect(f.hostStore.accept(proposal.proposalId)).resolves.toEqual({ status: 'accepted' });
+  expect(f.surface.getSnapshot()).toBe(before);
+  f.dispose();
+});

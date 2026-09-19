@@ -17,6 +17,7 @@ import type {
   SurfaceOwnership,
   SurfaceRequest,
   SurfaceScope,
+  SurfaceScopeSnapshot,
   SurfaceSnapshot,
 } from './types.js';
 
@@ -33,6 +34,11 @@ interface SurfaceControllerConfig<I, S> {
     signal: AbortSignal,
   ) => Promise<{ readonly receipt: RuntimeRenderReceipt; readonly state?: S }>;
   readonly teardown: () => void;
+}
+
+interface PendingProposal<I> {
+  readonly proposal: ReturnType<ProposalSequencer<I>['create']>;
+  readonly scope: SurfaceScopeSnapshot;
 }
 
 function failure(status: Exclude<RequestResult['status'], 'committed' | 'proposed'>, diagnosticCode: string) {
@@ -74,10 +80,12 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private readonly listeners = new SurfaceListeners();
   private readonly proposals = new ProposalSequencer<I>();
   private readonly ownership: SurfaceOwnership<I, S>;
-  private readonly pendingProposals = new Map<string, ReturnType<ProposalSequencer<I>['create']>>();
+  private readonly pendingProposals = new Map<string, PendingProposal<I>>();
+  private readonly safeState: S;
   private snapshot: SurfaceSnapshot<I, S>;
   private externalSource: ExternalSurfaceSnapshot<I, S> | undefined;
   private externalSnapshot: SurfaceSnapshot<I, S> | undefined;
+  private maskedSnapshot: SurfaceSnapshot<I, S> | undefined;
   private active: AbortController | undefined;
   private sequence = 0;
   private disposed = false;
@@ -95,10 +103,12 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
       intent,
       state: config.initialState,
     });
+    this.safeState = this.snapshot.state;
   }
 
   getSnapshot(): SurfaceSnapshot<I, S> {
     if (this.disposed) return this.snapshot;
+    if (!this.config.scope.authorize(this.config.feature.id).ok) return this.maskDenied(false);
     if (this.ownership.mode !== 'external') return this.snapshot;
     return this.refreshExternal(this.ownership.store.getSnapshot());
   }
@@ -145,7 +155,8 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     if (this.ownership.mode === 'internal' && this.ownership.defaultIntent !== undefined)
       return this.ownership.defaultIntent;
     if (this.config.feature.kind === 'data') return dataIntent(this.config.feature.id, 0, { kind: 'browse' }) as I;
-    return undefined as I;
+    if (this.ownership.mode === 'external') return this.ownership.store.getSnapshot().intent;
+    throw new TypeError('Internally owned capability surfaces require a default intent.');
   }
 
   private validateRequest(options: RequestOptions): RequestResult | undefined {
@@ -157,8 +168,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
       return failure('stale', 'surface.revision-mismatch');
     const authorized = this.config.scope.authorize(this.config.feature.id);
     if (!authorized.ok) {
-      if (this.ownership.mode === 'internal')
-        this.publish({ ...this.snapshot, phase: 'denied', state: undefined as S });
+      this.maskDenied(true);
       return failure('denied', authorized.diagnostics[0].code);
     }
     return undefined;
@@ -175,7 +185,10 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private propose(intent: I): RequestResult {
     const current = this.getSnapshot();
     const proposal = this.proposals.create(this.address, current.revision, intent);
-    this.pendingProposals.set(proposal.proposalId, proposal);
+    this.pendingProposals.set(proposal.proposalId, {
+      proposal,
+      scope: this.config.scope.getSnapshot(),
+    });
     if (this.pendingProposals.size > 32) {
       const oldest = this.pendingProposals.keys().next().value;
       if (oldest !== undefined) this.pendingProposals.delete(oldest);
@@ -184,6 +197,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
       (this.ownership as ExternalOwnership<I, S>).onProposal(proposal);
       return { status: 'proposed', proposalId: proposal.proposalId };
     } catch {
+      this.pendingProposals.delete(proposal.proposalId);
       return failure('failed', 'surface.proposal-failed');
     }
   }
@@ -258,7 +272,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     const scope = this.config.scope.getSnapshot();
     const authorized = this.config.scope.authorize(this.config.feature.id);
     if (!authorized.ok) {
-      this.publish({ ...before, phase: 'denied', state: undefined as S });
+      this.maskDenied(true);
       return failure('denied', authorized.diagnostics[0].code);
     }
     if (
@@ -279,27 +293,63 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     if (candidate.id !== this.id || !sameAddress(candidate.address, this.address))
       return this.externalSnapshot ?? this.snapshot;
     const decision = candidate.proposalDecision;
-    if (decision !== undefined && !this.acceptDecision(decision)) return this.externalSnapshot ?? this.snapshot;
+    const decisionResult = decision === undefined ? 'accepted' : this.acceptDecision(decision);
+    if (decisionResult === 'denied') {
+      this.externalSource = candidate;
+      return this.maskDenied(true);
+    }
+    if (decisionResult === 'ignored') return this.externalSnapshot ?? this.snapshot;
     this.externalSource = candidate;
     this.externalSnapshot = freezeSnapshot(candidate);
+    this.maskedSnapshot = undefined;
     return this.externalSnapshot;
   }
 
-  private acceptDecision(decision: NonNullable<ExternalSurfaceSnapshot<I, S>['proposalDecision']>): boolean {
-    const proposal = this.pendingProposals.get(decision.proposalId);
+  private acceptDecision(
+    decision: NonNullable<ExternalSurfaceSnapshot<I, S>['proposalDecision']>,
+  ): 'accepted' | 'denied' | 'ignored' {
+    const pending = this.pendingProposals.get(decision.proposalId);
+    if (pending === undefined) return 'ignored';
+    const { proposal } = pending;
     if (
-      proposal === undefined ||
       proposal.expectedRevision !== decision.expectedRevision ||
       !sameAddress(proposal.address, decision.address) ||
       proposal.expectedRevision !== (this.externalSnapshot ?? this.snapshot).revision
     )
-      return false;
+      return 'ignored';
     this.pendingProposals.delete(decision.proposalId);
-    return decision.status === 'accepted';
+    if (decision.status === 'rejected') return 'ignored';
+    if (!this.scopeStillValid(pending.scope)) return 'denied';
+    return 'accepted';
+  }
+
+  private scopeStillValid(expected: SurfaceScopeSnapshot): boolean {
+    const current = this.config.scope.getSnapshot();
+    return (
+      current.active &&
+      current.runtimeId === this.address.runtimeId &&
+      current.scopeInstanceId === this.address.scopeInstanceId &&
+      current.activationEpoch === this.address.activationEpoch &&
+      current.permissionRevision === expected.permissionRevision &&
+      this.config.scope.authorize(this.config.feature.id).ok
+    );
+  }
+
+  private maskDenied(notify: boolean): SurfaceSnapshot<I, S> {
+    const current = this.externalSnapshot ?? this.snapshot;
+    this.pendingProposals.clear();
+    if (current === this.maskedSnapshot) return current;
+    const masked = freezeSnapshot({ ...current, phase: 'denied', state: this.safeState });
+    this.maskedSnapshot = masked;
+    this.snapshot = masked;
+    if (this.ownership.mode === 'external') this.externalSnapshot = masked;
+    if (notify) this.listeners.notify();
+    return masked;
   }
 
   private publish(input: SurfaceSnapshot<I, S>): void {
     this.snapshot = freezeSnapshot(input);
+    this.maskedSnapshot = undefined;
     this.listeners.notify();
   }
 }

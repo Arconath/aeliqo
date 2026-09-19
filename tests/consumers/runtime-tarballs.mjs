@@ -980,7 +980,7 @@ import type {Catalog,
   Intent,
   QuerySpec,
 } from '@aeliqo/core';
-import {defineDataFeature} from '@aeliqo/core/features';
+import {defineDataFeature, defineFeature} from '@aeliqo/core/features';
 import {z} from 'zod';
 import {createAeliqoRuntime, type AeliqoRuntime} from '@aeliqo/runtime';
 import type {CapabilitySurfaceBindings, DataSurfaceBindings, ExternalSurfaceStore, SurfaceController} from '@aeliqo/runtime/surfaces';
@@ -1062,6 +1062,13 @@ declare const externalStore: ExternalSurfaceStore<Intent, PeopleState>;
 const surfaceScope = surfaceRuntime.createLocalSurfaceScope({id: 'local', allowedFeatures: ['people']});
 const typedSurface: SurfaceController<Intent, PeopleState> = surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-main', feature: peopleFeature, bindings: peopleBindings});
 surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-controlled', feature: peopleFeature, bindings: peopleBindings, ownership: {mode: 'external', store: externalStore, onProposal: proposal => void proposal}});
+const reportFeature = defineFeature({id: 'report', capabilities: [{ref: {id: 'report.read', revision: '1'}, kind: 'read', schema: z.object({})}], intents: [{ref: {id: 'report.open', revision: '1'}, schema: z.object({}), capabilities: [{id: 'report.read', revision: '1'}]}]});
+const reportBindings: CapabilitySurfaceBindings<{readonly intent: {readonly id: 'report.open'; readonly revision: '1'}; readonly input: object}, {readonly value: string}> = {initialState: {value: 'initial'}, source: {kind: 'capability', read: async () => ({value: 'ready'})}};
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'report', feature: reportFeature, bindings: reportBindings, ownership: {mode: 'internal', defaultIntent: {intent: {id: 'report.open', revision: '1'}, input: {}}}});
+// @ts-expect-error Capability surfaces require explicit ownership.
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'report-missing-ownership', feature: reportFeature, bindings: reportBindings});
+// @ts-expect-error Internal capability ownership requires a typed default intent.
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'report-missing-intent', feature: reportFeature, bindings: reportBindings, ownership: {mode: 'internal'}});
 // @ts-expect-error Surface addresses are immutable targets.
 typedSurface.address.surfaceGeneration = 2;
 declare const bypassBinding: CapabilitySurfaceBindings<Intent, PeopleState>;
@@ -1152,12 +1159,13 @@ assert.equal(right.getSnapshot(), rightBefore);
 assert.deepEqual(left.getSnapshot().state.rows, [{id: 'sam', team: 'Engineering'}]);
 assert.equal((await left.request({kind: 'browse'}, {expectedAddress: right.address})).status, 'stale');
 
-const address = {runtimeId: 'installed-runtime', scopeInstanceId: 'installed-scope', activationEpoch: 1, surfaceId: 'controlled', surfaceGeneration: 1};
-let hostSnapshot = Object.freeze({id: 'controlled', address, revision: '0', phase: 'idle', intent: {version: '1', id: 'initial', resource: 'people', kind: 'browse'}, state: {rows: []}});
+let hostSnapshot;
 const listeners = new Set();
 const proposals = [];
-const store = {getSnapshot: () => hostSnapshot, subscribe: listener => (listeners.add(listener), () => listeners.delete(listener))};
+const store = {getSnapshot: () => {if (hostSnapshot === undefined) throw new Error('Host snapshot is not initialized.'); return hostSnapshot;}, subscribe: listener => (listeners.add(listener), () => listeners.delete(listener))};
 const controlled = runtime.createSurface({scope, id: 'controlled', feature, bindings, ownership: {mode: 'external', store, onProposal: proposal => proposals.push(proposal)}});
+const address = controlled.address;
+hostSnapshot = Object.freeze({id: 'controlled', address, revision: '0', phase: 'idle', intent: {version: '1', id: 'initial', resource: 'people', kind: 'browse'}, state: {rows: []}});
 const proposalResult = await controlled.request({kind: 'browse'});
 assert.equal(proposalResult.status, 'proposed');
 assert.equal(controlled.getSnapshot().revision, '0');

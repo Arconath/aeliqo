@@ -197,6 +197,7 @@ it('freezes copied address and state without freezing caller-owned objects', asy
       initialState: { nested: { value: 'empty' } },
       source: { kind: 'capability', read: async () => callerState },
     },
+    ownership: { mode: 'internal', defaultIntent: { kind: 'read' } },
   });
   await surface.request({ kind: 'read' });
   const snapshot = surface.getSnapshot();
@@ -225,5 +226,23 @@ it('rechecks local read permission for every request', async () => {
     status: 'denied',
     diagnosticCode: 'surface.permission-denied',
   });
+  expect(surface.getSnapshot()).toMatchObject({ phase: 'denied', state: { rows: [], selection: [] } });
+  f.dispose();
+});
+
+it('isolates throwing listeners from request completion and cleanup', async () => {
+  const f = createPeopleFixture();
+  const surface = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'throwing-listener',
+    feature: f.feature,
+    bindings: f.bindings,
+  });
+  surface.subscribe(() => {
+    throw new Error('observer failure');
+  });
+
+  await expect(surface.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'committed' });
+  expect(() => surface.dispose()).not.toThrow();
   f.dispose();
 });

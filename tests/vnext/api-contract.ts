@@ -265,6 +265,11 @@ export interface InternalOwnership<I> {
   readonly defaultIntent?: I;
 }
 
+export interface InternalCapabilityOwnership<I> {
+  readonly mode: 'internal';
+  readonly defaultIntent: I;
+}
+
 export interface SurfaceProposal<I> {
   readonly proposalId: string;
   readonly address: SurfaceAddress;
@@ -273,8 +278,19 @@ export interface SurfaceProposal<I> {
 }
 
 export interface ExternalSurfaceStore<I, S> {
-  getSnapshot(): SurfaceSnapshot<I, S>;
+  getSnapshot(): ExternalSurfaceSnapshot<I, S>;
   subscribe(listener: () => void): () => void;
+}
+
+export interface SurfaceProposalDecision {
+  readonly proposalId: string;
+  readonly address: SurfaceAddress;
+  readonly expectedRevision: SurfaceRevision;
+  readonly status: 'accepted' | 'rejected';
+}
+
+export interface ExternalSurfaceSnapshot<I, S> extends SurfaceSnapshot<I, S> {
+  readonly proposalDecision?: SurfaceProposalDecision;
 }
 
 export interface ExternalOwnership<I, S> {
@@ -284,6 +300,7 @@ export interface ExternalOwnership<I, S> {
 }
 
 export type SurfaceOwnership<I, S> = InternalOwnership<I> | ExternalOwnership<I, S>;
+export type CapabilitySurfaceOwnership<I, S> = InternalCapabilityOwnership<I> | ExternalOwnership<I, S>;
 
 export interface CreateScopeInput {
   readonly binding: ScopeBinding;
@@ -303,7 +320,7 @@ export interface CreateCapabilitySurfaceInput<I, S> {
   readonly id: string;
   readonly feature: FeatureDefinition<I> & { readonly kind: 'feature' };
   readonly bindings: CapabilitySurfaceBindings<I, S>;
-  readonly ownership?: SurfaceOwnership<I, S>;
+  readonly ownership: CapabilitySurfaceOwnership<I, S>;
 }
 
 export interface AeliqoRuntime {
@@ -356,7 +373,7 @@ export interface UseDataFeatureSurfaceOptions<S> {
 export interface UseCapabilitySurfaceOptions<I, S> {
   readonly id: string;
   readonly bindings: CapabilitySurfaceBindings<I, S>;
-  readonly ownership?: SurfaceOwnership<I, S>;
+  readonly ownership: CapabilitySurfaceOwnership<I, S>;
 }
 
 export declare function useSurface<Schema extends RuntimeObjectSchema<object>, S>(

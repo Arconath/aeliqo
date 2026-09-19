@@ -135,6 +135,11 @@ export interface InternalOwnership<I> {
   readonly defaultIntent?: I;
 }
 
+export interface InternalCapabilityOwnership<I> {
+  readonly mode: 'internal';
+  readonly defaultIntent: I;
+}
+
 export interface SurfaceProposal<I> {
   readonly proposalId: string;
   readonly address: SurfaceAddress;
@@ -166,6 +171,7 @@ export interface ExternalOwnership<I, S> {
 }
 
 export type SurfaceOwnership<I, S> = InternalOwnership<I> | ExternalOwnership<I, S>;
+export type CapabilitySurfaceOwnership<I, S> = InternalCapabilityOwnership<I> | ExternalOwnership<I, S>;
 
 export interface CreateDataSurfaceInput<S> {
   readonly scope: SurfaceScope;
@@ -180,5 +186,5 @@ export interface CreateCapabilitySurfaceInput<I, S> {
   readonly id: string;
   readonly feature: FeatureDefinition<I> & { readonly kind: 'feature' };
   readonly bindings: CapabilitySurfaceBindings<I, S>;
-  readonly ownership?: SurfaceOwnership<I, S>;
+  readonly ownership: CapabilitySurfaceOwnership<I, S>;
 }

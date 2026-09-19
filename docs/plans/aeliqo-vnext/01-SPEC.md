@@ -233,7 +233,7 @@ The `committed` controller result is not `renderer-ready` and neither proves a r
 
 Provide one discriminated ownership option when creating the surface:
 
-- Internal mode: runtime owns intent and view state; `defaultIntent` applies once.
+- Internal mode: runtime owns intent and view state; `defaultIntent` applies once. A capability surface must provide it because no feature-specific intent can be derived safely; data surfaces retain their canonical inert browse default.
 - External mode: a host-owned store provides stable `getSnapshot`, `subscribe`, and `onProposal`/acceptance. UI and agent requests are proposals until the host applies them. A host rejection must not be reported as a committed change.
 
 Do not expose both a controlled `intent` prop and a separate controller that secretly mutates the same intent. Do not infer acceptance from firing a callback. Prevent proposal loops with request identity and revision correlation.

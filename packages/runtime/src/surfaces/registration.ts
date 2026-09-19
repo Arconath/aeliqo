@@ -17,7 +17,7 @@ export interface SurfaceRegistration {
 export class SurfaceRegistry {
   private readonly active = new Set<string>();
   private readonly features = new Map<string, FeatureRegistration>();
-  private readonly generations = new Map<string, number>();
+  private generation = 0;
 
   constructor(private readonly runtimeId: string) {}
 
@@ -42,8 +42,8 @@ export class SurfaceRegistry {
         references: 1,
       });
     else existing.references += 1;
-    const generation = (this.generations.get(targetKey) ?? 0) + 1;
-    this.generations.set(targetKey, generation);
+    if (this.generation >= Number.MAX_SAFE_INTEGER) throw new TypeError('The surface generation limit was reached.');
+    const generation = ++this.generation;
     this.active.add(targetKey);
     const address = freezeAddress({
       runtimeId: this.runtimeId,

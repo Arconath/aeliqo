@@ -2,6 +2,7 @@ export { createLocalSurfaceScope } from './scope.js';
 export type {
   CapabilitySourceBinding,
   CapabilitySurfaceBindings,
+  CapabilitySurfaceOwnership,
   CreateCapabilitySurfaceInput,
   CreateDataSurfaceInput,
   CreateLocalSurfaceScopeInput,
@@ -13,6 +14,7 @@ export type {
   ExternalSurfaceSnapshot,
   ExternalSurfaceStore,
   InternalOwnership,
+  InternalCapabilityOwnership,
   LocalSurfaceScope,
   RequestOptions,
   RequestResult,

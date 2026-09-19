@@ -2,6 +2,7 @@ import type { Intent } from '@aeliqo/core';
 import type {
   ExternalSurfaceStore,
   ExternalSurfaceSnapshot,
+  LocalSurfaceScope,
   SurfaceAddress,
   SurfaceController,
   SurfaceProposal,
@@ -112,9 +113,10 @@ class ControlledHostStore implements ExternalSurfaceStore<Intent, PeopleSurfaceS
   }
 }
 
-export function createControlledFixture(): {
+export function createControlledFixture(options: { readonly throwAfterProposal?: boolean } = {}): {
   readonly surface: SurfaceController<Intent, PeopleSurfaceState>;
   readonly hostStore: ControlledHostStore;
+  readonly scope: LocalSurfaceScope;
   readonly dispose: () => void | Promise<void>;
 } {
   const people = createPeopleFixture();
@@ -135,8 +137,11 @@ export function createControlledFixture(): {
     ownership: {
       mode: 'external',
       store: hostStore,
-      onProposal: (proposal) => hostStore.record(proposal),
+      onProposal: (proposal) => {
+        hostStore.record(proposal);
+        if (options.throwAfterProposal === true) throw new Error('host proposal failure');
+      },
     },
   });
-  return { surface, hostStore, dispose: people.dispose };
+  return { surface, hostStore, scope: people.scope, dispose: people.dispose };
 }

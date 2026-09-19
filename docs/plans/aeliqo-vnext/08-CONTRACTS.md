@@ -111,11 +111,17 @@ This advanced wrapper's runtime and scope are **explicit props from the applicat
 
 A surface address is `(runtimeId, scopeInstanceId, activationEpoch, surfaceId, surfaceGeneration)`. It is captured on creation and cannot be changed. Principal/membership/policy are re-established by the trusted host for operations; these client-visible coordinates are not access tokens.
 
-`runtime.createSurface({scope, id, feature, bindings, ownership?})` requires an active explicit scope. Construction is inert: it installs no observer or network request. An explicit imperative `request()` can start a headless operation; React adapters start their default operation only in committed lifecycle. Invalid setup fails before external effects. `useSurface(feature,{id,bindings})` obtains the nearest active scope and creates/attaches its controller with framework-safe lifecycle. Local no-provider helper has a separate explicitly local default. Duplicate mutable render owners fail; a read-only mirror is not enabled implicitly.
+`runtime.createSurface({scope, id, feature, bindings, ownership?})` requires an active explicit scope. Ownership remains optional for data surfaces because they have a canonical inert browse intent. Capability surfaces require either internal ownership with a typed `defaultIntent` or external ownership whose host snapshot supplies the intent; they never expose `undefined` as `I`. Construction is inert: it installs no observer or network request. An explicit imperative `request()` can start a headless operation; React adapters start their default operation only in committed lifecycle. Invalid setup fails before external effects. `useSurface(feature,{id,bindings})` obtains the nearest active scope and creates/attaches its controller with framework-safe lifecycle. Local no-provider helper has a separate explicitly local default. Duplicate mutable render owners fail; a read-only mirror is not enabled implicitly.
 
 On A→B, the scope owner closes A activation and hooks create B controllers. A callback retaining the old A controller stays an A callback and fails stale/cancelled/disposed; it must not silently become a B action. Returning B→A creates a newer activation even though the business workspace ID is equal. An A1 response cannot commit to A2. Similarly, unmount/remount of the same surface ID advances surfaceGeneration. Data updates inside the same activation do not recreate the runtime/controller.
 
 Snapshots expose `.address`, generic `.state`, `.intent`, `.revision`, and aggregate `.phase`. Data-specialized selection belongs to its typed state, not a magical `.selection` field added only in a test. Exact data loading/error/partial states can be a discriminated data substate; a job feature does not acquire pretend rows.
+
+Denied surface snapshots retain their declared generic shape by exposing the
+binding's copied inert `initialState`; they never cast `undefined` to `S` or
+continue exposing previously authorized rows. An external proposal captures
+the scope permission revision and is retired if activity, address, permission,
+or authorization changes before the matching host decision is observed.
 
 ## 6. Dirty state, caches and trust
 

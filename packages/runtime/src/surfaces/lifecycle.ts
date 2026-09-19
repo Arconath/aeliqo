@@ -15,7 +15,13 @@ export class SurfaceListeners {
   }
 
   notify(): void {
-    for (const listener of [...this.listeners]) listener();
+    for (const listener of [...this.listeners]) {
+      try {
+        listener();
+      } catch {
+        /* Observers never control surface state or cleanup. */
+      }
+    }
   }
 
   dispose(): void {
@@ -24,7 +30,12 @@ export class SurfaceListeners {
   }
 
   private detachExternal(): void {
-    this.externalUnsubscribe?.();
+    const unsubscribe = this.externalUnsubscribe;
     this.externalUnsubscribe = undefined;
+    try {
+      unsubscribe?.();
+    } catch {
+      /* Host observer cleanup cannot retain surface listeners. */
+    }
   }
 }

@@ -145,6 +145,14 @@ snapshot without freezing the caller-owned object. This keeps construction
 inert and makes the public `SurfaceSnapshot<S>` type truthful; the declaration
 consumer and installed runtime consumer cover the same shape.
 
+The same non-optional rule applies to `SurfaceSnapshot.intent`. Data surfaces
+have a canonical inert browse intent. An internally owned capability surface
+cannot derive a valid feature-specific input, so its create input requires
+`ownership: { mode: 'internal', defaultIntent }`; external ownership takes the
+initial intent from its host snapshot. This discriminated requirement replaces
+the earlier optional capability ownership shape instead of exposing
+`undefined` as a typed intent.
+
 ### Documentation source map
 
 `docs/plans/aeliqo-vnext/01-SPEC.md` and `08-CONTRACTS.md` are the normative

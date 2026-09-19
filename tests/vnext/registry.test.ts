@@ -1,7 +1,18 @@
 import { defineDataFeature, defineFeature } from '@aeliqo/core/features';
+import type { AeliqoRuntime, CapabilitySurfaceBindings, CreateCapabilitySurfaceInput } from '@aeliqo/runtime';
 import { expect, it } from 'vitest';
 import { z } from 'zod';
 import { createPeopleFixture, PersonSchema } from './fixtures/people.js';
+
+function capabilityOwnershipTypeProbe<I, S>(
+  runtime: AeliqoRuntime,
+  input: Omit<CreateCapabilitySurfaceInput<I, S>, 'ownership'>,
+): void {
+  // @ts-expect-error Internally owned capability surfaces require a typed default intent.
+  runtime.createSurface({ ...input, ownership: { mode: 'internal' } });
+}
+
+void capabilityOwnershipTypeProbe;
 
 it('fails duplicate surface IDs and advances generation after disposal', () => {
   const f = createPeopleFixture();
@@ -69,6 +80,7 @@ it('unregisters and cancels a pending capability request on dispose', async () =
         },
       },
     },
+    ownership: { mode: 'internal', defaultIntent: { intent: { id: 'report.open', revision: '1' }, input: {} } },
   });
   const pending = surface.request({ intent: { id: 'report.open', revision: '1' }, input: {} });
   await Promise.resolve();
@@ -81,6 +93,7 @@ it('unregisters and cancels a pending capability request on dispose', async () =
       initialState: { value: 'replacement' },
       source: { kind: 'capability', read: async () => ({ value: 'replacement-read' }) },
     },
+    ownership: { mode: 'internal', defaultIntent: { intent: { id: 'report.open', revision: '1' }, input: {} } },
   });
   const replacementBefore = replacement.getSnapshot();
   release();
@@ -118,13 +131,14 @@ it('refuses a capability result when permission changes across its async boundar
       initialState: { value: 'authorized' },
       source: { kind: 'capability', read: async () => (await gate, { value: 'late' }) },
     },
+    ownership: { mode: 'internal', defaultIntent: { intent: { id: 'report.open', revision: '1' }, input: {} } },
   });
   const pending = surface.request({ intent: { id: 'report.open', revision: '1' }, input: {} });
   await Promise.resolve();
   f.scope.setFeaturePermission('report', false);
   release();
   await expect(pending).resolves.toMatchObject({ status: 'denied' });
-  expect(surface.getSnapshot()).toMatchObject({ phase: 'denied', state: undefined });
+  expect(surface.getSnapshot()).toMatchObject({ phase: 'denied', state: { value: 'authorized' } });
   f.dispose();
 });
 
@@ -160,6 +174,10 @@ it('keeps the latest revision when an older capability read resolves late', asyn
         },
       },
     },
+    ownership: {
+      mode: 'internal',
+      defaultIntent: { intent: { id: 'report.open', revision: '1' }, input: { value: 'initial' } },
+    },
   });
   const first = surface.request({ intent: { id: 'report.open', revision: '1' }, input: { value: 'first' } });
   await Promise.resolve();
@@ -172,5 +190,66 @@ it('keeps the latest revision when an older capability read resolves late', asyn
   await expect(first).resolves.toMatchObject({ status: 'cancelled' });
   expect(surface.getSnapshot()).toBe(latest);
   expect(latest.state).toEqual({ value: 'second' });
+  f.dispose();
+});
+
+it('rejects an internally owned capability surface without a default intent', () => {
+  const f = createPeopleFixture();
+  f.scope.setFeaturePermission('report', true);
+  const feature = defineFeature({
+    id: 'report',
+    capabilities: [{ ref: { id: 'report.read', revision: '1' }, kind: 'read', schema: z.object({}) }],
+    intents: [
+      {
+        ref: { id: 'report.open', revision: '1' },
+        schema: z.object({}),
+        capabilities: [{ id: 'report.read', revision: '1' }],
+      },
+    ],
+  });
+  const bindings: CapabilitySurfaceBindings<
+    { readonly intent: { readonly id: 'report.open'; readonly revision: '1' }; readonly input: object },
+    { readonly value: string }
+  > = {
+    initialState: { value: 'initial' },
+    source: { kind: 'capability', read: async () => ({ value: 'read' }) },
+  };
+  const unsafeCreate = f.runtime.createSurface as (input: unknown) => unknown;
+
+  expect(() =>
+    unsafeCreate({ scope: f.scope, id: 'missing-intent', feature, bindings, ownership: { mode: 'internal' } }),
+  ).toThrow(/default intent/u);
+  f.dispose();
+});
+
+it('uses one monotonic generation sequence without retaining per-ID tombstones', () => {
+  const f = createPeopleFixture();
+  const first = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'reused',
+    feature: f.feature,
+    bindings: f.bindings,
+  });
+  first.dispose();
+  let greatestGeneration = first.address.surfaceGeneration;
+  for (let index = 0; index < 40; index += 1) {
+    const surface = f.runtime.createSurface({
+      scope: f.scope,
+      id: `unique-${index}`,
+      feature: f.feature,
+      bindings: f.bindings,
+    });
+    expect(surface.address.surfaceGeneration).toBeGreaterThan(greatestGeneration);
+    greatestGeneration = surface.address.surfaceGeneration;
+    surface.dispose();
+  }
+
+  const replacement = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'reused',
+    feature: f.feature,
+    bindings: f.bindings,
+  });
+  expect(replacement.address.surfaceGeneration).toBeGreaterThan(greatestGeneration);
   f.dispose();
 });
