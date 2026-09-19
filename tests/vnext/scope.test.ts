@@ -305,6 +305,158 @@ it.each(['throw', 'return', 'null', 'getter'] as const)(
   },
 );
 
+it('does not resurrect B when transition deactivation reentrantly invalidates A', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const a = f.currentOrders();
+  await a.request({ kind: 'browse' });
+  const epoch = f.scope.getSnapshot().activationEpoch;
+  f.host.onTransitionDeactivate('acme', () => f.scope.invalidate('revoked'));
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toMatchObject({
+    status: 'denied',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({
+    status: 'denied',
+    selector: null,
+    activationEpoch: epoch,
+    invalidationReason: 'revoked',
+  });
+  expect(a.getSnapshot().phase).toBe('disposed');
+  expect(f.host.events).not.toContain('activate:globex');
+  expect(f.host.events).not.toContain('deactivate:globex');
+  expect(f.source.callsFor('globex')).toBe(0);
+  expect(f.actions.hasActive()).toBe(false);
+
+  f.disposeRuntime();
+  expect(f.scope.getSnapshot().status).toBe('disposed');
+});
+
+it('does not resurrect B or runtime ownership when transition deactivation reentrantly disposes A', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const a = f.currentOrders();
+  await a.request({ kind: 'browse' });
+  const epoch = f.scope.getSnapshot().activationEpoch;
+  f.host.onTransitionDeactivate('acme', () => f.scope.dispose());
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'disposed',
+    diagnosticCode: 'scope.disposed',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({
+    status: 'disposed',
+    selector: null,
+    activationEpoch: epoch,
+  });
+  expect(a.getSnapshot().phase).toBe('disposed');
+  expect(f.host.events).not.toContain('activate:globex');
+  expect(f.host.events).not.toContain('deactivate:globex');
+  expect(f.source.callsFor('globex')).toBe(0);
+  expect(f.actions.hasActive()).toBe(false);
+  const events = [...f.host.events];
+
+  f.disposeRuntime();
+  expect(f.scope.getSnapshot().status).toBe('disposed');
+  expect(f.host.events).toEqual(events);
+});
+
+it('compensates B exactly once when its commit reentrantly invalidates the transition', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const a = f.currentOrders();
+  f.host.onActivate('globex', () => f.scope.invalidate('revoked'));
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toMatchObject({
+    status: 'denied',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'denied', selector: null, invalidationReason: 'revoked' });
+  expect(a.getSnapshot().phase).toBe('disposed');
+  expect(f.host.events.filter((event) => event === 'activate:globex')).toHaveLength(1);
+  expect(f.host.events.filter((event) => event === 'deactivate:globex')).toHaveLength(1);
+  expect(f.actions.hasActive()).toBe(false);
+  f.disposeRuntime();
+});
+
+it('preserves disposal when failed B compensation reentrantly disposes the scope', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  f.host.failActivate('globex', 'return');
+  f.host.onTransitionDeactivate('globex', () => f.scope.dispose());
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'disposed',
+    diagnosticCode: 'scope.disposed',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null });
+  expect(f.host.events.filter((event) => event === 'deactivate:globex')).toHaveLength(1);
+  expect(f.actions.hasActive()).toBe(false);
+  f.disposeRuntime();
+});
+
+it('recomputes the terminal result when post-commit B compensation disposes the scope', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  f.host.onActivate('globex', () => f.scope.invalidate('revoked'));
+  f.host.onTransitionDeactivate('globex', () => f.scope.dispose());
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'disposed',
+    diagnosticCode: 'scope.disposed',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null });
+  expect(f.host.events.filter((event) => event === 'deactivate:globex')).toHaveLength(1);
+  expect(f.actions.hasActive()).toBe(false);
+  f.disposeRuntime();
+});
+
+it('returns the terminal result when active publication reentrantly disposes B', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const unsubscribe = f.scope.subscribe(() => {
+    const snapshot = f.scope.getSnapshot();
+    if (snapshot.status === 'active' && snapshot.selector?.id === 'globex') f.scope.dispose();
+  });
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+    status: 'disposed',
+    diagnosticCode: 'scope.disposed',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null });
+  expect(f.host.events.filter((event) => event === 'activate:globex')).toHaveLength(1);
+  expect(f.host.events.filter((event) => event === 'deactivate:globex')).toHaveLength(1);
+  expect(f.actions.hasActive()).toBe(false);
+  unsubscribe();
+  f.disposeRuntime();
+});
+
+it('does not publish initial activation after preparation reentrantly invalidates the scope', async () => {
+  const f = await createScopeFixture();
+  f.host.onPreparation('acme', () => f.scope.invalidate('revoked'));
+  const detach = f.scope.attach();
+
+  await waitFor(() => f.scope.getSnapshot().status === 'denied');
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'denied', selector: null, invalidationReason: 'revoked' });
+  expect(f.host.events).not.toContain('activate:acme');
+  expect(f.actions.hasActive()).toBe(false);
+  detach();
+  f.disposeRuntime();
+});
+
+it('does not publish initial activation and compensates once after commit reentrantly disposes the scope', async () => {
+  const f = await createScopeFixture();
+  f.host.onActivate('acme', () => f.scope.dispose());
+  const detach = f.scope.attach();
+
+  await waitFor(() => f.scope.getSnapshot().status === 'disposed');
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', selector: null, activationEpoch: 0 });
+  expect(f.host.events.filter((event) => event === 'activate:acme')).toHaveLength(1);
+  expect(f.host.events.filter((event) => event === 'deactivate:acme')).toHaveLength(1);
+  expect(f.actions.hasActive()).toBe(false);
+  detach();
+  f.disposeRuntime();
+});
+
 it('contains malformed initial activation and throwing compensation after clearing host effects', async () => {
   const f = await createScopeFixture();
   f.host.failActivate('acme', 'getter');

@@ -223,6 +223,9 @@ export async function createScopeFixture() {
   const acceptanceRejections = new Set<string>();
   const preparationFailures = new Map<string, 'throw' | 'null' | 'getter'>();
   const activationFailures = new Map<string, 'throw' | 'return' | 'null' | 'getter'>();
+  const activationCallbacks = new Map<string, () => void>();
+  const preparationCallbacks = new Map<string, () => void>();
+  const transitionDeactivateCallbacks = new Map<string, () => void>();
   let lastResolution: ScopeResolution | undefined;
   const allowedFeatures = ['orders'];
   let activeActionPort: ActionPort | undefined;
@@ -338,6 +341,9 @@ export async function createScopeFixture() {
     failActivate(id: string, mode: 'throw' | 'return' | 'null' | 'getter'): void;
     failPreparation(id: string, mode: 'throw' | 'null' | 'getter'): void;
     rejectAcceptance(id: string): void;
+    onActivate(id: string, callback: () => void): void;
+    onPreparation(id: string, callback: () => void): void;
+    onTransitionDeactivate(id: string, callback: () => void): void;
     currentLeaveState(): unknown;
     mutateLastResolution(): void;
   } = {
@@ -411,6 +417,9 @@ export async function createScopeFixture() {
       return authorizeNow();
     },
     prepareActivation(input, context) {
+      const callback = preparationCallbacks.get(input.selector.id);
+      preparationCallbacks.delete(input.selector.id);
+      callback?.();
       const permissionStale = {
         ok: false as const,
         diagnostics: [
@@ -447,6 +456,9 @@ export async function createScopeFixture() {
       events.push(`activate:${input.selector.id}`);
       activeSelector = input.selector;
       activeActionPort = createScopedActionPort(input.selector);
+      const callback = activationCallbacks.get(input.selector.id);
+      activationCallbacks.delete(input.selector.id);
+      callback?.();
       const failure = activationFailures.get(input.selector.id);
       if (failure === 'throw') throw new Error('activation failed');
       if (failure === 'return')
@@ -466,11 +478,16 @@ export async function createScopeFixture() {
         ) as never;
       return { ok: true, value: undefined };
     },
-    deactivate(input) {
+    deactivate(input, reason) {
       events.push(`deactivate:${input.selector.id}`);
       activeActionPort?.revoke('scope transition');
       activeActionPort = undefined;
       if (JSON.stringify(activeSelector) === JSON.stringify(input.selector)) activeSelector = undefined;
+      if (reason === 'transition') {
+        const callback = transitionDeactivateCallbacks.get(input.selector.id);
+        transitionDeactivateCallbacks.delete(input.selector.id);
+        callback?.();
+      }
       if (throwOnDeactivate) throw new Error('deactivate failed');
     },
     readLeaveState() {
@@ -595,6 +612,15 @@ export async function createScopeFixture() {
     },
     rejectAcceptance(id) {
       acceptanceRejections.add(id);
+    },
+    onActivate(id, callback) {
+      activationCallbacks.set(id, callback);
+    },
+    onPreparation(id, callback) {
+      preparationCallbacks.set(id, callback);
+    },
+    onTransitionDeactivate(id, callback) {
+      transitionDeactivateCallbacks.set(id, callback);
     },
     currentLeaveState() {
       return leaveState;
