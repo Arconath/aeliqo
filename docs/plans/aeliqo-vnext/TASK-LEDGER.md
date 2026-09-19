@@ -10,7 +10,7 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 | T03  | implemented-and-verified | Accepted `4422b0d`: authority-fenced proposals, typed safe denial and capability intent, exception-isolated observers, failed-proposal retirement, bounded generations, exactly-once internal/external denial publication, 34/34 vNext, installed evidence at `artifacts/runtime-consumers/run-edxqqJ/report.json`; not published. |
 | T04  | implemented-and-verified | Accepted `f2c5389`: guarded two-phase scope activation, reentrancy-safe terminal receipts, real parent/child/peer isolation, 61/61 focused, 95/95 vNext, runtime regressions, and installed evidence at `artifacts/runtime-consumers/run-pKLQlG/report.json`; not published.                                                       |
 | T05  | implemented-and-verified | Accepted `867192f`: bounded local binding/inference, atomic schema-validated replacement, pre-commit source fencing, 47/47 focused, 129/129 vNext, package regressions, installed core/runtime consumers and independent correction review; not published.                                                                         |
-| T06  | not-started              | Unblocked by accepted T05 source `867192f`; API seam and security RED matrix prepared.                                                                                                                                                                                                                                             |
+| T06  | implemented-and-verified | Accepted `22b6950`: real HTTP transport, explicit remote capability/coverage behavior, bounded authority-partitioned cursors/cache reuse, source-lineage/result proof, expected-value metric semantics, 178/178 vNext, clean core/runtime consumers and independent re-review; not published.                                      |
 | T07  | not-started              | Depends on T03 and T06.                                                                                                                                                                                                                                                                                                            |
 | T08  | not-started              | Depends on T07.                                                                                                                                                                                                                                                                                                                    |
 | T09  | not-started              | Depends on T04 and T08.                                                                                                                                                                                                                                                                                                            |
@@ -36,12 +36,12 @@ or runtime-verified, until those downstream gates close the same requirement.
 ## Release state
 
 - Candidate built: no.
-- Independently reviewed: no.
+- Independently reviewed: T02–T06 task candidates only; no final release review.
 - RC published: no.
 - Stable published: no.
 - Image published: no.
 - Deployed: no.
-- Runtime verified: focused T02 core behavior, T03 headless scoped-surface behavior, T04 guarded scope-transition/reentrancy behavior, and T05 bounded local binding/update behavior through clean installed package consumers; framework, end-to-end, and release verification remain open.
+- Runtime verified: focused T02 core behavior, T03 scoped surfaces, T04 guarded scope transitions, T05 bounded local binding, and T06 remote/semantic execution through clean installed package consumers; framework-wide, production, and release verification remain open.
 
 ## Component documentation inventory
 
