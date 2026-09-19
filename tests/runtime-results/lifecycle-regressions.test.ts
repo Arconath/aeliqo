@@ -215,6 +215,96 @@ describe('result lifecycle regressions', () => {
     expect(handle.snapshot().status).toBe('ready');
   });
 
+  it('rejects a global aggregate without the accepted lineage proof', async () => {
+    const lineageDigest = await emptyLineageDigest();
+    const aggregateField = {
+      id: 'people.global-count',
+      label: 'People count',
+      type: { value: 'integer' as const, nullable: false },
+      role: 'measure' as const,
+      derivation: { id: 'people.global-count', revision: '1' },
+    };
+    const aggregateDescriptor = {
+      ...descriptor,
+      fields: [aggregateField],
+      identity: [],
+      rowGrain: [],
+      counts: { loaded: 1, population: { kind: 'exact' as const, value: 2, populationDigest: 'population-1' } },
+      evidence: {
+        kind: 'computed' as const,
+        queryDigest: 'query-1',
+        definitions: [{ id: 'people.global-count', revision: '1' }],
+      },
+      lineageDigest,
+    };
+    const handle = createResultStore().begin({
+      ...key('aggregate-without-lineage-proof'),
+      sourceLineage: 'source-1',
+      planDigest: 'plan-global-aggregate',
+      resultShape: 'global-aggregate',
+    });
+    await drain(
+      handle,
+      from([
+        { kind: 'descriptor', descriptor: aggregateDescriptor },
+        { kind: 'batch', result: ref, sequence: 0, rows: [{ 'people.global-count': 2 }] },
+        { kind: 'complete', result: ref, finalCoverage: aggregateDescriptor.coverage },
+      ]),
+    );
+    expect(handle.snapshot().status).toBe('failed');
+    expect(handle.snapshot().diagnostics[0]?.code).toBe('data.result-count');
+  });
+
+  it('rejects observed or mismatched evidence for a claimed global aggregate', async () => {
+    const lineageDigest = await emptyLineageDigest();
+    const aggregateField = {
+      id: 'people.global-count',
+      label: 'People count',
+      type: { value: 'integer' as const, nullable: false },
+      role: 'measure' as const,
+      derivation: { id: 'people.global-count', revision: '1' },
+    };
+    const baseAggregate = {
+      ...descriptor,
+      fields: [aggregateField],
+      identity: [],
+      rowGrain: [],
+      counts: { loaded: 1, population: { kind: 'exact' as const, value: 2, populationDigest: 'population-1' } },
+      lineageDigest,
+    };
+    const acceptedKey = {
+      ...key('aggregate-evidence'),
+      sourceLineage: 'source-1',
+      planDigest: 'plan-global-aggregate',
+      resultShape: 'global-aggregate' as const,
+      lineageDigest,
+    };
+    for (const [requestId, evidence] of [
+      ['observed', descriptor.evidence],
+      [
+        'wrong-definition',
+        {
+          kind: 'computed' as const,
+          queryDigest: 'query-1',
+          definitions: [{ id: 'people.other-count', revision: '1' }],
+        },
+      ],
+    ] as const) {
+      const candidate = { ...baseAggregate, evidence };
+      const handle = createResultStore().begin({ ...acceptedKey, requestId });
+      await drain(
+        handle,
+        from([
+          { kind: 'descriptor', descriptor: candidate },
+          { kind: 'batch', result: ref, sequence: 0, rows: [{ 'people.global-count': 2 }] },
+          { kind: 'complete', result: ref, finalCoverage: candidate.coverage },
+        ]),
+      );
+      expect(handle.snapshot().status).toBe('failed');
+      expect(handle.snapshot().diagnostics[0]?.code).toBe('data.result-count');
+    }
+  });
+
   it('rejects a forged scalar descriptor when the accepted plan is a row result', async () => {
     const lineageDigest = await emptyLineageDigest();
     const aggregateField = {

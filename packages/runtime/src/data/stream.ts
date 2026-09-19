@@ -19,7 +19,7 @@ export interface ResultStreamContext {
   readonly outputId: string;
   /** Accepted source revision; stream descriptors cannot choose another one. */
   readonly sourceRevision: string;
-  /** Accepted stable source identity; revisions may advance only in a new plan. */
+  /** Accepted stable source identity; live keyset revisions may advance only within this lineage. */
   readonly sourceLineage: string;
   readonly populationDigest?: string;
   readonly limits: ResultStreamLimits;

@@ -154,8 +154,8 @@ modes are different contracts; a source must not relabel an offset cursor as a
 live keyset cursor.
 
 Registered analytics keep meaning metadata in the validated logical plan.
-Semi-additive measures require an explicit time bucket and select one
-unambiguous period-end row using that requested temporal expression. Ratio-of-sums, mean-of-rates, count, and nested
+Semi-additive measures require an explicit time bucket and select all rows at
+the latest requested temporal value before applying the registered aggregate. Ratio-of-sums, mean-of-rates, count, and nested
 aggregates apply the meaning's missing-value policy; propagating aggregate
 meanings declare nullable outputs. Units and currencies must
 match unless a reviewed conversion meaning explicitly defines the conversion.

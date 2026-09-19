@@ -318,20 +318,43 @@ function validateCompleteCount(
   return { ok: true, value: undefined };
 }
 
-function isProvenGlobalAggregate(descriptor: Result, key: ResultCacheKey, loadedRows: number): boolean {
-  if (
+function hasGlobalAggregateShape(descriptor: Result, key: ResultCacheKey, loadedRows: number): boolean {
+  return !(
     loadedRows !== 1 ||
     descriptor.coverage.kind !== 'complete' ||
     descriptor.identity.length !== 0 ||
     descriptor.rowGrain.length !== 0 ||
     key.resultShape !== 'global-aggregate' ||
     key.planDigest === undefined ||
+    key.lineageDigest === undefined ||
     key.sourceLineage === undefined ||
     descriptor.ref.sourceLineage !== key.sourceLineage ||
     descriptor.fields.length === 0
+  );
+}
+
+function hasGlobalAggregateEvidence(descriptor: Result, key: ResultCacheKey): boolean {
+  if (
+    descriptor.lineageDigest !== key.lineageDigest ||
+    descriptor.evidence.kind !== 'computed' ||
+    descriptor.evidence.queryDigest !== key.queryDigest
   )
     return false;
-  return descriptor.fields.every((field) => field.role === 'measure');
+  const definitions = new Set(
+    descriptor.evidence.definitions.map((definition) => `${definition.id}\u0000${definition.revision}`),
+  );
+  if (definitions.size !== descriptor.evidence.definitions.length || definitions.size !== descriptor.fields.length)
+    return false;
+  return descriptor.fields.every(
+    (field) =>
+      field.role === 'measure' &&
+      field.derivation !== undefined &&
+      definitions.has(`${field.derivation.id}\u0000${field.derivation.revision}`),
+  );
+}
+
+function isProvenGlobalAggregate(descriptor: Result, key: ResultCacheKey, loadedRows: number): boolean {
+  return hasGlobalAggregateShape(descriptor, key, loadedRows) && hasGlobalAggregateEvidence(descriptor, key);
 }
 
 export function validateResultCompletion(

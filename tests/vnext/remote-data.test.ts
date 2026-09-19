@@ -709,10 +709,14 @@ it('creates fresh A-B-A surface scopes and fences the old handle', async () => {
   expect(authorityReads.slice(0, firstBRead).every((principal) => principal === 'tenant-a')).toBe(true);
   expect(authorityReads.slice(lastBRead + 1).every((principal) => principal === 'tenant-a')).toBe(true);
   const beforeChurn = f.resultStoreBegins.length;
-  const unsubscribe = secondA.surface.subscribe(() => undefined);
-  secondA.surface.getSnapshot();
-  unsubscribe();
+  const beforeRequests = f.server.observedRequests.length;
+  for (let render = 0; render < 256; render += 1) {
+    const unsubscribe = secondA.surface.subscribe(() => undefined);
+    expect(secondA.surface.getSnapshot().address).toEqual(secondA.surface.address);
+    unsubscribe();
+  }
   expect(f.resultStoreBegins).toHaveLength(beforeChurn);
+  expect(f.server.observedRequests).toHaveLength(beforeRequests);
   firstA.dispose();
   b.dispose();
   secondA.dispose();
