@@ -1,18 +1,18 @@
 import { defineDataFeature, defineFeature } from '@aeliqo/core/features';
-import type { AeliqoRuntime, CapabilitySurfaceBindings, CreateCapabilitySurfaceInput } from '@aeliqo/runtime';
+import type { CapabilitySurfaceBindings } from '@aeliqo/runtime';
 import { expect, it } from 'vitest';
 import { z } from 'zod';
 import { createPeopleFixture, PersonSchema } from './fixtures/people.js';
 
-function capabilityOwnershipTypeProbe<I, S>(
-  runtime: AeliqoRuntime,
-  input: Omit<CreateCapabilitySurfaceInput<I, S>, 'ownership'>,
+function capabilityInitialIntentTypeProbe<I, S>(
+  bindings: Omit<CapabilitySurfaceBindings<I, S>, 'initialIntent'>,
 ): void {
-  // @ts-expect-error Internally owned capability surfaces require a typed default intent.
-  runtime.createSurface({ ...input, ownership: { mode: 'internal' } });
+  // @ts-expect-error Capability bindings require a typed initial intent.
+  const invalid: CapabilitySurfaceBindings<I, S> = bindings;
+  void invalid;
 }
 
-void capabilityOwnershipTypeProbe;
+void capabilityInitialIntentTypeProbe;
 
 it('fails duplicate surface IDs and advances generation after disposal', () => {
   const f = createPeopleFixture();
@@ -71,6 +71,7 @@ it('unregisters and cancels a pending capability request on dispose', async () =
     id: 'report',
     feature,
     bindings: {
+      initialIntent: { intent: { id: 'report.open', revision: '1' }, input: {} },
       initialState: { value: 'initial' },
       source: {
         kind: 'capability',
@@ -90,6 +91,7 @@ it('unregisters and cancels a pending capability request on dispose', async () =
     id: 'report',
     feature,
     bindings: {
+      initialIntent: { intent: { id: 'report.open', revision: '1' }, input: {} },
       initialState: { value: 'replacement' },
       source: { kind: 'capability', read: async () => ({ value: 'replacement-read' }) },
     },
@@ -128,6 +130,7 @@ it('refuses a capability result when permission changes across its async boundar
     id: 'permission-race',
     feature,
     bindings: {
+      initialIntent: { intent: { id: 'report.open', revision: '1' }, input: {} },
       initialState: { value: 'authorized' },
       source: { kind: 'capability', read: async () => (await gate, { value: 'late' }) },
     },
@@ -165,6 +168,7 @@ it('keeps the latest revision when an older capability read resolves late', asyn
     id: 'revision-race',
     feature,
     bindings: {
+      initialIntent: { intent: { id: 'report.open', revision: '1' }, input: { value: 'initial' } },
       initialState: { value: 'initial' },
       source: {
         kind: 'capability',
@@ -193,7 +197,7 @@ it('keeps the latest revision when an older capability read resolves late', asyn
   f.dispose();
 });
 
-it('rejects an internally owned capability surface without a default intent', () => {
+it('rejects capability bindings without an initial intent', () => {
   const f = createPeopleFixture();
   f.scope.setFeaturePermission('report', true);
   const feature = defineFeature({
@@ -207,18 +211,15 @@ it('rejects an internally owned capability surface without a default intent', ()
       },
     ],
   });
-  const bindings: CapabilitySurfaceBindings<
-    { readonly intent: { readonly id: 'report.open'; readonly revision: '1' }; readonly input: object },
-    { readonly value: string }
-  > = {
+  const bindings = {
     initialState: { value: 'initial' },
     source: { kind: 'capability', read: async () => ({ value: 'read' }) },
-  };
+  } as const;
   const unsafeCreate = f.runtime.createSurface as (input: unknown) => unknown;
 
   expect(() =>
     unsafeCreate({ scope: f.scope, id: 'missing-intent', feature, bindings, ownership: { mode: 'internal' } }),
-  ).toThrow(/default intent/u);
+  ).toThrow(/initial intent/u);
   f.dispose();
 });
 
@@ -251,5 +252,46 @@ it('uses one monotonic generation sequence without retaining per-ID tombstones',
     bindings: f.bindings,
   });
   expect(replacement.address.surfaceGeneration).toBeGreaterThan(greatestGeneration);
+  f.dispose();
+});
+
+it('notifies a typed denied transition exactly once after revoking ready state', async () => {
+  const f = createPeopleFixture();
+  f.scope.setFeaturePermission('report', true);
+  const initialIntent = { intent: { id: 'report.open', revision: '1' }, input: {} } as const;
+  const feature = defineFeature({
+    id: 'report',
+    capabilities: [{ ref: { id: 'report.read', revision: '1' }, kind: 'read', schema: z.object({}) }],
+    intents: [
+      {
+        ref: { id: 'report.open', revision: '1' },
+        schema: z.object({}),
+        capabilities: [{ id: 'report.read', revision: '1' }],
+      },
+    ],
+  });
+  const surface = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'denied-notification',
+    feature,
+    bindings: {
+      initialIntent,
+      initialState: { value: 'inert' },
+      source: { kind: 'capability', read: async () => ({ value: 'secret' }) },
+    },
+    ownership: { mode: 'internal', defaultIntent: initialIntent },
+  });
+  await expect(surface.request(initialIntent)).resolves.toMatchObject({ status: 'committed' });
+  expect(surface.getSnapshot()).toMatchObject({ phase: 'ready', state: { value: 'secret' } });
+  const observed: unknown[] = [];
+  surface.subscribe(() => observed.push(surface.getSnapshot()));
+  f.scope.setFeaturePermission('report', false);
+
+  await expect(surface.request(initialIntent)).resolves.toMatchObject({ status: 'denied' });
+  expect(observed).toHaveLength(1);
+  expect(observed[0]).toMatchObject({ phase: 'denied', state: { value: 'inert' } });
+  expect(surface.getSnapshot()).toMatchObject({ phase: 'denied', state: { value: 'inert' } });
+  await expect(surface.request(initialIntent)).resolves.toMatchObject({ status: 'denied' });
+  expect(observed).toHaveLength(1);
   f.dispose();
 });

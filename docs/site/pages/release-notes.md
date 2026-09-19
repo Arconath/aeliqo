@@ -15,9 +15,9 @@ description: 'The 0.4 release consolidates the public site, documents all compon
 - `@aeliqo/runtime` adds unreleased scoped surface controllers with immutable
   instance addresses, per-runtime reference-counted registration, internal and
   explicitly controlled host ownership, and real `DataService`/Region/Result
-  integration. Capability surfaces require an explicit internal default intent
-  or external host ownership, and permission changes fence pending host
-  proposals. Existing app/Region APIs remain the compatibility path;
+  integration. Capability bindings carry an address-independent typed initial
+  intent, and permission changes fence pending host proposals. Existing
+  app/Region APIs remain the compatibility path;
   workspace transitions and React lifecycle adapters are not part of this
   candidate step.
 - This candidate has not been published or deployed. Its runtime, React,

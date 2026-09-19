@@ -1063,12 +1063,10 @@ const surfaceScope = surfaceRuntime.createLocalSurfaceScope({id: 'local', allowe
 const typedSurface: SurfaceController<Intent, PeopleState> = surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-main', feature: peopleFeature, bindings: peopleBindings});
 surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-controlled', feature: peopleFeature, bindings: peopleBindings, ownership: {mode: 'external', store: externalStore, onProposal: proposal => void proposal}});
 const reportFeature = defineFeature({id: 'report', capabilities: [{ref: {id: 'report.read', revision: '1'}, kind: 'read', schema: z.object({})}], intents: [{ref: {id: 'report.open', revision: '1'}, schema: z.object({}), capabilities: [{id: 'report.read', revision: '1'}]}]});
-const reportBindings: CapabilitySurfaceBindings<{readonly intent: {readonly id: 'report.open'; readonly revision: '1'}; readonly input: object}, {readonly value: string}> = {initialState: {value: 'initial'}, source: {kind: 'capability', read: async () => ({value: 'ready'})}};
-surfaceRuntime.createSurface({scope: surfaceScope, id: 'report', feature: reportFeature, bindings: reportBindings, ownership: {mode: 'internal', defaultIntent: {intent: {id: 'report.open', revision: '1'}, input: {}}}});
-// @ts-expect-error Capability surfaces require explicit ownership.
-surfaceRuntime.createSurface({scope: surfaceScope, id: 'report-missing-ownership', feature: reportFeature, bindings: reportBindings});
-// @ts-expect-error Internal capability ownership requires a typed default intent.
-surfaceRuntime.createSurface({scope: surfaceScope, id: 'report-missing-intent', feature: reportFeature, bindings: reportBindings, ownership: {mode: 'internal'}});
+const reportBindings: CapabilitySurfaceBindings<{readonly intent: {readonly id: 'report.open'; readonly revision: '1'}; readonly input: object}, {readonly value: string}> = {initialIntent: {intent: {id: 'report.open', revision: '1'}, input: {}}, initialState: {value: 'initial'}, source: {kind: 'capability', read: async () => ({value: 'ready'})}};
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'report', feature: reportFeature, bindings: reportBindings});
+// @ts-expect-error Capability bindings require a typed initial intent.
+const invalidReportBindings: CapabilitySurfaceBindings<{readonly intent: {readonly id: 'report.open'; readonly revision: '1'}; readonly input: object}, {readonly value: string}> = {initialState: {value: 'initial'}, source: {kind: 'capability', read: async () => ({value: 'ready'})}};
 // @ts-expect-error Surface addresses are immutable targets.
 typedSurface.address.surfaceGeneration = 2;
 declare const bypassBinding: CapabilitySurfaceBindings<Intent, PeopleState>;
@@ -1139,7 +1137,7 @@ await writeFile(
   `
 import assert from 'node:assert/strict';
 import {z} from 'zod';
-import {defineDataFeature} from '@aeliqo/core/features';
+import {defineDataFeature, defineFeature} from '@aeliqo/core/features';
 import {createQueryFunctionRegistry} from '@aeliqo/core/expressions';
 import {createAeliqoRuntime} from '@aeliqo/runtime';
 import {createLocalDataService} from '@aeliqo/runtime/data';
@@ -1149,7 +1147,7 @@ const functions = createQueryFunctionRegistry({version: '2'});
 assert.equal(functions.ok, true);
 const data = createLocalDataService({snapshot: {catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}}, functionRegistry: functions.value, authorize: () => ({ok: true, value: {scopeDigest: 'local', policyRevision: '1'}})});
 const runtime = createAeliqoRuntime({runtimeId: 'installed-runtime', resources: [{resource: feature.resource, data}], authority: {read: () => ({ok: true, value: {principalKey: 'local', scopeDigest: 'local', policyRevision: '1', experienceRevision: '1', grants: ['catalog.read', 'task.evaluate', 'result.inspect'], readContext: {principal: 'local'}}})}});
-const scope = runtime.createLocalSurfaceScope({id: 'installed-scope', allowedFeatures: ['people']});
+const scope = runtime.createLocalSurfaceScope({id: 'installed-scope', allowedFeatures: ['people', 'report']});
 const bindings = {initialState: {rows: []}, source: {kind: 'data-service', service: data, coverage: {fields: ['id', 'team'], operators: ['eq'], pagination: 'keyset', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async events => {const rows = []; for await (const event of events) if (event.kind === 'batch') rows.push(...event.rows); return {rows};}}};
 const left = runtime.createSurface({scope, id: 'left', feature, bindings});
 const right = runtime.createSurface({scope, id: 'right', feature, bindings});
@@ -1180,13 +1178,28 @@ const beforeReject = controlled.getSnapshot();
 hostSnapshot = Object.freeze({...hostSnapshot, proposalDecision: {proposalId: rejected.proposalId, address: rejected.address, expectedRevision: rejected.expectedRevision, status: 'rejected'}});
 for (const listener of listeners) listener();
 assert.equal(controlled.getSnapshot(), beforeReject);
+
+const reportFeature = defineFeature({id: 'report', capabilities: [{ref: {id: 'report.read', revision: '1'}, kind: 'read', schema: z.object({})}], intents: [{ref: {id: 'report.open', revision: '1'}, schema: z.object({value: z.string()}), capabilities: [{id: 'report.read', revision: '1'}]}]});
+const reportInitialIntent = {intent: {id: 'report.open', revision: '1'}, input: {value: 'initial'}};
+let reportSnapshot;
+const reportListeners = new Set();
+const reportProposals = [];
+const reportStore = {getSnapshot: () => {if (reportSnapshot === undefined) throw new Error('Capability host snapshot is not initialized.'); return reportSnapshot;}, subscribe: listener => (reportListeners.add(listener), () => reportListeners.delete(listener))};
+const report = runtime.createSurface({scope, id: 'external-report', feature: reportFeature, bindings: {initialIntent: reportInitialIntent, initialState: {value: 'inert'}, source: {kind: 'capability', read: async () => ({value: 'must-not-run'})}}, ownership: {mode: 'external', store: reportStore, onProposal: proposal => reportProposals.push(proposal)}});
+reportSnapshot = Object.freeze({id: report.id, address: report.address, revision: '0', phase: 'idle', intent: reportInitialIntent, state: {value: 'inert'}});
+const reportRequest = await report.request({intent: {id: 'report.open', revision: '1'}, input: {value: 'accepted'}});
+assert.equal(reportRequest.status, 'proposed');
+const reportProposal = reportProposals[0];
+reportSnapshot = Object.freeze({...reportSnapshot, revision: '1', phase: 'ready', intent: reportProposal.intent, state: {value: 'accepted'}, proposalDecision: {proposalId: reportProposal.proposalId, address: reportProposal.address, expectedRevision: reportProposal.expectedRevision, status: 'accepted'}});
+for (const listener of reportListeners) listener();
+assert.equal(report.getSnapshot().state.value, 'accepted');
 runtime.dispose();
 scope.dispose();
-process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true}));
+process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true, externalCapability: true}));
 `,
 );
 const surfaceProof = JSON.parse(run([process.execPath, 'surface-consumer.mjs'], consumerDirectory));
-assert.deepEqual(surfaceProof, { twoInstances: true, controlled: true, rejected: true });
+assert.deepEqual(surfaceProof, { twoInstances: true, controlled: true, rejected: true, externalCapability: true });
 
 await writeFile(
   join(consumerDirectory, 'consumer.mjs'),
@@ -1499,7 +1512,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
     audit: auditProof,
     auditOffline: ${JSON.stringify(auditOfflineProof)},
     interaction: interactionProof,
-    surfaces: ${JSON.stringify({ installed: true, twoInstances: true, controlled: true })},
+    surfaces: ${JSON.stringify({ installed: true, twoInstances: true, controlled: true, externalCapability: true })},
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
   console.log('Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.');

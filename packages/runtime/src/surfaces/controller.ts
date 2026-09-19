@@ -28,6 +28,7 @@ interface SurfaceControllerConfig<I, S> {
   readonly bindings: DataSurfaceBindings<S> | CapabilitySurfaceBindings<I, S>;
   readonly ownership: SurfaceOwnership<I, S>;
   readonly registration: SurfaceRegistration;
+  readonly initialIntent: I;
   readonly initialState: S;
   readonly runData?: (
     intent: Intent,
@@ -86,6 +87,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private externalSource: ExternalSurfaceSnapshot<I, S> | undefined;
   private externalSnapshot: SurfaceSnapshot<I, S> | undefined;
   private maskedSnapshot: SurfaceSnapshot<I, S> | undefined;
+  private maskedSnapshotNotified = false;
   private active: AbortController | undefined;
   private sequence = 0;
   private disposed = false;
@@ -94,13 +96,12 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     this.id = config.id;
     this.address = config.registration.address;
     this.ownership = config.ownership;
-    const intent = this.defaultIntent();
     this.snapshot = freezeSnapshot({
       id: this.id,
       address: this.address,
       revision: '0',
       phase: 'idle',
-      intent,
+      intent: config.initialIntent,
       state: config.initialState,
     });
     this.safeState = this.snapshot.state;
@@ -149,14 +150,6 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     this.snapshot = freezeSnapshot({ ...this.snapshot, phase: 'disposed' });
     this.listeners.notify();
     this.listeners.dispose();
-  }
-
-  private defaultIntent(): I {
-    if (this.ownership.mode === 'internal' && this.ownership.defaultIntent !== undefined)
-      return this.ownership.defaultIntent;
-    if (this.config.feature.kind === 'data') return dataIntent(this.config.feature.id, 0, { kind: 'browse' }) as I;
-    if (this.ownership.mode === 'external') return this.ownership.store.getSnapshot().intent;
-    throw new TypeError('Internally owned capability surfaces require a default intent.');
   }
 
   private validateRequest(options: RequestOptions): RequestResult | undefined {
@@ -302,6 +295,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     this.externalSource = candidate;
     this.externalSnapshot = freezeSnapshot(candidate);
     this.maskedSnapshot = undefined;
+    this.maskedSnapshotNotified = false;
     return this.externalSnapshot;
   }
 
@@ -338,9 +332,16 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private maskDenied(notify: boolean): SurfaceSnapshot<I, S> {
     const current = this.externalSnapshot ?? this.snapshot;
     this.pendingProposals.clear();
-    if (current === this.maskedSnapshot) return current;
+    if (current === this.maskedSnapshot) {
+      if (notify && !this.maskedSnapshotNotified) {
+        this.maskedSnapshotNotified = true;
+        this.listeners.notify();
+      }
+      return current;
+    }
     const masked = freezeSnapshot({ ...current, phase: 'denied', state: this.safeState });
     this.maskedSnapshot = masked;
+    this.maskedSnapshotNotified = notify;
     this.snapshot = masked;
     if (this.ownership.mode === 'external') this.externalSnapshot = masked;
     if (notify) this.listeners.notify();
@@ -350,6 +351,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private publish(input: SurfaceSnapshot<I, S>): void {
     this.snapshot = freezeSnapshot(input);
     this.maskedSnapshot = undefined;
+    this.maskedSnapshotNotified = false;
     this.listeners.notify();
   }
 }

@@ -1,5 +1,10 @@
+import type { FeatureIntentValue } from '@aeliqo/core/features';
+import { defineFeature } from '@aeliqo/core/features';
+import type { ExternalSurfaceSnapshot, ExternalSurfaceStore, SurfaceProposal } from '@aeliqo/runtime';
 import { expect, it } from 'vitest';
+import { z } from 'zod';
 import { createControlledFixture } from './fixtures/host.js';
+import { createPeopleFixture } from './fixtures/people.js';
 
 it('keeps a controlled request proposed until the host accepts it', async () => {
   const f = createControlledFixture();
@@ -118,5 +123,89 @@ it('retires a proposal when the host callback throws', async () => {
 
   await expect(f.hostStore.accept(proposal.proposalId)).resolves.toEqual({ status: 'accepted' });
   expect(f.surface.getSnapshot()).toBe(before);
+  f.dispose();
+});
+
+it('constructs and accepts an external capability without predicting its address', async () => {
+  const f = createPeopleFixture();
+  const feature = defineFeature({
+    id: 'report',
+    capabilities: [{ ref: { id: 'report.read', revision: '1' }, kind: 'read', schema: z.object({}) }],
+    intents: [
+      {
+        ref: { id: 'report.open', revision: '1' },
+        schema: z.object({ value: z.string() }),
+        capabilities: [{ id: 'report.read', revision: '1' }],
+      },
+    ],
+  });
+  type ReportIntent = FeatureIntentValue<typeof feature.intents>;
+  type ReportState = { readonly value: string };
+  const initialIntent = {
+    intent: { id: 'report.open', revision: '1' },
+    input: { value: 'initial' },
+  } as const satisfies ReportIntent;
+  let snapshot: ExternalSurfaceSnapshot<ReportIntent, ReportState> | undefined;
+  const listeners = new Set<() => void>();
+  const proposals: SurfaceProposal<ReportIntent>[] = [];
+  const store: ExternalSurfaceStore<ReportIntent, ReportState> = {
+    getSnapshot: () => {
+      if (snapshot === undefined) throw new Error('Host snapshot is not initialized.');
+      return snapshot;
+    },
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+  const surface = f.runtime.createSurface({
+    scope: f.scope,
+    id: 'external-report',
+    feature,
+    bindings: {
+      initialIntent,
+      initialState: { value: 'inert' },
+      source: { kind: 'capability', read: async () => ({ value: 'must-not-run' }) },
+    },
+    ownership: { mode: 'external', store, onProposal: (proposal) => proposals.push(proposal) },
+  });
+  snapshot = Object.freeze({
+    id: surface.id,
+    address: surface.address,
+    revision: '0',
+    phase: 'idle',
+    intent: initialIntent,
+    state: Object.freeze({ value: 'inert' }),
+  });
+  const requestedIntent = {
+    intent: { id: 'report.open', revision: '1' },
+    input: { value: 'accepted' },
+  } as const satisfies ReportIntent;
+
+  const result = await surface.request(requestedIntent);
+  if (result.status !== 'proposed') throw new Error('Expected a proposal.');
+  const proposal = proposals[0];
+  if (proposal === undefined) throw new Error('Expected the proposal to be recorded.');
+  snapshot = Object.freeze({
+    ...snapshot,
+    revision: '1',
+    phase: 'ready',
+    intent: proposal.intent,
+    state: Object.freeze({ value: 'accepted' }),
+    proposalDecision: Object.freeze({
+      proposalId: proposal.proposalId,
+      address: proposal.address,
+      expectedRevision: proposal.expectedRevision,
+      status: 'accepted',
+    }),
+  });
+  for (const listener of listeners) listener();
+  expect(surface.getSnapshot()).toMatchObject({
+    address: surface.address,
+    revision: '1',
+    phase: 'ready',
+    intent: requestedIntent,
+    state: { value: 'accepted' },
+  });
   f.dispose();
 });

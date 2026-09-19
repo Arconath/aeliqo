@@ -146,12 +146,13 @@ inert and makes the public `SurfaceSnapshot<S>` type truthful; the declaration
 consumer and installed runtime consumer cover the same shape.
 
 The same non-optional rule applies to `SurfaceSnapshot.intent`. Data surfaces
-have a canonical inert browse intent. An internally owned capability surface
-cannot derive a valid feature-specific input, so its create input requires
-`ownership: { mode: 'internal', defaultIntent }`; external ownership takes the
-initial intent from its host snapshot. This discriminated requirement replaces
-the earlier optional capability ownership shape instead of exposing
-`undefined` as a typed intent.
+have a canonical inert browse intent. A capability surface cannot derive a
+valid feature-specific input, so its binding requires a typed `initialIntent`
+independently of ownership. External construction does not read the addressed
+host store before `createSurface()` returns; the host may initialize that store
+from the returned immutable address before its first read. This replaces both
+the original `undefined as I` fallback and the circular interim requirement
+that an external host snapshot supply an address-dependent initial intent.
 
 ### Documentation source map
 

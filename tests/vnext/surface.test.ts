@@ -194,6 +194,7 @@ it('freezes copied address and state without freezing caller-owned objects', asy
     id: 'copy-state',
     feature,
     bindings: {
+      initialIntent: { kind: 'read' },
       initialState: { nested: { value: 'empty' } },
       source: { kind: 'capability', read: async () => callerState },
     },

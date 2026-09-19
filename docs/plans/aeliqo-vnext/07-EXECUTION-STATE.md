@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-19 17:57 Asia/Jakarta (T03 review-round-1 fixes verified; fix commit pending).
+Updated: 2026-09-19 18:11 Asia/Jakarta (T03 review-round-2 fixes verified; next fix commit pending).
 
 ## Source and authority
 
@@ -8,9 +8,9 @@ Updated: 2026-09-19 17:57 Asia/Jakarta (T03 review-round-1 fixes verified; fix c
 - Inspected reference SHA: 9092d6cff454b81cd623a7a4be7621c6a750d9c7.
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
-- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, T02 core feature implementation, committed T03 scoped surfaces at `b3f17a1`, and uncommitted review-round-1 fixes.
+- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, T02 core feature implementation, T03 scoped surfaces plus round-1 corrections committed through `bffdec2`, and uncommitted review-round-2 fixes on that exact base.
 - Public registry changes: none.
-- Production changes: T02 core feature definitions; T03 runtime surface modules, app/Region integration, exports, docs, and installed-consumer coverage; uncommitted T03 authority/lifecycle/type/bounded-retention review fixes.
+- Production changes: T02 core feature definitions; T03 runtime surface modules, app/Region integration, exports, docs, and installed-consumer coverage; uncommitted T03 denial-publication and capability-initialization review fixes.
 - Live paid-model authorization for this vNext execution: not established.
 - Merge/publication/deployment authorization for this vNext execution: must be verified against current policy and owner approvals.
 
@@ -23,7 +23,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T00  | verified                 | `BASELINE.md`, integrity evidence, harness, two baseline checkpoints, and full unchanged-source 83/83 matrix at `dedc15e`                                    |
 | T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim |
 | T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published     |
-| T03  | review-fixes-verified    | Initial implementation committed at `b3f17a1`; round-1 authority, typed-denial/intent, observer, proposal-retirement, and bounded-generation fixes pass focused/broad gates in an uncommitted tree; fix commit and re-review pending |
+| T03  | rereview-fixes-verified  | Initial and round-1 implementation committed through `bffdec2`; round-2 denial-publication and external-capability initialization fixes pass focused/broad gates in an uncommitted tree; next fix commit and acceptance review pending |
 | T04  | not-started              | Scope guard/ABA/isolation not implemented                                                                                                                    |
 | T05  | not-started              | No implementation evidence                                                                                                                                   |
 | T06  | not-started              | No implementation evidence                                                                                                                                   |
@@ -45,7 +45,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 
 ## Next executable action
 
-Controller integrates the verified T03 review fixes into an exact source commit, then requests review round 2 before T04 begins.
+Controller integrates the verified T03 review-round-2 fixes into an exact source commit, records that commit SHA, then requests acceptance review before T04 begins.
 
 ## Decisions to preserve
 
@@ -83,17 +83,18 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 
 ### T03 / RQ05 / RQ07 — scoped surfaces, ownership, and registry lifecycle
 
-- Initial implementation source: branch `codex/aeliqo-vnext`, commit `b3f17a1139023285f83e9cacd25101ec8e41469e`. Review round 1 returned NEEDS FIXES. The corrections are currently uncommitted on that exact base with implementation digest `54512c5f6c7df198c8b758891786f4157db02ca12eb6ba1b538307df2ab5343e`; the fix commit SHA is pending and must be recorded by the controller after commit, not invented here.
+- Initial implementation source: branch `codex/aeliqo-vnext`, commit `b3f17a1139023285f83e9cacd25101ec8e41469e`. Review round 1 returned NEEDS FIXES; those corrections were committed and reviewed at `bffdec2ee87ec4cfc302a89ef14637ae077caaec`. Review round 2 also returned NEEDS FIXES. Its corrections are currently uncommitted on exact base `bffdec2ee87ec4cfc302a89ef14637ae077caaec` with implementation digest `8a3ec51dbb99fa8647cfa662fcd101b29f398b0ba796b988e6ad55d6d9985ba2`; the next fix commit SHA is pending and must be recorded by the controller after commit, not invented here.
 - Mandatory RED evidence: the exact isolation test first failed with one missing `createPeopleFixture`; the three focused T03 files then failed 10/10 at the missing production fixture boundary. No fake dispatcher was used to manufacture a pass.
 - Added DOM-free `packages/runtime/src/surfaces/` controller, state, lifecycle, ownership, registration, scope, and runtime-factory modules. `createSurface`, `createLocalSurfaceScope`, immutable addresses/snapshots, per-scope feature reference counts, generation fencing, bounded proposals, explicit host `proposalDecision`, idempotent teardown, and existing DataService/Region/Result execution are wired through real runtime exports.
 - Construction is inert: data slots are allocated without creating a Region observer, transport, timer, or source call; the RegionStore handle and DataService request begin only on explicit `request()`. The focused test observes zero calls at construction and a separately gated real execute start.
 - T01 contract reconciliation: inert construction plus non-optional `SurfaceSnapshot.state: S` made the declaration's missing initial state unsound. The implemented binding now requires `initialState`; ADR 012, `api-contract.ts`, and the advanced declaration consumer were updated to match. Runtime tests and the installed tarball consumer, not those declarations, are the behavior evidence.
 - Review-fix RED evidence: controlled acceptance after a permission revision exposed ready host rows; denied paths exposed `undefined as S`; a capability surface without a default exposed `undefined as I` and its new negative type probe reported unused `@ts-expect-error`; throwing listeners rejected request/dispose and retained the external subscription; a callback that recorded then threw left a late-acceptable proposal; and per-ID generation sequencing failed the global-monotonic regression.
-- Fresh review-fix GREEN evidence: focused T03 suite 23/23 in 3 files plus strict TypeScript; `pnpm test:vnext` 31/31 in 5 files; regions 49/49; results 23/23; interaction 24/24; evaluation 15/15; runtime build; boundaries 4/4; full lint/Knip/site verification; format; and diff check all exit 0.
-- Installed-package review-fix evidence: `pnpm test:runtime:consumers` packed and installed core/runtime outside the workspace, typechecked required capability ownership/default intent plus existing positive/negative surface API, and executed two-instance and controlled accept/reject paths. Report: `artifacts/runtime-consumers/run-9Gv4NH/report.json`.
-- Review fixes capture and recheck the scope permission revision for external proposals, mask denial with copied typed `initialState`, require a typed default intent for internal capability ownership, isolate observer/unsubscribe exceptions, retire proposals when `onProposal` throws, and replace per-ID tombstones with one monotonic bounded-memory generation counter.
+- Round-2 RED evidence: after an authorized ready state was revoked, the denied request notified zero subscribers because validation had already cached the mask through `getSnapshot()`; external capability construction threw before the host could initialize its address-bearing snapshot; and strict TypeScript rejected the new `initialIntent` binding while its missing-intent negative probe was unused.
+- Round-2 GREEN evidence: the denied transition publishes the typed inert state exactly once and repeated denied reads/requests do not duplicate it. Capability bindings provide an address-independent typed `initialIntent`; construction never reads the external store, and a real external capability can initialize the host snapshot from the returned address, propose, and adopt an accepted publication. Focused T03 suite 25/25 in 3 files plus strict TypeScript; `pnpm test:vnext` 33/33 in 5 files; runtime build; boundaries 4/4; full lint/Knip/site verification; format; and diff check all exit 0.
+- Installed-package round-2 evidence: `pnpm test:runtime:consumers` packed and installed core/runtime outside the workspace, typechecked required capability binding initial intent plus existing positive/negative surface API, and executed two-instance data, controlled data, and controlled external-capability acceptance paths. Report: `artifacts/runtime-consumers/run-edxqqJ/report.json`.
+- Review fixes capture and recheck the scope permission revision for external proposals, mask denial with copied typed `initialState`, publish each denial transition once, require a typed address-independent capability binding `initialIntent`, isolate observer/unsubscribe exceptions, retire proposals when `onProposal` throws, and replace per-ID tombstones with one monotonic bounded-memory generation counter.
 - Retained gate failures: the first lint run found `commitInternal` complexity 13 over the limit 12; extraction reduced it. The next run found unused exported alias `CreateSurfaceInput`; removing the redundant alias made the full lint/Knip/site gate pass. These were quality failures, not waived checks.
-- Existing 0.4 app/Region APIs remain the compatibility path. T04 still owns scope switching, leave guards, forced revocation, and A-B-A transition behavior. No review-fix commit, model call, package publication, image publication, deployment, or production operation occurred.
+- Existing 0.4 app/Region APIs remain the compatibility path. T04 still owns scope switching, leave guards, forced revocation, and A-B-A transition behavior. No round-2 fix commit, model call, package publication, image publication, deployment, or production operation occurred.
 
 ## Resuming existing work
 

@@ -55,10 +55,10 @@ generation, and captured callbacks never resolve another target by feature
 name. Generations come from one bounded-memory monotonic runtime sequence, so
 disposed surface IDs do not leave per-ID tombstones. Data features continue
 through `DataService.describe/plan/execute`; typed capability bindings cover
-non-data features. Internally owned capability surfaces must supply
-`ownership: { mode: 'internal', defaultIntent }`, so their first snapshot
-always contains a real typed intent; externally owned capability surfaces take
-that initial intent from the host store.
+non-data features. Capability bindings supply a typed `initialIntent`, so the
+first snapshot is truthful for both internal and external ownership without
+reading an addressed host store during construction. The host can initialize
+an external store from the returned controller address before its first read.
 
 Internal ownership commits controller state through the existing runtime,
 ResultStore, and Region lifecycle. External ownership reads a stable host store

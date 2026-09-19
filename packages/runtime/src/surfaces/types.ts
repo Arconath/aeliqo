@@ -124,6 +124,8 @@ export interface DataSurfaceBindings<S> {
 }
 
 export interface CapabilitySurfaceBindings<I, S> {
+  /** Typed intent exposed before the first request, independent of host address initialization. */
+  readonly initialIntent: I;
   /** Inert state exposed before the first explicit request. */
   readonly initialState: S;
   readonly source: CapabilitySourceBinding<I, S>;
@@ -133,11 +135,6 @@ export interface CapabilitySurfaceBindings<I, S> {
 export interface InternalOwnership<I> {
   readonly mode: 'internal';
   readonly defaultIntent?: I;
-}
-
-export interface InternalCapabilityOwnership<I> {
-  readonly mode: 'internal';
-  readonly defaultIntent: I;
 }
 
 export interface SurfaceProposal<I> {
@@ -171,7 +168,6 @@ export interface ExternalOwnership<I, S> {
 }
 
 export type SurfaceOwnership<I, S> = InternalOwnership<I> | ExternalOwnership<I, S>;
-export type CapabilitySurfaceOwnership<I, S> = InternalCapabilityOwnership<I> | ExternalOwnership<I, S>;
 
 export interface CreateDataSurfaceInput<S> {
   readonly scope: SurfaceScope;
@@ -186,5 +182,5 @@ export interface CreateCapabilitySurfaceInput<I, S> {
   readonly id: string;
   readonly feature: FeatureDefinition<I> & { readonly kind: 'feature' };
   readonly bindings: CapabilitySurfaceBindings<I, S>;
-  readonly ownership: CapabilitySurfaceOwnership<I, S>;
+  readonly ownership?: SurfaceOwnership<I, S>;
 }

@@ -230,6 +230,7 @@ const COMPARISON_LAYOUT = {
 } as const satisfies WorkspaceLayoutIntent;
 
 const workspaceLayoutBindings: CapabilitySurfaceBindings<WorkspaceLayoutIntent, WorkspaceLayoutState> = {
+  initialIntent: SINGLE_LAYOUT,
   initialState: { mode: 'single', surfaceIds: [] },
   source: {
     kind: 'capability',

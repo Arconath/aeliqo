@@ -62,14 +62,16 @@ export class RuntimeSurfaceFactory {
         if (!result.ok) throw new TypeError(result.diagnostics[0].message);
         mounted = true;
       }
+      const ownership = (input.ownership ?? { mode: 'internal' }) as SurfaceOwnership<unknown, unknown>;
       let controller!: SurfaceControllerImpl<unknown, unknown>;
       controller = new SurfaceControllerImpl({
         id: input.id,
         scope: input.scope,
         feature: input.feature,
         bindings: input.bindings as DataSurfaceBindings<unknown> | CapabilitySurfaceBindings<unknown, unknown>,
-        ownership: (input.ownership ?? { mode: 'internal' }) as SurfaceOwnership<unknown, unknown>,
+        ownership,
         registration,
+        initialIntent: initialIntent(input, ownership),
         initialState: input.bindings.initialState,
         ...(input.feature.kind === 'data' ? { runData: this.dataRunner(input, regionId) } : {}),
         teardown: () => {
@@ -102,6 +104,17 @@ export class RuntimeSurfaceFactory {
       return { receipt, state };
     };
   }
+}
+
+function initialIntent(input: SurfaceInput, ownership: SurfaceOwnership<unknown, unknown>): unknown {
+  if (input.feature.kind === 'feature') {
+    const binding = input.bindings as CapabilitySurfaceBindings<unknown, unknown>;
+    if (!('initialIntent' in binding) || binding.initialIntent === undefined)
+      throw new TypeError('Capability surface bindings require an initial intent.');
+    return binding.initialIntent;
+  }
+  if (ownership.mode === 'internal' && ownership.defaultIntent !== undefined) return ownership.defaultIntent;
+  return { version: '1', id: 'surface-request-0', resource: input.feature.id, kind: 'browse' } satisfies Intent;
 }
 
 async function* resultEvents(
