@@ -93,7 +93,8 @@ const runtime = createAeliqoRuntime({ resources, authority });
 const binding: ScopeBinding = {
   resolve: (selector) => host.resolveWorkspace(selector),
   authorize: (resolution) => host.authorizeWorkspace(resolution),
-  activate: (target, context) => host.acceptWorkspaceActivation(target, context),
+  prepareActivation: (target, context) => host.acceptWorkspaceActivation(target, context),
+  activate: (target, context) => host.commitWorkspaceActivation(target, context),
   deactivate: (active, reason) => host.releaseWorkspaceActivation(active, reason),
   readLeaveState: () => drafts.readLeaveState(),
   beforeLeave: (request) => drafts.confirmLeave(request),
@@ -111,14 +112,14 @@ Construction is inert. The first `attach()` starts resolution, and the last
 detach aborts an unfinished initial resolution so a later attach can restart
 it. Voluntary transitions keep the old activation available while the host
 chooses Save, Discard, or Stay. A failed or denied target does not replace a
-still-authorized old activation. The runtime fences the old activation before
-publishing any new activation effects. The required synchronous `activate`
-hook is the trusted host's atomic acceptance boundary: it receives the target
-and captured previous permission, policy, activation, and draft revisions and
-must revalidate both scopes before starting target effects. The runtime
-rechecks the draft, fences the old activation, and invokes that hook in one
-synchronous turn before publishing the new activation. Epochs only increase,
-so late A-B-A work cannot commit into the new A.
+still-authorized old activation. The required synchronous, side-effect-free
+`prepareActivation` hook is the trusted host's atomic acceptance boundary. It
+receives the target and captured previous permission, policy, activation, and
+draft revisions and must revalidate both scopes. Rejection preserves A and its
+children. After acceptance, the runtime fences and deactivates A before the
+required synchronous `activate` commit hook starts B effects. A commit failure
+is irreversible at that point: the runtime compensates B and fails closed.
+Epochs only increase, so late A-B-A work cannot commit into the new A.
 
 If activation starts any host-owned resource, `deactivate` is its required,
 idempotent compensation boundary. It must clear partial resources before

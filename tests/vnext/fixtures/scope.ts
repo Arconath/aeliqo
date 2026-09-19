@@ -7,6 +7,7 @@ import {
   type ExternalSurfaceSnapshot,
   type SurfaceProposal,
   type ScopeBinding,
+  type ScopeController,
   type ScopeLeaveDecision,
   type ScopeLeaveState,
   type ScopeResolution,
@@ -219,6 +220,8 @@ export async function createScopeFixture() {
   const rawAuthorizeOutcomes = new Map<string, unknown>();
   const throwOnResolve = new Set<string>();
   const queuedAuthorizeRevocations = new Map<string, number>();
+  const acceptanceRejections = new Set<string>();
+  const preparationFailures = new Map<string, 'throw' | 'null' | 'getter'>();
   const activationFailures = new Map<string, 'throw' | 'return' | 'null' | 'getter'>();
   let lastResolution: ScopeResolution | undefined;
   const allowedFeatures = ['orders'];
@@ -333,6 +336,9 @@ export async function createScopeFixture() {
     failDeactivate(): void;
     failRecovery(): void;
     failActivate(id: string, mode: 'throw' | 'return' | 'null' | 'getter'): void;
+    failPreparation(id: string, mode: 'throw' | 'null' | 'getter'): void;
+    rejectAcceptance(id: string): void;
+    currentLeaveState(): unknown;
     mutateLastResolution(): void;
   } = {
     get resolveCalls() {
@@ -404,7 +410,7 @@ export async function createScopeFixture() {
       }
       return authorizeNow();
     },
-    activate(input, context) {
+    prepareActivation(input, context) {
       const permissionStale = {
         ok: false as const,
         diagnostics: [
@@ -422,6 +428,22 @@ export async function createScopeFixture() {
         )
           return permissionStale;
       }
+      if (acceptanceRejections.has(input.selector.id)) return permissionStale;
+      const failure = preparationFailures.get(input.selector.id);
+      if (failure === 'throw') throw new Error('activation preparation failed');
+      if (failure === 'null') return null as never;
+      if (failure === 'getter')
+        return new Proxy(
+          {},
+          {
+            get() {
+              throw new Error('activation preparation outcome getter failed');
+            },
+          },
+        ) as never;
+      return { ok: true, value: undefined };
+    },
+    activate(input) {
       events.push(`activate:${input.selector.id}`);
       activeSelector = input.selector;
       activeActionPort = createScopedActionPort(input.selector);
@@ -567,6 +589,15 @@ export async function createScopeFixture() {
     },
     failActivate(id, mode) {
       activationFailures.set(id, mode);
+    },
+    failPreparation(id, mode) {
+      preparationFailures.set(id, mode);
+    },
+    rejectAcceptance(id) {
+      acceptanceRejections.add(id);
+    },
+    currentLeaveState() {
+      return leaveState;
     },
     mutateLastResolution() {
       if (lastResolution === undefined) throw new TypeError('No resolution was produced.');
@@ -760,6 +791,7 @@ export async function createScopeFixture() {
 
 export async function createParallelScopeFixture() {
   const fixtureId = nextFixtureId++;
+  const northParent = { kind: 'organization', id: 'north' } as const;
   const north = {
     kind: 'workspace',
     id: 'acme',
@@ -829,38 +861,83 @@ export async function createParallelScopeFixture() {
       },
     },
   });
-  const binding = (): ScopeBinding => ({
-    resolve: (selector) => ({
-      ok: true,
-      value: {
-        selector,
-        permissionRevision: permissions.get(keyOf(selector)) ?? 1,
-        policyRevision: `policy:${keyOf(selector)}`,
-        allowedFeatures: ['orders'],
-      },
-    }),
-    authorize: (resolution) =>
-      resolution.permissionRevision === (permissions.get(keyOf(resolution.selector)) ?? 1)
-        ? { ok: true, value: undefined }
-        : {
-            ok: false,
-            diagnostics: [{ code: 'scope.permission-stale', message: 'Scope permission changed.', retryable: false }],
-          },
-    activate: () => ({ ok: true, value: undefined }),
-    deactivate: () => undefined,
-    readLeaveState: () => ({ dirty: false, revision: 'clean' }),
+  const denied = () => ({
+    ok: false as const,
+    diagnostics: [
+      { code: 'scope.membership-denied', message: 'The requested lineage is outside its parent.', retryable: false },
+    ] as const,
   });
-  const leftScope = runtime.createScope({ id: `north-${fixtureId}`, binding: binding(), initial: north });
-  const rightScope = runtime.createScope({ id: `south-${fixtureId}`, binding: binding(), initial: south });
-  const waitActive = (scope: typeof leftScope) =>
+  const binding = (allows: (selector: ScopeSelector) => boolean): ScopeBinding => {
+    const authorize = (resolution: ScopeResolution) => {
+      if (!allows(resolution.selector)) return denied();
+      return resolution.permissionRevision === (permissions.get(keyOf(resolution.selector)) ?? 1)
+        ? { ok: true as const, value: undefined }
+        : {
+            ok: false as const,
+            diagnostics: [
+              { code: 'scope.permission-stale', message: 'Scope permission changed.', retryable: false },
+            ] as const,
+          };
+    };
+    return {
+      resolve: (selector) =>
+        allows(selector)
+          ? {
+              ok: true,
+              value: {
+                selector,
+                permissionRevision: permissions.get(keyOf(selector)) ?? 1,
+                policyRevision: `policy:${keyOf(selector)}`,
+                allowedFeatures: ['orders'],
+              },
+            }
+          : denied(),
+      authorize,
+      prepareActivation: (resolution, context) => {
+        if (context.kind === 'transition' && !allows(context.previous.selector)) return denied();
+        return authorize(resolution);
+      },
+      activate: () => ({ ok: true, value: undefined }),
+      deactivate: () => undefined,
+      readLeaveState: () => ({ dirty: false, revision: 'clean' }),
+    };
+  };
+  const attachments = new Map<ScopeController, () => void>();
+  const waitActive = (scope: ScopeController) =>
     new Promise<void>((resolve) => {
       const unsubscribe = scope.subscribe(() => {
         if (scope.getSnapshot().status !== 'active') return;
         unsubscribe();
         resolve();
       });
-      scope.attach();
+      attachments.set(scope, scope.attach());
     });
+  const parentScope = runtime.createScope({
+    id: `parent-${fixtureId}`,
+    binding: binding((selector) => keyOf(selector) === keyOf(northParent)),
+    initial: northParent,
+  });
+  await waitActive(parentScope);
+  const childAllowed = (selector: ScopeSelector) => {
+    const parent = parentScope.getSnapshot();
+    const lineage = selector.lineage ?? [];
+    return (
+      parent.active &&
+      parent.selector !== null &&
+      parent.permissionRevision === (permissions.get(keyOf(parent.selector)) ?? 1) &&
+      parent.policyRevision === `policy:${keyOf(parent.selector)}` &&
+      selector.kind === 'workspace' &&
+      lineage.length === 1 &&
+      lineage[0]?.kind === parent.selector.kind &&
+      lineage[0]?.id === parent.selector.id
+    );
+  };
+  const leftScope = runtime.createScope({ id: `child-${fixtureId}`, binding: binding(childAllowed), initial: north });
+  const rightScope = runtime.createScope({
+    id: `peer-${fixtureId}`,
+    binding: binding((selector) => keyOf(selector) === keyOf(south)),
+    initial: south,
+  });
   await Promise.all([waitActive(leftScope), waitActive(rightScope)]);
   const createOrders = (scope: typeof leftScope) => {
     const selector = scope.getSnapshot().selector;
@@ -874,9 +951,12 @@ export async function createParallelScopeFixture() {
       bindings: bindings(serviceFor(selector)),
     });
   };
+  const parentOrders = createOrders(parentScope);
   let leftOrders = createOrders(leftScope);
   const rightOrders = createOrders(rightScope);
   return {
+    parentScope,
+    parentOrders,
     leftScope,
     rightScope,
     leftOrders: () => leftOrders,
@@ -895,7 +975,18 @@ export async function createParallelScopeFixture() {
       if (result.status === 'active') leftOrders = createOrders(leftScope);
       return { previous, result, current: leftOrders };
     },
-    disposeLeft: () => leftScope.dispose(),
-    dispose: () => runtime.dispose(),
+    disposeLeft: () => {
+      attachments.get(leftScope)?.();
+      attachments.delete(leftScope);
+      leftScope.dispose();
+    },
+    dispose: () => {
+      for (const detach of attachments.values()) detach();
+      attachments.clear();
+      leftScope.dispose();
+      parentScope.dispose();
+      rightScope.dispose();
+      runtime.dispose();
+    },
   };
 }

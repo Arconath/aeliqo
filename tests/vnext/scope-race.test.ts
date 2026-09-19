@@ -79,7 +79,7 @@ it('rechecks the captured A draft synchronously after final B authorization', as
   await f.dispose();
 });
 
-it('atomically rejects revoked A or B authority at the synchronous activation boundary', async () => {
+it('atomically rejects revoked A or B authority at the synchronous preparation boundary', async () => {
   const revokedA = await createScopeFixture();
   await revokedA.activate('acme');
   const finalB = revokedA.host.deferAuthorize('globex', 1);
@@ -100,7 +100,7 @@ it('atomically rejects revoked A or B authority at the synchronous activation bo
     status: 'denied',
   });
   expect(revokedB.host.events).not.toContain('activate:globex');
-  expect(revokedB.scope.getSnapshot()).toMatchObject({ status: 'denied', selector: null });
+  expect(revokedB.scope.getSnapshot()).toMatchObject({ status: 'active', selector: { id: 'acme' } });
   await revokedB.dispose();
 });
 

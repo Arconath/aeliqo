@@ -111,8 +111,57 @@ it('keeps authorized A and starts no B effects when B membership is denied', asy
   await f.dispose();
 });
 
+it('preserves authorized A and its dirty surface when final host acceptance rejects B', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const a = f.currentOrders();
+  await a.request({ kind: 'browse' });
+  const before = a.getSnapshot();
+  f.host.setDirty(true);
+  const draft = f.host.currentLeaveState();
+  f.host.setGuard({ status: 'discard' });
+  f.host.rejectAcceptance('globex');
+
+  await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toMatchObject({
+    status: 'denied',
+    diagnosticCode: 'scope.permission-stale',
+  });
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'active', selector: { id: 'acme' } });
+  expect(f.currentOrders()).toBe(a);
+  expect(a.getSnapshot()).toBe(before);
+  expect(a.getSnapshot().phase).toBe('ready');
+  expect(f.host.currentLeaveState()).toBe(draft);
+  expect(f.host.currentLeaveState()).toEqual({ dirty: true, revision: 'draft-1' });
+  expect(f.host.events).not.toContain('deactivate:acme');
+  expect(f.host.events).not.toContain('activate:globex');
+  await f.dispose();
+});
+
+it.each(['throw', 'null', 'getter'] as const)(
+  'contains a %s activation preparation outcome without fencing A',
+  async (mode) => {
+    const f = await createScopeFixture();
+    await f.activate('acme');
+    const a = f.currentOrders();
+    await a.request({ kind: 'browse' });
+    const before = a.getSnapshot();
+    f.host.failPreparation('globex', mode);
+
+    await expect(f.scope.requestChange({ kind: 'workspace', id: 'globex' })).resolves.toEqual({
+      status: 'failed',
+      diagnosticCode: 'scope.activation-prepare-failed',
+    });
+    expect(f.scope.getSnapshot()).toMatchObject({ status: 'active', selector: { id: 'acme' } });
+    expect(f.currentOrders()).toBe(a);
+    expect(a.getSnapshot()).toBe(before);
+    expect(f.host.events).not.toContain('deactivate:acme');
+    await f.dispose();
+  },
+);
+
 it('keeps full lineage and parallel scope instances isolated for equal business IDs', async () => {
   const f = await createParallelScopeFixture();
+  const parent = f.parentOrders;
   const leftA = f.leftOrders();
   const rightA = f.rightOrders;
   expect(leftA.id).toBe(rightA.id);
@@ -127,6 +176,18 @@ it('keeps full lineage and parallel scope instances isolated for equal business 
   expect(rightA.getSnapshot().state.rows).toEqual([
     expect.objectContaining({ workspace: 'organization:south/workspace:acme' }),
   ]);
+  await expect(
+    f.leftScope.requestChange({
+      kind: 'workspace',
+      id: 'acme',
+      lineage: [{ kind: 'organization', id: 'south' }],
+    }),
+  ).resolves.toMatchObject({ status: 'denied', diagnosticCode: 'scope.membership-denied' });
+  await expect(f.leftScope.requestChange({ kind: 'organization', id: 'north' })).resolves.toMatchObject({
+    status: 'denied',
+    diagnosticCode: 'scope.membership-denied',
+  });
+  expect(f.parentScope.getSnapshot()).toMatchObject({ status: 'active', selector: { id: 'north' } });
   expect(new Set(f.authorityDigests.map((entry) => entry.scopeDigest))).toEqual(
     new Set(['organization:north/workspace:acme', 'organization:south/workspace:acme']),
   );
@@ -156,7 +217,9 @@ it('keeps full lineage and parallel scope instances isolated for equal business 
 
   f.disposeLeft();
   expect(changed.current.getSnapshot().phase).toBe('disposed');
+  expect(f.parentScope.getSnapshot()).toMatchObject({ status: 'active', selector: { id: 'north' } });
   expect(f.rightScope.getSnapshot()).toMatchObject({ status: 'active', selector: { id: 'acme' } });
+  await expect(parent.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'committed' });
   await expect(rightA.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'committed' });
   f.dispose();
 });

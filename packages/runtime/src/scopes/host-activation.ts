@@ -10,7 +10,11 @@ interface TransitionActivationInput {
 }
 
 export function activateInitialHost(binding: ScopeBinding, resolution: ScopeResolution): Outcome<void> {
-  return invokeActivation(binding, resolution, Object.freeze({ kind: 'initial' }));
+  return invokeActivation(binding, resolution, Object.freeze({ kind: 'initial' }), false);
+}
+
+export function prepareInitialHost(binding: ScopeBinding, resolution: ScopeResolution): Outcome<void> {
+  return invokeActivation(binding, resolution, Object.freeze({ kind: 'initial' }), true);
 }
 
 export function activateTransitionHost(
@@ -18,20 +22,32 @@ export function activateTransitionHost(
   resolution: ScopeResolution,
   input: TransitionActivationInput,
 ): Outcome<void> {
-  return invokeActivation(binding, resolution, Object.freeze({ kind: 'transition', ...input }));
+  return invokeActivation(binding, resolution, Object.freeze({ kind: 'transition', ...input }), false);
+}
+
+export function prepareTransitionHost(
+  binding: ScopeBinding,
+  resolution: ScopeResolution,
+  input: TransitionActivationInput,
+): Outcome<void> {
+  return invokeActivation(binding, resolution, Object.freeze({ kind: 'transition', ...input }), true);
 }
 
 function invokeActivation(
   binding: ScopeBinding,
   resolution: ScopeResolution,
   context: Parameters<ScopeBinding['activate']>[1],
+  prepare: boolean,
 ): Outcome<void> {
   const fallback = runtimeDiagnostic(
-    'scope.activation-failed',
-    'The host could not atomically accept the scope activation.',
+    prepare ? 'scope.activation-prepare-failed' : 'scope.activation-failed',
+    prepare
+      ? 'The host could not prepare the scope activation.'
+      : 'The host could not commit the accepted scope activation.',
   );
   try {
-    return normalizeVoidOutcome(binding.activate(resolution, context), fallback, true);
+    const outcome = prepare ? binding.prepareActivation(resolution, context) : binding.activate(resolution, context);
+    return normalizeVoidOutcome(outcome, fallback, !prepare);
   } catch {
     return { ok: false, diagnostics: [fallback] };
   }

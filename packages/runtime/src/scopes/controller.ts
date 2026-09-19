@@ -1,13 +1,15 @@
 import type { Diagnostic, Outcome } from '@aeliqo/core';
-import { activeSnapshot, failedActivationSnapshot } from './activation.js';
+import { activeSnapshot, failedActivationSnapshot, initialFailureSnapshot } from './activation.js';
 import { freezeSelector, sameSelector, validateResolution } from './address.js';
 import { authorizeScope, proveCurrentAuthority, ScopeTransitionHostError } from './authority.js';
-import { freezeDiagnostic, runtimeDiagnostic as diagnostic } from './diagnostic.js';
+import { runtimeDiagnostic as diagnostic } from './diagnostic.js';
 import { activateInitialHost, activateTransitionHost, isolateHost } from './host-activation.js';
+import { prepareInitialHost } from './host-activation.js';
 import type { SurfaceAddress } from '../surfaces/types.js';
-import { captureGuard, guardStillCurrent, InvalidScopeGuardError, runLeaveGuard, saveGuard } from './guard.js';
+import { captureGuard, InvalidScopeGuardError, runLeaveGuard, saveGuard, transitionGuardCurrent } from './guard.js';
 import { ScopeLifecycle } from './teardown.js';
 import { ScopeTargetRegistry } from './targets.js';
+import { prepareAcceptedTransition } from './transition-acceptance.js';
 import { deniedScopeOutcome, firstDiagnosticCode, needsInput } from './transition.js';
 import { signalAborted, transitionFailure } from './transition.js';
 import type {
@@ -290,22 +292,28 @@ export class ScopeControllerImpl implements ScopeController {
     if (!checked.ok) return this.retainOrDeny(id, capture, checked, 'scope.resolve-failed', signal);
     const afterResolve = await this.recheckActive(id, capture, signal);
     if (afterResolve !== undefined) return afterResolve;
-    const target = await this.authorizeTarget(checked.value, signal);
+    const target = await authorizeScope(this.input.binding, checked.value, signal);
     if (!target.ok) return this.retainOrDeny(id, capture, target, 'scope.permission-denied', signal);
     const afterTarget = await this.recheckActive(id, capture, signal);
     if (afterTarget !== undefined) return afterTarget;
-    const finalTarget = await this.authorizeTarget(checked.value, signal);
+    const finalTarget = await authorizeScope(this.input.binding, checked.value, signal);
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
     if (!finalTarget.ok) return this.retainOrDeny(id, capture, finalTarget, 'scope.permission-denied', signal);
-    let current: boolean;
-    try {
-      current = this.isCurrent(id, capture);
-    } catch (error) {
-      throw new ScopeTransitionHostError('guard', error);
-    }
-    if (!current) return transitionFailure('stale', 'scope.transition-stale');
-    if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
-    return this.activate(id, checked.value, capture);
+    return prepareAcceptedTransition({
+      binding: this.input.binding,
+      capture,
+      id,
+      resolution: checked.value,
+      signal,
+      readState: () => ({
+        snapshot: this.snapshot,
+        transitionId: this.transitionId,
+        disposed: this.disposed,
+        resolution: this.resolution,
+      }),
+      retain: (outcome) => this.retainOrDeny(id, capture, outcome, 'scope.activation-prepare-failed', signal),
+      activate: () => this.activate(id, checked.value, capture),
+    });
   }
 
   private async activateResolvedInitial(id: number, resolution: ScopeResolution, signal: AbortSignal): Promise<void> {
@@ -319,6 +327,8 @@ export class ScopeControllerImpl implements ScopeController {
     }
     if (!authorized.ok) return this.publishInitialFailure(authorized.diagnostics[0]);
     if (signal.aborted || id !== this.transitionId) return;
+    const prepared = prepareInitialHost(this.input.binding, resolution);
+    if (!prepared.ok) return this.publishInitialFailure(prepared.diagnostics[0]);
     const activated = activateInitialHost(this.input.binding, resolution);
     if (!activated.ok) {
       isolateHost(() => this.input.binding.deactivate?.(resolution, 'dispose'));
@@ -355,11 +365,6 @@ export class ScopeControllerImpl implements ScopeController {
     else if (stage === 'permission') code = 'scope.permission-check-failed';
     this.keepActive('cancelled', code);
     return transitionFailure('failed', code);
-  }
-
-  private isCurrent(id: number, capture: ReturnType<typeof captureGuard>): boolean {
-    if (id !== this.transitionId || this.disposed) return false;
-    return guardStillCurrent(this.input.binding, capture, this.snapshot);
   }
 
   private activate(
@@ -428,7 +433,14 @@ export class ScopeControllerImpl implements ScopeController {
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
     let current: boolean;
     try {
-      current = this.isCurrent(id, capture);
+      current = transitionGuardCurrent(
+        this.input.binding,
+        capture,
+        this.snapshot,
+        id,
+        this.transitionId,
+        this.disposed,
+      );
     } catch (error) {
       throw new ScopeTransitionHostError('guard', error);
     }
@@ -440,15 +452,12 @@ export class ScopeControllerImpl implements ScopeController {
       return transitionFailure('denied', firstDiagnosticCode(authorized.diagnostics, 'scope.permission-denied'));
     }
     try {
-      if (!this.isCurrent(id, capture)) return transitionFailure('stale', 'scope.transition-stale');
+      if (!transitionGuardCurrent(this.input.binding, capture, this.snapshot, id, this.transitionId, this.disposed))
+        return transitionFailure('stale', 'scope.transition-stale');
     } catch (error) {
       throw new ScopeTransitionHostError('guard', error);
     }
     return undefined;
-  }
-
-  private async authorizeTarget(resolution: ScopeResolution, signal: AbortSignal): Promise<Outcome<void>> {
-    return authorizeScope(this.input.binding, resolution, signal);
   }
 
   private async retainOrDeny(
@@ -482,17 +491,7 @@ export class ScopeControllerImpl implements ScopeController {
   }
 
   private publishInitialFailure(reason: Diagnostic): void {
-    const safeReason = freezeDiagnostic(
-      reason,
-      diagnostic('scope.host-failure', 'The trusted host returned an invalid diagnostic.'),
-    );
-    this.snapshot = Object.freeze({
-      ...this.snapshot,
-      status: 'denied',
-      selector: null,
-      revision: String(Number(this.snapshot.revision) + 1),
-      diagnostic: safeReason,
-    });
+    this.snapshot = initialFailureSnapshot(this.snapshot, reason);
     this.lifecycle.notify();
   }
 }

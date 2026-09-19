@@ -77,7 +77,7 @@ export function captureGuard(binding: ScopeBinding, snapshot: ScopeSnapshot): Gu
   });
 }
 
-export function guardStillCurrent(binding: ScopeBinding, capture: GuardCapture, snapshot: ScopeSnapshot): boolean {
+function guardStillCurrent(binding: ScopeBinding, capture: GuardCapture, snapshot: ScopeSnapshot): boolean {
   const currentRevision = readLeaveState(binding, capture.selector).revision;
   return (
     snapshot.active &&
@@ -86,6 +86,17 @@ export function guardStillCurrent(binding: ScopeBinding, capture: GuardCapture, 
     snapshot.policyRevision === capture.policyRevision &&
     currentRevision === capture.leaveRevision
   );
+}
+
+export function transitionGuardCurrent(
+  binding: ScopeBinding,
+  capture: GuardCapture,
+  snapshot: ScopeSnapshot,
+  id: number,
+  currentId: number,
+  disposed: boolean,
+): boolean {
+  return id === currentId && !disposed && guardStillCurrent(binding, capture, snapshot);
 }
 
 export async function runLeaveGuard(

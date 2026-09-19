@@ -1,4 +1,5 @@
 import type { Diagnostic } from '@aeliqo/core';
+import { freezeDiagnostic, runtimeDiagnostic } from './diagnostic.js';
 import type { ScopeResolution, ScopeSnapshot } from './types.js';
 
 export function activeSnapshot(
@@ -30,5 +31,19 @@ export function failedActivationSnapshot(current: ScopeSnapshot, diagnostic: Dia
     selector: null,
     revision: String(Number(current.revision) + 1),
     diagnostic,
+  });
+}
+
+export function initialFailureSnapshot(current: ScopeSnapshot, reason: Diagnostic): ScopeSnapshot {
+  const safeReason = freezeDiagnostic(
+    reason,
+    runtimeDiagnostic('scope.host-failure', 'The trusted host returned an invalid diagnostic.'),
+  );
+  return Object.freeze({
+    ...current,
+    status: 'denied',
+    selector: null,
+    revision: String(Number(current.revision) + 1),
+    diagnostic: safeReason,
   });
 }

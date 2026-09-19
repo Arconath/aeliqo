@@ -66,6 +66,7 @@ export interface ScopeBinding {
     options: ScopeResolveOptions,
   ): Promise<Outcome<ScopeResolution>> | Outcome<ScopeResolution>;
   authorize(resolution: ScopeResolution, options?: ScopeResolveOptions): Promise<Outcome<void>> | Outcome<void>;
+  prepareActivation(resolution: ScopeResolution, context: ScopeActivationContext): Outcome<void>;
   activate(resolution: ScopeResolution, context: ScopeActivationContext): Outcome<void> | void;
   deactivate(resolution: ScopeResolution, reason: 'transition' | ScopeInvalidationReason | 'dispose'): void;
   readLeaveState?(selector: ScopeSelector): ScopeLeaveState;
