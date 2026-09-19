@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-19 20:44 Asia/Jakarta (T04 accepted at `f2c5389`; T05 unblocked).
+Updated: 2026-09-19 23:40 Asia/Jakarta (T05 accepted at `867192f`; T06 unblocked).
 
 ## Source and authority
 
@@ -8,9 +8,9 @@ Updated: 2026-09-19 20:44 Asia/Jakarta (T04 accepted at `f2c5389`; T05 unblocked
 - Inspected reference SHA: 9092d6cff454b81cd623a7a4be7621c6a750d9c7.
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
-- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, T02 core feature implementation, accepted T03 scoped surfaces, and accepted T04 host-resolved scopes through `f2c5389`.
+- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, T02 core feature implementation, accepted T03 scoped surfaces, accepted T04 host-resolved scopes, and accepted T05 bounded local data through `867192f`.
 - Public registry changes: none.
-- Production changes: T02 core feature definitions; T03 runtime surface modules; T04 host-resolved scopes, guarded transitions, forced invalidation, two-phase activation acceptance/commit, reentrancy-safe fencing, exports, docs, and installed-consumer coverage. T04 has completed independent review.
+- Production changes: T02 core feature definitions; T03 runtime surface modules; T04 host-resolved scopes and safe transitions; T05 bounded local binding, structural/schema validation, atomic source replacement, source-pin publication fencing, exports, docs, and installed-consumer coverage. T05 has completed independent review.
 - Live paid-model authorization for this vNext execution: not established.
 - Merge/publication/deployment authorization for this vNext execution: must be verified against current policy and owner approvals.
 
@@ -18,34 +18,34 @@ Updated: 2026-09-19 20:44 Asia/Jakarta (T04 accepted at `f2c5389`; T05 unblocked
 
 Planning pack: final-v3 validated from the supplied ZIP and pristine temporary extraction, then installed under this directory. The repository remote, protected-main policy, release workflows, pinned toolchain, exports, 71-component catalog, current docs, and quality matrix were observed locally. The vNext harness and strict typecheck pass. After the intentionally retained concurrent-write rejection, a fresh clean-source run at `dedc15e` passed all 83 gates with `sourceChangedDuringRun: false`. Planning-pack validation remains separate from product evidence.
 
-| Task | State                    | Evidence                                                                                                                                                     |
-| ---- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| T00  | verified                 | `BASELINE.md`, integrity evidence, harness, two baseline checkpoints, and full unchanged-source 83/83 matrix at `dedc15e`                                    |
-| T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim |
-| T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published     |
-| T03  | implemented-and-verified | Accepted source `4422b0d`; scoped instances, authority-fenced controlled ownership, typed safe denial/intent, exactly-once publication, bounded lifecycle, 34/34 vNext, regressions, and installed runtime consumer pass; not published |
-| T04  | implemented-and-verified | Accepted source `f2c5389`; two-phase acceptance/commit, terminal-state and truthful-receipt reentrancy checks, real parent/child/peer isolation, 61/61 focused, 95/95 vNext, regressions, and installed runtime consumer pass; not published |
-| T05  | not-started              | No implementation evidence                                                                                                                                   |
-| T06  | not-started              | No implementation evidence                                                                                                                                   |
-| T07  | not-started              | No implementation evidence                                                                                                                                   |
-| T08  | not-started              | No implementation evidence                                                                                                                                   |
-| T09  | not-started              | Workspace composition not implemented                                                                                                                        |
-| T10  | not-started              | No implementation evidence                                                                                                                                   |
-| T11  | not-started              | No implementation evidence                                                                                                                                   |
-| T12  | not-started              | No implementation evidence                                                                                                                                   |
-| T13  | not-started              | No implementation evidence                                                                                                                                   |
-| T14  | not-started              | No implementation evidence                                                                                                                                   |
-| T15  | not-started              | No implementation evidence                                                                                                                                   |
-| T16  | not-started              | No implementation evidence                                                                                                                                   |
-| T17  | not-started              | Full live catalog inventory still required                                                                                                                   |
-| T18  | not-started              | No reference journey evidence                                                                                                                                |
-| T19  | not-started              | No qualification measurements                                                                                                                                |
-| T20  | not-started              | Version/support decision not yet executed                                                                                                                    |
-| T21  | not-started              | No reviewed/released vNext candidate                                                                                                                         |
+| Task | State                    | Evidence                                                                                                                                                                                                                                                                                         |
+| ---- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T00  | verified                 | `BASELINE.md`, integrity evidence, harness, two baseline checkpoints, and full unchanged-source 83/83 matrix at `dedc15e`                                                                                                                                                                        |
+| T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim                                                                                                                                     |
+| T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published                                                                                                                                         |
+| T03  | implemented-and-verified | Accepted source `4422b0d`; scoped instances, authority-fenced controlled ownership, typed safe denial/intent, exactly-once publication, bounded lifecycle, 34/34 vNext, regressions, and installed runtime consumer pass; not published                                                          |
+| T04  | implemented-and-verified | Accepted source `f2c5389`; two-phase acceptance/commit, terminal-state and truthful-receipt reentrancy checks, real parent/child/peer isolation, 61/61 focused, 95/95 vNext, regressions, and installed runtime consumer pass; not published                                                     |
+| T05  | implemented-and-verified | Accepted source `867192f`; bounded local binding and inference, atomic schema-validated updates, pre-commit source fencing, 47/47 focused, 129/129 vNext, full data/query/semantics/evaluation/Region/Result regressions, installed core/runtime consumers, site and visual gates; not published |
+| T06  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T07  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T08  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T09  | not-started              | Workspace composition not implemented                                                                                                                                                                                                                                                            |
+| T10  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T11  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T12  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T13  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T14  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T15  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T16  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                       |
+| T17  | not-started              | Full live catalog inventory still required                                                                                                                                                                                                                                                       |
+| T18  | not-started              | No reference journey evidence                                                                                                                                                                                                                                                                    |
+| T19  | not-started              | No qualification measurements                                                                                                                                                                                                                                                                    |
+| T20  | not-started              | Version/support decision not yet executed                                                                                                                                                                                                                                                        |
+| T21  | not-started              | No reviewed/released vNext candidate                                                                                                                                                                                                                                                             |
 
 ## Next executable action
 
-Execute T05 local data convenience and update correctness from accepted T04 source `f2c5389`, using the prepared contract audit and API-seam brief.
+Execute T06 remote data, coverage, caching, and semantic correctness from accepted T05 source `867192f`, using the prepared API-seam and security RED matrix.
 
 ## Decisions to preserve
 
@@ -112,6 +112,16 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 - Independent final evidence: `.superpowers/sdd/02-EXECPLAN/task-4-receipt-review.md` reports no findings and explicitly unblocks T05. The reviewed fix-4 package is `.superpowers/sdd/02-EXECPLAN/review-c8e06a4..f2c5389.diff`, SHA-256 `d3924a25ec83d438aa05572647fb632cfee606eccf276c2687ee65b790447c5d`.
 - The brief names `pnpm test:auth-retention`, but this repository exposes that gate as `pnpm test:data:auth-retention`; the available gate passed 1000/1000. No alias or gate weakening was added.
 - Detailed evidence and self-review: `.superpowers/sdd/02-EXECPLAN/task-4-report.md`. No model call, package publication, image publication, deployment, push, or production operation occurred.
+
+### T05 / RQ08 — bounded local data and update correctness
+
+- Initial implementation commit `a144e04` added `createLocalDataBinding` and bounded `inferLocalDataShape` while retaining the existing DataService, ResultStore, Region, surface, and scope execution path. Independent review rejected that first candidate for five correctness blockers; accepted correction source is `867192f`.
+- Replacements now reuse feature schema validation, reject executable `toJSON`, preserve exact prior runtime/surface state on failed preparation, and publish only after normalization plus the final source-pin fence. Exact-object source pins use a private `WeakMap`; generic DataService objects are not duck-inspected.
+- Callback identity inference records actual field access and accepts one uniquely accessed matching field, while constants, multi-field ambiguity, missing IDs, duplicates, hostile descriptors, nested values, capacity breaches, revision conflicts, and historical revision reuse fail explicitly.
+- Fresh evidence: focused local-data plus ADC 47/47; vNext 129/129 with strict TypeScript; data 98/98; query 94/94; semantics 34/34; evaluation 15/15; Regions 49/49; Results 23/23; boundaries 4/4; full lint/Knip/site verification; format; diff check; site build/test; and 24 visual baselines.
+- Clean installed evidence: `artifacts/core-consumers/run-DKKv0o/report.json` and `artifacts/runtime-consumers/run-ldVkBR/report.json`, both with unchanged source digests. The runtime consumer executes the same public package path and covers exact service identity, stable-address updates, isolation, revision/capacity rejection, rollback, shape bounds, exact partial coverage, and disposed-update safety.
+- Reviewed correction package: `.superpowers/sdd/02-EXECPLAN/review-a144e04..867192f.diff`, SHA-256 `44b6cb4361682e217bca70c5831fb416bab43f64217caf0d38de8b4192069422`. Independent review found no remaining Critical or Important findings.
+- Detailed evidence: `.superpowers/sdd/02-EXECPLAN/task-5-report.md`. Implemented and locally/runtime verified through real source and installed packages; not published, deployed, pushed, or verified against production.
 
 ## Resuming existing work
 
