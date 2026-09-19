@@ -12,6 +12,12 @@ description: 'The 0.4 release consolidates the public site, documents all compon
   definitions. Data features lower through the existing resource/catalog path;
   non-data features declare versioned intents, views, and bounded capability
   schemas without fabricating relational data.
+- `@aeliqo/runtime` adds unreleased scoped surface controllers with immutable
+  instance addresses, per-runtime reference-counted registration, internal and
+  explicitly controlled host ownership, and real `DataService`/Region/Result
+  integration. Existing app/Region APIs remain the compatibility path;
+  workspace transitions and React lifecycle adapters are not part of this
+  candidate step.
 - This candidate has not been published or deployed. Its runtime, React,
   migration, and compatibility gates remain in progress.
 

@@ -66,6 +66,10 @@
     "./meaning": {
       "types": "./dist/meaning/index.d.ts",
       "import": "./dist/meaning/index.js"
+    },
+    "./surfaces": {
+      "types": "./dist/surfaces/index.d.ts",
+      "import": "./dist/surfaces/index.js"
     }
   },
   "scripts": {

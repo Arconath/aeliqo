@@ -156,6 +156,10 @@ assert.deepEqual(runtimeManifest.exports?.['./audit'], {
   types: './dist/audit/index.d.ts',
   import: './dist/audit/index.js',
 });
+assert.deepEqual(runtimeManifest.exports?.['./surfaces'], {
+  types: './dist/surfaces/index.d.ts',
+  import: './dist/surfaces/index.js',
+});
 assert.equal(runtimeManifest.exports?.['./data']?.types, './dist/data/index.d.ts');
 assert.equal(runtimeManifest.exports?.['./data']?.import, './dist/data/index.js');
 assert(await fileExists(join(runtimeDirectory, 'src', 'data')), 'Runtime data source is not ready');
@@ -236,6 +240,11 @@ assert(runtimeEntries.includes('package/dist/data/index.js'), 'Runtime data dist
 assert(runtimeEntries.includes('package/dist/data/index.d.ts'), 'Runtime data declarations are absent from tarball');
 assert(runtimeEntries.includes('package/dist/audit/index.js'), 'Runtime audit dist entry is absent from tarball');
 assert(runtimeEntries.includes('package/dist/audit/index.d.ts'), 'Runtime audit declarations are absent from tarball');
+assert(runtimeEntries.includes('package/dist/surfaces/index.js'), 'Runtime surfaces dist entry is absent from tarball');
+assert(
+  runtimeEntries.includes('package/dist/surfaces/index.d.ts'),
+  'Runtime surfaces declarations are absent from tarball',
+);
 
 await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
 run(
@@ -968,8 +977,13 @@ import type {DataHttpHandler,
   ReadContext,
   ResultEvent} from '@aeliqo/runtime/data';
 import type {Catalog,
+  Intent,
   QuerySpec,
 } from '@aeliqo/core';
+import {defineDataFeature} from '@aeliqo/core/features';
+import {z} from 'zod';
+import {createAeliqoRuntime, type AeliqoRuntime} from '@aeliqo/runtime';
+import type {CapabilitySurfaceBindings, DataSurfaceBindings, ExternalSurfaceStore, SurfaceController} from '@aeliqo/runtime/surfaces';
 import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
 import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument} from '@aeliqo/runtime/persistence';
@@ -1031,6 +1045,29 @@ const invalidBudget: QueryBudget = {...budget, maxRows: '10'};
 void [catalog, query, budget, snapshot, context, local, handler, http, parsedBudget, parsedEvent, record, invalidRecord, invalidBudget];
 const typedEvent: ResultEvent | undefined = undefined;
 void typedEvent;
+const peopleFeature = defineDataFeature({id: 'people', schema: z.object({id: z.string(), name: z.string()}), identity: ['id']});
+type PeopleState = {readonly rows: readonly {readonly id: string; readonly name: string}[]};
+declare const peopleData: DataService;
+const peopleBindings: DataSurfaceBindings<PeopleState> = {
+  initialState: {rows: []},
+  source: {
+    kind: 'data-service',
+    service: peopleData,
+    coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'keyset', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
+    normalize: async () => ({rows: []}),
+  },
+};
+declare const surfaceRuntime: AeliqoRuntime;
+declare const externalStore: ExternalSurfaceStore<Intent, PeopleState>;
+const surfaceScope = surfaceRuntime.createLocalSurfaceScope({id: 'local', allowedFeatures: ['people']});
+const typedSurface: SurfaceController<Intent, PeopleState> = surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-main', feature: peopleFeature, bindings: peopleBindings});
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-controlled', feature: peopleFeature, bindings: peopleBindings, ownership: {mode: 'external', store: externalStore, onProposal: proposal => void proposal}});
+// @ts-expect-error Surface addresses are immutable targets.
+typedSurface.address.surfaceGeneration = 2;
+declare const bypassBinding: CapabilitySurfaceBindings<Intent, PeopleState>;
+// @ts-expect-error Data features must use DataService bindings.
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'bypass', feature: peopleFeature, bindings: bypassBinding});
+void [createAeliqoRuntime, typedSurface];
 `,
 );
 await writeFile(
@@ -1089,6 +1126,59 @@ assert.deepEqual(auditOfflineProof, {
   auditIoAttempts: [],
   blockerProbeAttempts: ['fetch', 'node:http.get', 'node:fs.readFileSync'],
 });
+
+await writeFile(
+  join(consumerDirectory, 'surface-consumer.mjs'),
+  `
+import assert from 'node:assert/strict';
+import {z} from 'zod';
+import {defineDataFeature} from '@aeliqo/core/features';
+import {createQueryFunctionRegistry} from '@aeliqo/core/expressions';
+import {createAeliqoRuntime} from '@aeliqo/runtime';
+import {createLocalDataService} from '@aeliqo/runtime/data';
+
+const feature = defineDataFeature({id: 'people', schema: z.object({id: z.string(), team: z.enum(['Design', 'Engineering'])}), identity: ['id'], fields: {team: {role: 'dimension'}}});
+const functions = createQueryFunctionRegistry({version: '2'});
+assert.equal(functions.ok, true);
+const data = createLocalDataService({snapshot: {catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}}, functionRegistry: functions.value, authorize: () => ({ok: true, value: {scopeDigest: 'local', policyRevision: '1'}})});
+const runtime = createAeliqoRuntime({runtimeId: 'installed-runtime', resources: [{resource: feature.resource, data}], authority: {read: () => ({ok: true, value: {principalKey: 'local', scopeDigest: 'local', policyRevision: '1', experienceRevision: '1', grants: ['catalog.read', 'task.evaluate', 'result.inspect'], readContext: {principal: 'local'}}})}});
+const scope = runtime.createLocalSurfaceScope({id: 'installed-scope', allowedFeatures: ['people']});
+const bindings = {initialState: {rows: []}, source: {kind: 'data-service', service: data, coverage: {fields: ['id', 'team'], operators: ['eq'], pagination: 'keyset', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async events => {const rows = []; for await (const event of events) if (event.kind === 'batch') rows.push(...event.rows); return {rows};}}};
+const left = runtime.createSurface({scope, id: 'left', feature, bindings});
+const right = runtime.createSurface({scope, id: 'right', feature, bindings});
+const rightBefore = right.getSnapshot();
+assert.equal((await left.request({kind: 'browse', filter: {op: 'compare', field: 'team', comparison: 'eq', value: 'Engineering'}})).status, 'committed');
+assert.equal(right.getSnapshot(), rightBefore);
+assert.deepEqual(left.getSnapshot().state.rows, [{id: 'sam', team: 'Engineering'}]);
+assert.equal((await left.request({kind: 'browse'}, {expectedAddress: right.address})).status, 'stale');
+
+const address = {runtimeId: 'installed-runtime', scopeInstanceId: 'installed-scope', activationEpoch: 1, surfaceId: 'controlled', surfaceGeneration: 1};
+let hostSnapshot = Object.freeze({id: 'controlled', address, revision: '0', phase: 'idle', intent: {version: '1', id: 'initial', resource: 'people', kind: 'browse'}, state: {rows: []}});
+const listeners = new Set();
+const proposals = [];
+const store = {getSnapshot: () => hostSnapshot, subscribe: listener => (listeners.add(listener), () => listeners.delete(listener))};
+const controlled = runtime.createSurface({scope, id: 'controlled', feature, bindings, ownership: {mode: 'external', store, onProposal: proposal => proposals.push(proposal)}});
+const proposalResult = await controlled.request({kind: 'browse'});
+assert.equal(proposalResult.status, 'proposed');
+assert.equal(controlled.getSnapshot().revision, '0');
+const accepted = proposals[0];
+hostSnapshot = Object.freeze({...hostSnapshot, revision: '1', phase: 'ready', intent: accepted.intent, proposalDecision: {proposalId: accepted.proposalId, address: accepted.address, expectedRevision: accepted.expectedRevision, status: 'accepted'}});
+for (const listener of listeners) listener();
+assert.equal(controlled.getSnapshot().revision, '1');
+const rejectedResult = await controlled.request({kind: 'browse', filter: {op: 'compare', field: 'team', comparison: 'eq', value: 'Design'}});
+assert.equal(rejectedResult.status, 'proposed');
+const rejected = proposals[1];
+const beforeReject = controlled.getSnapshot();
+hostSnapshot = Object.freeze({...hostSnapshot, proposalDecision: {proposalId: rejected.proposalId, address: rejected.address, expectedRevision: rejected.expectedRevision, status: 'rejected'}});
+for (const listener of listeners) listener();
+assert.equal(controlled.getSnapshot(), beforeReject);
+runtime.dispose();
+scope.dispose();
+process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true}));
+`,
+);
+const surfaceProof = JSON.parse(run([process.execPath, 'surface-consumer.mjs'], consumerDirectory));
+assert.deepEqual(surfaceProof, { twoInstances: true, controlled: true, rejected: true });
 
 await writeFile(
   join(consumerDirectory, 'consumer.mjs'),
@@ -1401,6 +1491,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
     audit: auditProof,
     auditOffline: ${JSON.stringify(auditOfflineProof)},
     interaction: interactionProof,
+    surfaces: ${JSON.stringify({ installed: true, twoInstances: true, controlled: true })},
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
   console.log('Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.');

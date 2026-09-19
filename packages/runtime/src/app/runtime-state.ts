@@ -1,10 +1,14 @@
 import { WIRE_LIMITS } from '@aeliqo/core';
-import type { Diagnostic, Outcome, ResultRef } from '@aeliqo/core';
+import type { Diagnostic, Outcome, ResultRef, Task } from '@aeliqo/core';
+import type { RegionAuthority, RegionSnapshot } from '../regions/types.js';
 import type { RuntimeRegionState, RuntimeRenderStatus } from './types.js';
+import type { RuntimeResourceBinding } from './types.js';
+import type { AppAuthorityContext } from './types.js';
 
 export interface MountedRegion {
   readonly regionId: string;
   readonly resourceId: string;
+  readonly surfaceBinding?: RuntimeResourceBinding;
   readonly listeners: Set<(state: RuntimeRegionState) => void>;
   state: RuntimeRegionState;
   sequence: number;
@@ -59,4 +63,19 @@ export function linkedSignal(parent: AbortSignal | undefined): {
     controller,
     cleanup: () => parent?.removeEventListener('abort', abort),
   };
+}
+
+export function sameAuthority(current: AppAuthorityContext, expected: RegionAuthority): boolean {
+  return (
+    current.principalKey === expected.principalKey &&
+    current.scopeDigest === expected.scopeDigest &&
+    current.policyRevision === expected.policyRevision &&
+    current.experienceRevision === expected.experienceRevision
+  );
+}
+
+export function sameTask(current: RegionSnapshot, task: Task): boolean {
+  return (
+    current.readSet !== undefined && current.state?.task.id === task.id && current.state.task.revision === task.revision
+  );
 }

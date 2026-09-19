@@ -137,6 +137,14 @@ one reviewed change. Do not layer an alias or preserve two competing surface
 contracts. Existing 0.4 region/resource consumers remain on their documented
 path during migration.
 
+T03 implementation exposed one such concrete incompatibility: an inert surface
+cannot derive a typed `state: S` without performing a read or casting an
+unrelated region snapshot. Data and capability bindings therefore provide an
+explicit `initialState`. The runtime copies that value into its first immutable
+snapshot without freezing the caller-owned object. This keeps construction
+inert and makes the public `SurfaceSnapshot<S>` type truthful; the declaration
+consumer and installed runtime consumer cover the same shape.
+
 ### Documentation source map
 
 `docs/plans/aeliqo-vnext/01-SPEC.md` and `08-CONTRACTS.md` are the normative

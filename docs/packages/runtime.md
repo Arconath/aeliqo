@@ -19,6 +19,58 @@ The host supplies each resource's data adapter and a fresh authority response.
 Identity, grants, policy revisions, and read context stay with the host. An
 intent cannot grant itself access.
 
+## Scoped surfaces (vNext candidate)
+
+The unreleased surface API adds live instances without changing the existing
+app/Region compatibility path. A host creates an explicit local read-only scope
+and may create multiple controllers from one immutable feature definition:
+
+```ts
+import { createAeliqoRuntime } from '@aeliqo/runtime';
+import type { DataSurfaceBindings } from '@aeliqo/runtime/surfaces';
+
+const runtime = createAeliqoRuntime({ runtimeId: 'app', resources, authority });
+const scope = runtime.createLocalSurfaceScope({
+  id: 'local-session',
+  allowedFeatures: [peopleFeature.id],
+});
+const bindings: DataSurfaceBindings<PeopleState> = {
+  initialState: { rows: [], selection: [] },
+  source: {
+    kind: 'data-service',
+    service: peopleData,
+    coverage,
+    normalize: normalizePeopleResults,
+  },
+};
+const left = runtime.createSurface({ scope, id: 'left', feature: peopleFeature, bindings });
+const right = runtime.createSurface({ scope, id: 'right', feature: peopleFeature, bindings });
+```
+
+Construction is inert: it does not subscribe, start a timer, or read data.
+`request()` is the explicit headless operation. Each controller owns an
+immutable address containing the runtime, scope instance, activation epoch,
+surface ID, and generation. Duplicate live IDs fail, remounting advances the
+generation, and captured callbacks never resolve another target by feature
+name. Data features continue through `DataService.describe/plan/execute`; typed
+capability bindings cover non-data features.
+
+Internal ownership commits controller state through the existing runtime,
+ResultStore, and Region lifecycle. External ownership reads a stable host store
+and emits a correlated proposal. The host publishes acceptance or rejection
+with `proposalDecision` containing the proposal ID, address, and expected
+revision; firing `onProposal` or changing an unrelated host revision is not
+acceptance. `request()` therefore returns `proposed` until the host explicitly
+decides. Stale, denied, cancelled, disposed, unsupported, and failed outcomes
+are explicit and do not retarget another instance.
+
+`createLocalSurfaceScope` grants only the feature IDs named by the application;
+it is not a remote credential or tenant selector. Backend authorization remains
+authoritative for every data operation. Workspace transitions, dirty guards,
+and forced invalidation are later scope-controller behavior and are not implied
+by this local kernel. Dispose controllers, the scope, and finally the owning
+runtime; every dispose operation is idempotent.
+
 ## Subpaths
 
 | Subpath | Responsibility |
@@ -33,6 +85,7 @@ intent cannot grant itself access.
 | `@aeliqo/runtime/persistence` | Explicit export and restore of runtime documents |
 | `@aeliqo/runtime/audit` | Bounded in-memory audit collection |
 | `@aeliqo/runtime/meaning` | Host-owned meaning registration and evaluation |
+| `@aeliqo/runtime/surfaces` | Scoped surface controller, ownership, address, and binding contracts |
 
 `@aeliqo/runtime/app` is also available for applications that want to make the
 composition boundary explicit.

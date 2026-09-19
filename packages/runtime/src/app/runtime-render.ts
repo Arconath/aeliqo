@@ -19,7 +19,7 @@ export interface RuntimeRenderHost {
   readonly evaluator: ReturnType<typeof createTaskEvaluator>;
   readonly intents: AeliqoRuntimeOptions['intents'];
   getSlot(regionId: string): MountedRegion | undefined;
-  getResource(resourceId: string): RuntimeResourceBinding | undefined;
+  getResource(slot: MountedRegion): RuntimeResourceBinding | undefined;
   preparePrincipal(slot: MountedRegion, signal: AbortSignal): Outcome<AppAuthorityContext>;
   setState(slot: MountedRegion, state: MountedRegion['state']): void;
   failReceipt(
@@ -134,7 +134,7 @@ export class RuntimeRenderCoordinator {
   private compile(input: RuntimeRenderInput, slot: MountedRegion, sequence: number): Outcome<CompiledIntent> {
     const intent = parseIntent(input.intent);
     if (!intent.ok) return intent;
-    const binding = this.host.getResource(slot.resourceId);
+    const binding = this.host.getResource(slot);
     if (binding === undefined) return this.invalidResource();
     const compiled = compileIntent(intent.value, {
       resource: binding.resource,

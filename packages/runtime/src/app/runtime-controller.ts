@@ -4,6 +4,8 @@ import type { TrustedEvaluationContext } from '../evaluation/types.js';
 import { createRegionStore } from '../regions/store.js';
 import type { RegionAuthority, RegionHandle, RegionOutcome, RegionSnapshot, RegionStore } from '../regions/types.js';
 import type { ResultHandle, ResultStore } from '../results/types.js';
+import { RuntimeSurfaceFactory } from '../surfaces/runtime-factory.js';
+import type { CreateCapabilitySurfaceInput, CreateDataSurfaceInput } from '../surfaces/types.js';
 import type {
   AeliqoRuntime,
   AeliqoRuntimeOptions,
@@ -23,7 +25,7 @@ import { RuntimeRenderCoordinator } from './runtime-render.js';
 import type { RuntimeRenderHost } from './runtime-render.js';
 import { createTrackedResultStore } from './runtime-result-store.js';
 import type { MountedRegion } from './runtime-state.js';
-import { diagnostic, failure, statusFor, uniqueRefs, validId } from './runtime-state.js';
+import { diagnostic, failure, sameAuthority, sameTask, statusFor, uniqueRefs, validId } from './runtime-state.js';
 
 interface PresentationTarget {
   readonly slot: MountedRegion;
@@ -35,12 +37,13 @@ export class RuntimeController implements RuntimeRenderHost {
   readonly regions: RegionStore;
   readonly evaluator: ReturnType<typeof createTaskEvaluator>;
   private readonly options: AeliqoRuntimeOptions;
-  private readonly resources: ReadonlyMap<string, RuntimeResourceBinding>;
+  private readonly resources: Map<string, RuntimeResourceBinding>;
   private readonly resultStore: ResultStore;
   private readonly trackedHandles: Set<ResultHandle>;
   private readonly ownsResultStore: boolean;
   private readonly mounted = new Map<string, MountedRegion>();
   private readonly renderer: RuntimeRenderCoordinator;
+  private readonly surfaceFactory: RuntimeSurfaceFactory;
   private disposed = false;
 
   constructor(options: AeliqoRuntimeOptions) {
@@ -62,11 +65,20 @@ export class RuntimeController implements RuntimeRenderHost {
       ...(options.maxRenderMilliseconds === undefined ? {} : { maxMilliseconds: options.maxRenderMilliseconds }),
     });
     this.renderer = new RuntimeRenderCoordinator(this);
+    this.surfaceFactory = new RuntimeSurfaceFactory({
+      runtimeId: options.runtimeId ?? `runtime-${nextRuntimeId++}`,
+      mount: (input, binding) => this.mountSurface(input, binding),
+      render: (input) => this.render(input),
+      unmount: (regionId) => this.unmount(regionId),
+    });
   }
 
   create(): AeliqoRuntime {
     const runtime: AeliqoRuntime = {
       ...(this.options.actionPort === undefined ? {} : { actionPort: this.options.actionPort }),
+      createLocalSurfaceScope: (input) => this.surfaceFactory.createLocalScope(input),
+      createSurface: ((input: CreateDataSurfaceInput<unknown> | CreateCapabilitySurfaceInput<unknown, unknown>) =>
+        this.surfaceFactory.create(input)) as AeliqoRuntime['createSurface'],
       mount: (input) => this.mount(input),
       render: (input) => this.render(input),
       context: (regionId) => this.context(regionId),
@@ -84,8 +96,8 @@ export class RuntimeController implements RuntimeRenderHost {
     return this.mounted.get(regionId);
   }
 
-  getResource(resourceId: string): RuntimeResourceBinding | undefined {
-    return this.resources.get(resourceId);
+  getResource(slot: MountedRegion): RuntimeResourceBinding | undefined {
+    return slot.surfaceBinding ?? this.resources.get(slot.resourceId);
   }
 
   preparePrincipal(slot: MountedRegion, signal: AbortSignal): Outcome<AppAuthorityContext> {
@@ -136,6 +148,14 @@ export class RuntimeController implements RuntimeRenderHost {
     return { ok: true as const, value: state };
   }
 
+  private mountSurface(input: RuntimeMountInput, binding: RuntimeResourceBinding) {
+    const valid = this.validateMount(input, binding);
+    if (!valid.ok) return valid;
+    const state = this.initialState(input);
+    this.mounted.set(input.regionId, this.createMountedRegion(input, state, binding));
+    return { ok: true as const, value: state };
+  }
+
   render(input: RuntimeRenderInput): Promise<RuntimeRenderReceipt> {
     return this.renderer.render(input);
   }
@@ -145,7 +165,7 @@ export class RuntimeController implements RuntimeRenderHost {
     if (slot === undefined) return failure('runtime.mount-missing', 'Mount the Region before reading its context.');
     const authority = this.catalogAuthority(slot);
     if (!authority.ok) return authority;
-    const binding = this.getResource(slot.resourceId);
+    const binding = this.getResource(slot);
     if (binding === undefined) return failure('runtime.resource-missing', 'The mounted resource is unavailable.');
     return { ok: true, value: describeResource(binding, authority.value) };
   }
@@ -208,15 +228,16 @@ export class RuntimeController implements RuntimeRenderHost {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.surfaceFactory.dispose();
     for (const slot of this.mounted.values()) this.disposeMountedRegion(slot);
     this.mounted.clear();
     this.regions.dispose();
     this.releaseResultStore();
   }
 
-  private validateMount(input: RuntimeMountInput): Outcome<void> {
+  private validateMount(input: RuntimeMountInput, surfaceBinding?: RuntimeResourceBinding): Outcome<void> {
     if (this.disposed) return failure('runtime.app-disposed', 'The Aeliqo runtime is disposed.');
-    if (!validId(input.regionId) || !this.resources.has(input.resourceId))
+    if (!validId(input.regionId) || (surfaceBinding === undefined && !this.resources.has(input.resourceId)))
       return failure('runtime.mount-invalid', 'Mount requires a bounded region ID and registered resource.', [
         'regionId',
       ]);
@@ -235,10 +256,15 @@ export class RuntimeController implements RuntimeRenderHost {
     });
   }
 
-  private createMountedRegion(input: RuntimeMountInput, state: RuntimeRegionState): MountedRegion {
+  private createMountedRegion(
+    input: RuntimeMountInput,
+    state: RuntimeRegionState,
+    surfaceBinding?: RuntimeResourceBinding,
+  ): MountedRegion {
     return {
       regionId: input.regionId,
       resourceId: input.resourceId,
+      ...(surfaceBinding === undefined ? {} : { surfaceBinding }),
       listeners: new Set(),
       state,
       sequence: 0,
@@ -262,7 +288,7 @@ export class RuntimeController implements RuntimeRenderHost {
   private readRegionAuthority(regionId: string): RegionOutcome<RegionAuthority> {
     const slot = this.getSlot(regionId);
     if (slot === undefined) return this.regionDenied('The region is not mounted.');
-    const binding = this.getResource(slot.resourceId);
+    const binding = this.getResource(slot);
     if (binding === undefined) return this.regionDenied('The mounted resource is unavailable.');
     const current = this.authorityFor(slot, 'commit');
     if (!current.ok) return current;
@@ -294,7 +320,7 @@ export class RuntimeController implements RuntimeRenderHost {
 
   private readEvaluationContext(task: Task, signal: AbortSignal): Outcome<TrustedEvaluationContext> {
     const slot = this.getSlot(task.regionId);
-    const binding = slot === undefined ? undefined : this.getResource(slot.resourceId);
+    const binding = slot === undefined ? undefined : this.getResource(slot);
     if (slot === undefined || binding === undefined)
       return failure('runtime.evaluation-denied', 'The Task targets an unmounted resource.');
     const current = this.authorityFor(slot, 'render', signal);
@@ -335,7 +361,7 @@ export class RuntimeController implements RuntimeRenderHost {
     for (const resourceId of this.resources.keys()) {
       const authority = this.visibleAuthority(slot, resourceId, active);
       if (authority === undefined) continue;
-      const binding = this.getResource(resourceId);
+      const binding = this.resources.get(resourceId);
       if (binding !== undefined) visible.push(describeResource(binding, authority));
     }
     return visible;
@@ -453,7 +479,9 @@ function validateOptions(options: AeliqoRuntimeOptions): void {
     throw new TypeError('createAeliqoRuntime requires at least one resource binding.');
 }
 
-function indexResources(resources: AeliqoRuntimeOptions['resources']): ReadonlyMap<string, RuntimeResourceBinding> {
+let nextRuntimeId = 1;
+
+function indexResources(resources: AeliqoRuntimeOptions['resources']): Map<string, RuntimeResourceBinding> {
   const indexed = new Map<string, RuntimeResourceBinding>();
   for (const binding of resources) {
     if (indexed.has(binding.resource.id))
@@ -461,19 +489,4 @@ function indexResources(resources: AeliqoRuntimeOptions['resources']): ReadonlyM
     indexed.set(binding.resource.id, binding);
   }
   return indexed;
-}
-
-function sameAuthority(current: AppAuthorityContext, expected: RegionAuthority): boolean {
-  return (
-    current.principalKey === expected.principalKey &&
-    current.scopeDigest === expected.scopeDigest &&
-    current.policyRevision === expected.policyRevision &&
-    current.experienceRevision === expected.experienceRevision
-  );
-}
-
-function sameTask(current: RegionSnapshot, task: Task): boolean {
-  return (
-    current.readSet !== undefined && current.state?.task.id === task.id && current.state.task.revision === task.revision
-  );
 }

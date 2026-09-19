@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-19 15:38 Asia/Jakarta (execution started).
+Updated: 2026-09-19 17:33 Asia/Jakarta (T03 implementation verified in the uncommitted shared checkout).
 
 ## Source and authority
 
@@ -8,9 +8,9 @@ Updated: 2026-09-19 15:38 Asia/Jakarta (execution started).
 - Inspected reference SHA: 9092d6cff454b81cd623a7a4be7621c6a750d9c7.
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
-- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, and T02 core feature implementation.
+- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, T02 core feature implementation, and the uncommitted T03 scoped-surface implementation.
 - Public registry changes: none.
-- Production changes: none.
+- Production changes: T02 core feature definitions and the uncommitted T03 runtime surface modules, app/Region integration, exports, docs, and installed-consumer coverage.
 - Live paid-model authorization for this vNext execution: not established.
 - Merge/publication/deployment authorization for this vNext execution: must be verified against current policy and owner approvals.
 
@@ -23,7 +23,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T00  | verified                 | `BASELINE.md`, integrity evidence, harness, two baseline checkpoints, and full unchanged-source 83/83 matrix at `dedc15e`                                    |
 | T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim |
 | T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published     |
-| T03  | not-started              | No implementation evidence                                                                                                                                   |
+| T03  | implemented-and-verified | Scoped instances, inert local scopes, registry/generation lifecycle, internal/external ownership, explicit host decisions, regressions, and installed runtime tarball consumer; uncommitted and not published |
 | T04  | not-started              | Scope guard/ABA/isolation not implemented                                                                                                                    |
 | T05  | not-started              | No implementation evidence                                                                                                                                   |
 | T06  | not-started              | No implementation evidence                                                                                                                                   |
@@ -45,7 +45,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 
 ## Next executable action
 
-Begin T03 surface lifecycle implementation from the clean reviewed `dedc15e` checkpoint using failing behavior tests first.
+Begin T04 scope transition, guard, revocation, and A-B-A fencing work from the reviewed T03 source after the controller integrates it.
 
 ## Decisions to preserve
 
@@ -80,6 +80,18 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 - Independent review found a collision-prone version-reference key and mutable nested catalog/entity metadata. The implementation now reuses the collision-safe canonical key, freezes owned metadata without freezing the caller's schema, runtime-freezes default aliases, and includes regressions for both findings.
 - Fresh focused evidence: vNext suite 8/8, core contracts 182/182, semantics 34/34, package-boundary tests 4/4, core build, strict vNext typecheck, full lint/Knip/site verification, and installed tarball/Vite/Chromium consumer. Consumer report: `artifacts/core-consumers/run-qbohF7/report.json`.
 - No model call, package publication, image publication, deployment, or production operation occurred.
+
+### T03 / RQ05 / RQ07 — scoped surfaces, ownership, and registry lifecycle
+
+- Source state: branch `codex/aeliqo-vnext`, `HEAD bdd2d4caa3c846f7d5972882668bd7b819a16655`, uncommitted task/source digest `506da7b024a5e665240df3e2cb01c10de7696c84cf54098ba1f4ce485af1fe83`. The controller owns integration and commit history.
+- Mandatory RED evidence: the exact isolation test first failed with one missing `createPeopleFixture`; the three focused T03 files then failed 10/10 at the missing production fixture boundary. No fake dispatcher was used to manufacture a pass.
+- Added DOM-free `packages/runtime/src/surfaces/` controller, state, lifecycle, ownership, registration, scope, and runtime-factory modules. `createSurface`, `createLocalSurfaceScope`, immutable addresses/snapshots, per-scope feature reference counts, generation fencing, bounded proposals, explicit host `proposalDecision`, idempotent teardown, and existing DataService/Region/Result execution are wired through real runtime exports.
+- Construction is inert: data slots are allocated without creating a Region observer, transport, timer, or source call; the RegionStore handle and DataService request begin only on explicit `request()`. The focused test observes zero calls at construction and a separately gated real execute start.
+- T01 contract reconciliation: inert construction plus non-optional `SurfaceSnapshot.state: S` made the declaration's missing initial state unsound. The implemented binding now requires `initialState`; ADR 012, `api-contract.ts`, and the advanced declaration consumer were updated to match. Runtime tests and the installed tarball consumer, not those declarations, are the behavior evidence.
+- Fresh GREEN evidence: `pnpm test:vnext` 25/25 in 5 files plus strict TypeScript; `pnpm test:regions` 49/49; `pnpm test:results` 23/23; `pnpm test:interaction` 24/24; `pnpm test:evaluation` 15/15; `pnpm build:runtime`; `pnpm test:boundaries` 4/4; and the full `pnpm lint` plus `pnpm format:check` gates all exited 0.
+- Installed-package evidence: `pnpm test:runtime:consumers` packed and installed core/runtime outside the workspace, typechecked the positive/negative surface API, and executed two-instance and explicit controlled-host accept/reject paths. Report: `artifacts/runtime-consumers/run-WPwHk8/report.json`.
+- Retained gate failures: the first lint run found `commitInternal` complexity 13 over the limit 12; extraction reduced it. The next run found unused exported alias `CreateSurfaceInput`; removing the redundant alias made the full lint/Knip/site gate pass. These were quality failures, not waived checks.
+- Existing 0.4 app/Region APIs remain the compatibility path. T04 still owns scope switching, leave guards, forced revocation, and A-B-A transition behavior. No model call, commit, package publication, image publication, deployment, or production operation occurred.
 
 ## Resuming existing work
 

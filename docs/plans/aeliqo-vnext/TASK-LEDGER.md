@@ -7,7 +7,7 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 | T00  | verified                 | Baseline/harness complete. Full clean-source matrix passed 83/83 at `dedc15e`; `artifacts/product-ci/ci.json` records `sourceChangedDuringRun: false`.                                                                       |
 | T01  | design-contract-verified | ADR 012 and complete positive/negative declaration-only consumers pass strict TypeScript. This is not installed-package or runtime acceptance.                                                                               |
 | T02  | implemented-and-verified | Immutable data/non-data definitions, compatibility lowering, package export/docs and clean tarball consumer pass; collision and nested-mutation regressions added after independent review; full matrix passed at `dedc15e`. |
-| T03  | not-started              | Depends on T02.                                                                                                                                                                                                              |
+| T03  | implemented-and-verified | Uncommitted scoped-surface runtime, immutable addressing/generations, ref-counted registration, internal/external ownership, docs/export map, 25/25 vNext tests, regressions, and installed tarball evidence at `artifacts/runtime-consumers/run-WPwHk8/report.json`; not published. |
 | T04  | not-started              | Depends on T03.                                                                                                                                                                                                              |
 | T05  | not-started              | Depends on T04.                                                                                                                                                                                                              |
 | T06  | not-started              | Depends on T05.                                                                                                                                                                                                              |
@@ -41,7 +41,7 @@ or runtime-verified, until those downstream gates close the same requirement.
 - Stable published: no.
 - Image published: no.
 - Deployed: no.
-- Runtime verified: focused T02 core behavior only; end-to-end vNext runtime no.
+- Runtime verified: focused T02 core behavior and T03 headless scoped-surface/runtime consumer behavior; framework, transition, end-to-end, and release verification remain open.
 
 ## Component documentation inventory
 

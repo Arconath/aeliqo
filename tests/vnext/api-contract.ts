@@ -245,12 +245,16 @@ export interface CapabilitySourceBinding<I, S> {
 }
 
 export interface DataSurfaceBindings<S> {
+  /** Inert state exposed before the first explicit request. */
+  readonly initialState: S;
   readonly source: DataServiceSourceBinding<S>;
   readonly actions?: ActionPort;
   readonly views?: ReactViewBinding<Intent, S>;
 }
 
 export interface CapabilitySurfaceBindings<I, S> {
+  /** Inert state exposed before the first explicit request. */
+  readonly initialState: S;
   readonly source: CapabilitySourceBinding<I, S>;
   readonly actions?: ActionPort;
   readonly views?: ReactViewBinding<I, S>;

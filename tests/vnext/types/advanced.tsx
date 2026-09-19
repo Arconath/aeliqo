@@ -79,6 +79,7 @@ const BROWSE_PEOPLE = {
 } as const satisfies Intent;
 
 const peopleBindings: DataSurfaceBindings<PersonState> = {
+  initialState: { rows: [], selection: [] },
   source: {
     kind: 'data-service',
     service: localPeopleData,
@@ -107,6 +108,7 @@ const peopleViews = defineReactViews(peopleFeature, [{ id: 'people.table', revis
 const scopedBindings: DataSurfaceBindings<PersonState> = { ...peopleBindings, views: peopleViews };
 
 const remoteBindings: DataSurfaceBindings<PersonState> = {
+  initialState: { rows: [], selection: [] },
   source: {
     kind: 'data-service',
     service: remotePeopleData,
@@ -228,6 +230,7 @@ const COMPARISON_LAYOUT = {
 } as const satisfies WorkspaceLayoutIntent;
 
 const workspaceLayoutBindings: CapabilitySurfaceBindings<WorkspaceLayoutIntent, WorkspaceLayoutState> = {
+  initialState: { mode: 'single', surfaceIds: [] },
   source: {
     kind: 'capability',
     read: async (intent) => ({
