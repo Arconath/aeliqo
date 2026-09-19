@@ -8,6 +8,7 @@ import {
   type SurfaceProposal,
   type ScopeBinding,
   type ScopeLeaveDecision,
+  type ScopeLeaveState,
   type ScopeResolution,
   type ScopeSelector,
   type SurfaceAddress,
@@ -199,9 +200,13 @@ export async function createScopeFixture() {
   const fixtureId = nextFixtureId++;
   const runtimeId = `scope-runtime-${fixtureId}`;
   let activeSelector: ScopeSelector | undefined;
-  let permissionRevision = 1;
-  let leaveState = { dirty: false, revision: 'draft-0' };
-  let guardDecision: ScopeLeaveDecision = { status: 'clean' };
+  const permissionRevisions = new Map<string, number>();
+  const selectorKey = (selector: ScopeSelector) => JSON.stringify(selector);
+  const permissionFor = (selector: ScopeSelector) => permissionRevisions.get(selectorKey(selector)) ?? 1;
+  let leaveState: unknown = { dirty: false, revision: 'draft-0' };
+  let leaveReads = 0;
+  let throwLeaveStateAfter = Number.POSITIVE_INFINITY;
+  let guardDecision: unknown = { status: 'clean' };
   let resolveCalls = 0;
   let guardCalls = 0;
   let recoveryEnabled = false;
@@ -210,6 +215,11 @@ export async function createScopeFixture() {
   const events: string[] = [];
   let throwOnDeactivate = false;
   let throwOnRecover = false;
+  const throwOnAuthorize = new Set<string>();
+  const rawAuthorizeOutcomes = new Map<string, unknown>();
+  const throwOnResolve = new Set<string>();
+  const queuedAuthorizeRevocations = new Map<string, number>();
+  const activationFailures = new Map<string, 'throw' | 'return' | 'null' | 'getter'>();
   let lastResolution: ScopeResolution | undefined;
   const allowedFeatures = ['orders'];
   let activeActionPort: ActionPort | undefined;
@@ -280,6 +290,16 @@ export async function createScopeFixture() {
       resolve(outcome?: Outcome<ScopeResolution>): void;
     }
   >();
+  let authorizeGate:
+    | {
+        readonly id: string;
+        remaining: number;
+        readonly started: Promise<void>;
+        start(): void;
+        readonly promise: Promise<void>;
+        resolve(): void;
+      }
+    | undefined;
   let guardGate:
     | {
         readonly started: Promise<void>;
@@ -299,11 +319,20 @@ export async function createScopeFixture() {
     allow(id: string): void;
     setDirty(dirty: boolean): void;
     setGuard(decision: ScopeLeaveDecision): void;
+    setRawLeaveState(state: unknown): void;
+    setRawGuard(decision: unknown): void;
+    throwLeaveStateAfter(reads: number): void;
+    throwAuthorize(id: string): void;
+    setRawAuthorize(id: string, outcome: unknown): void;
+    revokeAfterAuthorize(id: string, after?: number): void;
+    throwResolve(id: string): void;
+    deferAuthorize(id: string, after?: number): { readonly started: Promise<void>; resolve(): void };
     deferGuard(): { readonly started: Promise<void>; resolve(decision: ScopeLeaveDecision): void };
     deferResolve(id: string): { readonly started: Promise<void>; resolve(outcome?: Outcome<ScopeResolution>): void };
     enableRecovery(): void;
     failDeactivate(): void;
     failRecovery(): void;
+    failActivate(id: string, mode: 'throw' | 'return' | 'null' | 'getter'): void;
     mutateLastResolution(): void;
   } = {
     get resolveCalls() {
@@ -320,6 +349,7 @@ export async function createScopeFixture() {
     },
     async resolve(selector) {
       resolveCalls += 1;
+      if (throwOnResolve.has(selector.id)) throw new Error('resolve failed');
       const gate = resolveGates.get(JSON.stringify(selector));
       if (gate !== undefined) {
         gate.start();
@@ -338,39 +368,97 @@ export async function createScopeFixture() {
             ? {}
             : { lineage: selector.lineage.map((entry) => ({ kind: entry.kind, id: entry.id })) }),
         },
-        permissionRevision,
+        permissionRevision: permissionFor(selector),
         policyRevision: 'policy-1',
         allowedFeatures,
       };
       return { ok: true, value: lastResolution };
     },
     authorize(input) {
-      if (input.permissionRevision !== permissionRevision)
-        return {
-          ok: false,
-          diagnostics: [{ code: 'scope.permission-stale', message: 'Scope permission changed.', retryable: false }],
-        };
-      return { ok: true, value: undefined };
+      const authorizeNow = (): Outcome<void> => {
+        if (throwOnAuthorize.has(input.selector.id)) throw new Error('authorize failed');
+        if (rawAuthorizeOutcomes.has(input.selector.id)) return rawAuthorizeOutcomes.get(input.selector.id) as never;
+        if (input.permissionRevision !== permissionFor(input.selector))
+          return {
+            ok: false as const,
+            diagnostics: [{ code: 'scope.permission-stale', message: 'Scope permission changed.', retryable: false }],
+          };
+        const outcome = { ok: true as const, value: undefined };
+        const revokeAfter = queuedAuthorizeRevocations.get(input.selector.id);
+        if (revokeAfter !== undefined) {
+          if (revokeAfter === 0) {
+            queuedAuthorizeRevocations.delete(input.selector.id);
+            queueMicrotask(() => host.revoke(input.selector.id));
+          } else queuedAuthorizeRevocations.set(input.selector.id, revokeAfter - 1);
+        }
+        return outcome;
+      };
+      if (authorizeGate?.id === input.selector.id) {
+        if (authorizeGate.remaining > 0) authorizeGate.remaining -= 1;
+        else {
+          const pending = authorizeGate;
+          authorizeGate = undefined;
+          pending.start();
+          return pending.promise.then(authorizeNow);
+        }
+      }
+      return authorizeNow();
     },
-    activate(input) {
+    activate(input, context) {
+      const permissionStale = {
+        ok: false as const,
+        diagnostics: [
+          { code: 'scope.permission-stale', message: 'Scope permission changed.', retryable: false },
+        ] as const,
+      };
+      if (input.permissionRevision !== permissionFor(input.selector) || input.policyRevision !== 'policy-1')
+        return permissionStale;
+      if (context.kind === 'transition') {
+        const currentLeave = leaveState as ScopeLeaveState;
+        if (
+          context.previous.permissionRevision !== permissionFor(context.previous.selector) ||
+          context.previous.policyRevision !== 'policy-1' ||
+          currentLeave.revision !== context.leaveRevision
+        )
+          return permissionStale;
+      }
       events.push(`activate:${input.selector.id}`);
       activeSelector = input.selector;
       activeActionPort = createScopedActionPort(input.selector);
+      const failure = activationFailures.get(input.selector.id);
+      if (failure === 'throw') throw new Error('activation failed');
+      if (failure === 'return')
+        return {
+          ok: false,
+          diagnostics: [{ code: 'scope.activation-denied', message: 'Activation failed.', retryable: false }],
+        };
+      if (failure === 'null') return null as never;
+      if (failure === 'getter')
+        return new Proxy(
+          {},
+          {
+            get() {
+              throw new Error('activation outcome getter failed');
+            },
+          },
+        ) as never;
       return { ok: true, value: undefined };
     },
     deactivate(input) {
       events.push(`deactivate:${input.selector.id}`);
-      if (throwOnDeactivate) throw new Error('deactivate failed');
       activeActionPort?.revoke('scope transition');
       activeActionPort = undefined;
       if (JSON.stringify(activeSelector) === JSON.stringify(input.selector)) activeSelector = undefined;
+      if (throwOnDeactivate) throw new Error('deactivate failed');
     },
     readLeaveState() {
-      return leaveState;
+      leaveReads += 1;
+      if (leaveReads > throwLeaveStateAfter) throw new Error('leave state failed');
+      return leaveState as ScopeLeaveState;
     },
     async beforeLeave() {
       guardCalls += 1;
-      if (guardGate === undefined) return guardDecision;
+      if (guardGate === undefined) return guardDecision as ScopeLeaveDecision;
       guardGate.start();
       const pending = guardGate;
       guardGate = undefined;
@@ -380,8 +468,9 @@ export async function createScopeFixture() {
       if (throwOnRecover) throw new Error('recovery failed');
       if (recoveryEnabled) recoveries.push({ selector: input.selector, policyRevision: input.policyRevision });
     },
-    revoke() {
-      permissionRevision += 1;
+    revoke(id) {
+      const selector = { kind: 'workspace', id } as const;
+      permissionRevisions.set(selectorKey(selector), permissionFor(selector) + 1);
     },
     deny(id) {
       deniedSelectors.add(JSON.stringify({ kind: 'workspace', id }));
@@ -390,10 +479,44 @@ export async function createScopeFixture() {
       deniedSelectors.delete(JSON.stringify({ kind: 'workspace', id }));
     },
     setDirty(dirty) {
-      leaveState = { dirty, revision: `draft-${Number(leaveState.revision.split('-')[1]) + 1}` };
+      const current = leaveState as ScopeLeaveState;
+      leaveState = { dirty, revision: `draft-${Number(current.revision.split('-')[1]) + 1}` };
     },
     setGuard(decision) {
       guardDecision = decision;
+    },
+    setRawLeaveState(state) {
+      leaveState = state;
+    },
+    setRawGuard(decision) {
+      guardDecision = decision;
+    },
+    throwLeaveStateAfter(reads) {
+      throwLeaveStateAfter = reads;
+    },
+    throwAuthorize(id) {
+      throwOnAuthorize.add(id);
+    },
+    setRawAuthorize(id, outcome) {
+      rawAuthorizeOutcomes.set(id, outcome);
+    },
+    revokeAfterAuthorize(id, after = 0) {
+      queuedAuthorizeRevocations.set(id, after);
+    },
+    throwResolve(id) {
+      throwOnResolve.add(id);
+    },
+    deferAuthorize(id, after = 0) {
+      let start!: () => void;
+      let release!: () => void;
+      const started = new Promise<void>((resolve) => {
+        start = resolve;
+      });
+      const promise = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      authorizeGate = { id, remaining: after, started, start, promise, resolve: release };
+      return { started, resolve: release };
     },
     deferGuard() {
       let start!: () => void;
@@ -424,7 +547,7 @@ export async function createScopeFixture() {
         resolve(
           outcome: Outcome<ScopeResolution> = {
             ok: true,
-            value: { selector, permissionRevision, policyRevision: 'policy-1' },
+            value: { selector, permissionRevision: permissionFor(selector), policyRevision: 'policy-1' },
           },
         ) {
           resolvePromise(outcome);
@@ -441,6 +564,9 @@ export async function createScopeFixture() {
     },
     failRecovery() {
       throwOnRecover = true;
+    },
+    failActivate(id, mode) {
+      activationFailures.set(id, mode);
     },
     mutateLastResolution() {
       if (lastResolution === undefined) throw new TypeError('No resolution was produced.');
@@ -606,6 +732,7 @@ export async function createScopeFixture() {
         return activeActionPort;
       },
       backendEffects,
+      hasActive: () => activeActionPort !== undefined,
       deferNextDispatch() {
         let start!: () => void;
         let resolve!: (value: ActionDispatchResult) => void;
@@ -626,5 +753,149 @@ export async function createScopeFixture() {
       scope.dispose();
       runtime.dispose();
     },
+    disposeRuntime: () => runtime.dispose(),
+    runtimeState: (regionId: string) => runtime.snapshot(regionId),
+  };
+}
+
+export async function createParallelScopeFixture() {
+  const fixtureId = nextFixtureId++;
+  const north = {
+    kind: 'workspace',
+    id: 'acme',
+    lineage: [{ kind: 'organization', id: 'north' }],
+  } as const;
+  const south = {
+    kind: 'workspace',
+    id: 'acme',
+    lineage: [{ kind: 'organization', id: 'south' }],
+  } as const;
+  const keyOf = (selector: ScopeSelector) =>
+    [...(selector.lineage ?? []), { kind: selector.kind, id: selector.id }]
+      .map((entry) => `${entry.kind}:${entry.id}`)
+      .join('/');
+  const functions = createQueryFunctionRegistry({ version: '2' });
+  if (!functions.ok) throw new TypeError(functions.diagnostics[0].message);
+  const services = new Map<string, DataService>();
+  const permissions = new Map<string, number>();
+  const regionKeys = new Map<string, string>();
+  const revokedRuntimeKeys = new Set<string>();
+  const authorityDigests: { readonly regionId: string; readonly scopeDigest: string }[] = [];
+  let regionSequence = 0;
+  const serviceFor = (selector: ScopeSelector) => {
+    const key = keyOf(selector);
+    const existing = services.get(key);
+    if (existing !== undefined) return existing;
+    const service = createLocalDataService({
+      snapshot: snapshot(key, [{ id: `${key}-private`, workspace: key, total: key.length }]),
+      functionRegistry: functions.value,
+      authorize: ({ context }) =>
+        context.principal === `parallel:${key}`
+          ? { ok: true, value: { scopeDigest: key, policyRevision: `policy:${key}` } }
+          : {
+              ok: false,
+              diagnostics: [{ code: 'data.denied', message: 'Parallel scope mismatch.', retryable: false }],
+            },
+    });
+    services.set(key, service);
+    return service;
+  };
+  const runtime = createAeliqoRuntime({
+    runtimeId: `parallel-scope-runtime-${fixtureId}`,
+    maxRegions: 4,
+    resources: [{ resource: ordersFeature.resource, data: serviceFor(north) }],
+    authority: {
+      read: ({ regionId }) => {
+        const key = regionKeys.get(regionId);
+        if (key === undefined || revokedRuntimeKeys.has(key))
+          return {
+            ok: false,
+            diagnostics: [
+              { code: 'scope.permission-revoked', message: 'Parallel scope was revoked.', retryable: false },
+            ],
+          };
+        authorityDigests.push({ regionId, scopeDigest: key });
+        return {
+          ok: true,
+          value: {
+            principalKey: `parallel-user:${key}`,
+            scopeDigest: key,
+            policyRevision: `policy:${key}`,
+            experienceRevision: 'experience-1',
+            grants: ['catalog.read', 'task.evaluate', 'result.inspect'],
+            readContext: { principal: `parallel:${key}` },
+          },
+        };
+      },
+    },
+  });
+  const binding = (): ScopeBinding => ({
+    resolve: (selector) => ({
+      ok: true,
+      value: {
+        selector,
+        permissionRevision: permissions.get(keyOf(selector)) ?? 1,
+        policyRevision: `policy:${keyOf(selector)}`,
+        allowedFeatures: ['orders'],
+      },
+    }),
+    authorize: (resolution) =>
+      resolution.permissionRevision === (permissions.get(keyOf(resolution.selector)) ?? 1)
+        ? { ok: true, value: undefined }
+        : {
+            ok: false,
+            diagnostics: [{ code: 'scope.permission-stale', message: 'Scope permission changed.', retryable: false }],
+          },
+    activate: () => ({ ok: true, value: undefined }),
+    deactivate: () => undefined,
+    readLeaveState: () => ({ dirty: false, revision: 'clean' }),
+  });
+  const leftScope = runtime.createScope({ id: `north-${fixtureId}`, binding: binding(), initial: north });
+  const rightScope = runtime.createScope({ id: `south-${fixtureId}`, binding: binding(), initial: south });
+  const waitActive = (scope: typeof leftScope) =>
+    new Promise<void>((resolve) => {
+      const unsubscribe = scope.subscribe(() => {
+        if (scope.getSnapshot().status !== 'active') return;
+        unsubscribe();
+        resolve();
+      });
+      scope.attach();
+    });
+  await Promise.all([waitActive(leftScope), waitActive(rightScope)]);
+  const createOrders = (scope: typeof leftScope) => {
+    const selector = scope.getSnapshot().selector;
+    if (selector === null) throw new TypeError('Parallel scope is inactive.');
+    const regionId = `surface-${++regionSequence}`;
+    regionKeys.set(regionId, keyOf(selector));
+    return runtime.createSurface({
+      scope,
+      id: 'orders',
+      feature: ordersFeature,
+      bindings: bindings(serviceFor(selector)),
+    });
+  };
+  let leftOrders = createOrders(leftScope);
+  const rightOrders = createOrders(rightScope);
+  return {
+    leftScope,
+    rightScope,
+    leftOrders: () => leftOrders,
+    rightOrders,
+    keyOf,
+    authorityDigests,
+    revokeRuntime(selector: ScopeSelector) {
+      revokedRuntimeKeys.add(keyOf(selector));
+    },
+    allowRuntime(selector: ScopeSelector) {
+      revokedRuntimeKeys.delete(keyOf(selector));
+    },
+    async changeLeft(selector: ScopeSelector) {
+      const previous = leftOrders;
+      const result = await leftScope.requestChange(selector);
+      if (result.status === 'active') leftOrders = createOrders(leftScope);
+      return { previous, result, current: leftOrders };
+    },
+    disposeLeft: () => leftScope.dispose(),
+    dispose: () => runtime.dispose(),
   };
 }

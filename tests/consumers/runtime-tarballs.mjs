@@ -1235,7 +1235,9 @@ const appScope = runtime.createScope({
       return {ok: true, value: {selector, permissionRevision: scopeResolutions, policyRevision: 'policy-1', allowedFeatures: ['people']}};
     },
     authorize: () => ({ok: true, value: undefined}),
-    readLeaveState: () => ({kind: 'clean', revision: 'leave-1'}),
+    activate: () => ({ok: true, value: undefined}),
+    deactivate: () => {},
+    readLeaveState: () => ({dirty: false, revision: 'leave-1'}),
   },
 });
 assert.equal(appScope.getSnapshot().status, 'idle');

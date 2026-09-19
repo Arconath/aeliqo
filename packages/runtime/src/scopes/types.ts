@@ -51,14 +51,23 @@ export interface ScopeRecoveryInput {
   readonly reason: ScopeInvalidationReason;
 }
 
+export type ScopeActivationContext =
+  | { readonly kind: 'initial' }
+  | {
+      readonly kind: 'transition';
+      readonly previous: ScopeResolution;
+      readonly activationEpoch: number;
+      readonly leaveRevision: string;
+    };
+
 export interface ScopeBinding {
   resolve(
     selector: ScopeSelector,
     options: ScopeResolveOptions,
   ): Promise<Outcome<ScopeResolution>> | Outcome<ScopeResolution>;
   authorize(resolution: ScopeResolution, options?: ScopeResolveOptions): Promise<Outcome<void>> | Outcome<void>;
-  activate?(resolution: ScopeResolution): Outcome<void> | void;
-  deactivate?(resolution: ScopeResolution, reason: 'transition' | ScopeInvalidationReason | 'dispose'): void;
+  activate(resolution: ScopeResolution, context: ScopeActivationContext): Outcome<void> | void;
+  deactivate(resolution: ScopeResolution, reason: 'transition' | ScopeInvalidationReason | 'dispose'): void;
   readLeaveState?(selector: ScopeSelector): ScopeLeaveState;
   beforeLeave?(input: ScopeLeaveGuardInput): Promise<ScopeLeaveDecision> | ScopeLeaveDecision;
   recover?(input: ScopeRecoveryInput): void;

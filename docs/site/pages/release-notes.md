@@ -20,6 +20,8 @@ description: 'The 0.4 release consolidates the public site, documents all compon
   host-resolved scope controller adds inert attachment, guarded Save/Discard/Stay
   workspace transitions, forced revocation, monotonic activation epochs, and
   child-surface fencing without treating a client workspace ID as authority.
+  Its required synchronous host activation hook atomically revalidates the
+  captured old-scope and target authority before target effects.
   Existing app/Region APIs remain the compatibility path; React lifecycle
   adapters are not part of this candidate step.
 - This candidate has not been published or deployed. Its runtime, React,

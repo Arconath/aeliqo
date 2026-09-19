@@ -93,6 +93,8 @@ const runtime = createAeliqoRuntime({ resources, authority });
 const binding: ScopeBinding = {
   resolve: (selector) => host.resolveWorkspace(selector),
   authorize: (resolution) => host.authorizeWorkspace(resolution),
+  activate: (target, context) => host.acceptWorkspaceActivation(target, context),
+  deactivate: (active, reason) => host.releaseWorkspaceActivation(active, reason),
   readLeaveState: () => drafts.readLeaveState(),
   beforeLeave: (request) => drafts.confirmLeave(request),
   recover: (request) => host.navigateAfterRevocation(request),
@@ -110,8 +112,18 @@ detach aborts an unfinished initial resolution so a later attach can restart
 it. Voluntary transitions keep the old activation available while the host
 chooses Save, Discard, or Stay. A failed or denied target does not replace a
 still-authorized old activation. The runtime fences the old activation before
-publishing any new activation effects; epochs only increase, so late A-B-A work
-cannot commit into the new A.
+publishing any new activation effects. The required synchronous `activate`
+hook is the trusted host's atomic acceptance boundary: it receives the target
+and captured previous permission, policy, activation, and draft revisions and
+must revalidate both scopes before starting target effects. The runtime
+rechecks the draft, fences the old activation, and invokes that hook in one
+synchronous turn before publishing the new activation. Epochs only increase,
+so late A-B-A work cannot commit into the new A.
+
+If activation starts any host-owned resource, `deactivate` is its required,
+idempotent compensation boundary. It must clear partial resources before
+returning or throwing; the runtime isolates cleanup exceptions so one hook
+cannot interrupt the remaining security fence.
 
 Call `invalidate('logout' | 'revoked' | 'expired' | 'external-switch')` for a
 forced authority loss. Invalidation synchronously masks the scope and fences

@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-19 18:58 Asia/Jakarta (T04 implementation candidate on base `49fa0da`).
+Updated: 2026-09-19 19:49 Asia/Jakarta (T04 review-round-1 and targeted-audit fixes on candidate `7030e97`).
 
 ## Source and authority
 
@@ -8,9 +8,9 @@ Updated: 2026-09-19 18:58 Asia/Jakarta (T04 implementation candidate on base `49
 - Inspected reference SHA: 9092d6cff454b81cd623a7a4be7621c6a750d9c7.
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
-- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, T02 core feature implementation, accepted T03 scoped surfaces, and the uncommitted T04 implementation candidate on base `49fa0da`.
+- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, T02 core feature implementation, accepted T03 scoped surfaces, committed T04 candidate `7030e97`, and uncommitted review-round-1 fixes on that exact candidate.
 - Public registry changes: none.
-- Production changes: T02 core feature definitions; T03 runtime surface modules; T04 host-resolved scopes, guarded transitions, forced invalidation, activation fencing, exports, docs, and installed-consumer coverage. T04 remains an unreviewed candidate.
+- Production changes: T02 core feature definitions; T03 runtime surface modules; T04 host-resolved scopes, guarded transitions, forced invalidation, activation fencing, exports, docs, and installed-consumer coverage. T04 review round 1 was blocking; its fixes await independent re-review.
 - Live paid-model authorization for this vNext execution: not established.
 - Merge/publication/deployment authorization for this vNext execution: must be verified against current policy and owner approvals.
 
@@ -24,7 +24,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim |
 | T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published     |
 | T03  | implemented-and-verified | Accepted source `4422b0d`; scoped instances, authority-fenced controlled ownership, typed safe denial/intent, exactly-once publication, bounded lifecycle, 34/34 vNext, regressions, and installed runtime consumer pass; not published |
-| T04  | implementation-candidate | Uncommitted candidate from `49fa0da`: mandatory A-B-A RED/GREEN, 19/19 focused, 53/53 vNext, runtime regressions and installed consumer pass; independent review pending |
+| T04  | review-fixes-candidate   | Candidate `7030e97` plus uncommitted review/audit fixes: 45/45 focused, 79/79 vNext, runtime regressions and installed consumer pass; independent re-review pending |
 | T05  | not-started              | No implementation evidence                                                                                                                                   |
 | T06  | not-started              | No implementation evidence                                                                                                                                   |
 | T07  | not-started              | No implementation evidence                                                                                                                                   |
@@ -45,7 +45,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 
 ## Next executable action
 
-Independently review the T04 candidate and rerun its focused and acceptance gates from the controller-owned integration source before beginning T05.
+Independently re-review the T04 round-1 fixes on `7030e97`; T05 remains blocked until the review is accepted.
 
 ## Decisions to preserve
 
@@ -98,13 +98,16 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 
 ### T04 / RQ37 / RQ39 / RQ40 — scope activation, safe transitions, and draft guards
 
-- Source base: branch `codex/aeliqo-vnext`, commit `49fa0da44d18fdfa52e5a5da089ac03f7319b27f`; the implementation is intentionally uncommitted for controller review and integration.
+- Initial implementation source: branch `codex/aeliqo-vnext`, commit `7030e9751cc922d75dc13fe4719692e95e863151`. Review round 1 found one Critical, four Important, and two Minor findings. The corrections are intentionally uncommitted on that exact candidate pending independent re-review.
 - Mandatory RED: the exact A-B-A plan test failed 1/1 with `TypeError: runtime.createScope is not a function` after the real fixture was made runnable and before any scope production implementation. GREEN: the same test passes through real runtime, DataService, ResultStore, RegionStore, and immutable SurfaceController addresses.
 - Added DOM-free `packages/runtime/src/scopes/` modules and `runtime.createScope({binding, initial})`. Construction is inert; attach owns initial resolution; trusted resolutions are copied, structurally compared, frozen, and bounded; selectors remain non-authoritative.
 - Voluntary transitions capture selector, activation epoch, permission/policy, transition identity, and leave revision. Save waits for a real result; Discard is explicit; Stay and missing input retain A. B resolution and authorization occur while A remains visible; the runtime fences and releases A children before B activation effects/publication.
 - Forced invalidation masks and fences synchronously before exception-isolated recovery/deactivation hooks. A denied target retains A only after fresh A authorization. Stale and cancelled transitions clear pending state. A-B-A epochs and global surface generations remain monotonic.
 - Surface fence observation remains lazy: controller construction adds no fence listener; active requests, subscribers, and proposals own reference-counted listeners. Activation target registration disposes old surfaces and releases their Regions/registrations, with a 20-transition A-B-A bounded-lifecycle regression.
-- Fresh evidence: focused T04 19/19 in 3 files; `pnpm test:vnext` 53/53 in 8 files; Regions 49/49; Results 23/23; Actions 29/29; authorization retention 1000/1000; boundaries 4/4; runtime build, typecheck, lint/Knip/site verification, format and installed runtime tarball consumer pass. Consumer report: `artifacts/runtime-consumers/run-b4qYxZ/report.json`.
+- Review-round-1 RED reproduced 10 failures with 20 prior tests passing: stale B authorization, two pre-aborted-signal paths, three capture/recheck host-read failures, malformed JavaScript leave state/decision, mutable published diagnostic, and two partial activation cleanup modes. A separate stage-label RED proved resolver exceptions were misreported as guard failures.
+- Review-round-1 GREEN performs the final B authorization after the last awaited A check. Targeted-audit GREEN then synchronously rechecks the captured A/draft, fences A, and invokes the required host activation boundary with frozen A+B permission/policy evidence in the same turn; the host atomically revalidates before effects. Pre-aborted requests do not supersede work; all host guard reads are cleanup-contained and retain A only after fresh authority proof; closed bounded leave state/decisions, host outcomes, and diagnostics are copied/validated; activation failure cleans partial B effects; and runtime disposal releases an active request/proposal/surface graph.
+- The isolation fixture now uses two ScopeControllers in one runtime, full-lineage-keyed membership, policy, runtime/DataService authority digests and private sources, the same surface ID, independent revocation/addresses/rows/transitions/callbacks, and nested organization/workspace child-controller teardown. Focused T04 passes 45/45 in 3 files; `pnpm test:vnext` passes 79/79 in 8 files.
+- Fresh broader evidence: Regions 49/49; Results 23/23; Actions 29/29; authorization retention 1000/1000; boundaries 4/4; runtime build, typecheck, lint/Knip/site, format and installed runtime tarball consumer pass. Consumer report: `artifacts/runtime-consumers/run-h3Wx6X/report.json`. Final diff evidence is recorded in the task report after the last review edit.
 - The brief names `pnpm test:auth-retention`, but this repository exposes that gate as `pnpm test:data:auth-retention`; the available gate passed 1000/1000. No alias or gate weakening was added.
 - Detailed evidence and self-review: `.superpowers/sdd/02-EXECPLAN/task-4-report.md`. No model call, package publication, image publication, deployment, push, or production operation occurred.
 

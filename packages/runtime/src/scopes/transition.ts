@@ -1,6 +1,10 @@
 import type { Diagnostic } from '@aeliqo/core';
 import type { ScopeTransitionResult } from './types.js';
 
+export function signalAborted(signal: AbortSignal | undefined): boolean {
+  return signal?.aborted === true;
+}
+
 export function transitionFailure(
   status: Exclude<ScopeTransitionResult['status'], 'active' | 'needs-input'>,
   diagnosticCode: string,
@@ -16,6 +20,17 @@ export function needsInput(diagnosticCode: string): ScopeTransitionResult {
   });
 }
 
+export function deniedScopeOutcome(code: string): { readonly ok: false; readonly diagnostics: readonly [Diagnostic] } {
+  return {
+    ok: false,
+    diagnostics: [Object.freeze({ code, message: 'The trusted host rejected the scope operation.', retryable: false })],
+  };
+}
+
 export function firstDiagnosticCode(diagnostics: readonly Diagnostic[], fallback: string): string {
-  return diagnostics[0]?.code ?? fallback;
+  try {
+    return diagnostics[0]?.code ?? fallback;
+  } catch {
+    return fallback;
+  }
 }

@@ -1,10 +1,15 @@
 import type { Diagnostic, Outcome } from '@aeliqo/core';
-import { activeSnapshot } from './activation.js';
-import { freezeResolution, freezeSelector, sameSelector } from './address.js';
+import { activeSnapshot, failedActivationSnapshot } from './activation.js';
+import { freezeSelector, sameSelector, validateResolution } from './address.js';
+import { authorizeScope, proveCurrentAuthority, ScopeTransitionHostError } from './authority.js';
+import { freezeDiagnostic, runtimeDiagnostic as diagnostic } from './diagnostic.js';
+import { activateInitialHost, activateTransitionHost, isolateHost } from './host-activation.js';
 import type { SurfaceAddress } from '../surfaces/types.js';
-import { captureGuard, guardStillCurrent, runLeaveGuard, saveGuard } from './guard.js';
+import { captureGuard, guardStillCurrent, InvalidScopeGuardError, runLeaveGuard, saveGuard } from './guard.js';
 import { ScopeLifecycle } from './teardown.js';
-import { firstDiagnosticCode, needsInput, transitionFailure } from './transition.js';
+import { ScopeTargetRegistry } from './targets.js';
+import { deniedScopeOutcome, firstDiagnosticCode, needsInput } from './transition.js';
+import { signalAborted, transitionFailure } from './transition.js';
 import type {
   CreateScopeInput,
   ScopeController,
@@ -18,10 +23,6 @@ import type {
 
 let nextScopeId = 1;
 
-function diagnostic(code: string, message: string): Diagnostic {
-  return Object.freeze({ code, message, retryable: false });
-}
-
 export class ScopeControllerImpl implements ScopeController {
   private readonly lifecycle = new ScopeLifecycle();
   private readonly initial: ScopeSelector;
@@ -31,7 +32,7 @@ export class ScopeControllerImpl implements ScopeController {
   private transitionId = 0;
   private attachCount = 0;
   private disposed = false;
-  private readonly targets = new Map<number, Set<() => void>>();
+  private readonly targets = new ScopeTargetRegistry();
 
   constructor(
     runtimeId: string,
@@ -66,23 +67,7 @@ export class ScopeControllerImpl implements ScopeController {
   }
 
   registerTarget(address: SurfaceAddress, fence: () => void): () => void {
-    if (
-      !this.snapshot.active ||
-      address.runtimeId !== this.snapshot.runtimeId ||
-      address.scopeInstanceId !== this.snapshot.scopeInstanceId ||
-      address.activationEpoch !== this.snapshot.activationEpoch
-    )
-      throw new TypeError('A surface target must belong to the current active scope activation.');
-    const targets = this.targets.get(address.activationEpoch) ?? new Set<() => void>();
-    targets.add(fence);
-    this.targets.set(address.activationEpoch, targets);
-    let registered = true;
-    return () => {
-      if (!registered) return;
-      registered = false;
-      targets.delete(fence);
-      if (targets.size === 0) this.targets.delete(address.activationEpoch);
-    };
+    return this.targets.register(address, this.snapshot, fence);
   }
 
   attach(): () => void {
@@ -110,7 +95,9 @@ export class ScopeControllerImpl implements ScopeController {
   async requestChange(selector: ScopeSelector, options: ScopeRequestOptions = {}): Promise<ScopeTransitionResult> {
     if (this.disposed) return transitionFailure('disposed', 'scope.disposed');
     if (!this.snapshot.active || this.resolution === undefined) return transitionFailure('denied', 'scope.inactive');
+    if (signalAborted(options.signal)) return transitionFailure('cancelled', 'scope.transition-cancelled');
     const requested = freezeSelector(selector);
+    if (signalAborted(options.signal)) return transitionFailure('cancelled', 'scope.transition-cancelled');
     if (sameSelector(requested, this.snapshot.selector))
       return Object.freeze({
         status: 'active',
@@ -118,11 +105,17 @@ export class ScopeControllerImpl implements ScopeController {
         activationEpoch: this.snapshot.activationEpoch,
       });
     const transition = this.beginTransition(requested, options.signal);
-    const capture = captureGuard(this.input.binding, this.snapshot);
+    if (transition === undefined) return transitionFailure('cancelled', 'scope.transition-cancelled');
     try {
+      let capture: ReturnType<typeof captureGuard>;
+      try {
+        capture = captureGuard(this.input.binding, this.snapshot);
+      } catch (error) {
+        return await this.handleTransitionException(transition.id, transition.controller.signal, error);
+      }
       return await this.runTransition(transition.id, capture, requested, transition.controller.signal);
-    } catch {
-      return await this.handleTransitionException(transition.id, capture, transition.controller.signal);
+    } catch (error) {
+      return await this.handleTransitionException(transition.id, transition.controller.signal, error);
     } finally {
       transition.cleanup();
       this.clearPending(transition.id);
@@ -131,13 +124,15 @@ export class ScopeControllerImpl implements ScopeController {
 
   authorize(featureId: string): Outcome<void> {
     if (!this.snapshot.active || this.resolution === undefined)
-      return denied(this.disposed ? 'scope.disposed' : 'scope.inactive');
+      return deniedScopeOutcome(this.disposed ? 'scope.disposed' : 'scope.inactive');
     if (this.resolution.allowedFeatures !== undefined && !this.resolution.allowedFeatures.includes(featureId))
-      return denied('scope.feature-denied');
+      return deniedScopeOutcome('scope.feature-denied');
     return { ok: true, value: undefined };
   }
 
   invalidate(reason: ScopeInvalidationReason): void {
+    if (!['logout', 'revoked', 'expired', 'external-switch'].includes(reason))
+      throw new TypeError('Scope invalidation reasons must use the closed runtime contract.');
     if (this.disposed || this.snapshot.status === 'denied') return;
     const before = this.snapshot;
     const resolution = this.resolution;
@@ -154,11 +149,11 @@ export class ScopeControllerImpl implements ScopeController {
       revision: String(Number(before.revision) + 1),
       invalidationReason: reason,
     });
-    this.fenceTargets(before.activationEpoch);
+    this.targets.fence(before.activationEpoch);
     this.lifecycle.fence();
     this.lifecycle.notify();
     if (before.selector !== null && before.policyRevision !== undefined)
-      this.isolateHost(() =>
+      isolateHost(() =>
         this.input.binding.recover?.({
           selector: before.selector!,
           policyRevision: before.policyRevision!,
@@ -166,7 +161,7 @@ export class ScopeControllerImpl implements ScopeController {
           reason,
         }),
       );
-    if (resolution !== undefined) this.isolateHost(() => this.input.binding.deactivate?.(resolution, reason));
+    if (resolution !== undefined) isolateHost(() => this.input.binding.deactivate?.(resolution, reason));
   }
 
   dispose(): void {
@@ -186,14 +181,15 @@ export class ScopeControllerImpl implements ScopeController {
       selector: null,
       revision: String(Number(before.revision) + 1),
     });
-    this.fenceTargets(before.activationEpoch);
+    this.targets.fence(before.activationEpoch);
     this.lifecycle.dispose();
-    if (resolution !== undefined) this.isolateHost(() => this.input.binding.deactivate?.(resolution, 'dispose'));
+    if (resolution !== undefined) isolateHost(() => this.input.binding.deactivate?.(resolution, 'dispose'));
     this.onDispose();
   }
 
   private async activateInitial(): Promise<void> {
     const transition = this.beginTransition(this.initial);
+    if (transition === undefined) return;
     this.snapshot = Object.freeze({
       ...this.snapshot,
       status: 'resolving',
@@ -203,7 +199,7 @@ export class ScopeControllerImpl implements ScopeController {
     try {
       const resolved = await this.input.binding.resolve(this.initial, { signal: transition.controller.signal });
       if (transition.controller.signal.aborted || transition.id !== this.transitionId) return;
-      const checked = this.validateResolution(resolved, this.initial);
+      const checked = validateResolution(resolved, this.initial);
       if (!checked.ok) {
         this.publishInitialFailure(checked.diagnostics[0]);
         return;
@@ -218,6 +214,7 @@ export class ScopeControllerImpl implements ScopeController {
   }
 
   private beginTransition(selector: ScopeSelector, parent?: AbortSignal) {
+    if (parent?.aborted === true) return undefined;
     this.activeTransition?.abort();
     const controller = new AbortController();
     const abort = () => controller.abort();
@@ -240,7 +237,13 @@ export class ScopeControllerImpl implements ScopeController {
     requested: ScopeSelector,
     signal: AbortSignal,
   ): Promise<ScopeTransitionResult | undefined> {
-    const decision = await runLeaveGuard(this.input.binding, capture, requested, signal);
+    let decision;
+    try {
+      decision = await runLeaveGuard(this.input.binding, capture, requested, signal);
+    } catch (error) {
+      if (error instanceof InvalidScopeGuardError) return this.keepActive('needs-input', 'scope.guard-invalid');
+      throw new ScopeTransitionHostError('guard', error);
+    }
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
     if (decision.status === 'stay') return this.keepActive('cancelled', 'scope.guard-stay');
     if (decision.status === 'needs-input')
@@ -259,11 +262,19 @@ export class ScopeControllerImpl implements ScopeController {
     signal: AbortSignal,
   ): Promise<ScopeTransitionResult> {
     const guarded = await this.guard(capture, requested, signal);
-    if (guarded !== undefined) return guarded;
+    if (guarded !== undefined) {
+      const current = await this.recheckActive(id, capture, signal);
+      return current ?? guarded;
+    }
     const afterGuard = await this.recheckActive(id, capture, signal);
     if (afterGuard !== undefined) return afterGuard;
     this.publishPending(id, requested, 'resolving');
-    const resolved = await this.input.binding.resolve(requested, { signal });
+    let resolved: Outcome<ScopeResolution>;
+    try {
+      resolved = await this.input.binding.resolve(requested, { signal });
+    } catch (error) {
+      throw new ScopeTransitionHostError('resolve', error);
+    }
     return this.finishResolvedTransition(id, capture, requested, resolved, signal);
   }
 
@@ -275,36 +286,44 @@ export class ScopeControllerImpl implements ScopeController {
     signal: AbortSignal,
   ): Promise<ScopeTransitionResult> {
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
-    const checked = this.validateResolution(resolved, requested);
+    const checked = validateResolution(resolved, requested);
     if (!checked.ok) return this.retainOrDeny(id, capture, checked, 'scope.resolve-failed', signal);
     const afterResolve = await this.recheckActive(id, capture, signal);
     if (afterResolve !== undefined) return afterResolve;
-    const target = await this.input.binding.authorize(checked.value, { signal });
+    const target = await this.authorizeTarget(checked.value, signal);
     if (!target.ok) return this.retainOrDeny(id, capture, target, 'scope.permission-denied', signal);
     const afterTarget = await this.recheckActive(id, capture, signal);
     if (afterTarget !== undefined) return afterTarget;
-    return this.activate(id, checked.value);
-  }
-
-  private validateResolution(outcome: Outcome<ScopeResolution>, requested: ScopeSelector): Outcome<ScopeResolution> {
-    if (!outcome.ok) return outcome;
-    let resolution: ScopeResolution;
+    const finalTarget = await this.authorizeTarget(checked.value, signal);
+    if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
+    if (!finalTarget.ok) return this.retainOrDeny(id, capture, finalTarget, 'scope.permission-denied', signal);
+    let current: boolean;
     try {
-      resolution = freezeResolution(outcome.value);
-    } catch {
-      return denied('scope.resolve-invalid');
+      current = this.isCurrent(id, capture);
+    } catch (error) {
+      throw new ScopeTransitionHostError('guard', error);
     }
-    return sameSelector(resolution.selector, requested)
-      ? { ok: true, value: resolution }
-      : denied('scope.selector-mismatch');
+    if (!current) return transitionFailure('stale', 'scope.transition-stale');
+    if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
+    return this.activate(id, checked.value, capture);
   }
 
   private async activateResolvedInitial(id: number, resolution: ScopeResolution, signal: AbortSignal): Promise<void> {
-    const authorized = await this.input.binding.authorize(resolution, { signal });
+    let authorized: Outcome<void>;
+    try {
+      authorized = await authorizeScope(this.input.binding, resolution, signal);
+    } catch {
+      return this.publishInitialFailure(
+        diagnostic('scope.permission-check-failed', 'The initial scope permission check failed.'),
+      );
+    }
     if (!authorized.ok) return this.publishInitialFailure(authorized.diagnostics[0]);
     if (signal.aborted || id !== this.transitionId) return;
-    const activated = this.input.binding.activate?.(resolution);
-    if (activated !== undefined && !activated.ok) return this.publishInitialFailure(activated.diagnostics[0]);
+    const activated = activateInitialHost(this.input.binding, resolution);
+    if (!activated.ok) {
+      isolateHost(() => this.input.binding.deactivate?.(resolution, 'dispose'));
+      return this.publishInitialFailure(activated.diagnostics[0]);
+    }
     this.resolution = resolution;
     this.snapshot = activeSnapshot(this.snapshot, resolution, 1);
     this.lifecycle.notify();
@@ -312,11 +331,30 @@ export class ScopeControllerImpl implements ScopeController {
 
   private async handleTransitionException(
     id: number,
-    capture: ReturnType<typeof captureGuard>,
     signal: AbortSignal,
+    error: unknown,
   ): Promise<ScopeTransitionResult> {
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
-    return this.retainOrDeny(id, capture, denied('scope.transition-failed'), 'scope.transition-failed', signal);
+    const current = await proveCurrentAuthority({
+      binding: this.input.binding,
+      id,
+      signal,
+      readState: () => ({
+        transitionId: this.transitionId,
+        disposed: this.disposed,
+        resolution: this.resolution,
+        snapshot: this.snapshot,
+      }),
+      invalidate: () => this.invalidate('revoked'),
+    });
+    if (current !== undefined) return current;
+    if (error instanceof InvalidScopeGuardError) return this.keepActive('needs-input', 'scope.guard-invalid');
+    const stage = error instanceof ScopeTransitionHostError ? error.stage : 'guard';
+    let code = 'scope.transition-failed';
+    if (stage === 'guard') code = 'scope.guard-failed';
+    else if (stage === 'permission') code = 'scope.permission-check-failed';
+    this.keepActive('cancelled', code);
+    return transitionFailure('failed', code);
   }
 
   private isCurrent(id: number, capture: ReturnType<typeof captureGuard>): boolean {
@@ -324,23 +362,29 @@ export class ScopeControllerImpl implements ScopeController {
     return guardStillCurrent(this.input.binding, capture, this.snapshot);
   }
 
-  private activate(id: number, resolution: ScopeResolution): ScopeTransitionResult {
+  private activate(
+    id: number,
+    resolution: ScopeResolution,
+    capture: ReturnType<typeof captureGuard>,
+  ): ScopeTransitionResult {
     if (id !== this.transitionId) return transitionFailure('stale', 'scope.transition-stale');
     const oldResolution = this.resolution;
+    if (oldResolution === undefined) return transitionFailure('stale', 'scope.transition-stale');
     const before = this.snapshot;
     const epoch = this.snapshot.activationEpoch + 1;
     this.snapshot = Object.freeze({ ...this.snapshot, active: false });
-    this.fenceTargets(before.activationEpoch);
+    this.targets.fence(before.activationEpoch);
     this.lifecycle.fence();
-    if (oldResolution !== undefined)
-      this.isolateHost(() => this.input.binding.deactivate?.(oldResolution, 'transition'));
-    let activated: Outcome<void> | void;
-    try {
-      activated = this.input.binding.activate?.(resolution);
-    } catch {
-      return this.failClosed(before, 'scope.activation-failed');
+    isolateHost(() => this.input.binding.deactivate?.(oldResolution, 'transition'));
+    const activated = activateTransitionHost(this.input.binding, resolution, {
+      previous: oldResolution,
+      activationEpoch: capture.activationEpoch,
+      leaveRevision: capture.leaveRevision,
+    });
+    if (!activated.ok) {
+      isolateHost(() => this.input.binding.deactivate?.(resolution, 'transition'));
+      return this.failClosed(before, firstDiagnosticCode(activated.diagnostics, 'scope.activation-failed'));
     }
-    if (activated !== undefined && !activated.ok) return this.failClosed(before, activated.diagnostics[0].code);
     this.resolution = resolution;
     this.snapshot = activeSnapshot(before, resolution, epoch);
     this.lifecycle.notify();
@@ -373,7 +417,7 @@ export class ScopeControllerImpl implements ScopeController {
     if (id !== this.transitionId) return transitionFailure('stale', 'scope.transition-stale');
     const code = firstDiagnosticCode(outcome.diagnostics, fallback);
     this.keepActive('cancelled', code);
-    return transitionFailure(code.includes('denied') || code.includes('permission') ? 'denied' : 'failed', code);
+    return transitionFailure(code.includes('denied') || code === 'scope.permission-stale' ? 'denied' : 'failed', code);
   }
 
   private async recheckActive(
@@ -382,16 +426,29 @@ export class ScopeControllerImpl implements ScopeController {
     signal: AbortSignal,
   ): Promise<ScopeTransitionResult | undefined> {
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
-    if (!this.isCurrent(id, capture) || this.resolution === undefined)
-      return transitionFailure('stale', 'scope.transition-stale');
-    const authorized = await this.input.binding.authorize(this.resolution, { signal });
+    let current: boolean;
+    try {
+      current = this.isCurrent(id, capture);
+    } catch (error) {
+      throw new ScopeTransitionHostError('guard', error);
+    }
+    if (!current || this.resolution === undefined) return transitionFailure('stale', 'scope.transition-stale');
+    const authorized = await authorizeScope(this.input.binding, this.resolution, signal);
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
     if (!authorized.ok) {
       this.invalidate('revoked');
       return transitionFailure('denied', firstDiagnosticCode(authorized.diagnostics, 'scope.permission-denied'));
     }
-    if (!this.isCurrent(id, capture)) return transitionFailure('stale', 'scope.transition-stale');
+    try {
+      if (!this.isCurrent(id, capture)) return transitionFailure('stale', 'scope.transition-stale');
+    } catch (error) {
+      throw new ScopeTransitionHostError('guard', error);
+    }
     return undefined;
+  }
+
+  private async authorizeTarget(resolution: ScopeResolution, signal: AbortSignal): Promise<Outcome<void>> {
+    return authorizeScope(this.input.binding, resolution, signal);
   }
 
   private async retainOrDeny(
@@ -415,54 +472,27 @@ export class ScopeControllerImpl implements ScopeController {
 
   private failClosed(before: ScopeSnapshot, diagnosticCode: string): ScopeTransitionResult {
     this.resolution = undefined;
-    this.snapshot = Object.freeze({
-      runtimeId: before.runtimeId,
-      scopeInstanceId: before.scopeInstanceId,
-      activationEpoch: before.activationEpoch,
-      active: false,
-      permissionRevision: before.permissionRevision + 1,
-      status: 'denied',
-      selector: null,
-      revision: String(Number(before.revision) + 1),
-      diagnostic: diagnostic(diagnosticCode, 'The host could not activate the authorized scope.'),
-    });
+    this.snapshot = failedActivationSnapshot(
+      before,
+      diagnostic(diagnosticCode, 'The host could not activate the authorized scope.'),
+    );
+    this.lifecycle.fence();
     this.lifecycle.notify();
-    return transitionFailure('failed', diagnosticCode);
-  }
-
-  private isolateHost(callback: () => void): void {
-    try {
-      callback();
-    } catch {
-      // Security fencing and disposal do not depend on optional host cleanup hooks.
-    }
-  }
-
-  private fenceTargets(epoch: number): void {
-    const targets = this.targets.get(epoch);
-    if (targets === undefined) return;
-    this.targets.delete(epoch);
-    for (const fence of [...targets]) {
-      try {
-        fence();
-      } catch {
-        // One target cannot prevent the remaining activation from being fenced.
-      }
-    }
+    return transitionFailure(diagnosticCode.includes('permission') ? 'denied' : 'failed', diagnosticCode);
   }
 
   private publishInitialFailure(reason: Diagnostic): void {
+    const safeReason = freezeDiagnostic(
+      reason,
+      diagnostic('scope.host-failure', 'The trusted host returned an invalid diagnostic.'),
+    );
     this.snapshot = Object.freeze({
       ...this.snapshot,
       status: 'denied',
       selector: null,
       revision: String(Number(this.snapshot.revision) + 1),
-      diagnostic: reason,
+      diagnostic: safeReason,
     });
     this.lifecycle.notify();
   }
-}
-
-function denied(code: string): { readonly ok: false; readonly diagnostics: readonly [Diagnostic] } {
-  return { ok: false, diagnostics: [diagnostic(code, 'The trusted host rejected the scope operation.')] };
 }
