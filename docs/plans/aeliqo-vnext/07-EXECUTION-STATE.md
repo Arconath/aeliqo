@@ -16,36 +16,36 @@ Updated: 2026-09-19 15:38 Asia/Jakarta (execution started).
 
 ## Progress
 
-Planning pack: final-v3 validated from the supplied ZIP and pristine temporary extraction, then installed under this directory. The repository remote, protected-main policy, release workflows, pinned toolchain, exports, 71-component catalog, current docs, and quality matrix were observed locally. The vNext harness and strict typecheck pass. A full clean-source run reached 39/83 passing gates before the unchanged-source guard correctly rejected concurrent T01/T02 writes; it must be rerun from the next stable commit. Planning-pack validation remains separate from product evidence.
+Planning pack: final-v3 validated from the supplied ZIP and pristine temporary extraction, then installed under this directory. The repository remote, protected-main policy, release workflows, pinned toolchain, exports, 71-component catalog, current docs, and quality matrix were observed locally. The vNext harness and strict typecheck pass. After the intentionally retained concurrent-write rejection, a fresh clean-source run at `dedc15e` passed all 83 gates with `sourceChangedDuringRun: false`. Planning-pack validation remains separate from product evidence.
 
-| Task | State                            | Evidence                                                                                                                                                     |
-| ---- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| T00  | in-progress                      | `BASELINE.md`, final-v3 integrity evidence, passing vNext harness, and two committed checkpoints; full unchanged-source `pnpm check` pending                 |
-| T01  | design-contract-verified         | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim |
-| T02  | implemented-and-focused-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, and installed tarball/Vite/Chromium consumer pass; not published                  |
-| T03  | not-started                      | No implementation evidence                                                                                                                                   |
-| T04  | not-started                      | Scope guard/ABA/isolation not implemented                                                                                                                    |
-| T05  | not-started                      | No implementation evidence                                                                                                                                   |
-| T06  | not-started                      | No implementation evidence                                                                                                                                   |
-| T07  | not-started                      | No implementation evidence                                                                                                                                   |
-| T08  | not-started                      | No implementation evidence                                                                                                                                   |
-| T09  | not-started                      | Workspace composition not implemented                                                                                                                        |
-| T10  | not-started                      | No implementation evidence                                                                                                                                   |
-| T11  | not-started                      | No implementation evidence                                                                                                                                   |
-| T12  | not-started                      | No implementation evidence                                                                                                                                   |
-| T13  | not-started                      | No implementation evidence                                                                                                                                   |
-| T14  | not-started                      | No implementation evidence                                                                                                                                   |
-| T15  | not-started                      | No implementation evidence                                                                                                                                   |
-| T16  | not-started                      | No implementation evidence                                                                                                                                   |
-| T17  | not-started                      | Full live catalog inventory still required                                                                                                                   |
-| T18  | not-started                      | No reference journey evidence                                                                                                                                |
-| T19  | not-started                      | No qualification measurements                                                                                                                                |
-| T20  | not-started                      | Version/support decision not yet executed                                                                                                                    |
-| T21  | not-started                      | No reviewed/released vNext candidate                                                                                                                         |
+| Task | State                    | Evidence                                                                                                                                                     |
+| ---- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T00  | verified                 | `BASELINE.md`, integrity evidence, harness, two baseline checkpoints, and full unchanged-source 83/83 matrix at `dedc15e`                                    |
+| T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim |
+| T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published     |
+| T03  | not-started              | No implementation evidence                                                                                                                                   |
+| T04  | not-started              | Scope guard/ABA/isolation not implemented                                                                                                                    |
+| T05  | not-started              | No implementation evidence                                                                                                                                   |
+| T06  | not-started              | No implementation evidence                                                                                                                                   |
+| T07  | not-started              | No implementation evidence                                                                                                                                   |
+| T08  | not-started              | No implementation evidence                                                                                                                                   |
+| T09  | not-started              | Workspace composition not implemented                                                                                                                        |
+| T10  | not-started              | No implementation evidence                                                                                                                                   |
+| T11  | not-started              | No implementation evidence                                                                                                                                   |
+| T12  | not-started              | No implementation evidence                                                                                                                                   |
+| T13  | not-started              | No implementation evidence                                                                                                                                   |
+| T14  | not-started              | No implementation evidence                                                                                                                                   |
+| T15  | not-started              | No implementation evidence                                                                                                                                   |
+| T16  | not-started              | No implementation evidence                                                                                                                                   |
+| T17  | not-started              | Full live catalog inventory still required                                                                                                                   |
+| T18  | not-started              | No reference journey evidence                                                                                                                                |
+| T19  | not-started              | No qualification measurements                                                                                                                                |
+| T20  | not-started              | Version/support decision not yet executed                                                                                                                    |
+| T21  | not-started              | No reviewed/released vNext candidate                                                                                                                         |
 
 ## Next executable action
 
-Commit the reviewed T01/T02 checkpoint, rerun fresh unchanged-source `pnpm check`, then begin T03 surface lifecycle implementation.
+Begin T03 surface lifecycle implementation from the clean reviewed `dedc15e` checkpoint using failing behavior tests first.
 
 ## Decisions to preserve
 
@@ -63,6 +63,7 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 - Final-v3 archive SHA-256: `f8fd9790666033a10cab5ed134e68ee512371d616013babae05ca7d281569104`. Supplied directory/archive and pristine temporary copy passed the read-only validator; all 16 payloads matched.
 - `pnpm test:vnext` first observed a strict type error for an incorrect fixture type name, then passed after using the existing `LocalSnapshot` export: 1 test, 1 file, plus strict typecheck.
 - `pnpm check` exit 1 before the checkpoint commit with `Quality requires a clean source checkout.` This is retained as evidence that the quality driver enforces unchanged source; it must be rerun from the committed checkpoint.
+- The committed `dedc15e` rerun passed all 83 commands. `artifacts/product-ci/ci.json` binds the exact source revision, reports `status: passed`, and records `sourceChangedDuringRun: false`; Chromium, Firefox, and WebKit visual gates all exited 0.
 - No model call, package publication, image publication, deployment, or production operation occurred.
 
 ### T01 / RQ03 / RQ45 — declaration-only API design contract
