@@ -8,4 +8,4 @@ export {
   standardFormRecipe,
   standardOperationFor,
 } from './standard.js';
-export type { RecipeContext, RecipeDefinition, RecipeInput, ViewInput } from './types.js';
+export type { RecipeContext, RecipeDefinition, RecipeInput, RecipePresentationPolicy, ViewInput } from './types.js';

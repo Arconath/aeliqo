@@ -68,4 +68,4 @@ Choose horizontal orientation for stacked content and vertical orientation for i
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

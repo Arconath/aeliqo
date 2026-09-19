@@ -68,4 +68,4 @@ Stack fields at narrow widths. Keep the entity identity and revision associated 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

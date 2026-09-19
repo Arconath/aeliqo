@@ -68,4 +68,4 @@ The icon target keeps its minimum hit area. Separate adjacent actions so their t
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

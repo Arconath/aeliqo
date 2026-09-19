@@ -2,14 +2,14 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { componentCatalog } from '../shared/catalog.js';
 
-test('the public playground uses the app facade in guided and manual modes', async ({ page }) => {
+test('the public playground uses the app facade without AI and through structured intents', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/playground/');
   await expect(page.locator('#pg-boot')).toBeHidden();
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
-  await page.getByRole('button', { name: 'Manual controls' }).click();
+  await page.getByText('Run a structured intent', { exact: true }).click();
   await page.locator('#pg-manual-step').selectOption('people-detail');
   await page.getByRole('button', { name: 'Apply intent' }).click();
   await expect(page.locator('aeliqo-detail')).toContainText('Ada Chen');
@@ -18,11 +18,34 @@ test('the public playground uses the app facade in guided and manual modes', asy
   expect(errors).toEqual([]);
 });
 
+test('theme selection follows the system, updates mounted components, and persists an override', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/playground/');
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  const theme = page.getByRole('combobox', { name: 'Theme' });
+  const region = page.locator('aeliqo-region[data-aeliqo-theme]');
+  await expect(theme).toHaveValue('system');
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+  await expect(region).toHaveAttribute('data-aeliqo-theme', 'dark');
+
+  await theme.selectOption('light');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(region).toHaveAttribute('data-aeliqo-theme', 'light');
+  await page.reload();
+  await expect(theme).toHaveValue('light');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('aeliqo-region[data-aeliqo-theme]')).toHaveAttribute('data-aeliqo-theme', 'light');
+
+  await theme.selectOption('dark');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('aeliqo-region[data-aeliqo-theme]')).toHaveAttribute('data-aeliqo-theme', 'dark');
+});
+
 test('connected-agent mode never fabricates MCP, WebMCP, or BYOK evidence', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', (request) => requests.push(request.url()));
   await page.goto('/playground/');
-  await page.getByRole('button', { name: 'Connected agent' }).click();
+  await page.getByRole('button', { name: 'Connect AI' }).click();
   await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
@@ -34,7 +57,7 @@ test('connected-agent mode never fabricates MCP, WebMCP, or BYOK evidence', asyn
   expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
 });
 
-test('native WebMCP registers exactly the standard tools and renders through the current Region', async ({ page }) => {
+test('simulated WebMCP host registers the standard tools and renders through the current Region', async ({ page }) => {
   await page.addInitScript(() => {
     const tools = new Map<string, unknown>();
     Object.defineProperty(document, 'modelContext', {
@@ -51,7 +74,7 @@ test('native WebMCP registers exactly the standard tools and renders through the
   });
   await page.goto('/playground/');
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
-  await page.getByRole('button', { name: 'Connected agent' }).click();
+  await page.getByRole('button', { name: 'Connect AI' }).click();
   await page.locator('#pg-connection-kind').selectOption('webmcp');
   await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText('registered 3 tools');
@@ -71,13 +94,41 @@ test('native WebMCP registers exactly the standard tools and renders through the
       fields: ['name', 'team', 'location'],
       filter: { op: 'compare', field: 'team', comparison: 'eq', value: 'Engineering' },
     });
-    return { names, context, render };
+    const detail = await tools.get('aeliqo_render')?.execute({
+      version: '1',
+      id: 'webmcp-person-detail',
+      kind: 'detail',
+      resource: 'people',
+      identity: { id: 'p-1' },
+    });
+    return { names, context, render, detail };
   });
   expect(result.names).toEqual(['aeliqo_act', 'aeliqo_context', 'aeliqo_render']);
   expect(result.context).toMatchObject({ ok: true, value: { state: 'accepted' } });
   expect(result.render).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
-  await expect(page.locator('#pg-region')).toContainText('Sam Rivera');
-  await expect(page.locator('#pg-region')).not.toContainText('Ada Chen');
+  expect(result.detail).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
+  await expect(page.locator('aeliqo-detail')).toContainText('Ada Chen');
+  const trend = await page.evaluate(async () => {
+    const tools = (
+      globalThis as typeof globalThis & {
+        __aeliqoWebMcpTools: Map<string, { execute(input: unknown): Promise<unknown> }>;
+      }
+    ).__aeliqoWebMcpTools;
+    return tools.get('aeliqo_render')?.execute({
+      version: '1',
+      id: 'people-trend',
+      kind: 'analyze',
+      resource: 'workforce-headcount',
+      measures: [{ id: 'month-end-headcount', revision: '1' }],
+      time: { field: 'month', grain: 'month', calendar: 'gregorian', timezone: 'UTC' },
+      preferredView: 'trend',
+      sort: [{ field: 'month', direction: 'asc' }],
+    });
+  });
+  expect(trend).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
+  await expect(page.locator('aeliqo-chart')).toBeVisible();
+  await expect(page.locator('#pg-result-title')).toHaveText('Monthly headcount');
+  await expect(page.locator('#pg-result-definition')).toContainText('never summed across months');
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
 });
 
@@ -215,7 +266,7 @@ test('legal and support pages state the offline, reporting and commercial bounda
   await page.goto('/');
   await expect(page.locator('#analytics-consent')).toBeHidden();
   await page.goto('/legal/privacy/');
-  await expect(page.getByText('Filtering and evaluation run in the browser.')).toBeVisible();
+  await expect(page.getByText(/Filtering, structured intents, and evaluation run in the browser/)).toBeVisible();
   await expect(page.getByText(/asks before loading them/)).toBeVisible();
   await page.goto('/legal/license/');
   await expect(page.getByText(/does not depend on a license network service/)).toBeVisible();

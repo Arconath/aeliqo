@@ -68,4 +68,4 @@ Stack field, operator, and value controls when space is limited. Keep Apply reac
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

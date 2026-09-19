@@ -6,6 +6,29 @@ title: "Aeliqo 0.4 release notes"
 description: "The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages."
 ---
 
+## 0.4.2
+
+- Adaptive data recipes now obey each resource's allowed views during selection
+  and final plan validation.
+- Preferred trends bind requested semantic time and measure fields. Ambiguous
+  time or measure choices return a needs-input diagnostic.
+- `RecipePresentationPolicy` is exported from `@aeliqo/web` and
+  `@aeliqo/web/recipes` for direct recipe integrations.
+- Trend charts measure their container instead of stretching fixed SVG
+  geometry, including narrow labels and constant-value series.
+- The People playground now proves employee browse, team filtering, detail,
+  and semantic monthly headcount through the same Without AI and connected
+  agent paths.
+- The site and components share one generated token source with system, light,
+  and dark themes. Theme choice persists without changing application data.
+- The React-first tutorial now covers a complete table, filter, semantic chart,
+  controlled form, and bounded agent endpoint. Component reference pages add
+  property ownership, event payloads and timing, listener examples, states,
+  accessibility, responsive behavior, and performance limits.
+- DeepSeek BYOK distinguishes configured, connecting, verified, failed, and
+  disconnected states. Simulated and native WebMCP evidence are reported
+  separately, with an opt-in native lifecycle probe.
+
 ## Product
 
 - Landing page, documentation, component reference, and playground run from the

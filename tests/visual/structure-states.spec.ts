@@ -1,8 +1,6 @@
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-
-const variants = ['desktop-light', 'narrow-dark-rtl'] as const;
-type Variant = (typeof variants)[number];
+import { REVIEW_VARIANTS, reviewColorScheme, reviewViewport, type ReviewVariant } from './review-variants.js';
 
 type ReviewWindow = Window & {
   aeliqoReviewReady?: boolean;
@@ -13,17 +11,17 @@ type ReviewSession = {
   readonly errors: string[];
   readonly host: Locator;
   readonly id: string;
-  readonly variant: Variant;
+  readonly variant: ReviewVariant;
 };
 
-async function openCatalog(page: Page, info: TestInfo, id: string, variant: Variant): Promise<ReviewSession> {
+async function openCatalog(page: Page, info: TestInfo, id: string, variant: ReviewVariant): Promise<ReviewSession> {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.setViewportSize(variant === 'desktop-light' ? { width: 1280, height: 900 } : { width: 360, height: 800 });
-  await page.emulateMedia({ colorScheme: variant === 'desktop-light' ? 'light' : 'dark', reducedMotion: 'reduce' });
+  await page.setViewportSize(reviewViewport(variant));
+  await page.emulateMedia({ colorScheme: reviewColorScheme(variant), reducedMotion: 'reduce' });
   await page.goto(`/tests/visual/index.html?component=${id}&variant=${variant}`);
   await page.waitForFunction(() => Boolean((window as ReviewWindow).aeliqoReviewReady));
   const host = page.locator(`#fixture aeliqo-${id}`).first();
@@ -96,7 +94,7 @@ async function setHostProperty(host: Locator, property: string, value: unknown):
   );
 }
 
-for (const variant of variants) {
+for (const variant of REVIEW_VARIANTS) {
   test.describe(variant, () => {
     for (const id of ['button', 'icon-button'] as const) {
       test(`${id} disabled and action-busy states remain native`, async ({ page }, info) => {
@@ -317,11 +315,14 @@ for (const variant of variants) {
       const session = await openCatalog(page, info, 'dialog', variant);
       const dialog = session.host;
       const nativeDialog = dialog.locator('dialog');
+      const trigger = page.getByRole('button', { name: 'Open confirmation' });
+      await trigger.click();
       await expect(nativeDialog).toBeVisible();
       await expect.poll(() => nativeDialog.evaluate((element) => element.matches(':modal'))).toBe(true);
       await expect(dialog.getByRole('button', { name: 'Close' })).toBeFocused();
       await dialog.getByRole('button', { name: 'Close' }).press('Escape');
       await expect(nativeDialog).toBeHidden();
+      await expect(trigger).toBeFocused();
       await setHostProperty(dialog, 'closeOnEscape', false);
       await setHostProperty(dialog, 'open', true);
       await expect(nativeDialog).toBeVisible();

@@ -1,8 +1,6 @@
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-
-const variants = ['desktop-light', 'narrow-dark-rtl'] as const;
-type Variant = (typeof variants)[number];
+import { REVIEW_VARIANTS, reviewColorScheme, reviewViewport, type ReviewVariant } from './review-variants.js';
 
 const compoundEventTypes = [
   'aeliqo-explorer-filter',
@@ -25,7 +23,7 @@ type ReviewSession = {
   readonly errors: string[];
   readonly host: Locator;
   readonly id: string;
-  readonly variant: Variant;
+  readonly variant: ReviewVariant;
 };
 
 async function settleCompound(page: Page, id: string): Promise<void> {
@@ -50,14 +48,14 @@ async function settleCompound(page: Page, id: string): Promise<void> {
   }, id);
 }
 
-async function openCompound(page: Page, id: string, variant: Variant): Promise<ReviewSession> {
+async function openCompound(page: Page, id: string, variant: ReviewVariant): Promise<ReviewSession> {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.setViewportSize(variant === 'desktop-light' ? { width: 1280, height: 900 } : { width: 360, height: 800 });
-  await page.emulateMedia({ colorScheme: variant === 'desktop-light' ? 'light' : 'dark', reducedMotion: 'reduce' });
+  await page.setViewportSize(reviewViewport(variant));
+  await page.emulateMedia({ colorScheme: reviewColorScheme(variant), reducedMotion: 'reduce' });
   await page.goto(`/tests/visual/index.html?component=${id}&variant=${variant}`);
   await page.waitForFunction(() => Boolean((window as ReviewWindow).aeliqoReviewReady));
   const host = page.locator(`#fixture aeliqo-${id}`).first();
@@ -138,7 +136,7 @@ async function capture(session: ReviewSession, page: Page, info: TestInfo, label
   expect(axe.incomplete.filter(({ id }) => id === 'aria-prohibited-attr')).toEqual([]);
 }
 
-for (const variant of variants) {
+for (const variant of REVIEW_VARIANTS) {
   test.describe(variant, () => {
     test('explorer commits an authorized filter and stable identity selection', async ({ page }, info) => {
       const session = await openCompound(page, 'explorer', variant);

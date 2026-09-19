@@ -1,15 +1,23 @@
 {
   "name": "@aeliqo/quickstart-example",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@aeliqo/agent": "workspace:*",
     "@aeliqo/core": "workspace:*",
+    "@aeliqo/react": "workspace:*",
     "@aeliqo/runtime": "workspace:*",
     "@aeliqo/web": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7"
   }
 }

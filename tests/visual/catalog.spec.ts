@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import components from '../../catalog/components.json' with { type: 'json' };
+import { REVIEW_VARIANTS, reviewColorScheme, reviewViewport } from './review-variants.js';
 // These are unapproved review captures, never auto-accepted pixel baselines.
 for (const component of components.components)
-  for (const variant of ['desktop-light', 'narrow-dark-rtl'] as const) {
+  for (const variant of REVIEW_VARIANTS) {
     const id = component.id.slice(component.id.indexOf('.') + 1);
     test(`${id} ${variant}`, async ({ page }, info) => {
       const errors: string[] = [];
@@ -11,16 +12,36 @@ for (const component of components.components)
       page.on('console', (message) => {
         if (message.type() === 'error') errors.push(message.text());
       });
-      await page.setViewportSize(
-        variant === 'desktop-light' ? { width: 1280, height: 900 } : { width: 360, height: 800 },
-      );
-      await page.emulateMedia({ colorScheme: variant === 'desktop-light' ? 'light' : 'dark' });
+      await page.setViewportSize(reviewViewport(variant));
+      await page.emulateMedia({ colorScheme: reviewColorScheme(variant) });
       await page.goto(`/tests/visual/index.html?component=${id}&variant=${variant}`);
       await page.waitForFunction(() =>
         Boolean((window as typeof window & { aeliqoReviewReady?: boolean }).aeliqoReviewReady),
       );
       await expect(page.locator(`#fixture aeliqo-${id}`).first()).toBeAttached();
-      const axe = await new AxeBuilder({ page }).analyze();
+      if (id === 'dialog') {
+        const closedAxe = await new AxeBuilder({ page }).analyze();
+        await info.attach('accessibility-closed.json', {
+          body: JSON.stringify({ violations: closedAxe.violations, incomplete: closedAxe.incomplete }, null, 2),
+          contentType: 'application/json',
+        });
+        expect(
+          closedAxe.violations.map(({ id, impact, nodes }) => ({
+            id,
+            impact,
+            nodes: nodes.map(({ target, failureSummary }) => ({ target, failureSummary })),
+          })),
+        ).toEqual([]);
+        expect(closedAxe.incomplete.filter(({ id }) => id === 'aria-prohibited-attr')).toEqual([]);
+        await page.getByRole('button', { name: 'Open confirmation' }).click();
+        await expect(page.getByRole('dialog', { name: 'Confirm archive' })).toBeVisible();
+      }
+      const axeBuilder = new AxeBuilder({ page });
+      if (id === 'dialog') {
+        // WebKit measures the inert page control against the native modal backdrop while the dialog is open.
+        axeBuilder.include(`#fixture aeliqo-${id}`);
+      }
+      const axe = await axeBuilder.analyze();
       await info.attach('accessibility.json', {
         body: JSON.stringify({ violations: axe.violations, incomplete: axe.incomplete }, null, 2),
         contentType: 'application/json',

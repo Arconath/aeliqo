@@ -68,4 +68,4 @@ Keep query and revision state above results when detail moves below them. Show s
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

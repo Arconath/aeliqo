@@ -1,5 +1,6 @@
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { REVIEW_VARIANTS, reviewColorScheme, reviewViewport, type ReviewVariant } from './review-variants.js';
 
 type StatePage = Page;
 type StateInfo = TestInfo;
@@ -78,8 +79,8 @@ async function settleElement(page: StatePage, id: string): Promise<void> {
   }, id);
 }
 
-async function openFixture(page: StatePage, id: string): Promise<void> {
-  await page.goto(`/tests/visual/index.html?component=${id}&variant=desktop-light`);
+async function openFixture(page: StatePage, id: string, variant: ReviewVariant): Promise<void> {
+  await page.goto(`/tests/visual/index.html?component=${id}&variant=${variant}`);
   await page.waitForFunction(() =>
     Boolean((window as typeof window & { aeliqoReviewReady?: boolean }).aeliqoReviewReady),
   );
@@ -189,22 +190,23 @@ for (const id of DATA_COMPONENTS) {
     id === 'filter-builder' || id === 'selection-summary'
       ? ['loading', 'partial', 'stale', 'error', 'unavailable']
       : ['empty', 'loading', 'partial', 'stale', 'error', 'unavailable'];
-  test(`${id} renders its supported alternate data states`, async ({ page }, info) => {
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+  for (const variant of REVIEW_VARIANTS)
+    test(`${id} renders its supported alternate data states at ${variant}`, async ({ page }, info) => {
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('console', (message) => {
+        if (message.type() === 'error') errors.push(message.text());
+      });
+      await page.setViewportSize(reviewViewport(variant));
+      await page.emulateMedia({ colorScheme: reviewColorScheme(variant), reducedMotion: 'reduce' });
+      await openFixture(page, id, variant);
+      for (const state of states) {
+        await mutateDataState(page, id, state);
+        await assertDataState(page, id, state);
+        await auditAndCapture(page, info, id, state);
+      }
+      expect(errors).toEqual([]);
     });
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await page.emulateMedia({ colorScheme: 'light' });
-    await openFixture(page, id);
-    for (const state of states) {
-      await mutateDataState(page, id, state);
-      await assertDataState(page, id, state);
-      await auditAndCapture(page, info, id, state);
-    }
-    expect(errors).toEqual([]);
-  });
 }
 
 async function mutateCompoundState(page: StatePage, id: string, state: string): Promise<void> {
@@ -330,39 +332,40 @@ async function mutateCompoundSpecialState(page: StatePage, id: string, state: st
 }
 
 for (const id of COMPOUND_COMPONENTS) {
-  test(`${id} renders its supported alternate compound states`, async ({ page }, info) => {
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+  for (const variant of REVIEW_VARIANTS)
+    test(`${id} renders its supported alternate compound states at ${variant}`, async ({ page }, info) => {
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('console', (message) => {
+        if (message.type() === 'error') errors.push(message.text());
+      });
+      await page.setViewportSize(reviewViewport(variant));
+      await page.emulateMedia({ colorScheme: reviewColorScheme(variant), reducedMotion: 'reduce' });
+      await openFixture(page, id, variant);
+      const states =
+        id === 'search-results'
+          ? ['loading', 'empty', 'partial', 'error', 'unavailable', 'stale']
+          : ['loading', 'empty', 'partial', 'stale', 'error', 'unavailable'];
+      for (const state of states) {
+        await mutateCompoundState(page, id, state);
+        await assertCompoundState(page, id, state);
+        await auditAndCapture(page, info, id, state);
+      }
+      const specialStates =
+        id === 'comparison'
+          ? ['incompatible']
+          : id === 'record-editor'
+            ? ['invalid', 'disabled']
+            : id === 'form-flow'
+              ? ['invalid']
+              : [];
+      for (const state of specialStates) {
+        await mutateCompoundSpecialState(page, id, state);
+        await assertCompoundSpecialState(page, id, state);
+        await auditAndCapture(page, info, id, state);
+      }
+      expect(errors).toEqual([]);
     });
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await page.emulateMedia({ colorScheme: 'light' });
-    await openFixture(page, id);
-    const states =
-      id === 'search-results'
-        ? ['loading', 'empty', 'partial', 'error', 'unavailable', 'stale']
-        : ['loading', 'empty', 'partial', 'stale', 'error', 'unavailable'];
-    for (const state of states) {
-      await mutateCompoundState(page, id, state);
-      await assertCompoundState(page, id, state);
-      await auditAndCapture(page, info, id, state);
-    }
-    const specialStates =
-      id === 'comparison'
-        ? ['incompatible']
-        : id === 'record-editor'
-          ? ['invalid', 'disabled']
-          : id === 'form-flow'
-            ? ['invalid']
-            : [];
-    for (const state of specialStates) {
-      await mutateCompoundSpecialState(page, id, state);
-      await assertCompoundSpecialState(page, id, state);
-      await auditAndCapture(page, info, id, state);
-    }
-    expect(errors).toEqual([]);
-  });
 }
 
 async function resetVisualizationFixture(page: StatePage, id: string, state: string): Promise<void> {
@@ -431,22 +434,23 @@ for (const id of VISUALIZATION_COMPONENTS) {
     'partial',
     ...(id === 'tree' || id === 'treemap' || id === 'relationship' ? ['data-only'] : []),
   ];
-  test(`${id} renders its supported alternate visualization states`, async ({ page }, info) => {
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+  for (const variant of REVIEW_VARIANTS)
+    test(`${id} renders its supported alternate visualization states at ${variant}`, async ({ page }, info) => {
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('console', (message) => {
+        if (message.type() === 'error') errors.push(message.text());
+      });
+      await page.setViewportSize(reviewViewport(variant));
+      await page.emulateMedia({ colorScheme: reviewColorScheme(variant), reducedMotion: 'reduce' });
+      await openFixture(page, id, variant);
+      for (const state of states) {
+        await resetVisualizationFixture(page, id, state);
+        await assertVisualizationState(page, id, state);
+        await auditAndCapture(page, info, id, state);
+      }
+      expect(errors).toEqual([]);
     });
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await page.emulateMedia({ colorScheme: 'light' });
-    await openFixture(page, id);
-    for (const state of states) {
-      await resetVisualizationFixture(page, id, state);
-      await assertVisualizationState(page, id, state);
-      await auditAndCapture(page, info, id, state);
-    }
-    expect(errors).toEqual([]);
-  });
 }
 
 // Deliberately documented coverage gaps: visual components have no status prop,

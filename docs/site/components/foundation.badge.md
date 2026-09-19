@@ -68,4 +68,4 @@ Allow a row of badges to wrap when labels grow. Keep the status text visible; co
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

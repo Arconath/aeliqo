@@ -1,46 +1,113 @@
 ---
-id: "quickstart"
-path: "/start/"
-section: "Start"
-title: "Quickstart: one adaptive resource"
-description: "Define People, connect permitted local records, mount a Region, and render table or cards from one intent."
+id: 'quickstart'
+path: '/start/'
+section: 'Start'
+title: 'Tutorial: build an adaptive React app'
+description: 'Install Aeliqo, define People data, render a table, filter it, show a semantic headcount trend, add a form, and expose the same Region to a user-owned agent.'
 ---
 
-<p class="lead">You will build a People collection that uses a table in a wide container and cards in a narrow container. The intent is explicit, the data is synthetic, and no model call is involved.</p>
-<div class="docs-inline-cta"><p><strong>What you will finish with:</strong> one <code>createAeliqoApp</code>, one mounted Region, and one <code>app.render</code> call.</p><a href="/playground/?scenario=people">Preview the result →</a></div>
-<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Use Node.js 24, pnpm 11, TypeScript, and a browser entry with one empty element such as <code>&lt;main id="people"&gt;&lt;/main&gt;</code>. Keep all Aeliqo packages on one exact version.</p></aside>
-<h2>1. Install</h2><p>Install the core contract, runtime orchestration, and web renderer together at the same version.</p>
+<p class="lead">Build one React and TypeScript screen that works through ordinary controls first. You will add a registered table, a team filter, a month-end headcount chart, a host-owned form, and an optional MCP endpoint. Every path uses the same application authority and validated Region.</p>
 
-**Terminal**
+<div class="docs-inline-cta"><p><strong>Result:</strong> the People screen switches among employee data and a semantic workforce trend without generated HTML or a model dependency.</p><a href="/playground/?scenario=people">Try the finished journey →</a></div>
+
+<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Use Node.js 24, React 19.2, TypeScript, and a client entry with one React root. Keep every Aeliqo package on the same exact version. The complete sources below are compiled by this repository.</p></aside>
+
+## 1. Install the packages
+
+Install the contract, runtime, renderer, React bindings, optional agent endpoint,
+and Zod together:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.4.1 \
-  @aeliqo/runtime@0.4.1 \
-  @aeliqo/web@0.4.1
+  @aeliqo/core@0.4.2 \
+  @aeliqo/runtime@0.4.2 \
+  @aeliqo/web@0.4.2 \
+  @aeliqo/react@0.4.2 \
+  @aeliqo/agent@0.4.2 \
+  react@19.2.8 react-dom@19.2.8 zod@4.5.4
 ```
 
+## 2. Define resources and trusted data
 
-<h2>2. Define the resource and runtime</h2><p>This is the complete application wiring. It defines meaning, connects a bounded local source, supplies trusted authority, and mounts one Region. The docs build reads it from a type-checked fixture—there is no hidden helper file.</p>
+The application defines two resources. `people` provides stable identities and
+the fields used by table and filter intents. `workforce-headcount` records one
+month-end snapshot per month. Its meaning is semi-additive, so values may be
+compared across time and must never be summed across months.
+
+The same file connects bounded local records and reads authority from trusted
+application state. Replace the local adapter with an HTTP adapter when your
+server owns the records; do not move credentials or grants into an intent.
+
 <aeliqo-source data-label="src/app.ts" data-path="examples/quickstart/src/app.ts"></aeliqo-source>
-<h2>3. Mount and render an intent</h2><p>The browser only needs a target element and the intent you want to show. The runtime handles validation, evaluation, view selection, and lifecycle.</p>
 
-**browser.ts**
+## 3. Render a table from React
 
-```ts
-import {mountPeople} from './app.js';
+`AeliqoProvider` shares the application instance. `AeliqoRegion` owns mount,
+render cancellation, subscription, and unmount for the React lifecycle. The
+first structured browse intent requests Name and Team and prefers the registered
+table representation.
 
-const people = mountPeople(document.querySelector('#people'), [
+The controls remain ordinary React buttons. No model call is required.
+
+## 4. Apply an explicit filter
+
+The Engineering button sends a typed equality predicate. Aeliqo validates the
+field and closed value against the resource before evaluation. The result and
+its visible filter remain aligned because the application replaces them from one
+receipt rather than filtering rendered DOM.
+
+## 5. Show a semantic trend
+
+The Monthly headcount button switches the Region to the snapshot resource. The
+intent requests the registered `month-end-headcount` meaning and declares the
+month field, Gregorian calendar, monthly grain, and UTC timezone. The chart
+recipe binds those requested roles; it does not choose the first numeric column.
+
+## 6. Add a host-owned form
+
+The form uses React wrappers for Aeliqo controls. Change events are proposals;
+React state remains authoritative. Submit creates a review message and prevents
+the native effect. A production app would pass the reviewed draft through a
+registered action with current authorization and revision evidence.
+
+<aeliqo-source data-label="src/PeopleTutorial.tsx" data-path="examples/quickstart/src/PeopleTutorial.tsx"></aeliqo-source>
+
+Mount the screen with one application instance and dispose it when the React
+root is permanently removed:
+
+```tsx
+import {createRoot} from 'react-dom/client';
+import {createTutorialApp} from './app.js';
+import {PeopleTutorial} from './PeopleTutorial.js';
+
+const app = createTutorialApp([
   {id: 'ada', name: 'Ada Chen', team: 'Design'},
   {id: 'sam', name: 'Sam Rivera', team: 'Engineering'},
 ]);
 
-const receipt = await people.render();
-if (receipt.status !== 'renderer-ready') console.error(receipt.diagnostics);
+createRoot(document.querySelector('#root')!).render(<PeopleTutorial app={app} />);
 ```
 
+## 7. Connect a user-owned agent
 
-<h2>What you supplied</h2><p>The schema and field roles establish meaning. The local service establishes data and read limits. The authority adapter supplies trusted current context. The mount identifies one Region. Aeliqo compiles the browse intent and chooses the registered responsive recipe.</p>
-<h2>What you should see</h2><div class="doc-checklist"><ul><li>Wide Region: a keyboard-accessible table with Name and Team.</li><li>Narrow Region: equivalent cards with the same records and selection identity.</li><li>A denied principal: a typed denied receipt, not leaked rows.</li><li>A newer render request: cancellation of obsolete work so late results cannot commit.</li></ul></div>
-<h2>Failure recovery</h2><div class="doc-table"><table><thead><tr><th>Outcome</th><th>Fix</th></tr></thead><tbody><tr><th><code>unsupported</code></th><td>Check the resource intent and allowed view registrations.</td></tr><tr><th><code>denied</code></th><td>Fix host authorization; never add a grant to the intent payload.</td></tr><tr><th><code>failed</code></th><td>Read the bounded diagnostic and keep the previous valid view.</td></tr><tr><th><code>cancelled</code></th><td>Usually expected after a newer render or disposal; do not retry blindly.</td></tr></tbody></table></div>
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/guides/resources/"><span>Define resources</span><small>Add business meaning, forms, and presentations.</small><b aria-hidden="true">→</b></a><a href="/guides/adaptive-region/"><span>Region lifecycle</span><small>Handle render, subscribe, cancellation, and disposal.</small><b aria-hidden="true">→</b></a></nav>
+Create the endpoint only after the Region is mounted. The host chooses the
+Region, transport, goal epoch, expiry, and resource discovery. The endpoint
+exposes `aeliqo_context`, `aeliqo_render`, and `aeliqo_act`; renderer success is
+reported only after the real Region accepts the presentation. The model cannot
+grant itself permissions or supply executable UI.
+
+<aeliqo-source data-label="src/agent.ts" data-path="examples/quickstart/src/agent.ts"></aeliqo-source>
+
+Attach the returned endpoint to the [local MCP transport](/agents/mcp/), then
+close it on disconnect or expiry. Keep all buttons, filters, and forms available
+when no agent is connected.
+
+## Verify the tutorial
+
+<div class="doc-checklist"><ul><li>All employees renders a table in a wide Region and an allowed compact view only when the resource permits it.</li><li>Engineering shows only the synthetic Engineering records and keeps the filter visible.</li><li>Monthly headcount labels the metric definition and plots 118 through 130 by month without summing them.</li><li>The form preserves its controlled draft and performs no write before host review.</li><li>The MCP endpoint expires, disconnects, and rechecks current authority for every tool call.</li><li>Removing the React screen unmounts the Region; disposing the application cancels remaining work.</li></ul></div>
+
+## Recover from failures
+
+<div class="doc-table"><table><thead><tr><th>Outcome</th><th>Next action</th></tr></thead><tbody><tr><th><code>needs-input</code></th><td>Show the returned metric, identity, or form choice and resubmit a more specific intent.</td></tr><tr><th><code>unsupported</code></th><td>Check resource intents, registered views, and the effective presentation policy.</td></tr><tr><th><code>denied</code></th><td>Fix host authorization. Never add a grant to the intent payload.</td></tr><tr><th><code>failed</code></th><td>Show the bounded diagnostic and keep the previous valid result available.</td></tr><tr><th><code>cancelled</code></th><td>Treat supersession and unmount as expected; retry only from a new user request.</td></tr></tbody></table></div>
+
+<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/guides/resources/"><span>Resource guide</span><small>Model identity, business meaning, forms, and presentation policy.</small><b aria-hidden="true">→</b></a><a href="/start/frameworks/"><span>Framework setup</span><small>Keep the Vanilla, Vue, SSR, and hydration paths correct.</small><b aria-hidden="true">→</b></a></nav>

@@ -68,4 +68,4 @@ Match the width of the content it replaces without forcing horizontal scroll. Re
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

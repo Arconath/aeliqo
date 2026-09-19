@@ -68,4 +68,4 @@ Stack filters, records, and detail in reading order on narrow hosts. Preserve th
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

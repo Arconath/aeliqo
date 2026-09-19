@@ -4,6 +4,68 @@ import { startDeploymentTelemetry } from './telemetry.js';
 const navToggle = document.querySelector<HTMLButtonElement>('#nav-toggle');
 const primaryNav = document.querySelector<HTMLElement>('#site-nav');
 const narrowNav = matchMedia('(max-width: 760px)');
+const themeSelect = document.querySelector<HTMLSelectElement>('#theme-select');
+const darkTheme = matchMedia('(prefers-color-scheme: dark)');
+type ThemeMode = 'system' | 'light' | 'dark';
+
+function isThemeMode(value: string | null): value is ThemeMode {
+  return value === 'system' || value === 'light' || value === 'dark';
+}
+
+function storedTheme(): ThemeMode {
+  try {
+    const value = localStorage.getItem('aeliqo-theme');
+    return isThemeMode(value) ? value : 'system';
+  } catch {
+    return 'system';
+  }
+}
+
+let themeMode = storedTheme();
+
+function resolvedTheme(): 'light' | 'dark' {
+  if (themeMode !== 'system') return themeMode;
+  return darkTheme.matches ? 'dark' : 'light';
+}
+
+function themeComponent(root: ParentNode): void {
+  const theme = resolvedTheme();
+  const candidates = [
+    ...(root instanceof HTMLElement && root.hasAttribute('data-aeliqo-theme') ? [root] : []),
+    ...root.querySelectorAll<HTMLElement>('[data-aeliqo-theme]'),
+  ];
+  for (const candidate of candidates) {
+    if (candidate.dataset.aeliqoTheme !== 'inherit' && candidate.dataset.aeliqoTheme !== theme)
+      candidate.dataset.aeliqoTheme = theme;
+  }
+}
+
+function applyTheme(persist: boolean): void {
+  if (themeMode === 'system') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = themeMode;
+  if (themeSelect) themeSelect.value = themeMode;
+  themeComponent(document);
+  if (!persist) return;
+  try {
+    localStorage.setItem('aeliqo-theme', themeMode);
+  } catch {
+    // The selected theme still applies when storage is unavailable.
+  }
+}
+
+themeSelect?.addEventListener('change', () => {
+  if (!isThemeMode(themeSelect.value)) return;
+  themeMode = themeSelect.value;
+  applyTheme(true);
+});
+darkTheme.addEventListener('change', () => {
+  if (themeMode === 'system') applyTheme(false);
+});
+new MutationObserver((records) => {
+  for (const record of records)
+    for (const node of record.addedNodes) if (node instanceof HTMLElement) themeComponent(node);
+}).observe(document.body, { childList: true, subtree: true });
+applyTheme(false);
 
 function setNavOpen(open: boolean, restoreFocus = false): void {
   document.documentElement.dataset.navOpen = open ? 'true' : 'false';

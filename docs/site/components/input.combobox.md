@@ -68,4 +68,4 @@ Keep the query draft and selected value distinct at narrow widths. Test long opt
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

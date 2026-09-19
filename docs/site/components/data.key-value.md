@@ -68,4 +68,4 @@ Allow definition-list labels and values to wrap in reading order. Keep each labe
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

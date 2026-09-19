@@ -251,7 +251,11 @@ for (const example of catalogExamples) {
         throw new Error('Manifest server did not expose a port.');
       await manifestPage.goto(`http://127.0.0.1:${manifestAddress.port}/`, { waitUntil: 'networkidle' });
       await manifestPage.waitForFunction(
-        (count) => document.querySelectorAll('[data-preview-id] > [data-catalog-example-root] > *').length === count,
+        (count) =>
+          document.querySelectorAll('[data-preview-id] > [data-catalog-example-root]').length === count &&
+          [...document.querySelectorAll('[data-preview-id] > [data-catalog-example-root]')].every(
+            (root) => root.firstElementChild !== null,
+          ),
         CATALOG_EXAMPLE_IDS.length,
       );
       const previewFingerprints = await fingerprints(manifestPage, '[data-preview-id]');
@@ -380,7 +384,9 @@ for (const example of catalogExamples) {
       });
       await page.goto(`http://127.0.0.1:${consumerAddress.port}/`, { waitUntil: 'networkidle' });
       await page.waitForFunction(
-        (count) => document.querySelectorAll('[data-catalog-source-root] > *').length === count,
+        (count) =>
+          document.querySelectorAll('[data-catalog-source-root]').length === count &&
+          [...document.querySelectorAll('[data-catalog-source-root]')].every((root) => root.firstElementChild !== null),
         CATALOG_EXAMPLE_IDS.length,
       );
       await page.waitForTimeout(250);

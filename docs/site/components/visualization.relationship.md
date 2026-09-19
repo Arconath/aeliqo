@@ -68,4 +68,4 @@ The graph viewport can scroll inside its host. Keep labels and keyboard targets 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

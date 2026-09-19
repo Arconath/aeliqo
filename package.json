@@ -1,7 +1,7 @@
 {
   "name": "aeliqo",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Open-source TypeScript framework for semantic, adaptive interfaces",
   "scripts": {
     "site:verify": "pnpm --dir apps/site typecheck",
@@ -16,7 +16,7 @@
     "test:agent-evaluation:run": "node tests/agent-evaluation/run.mjs",
     "release:legacy:inspect": "node scripts/release/deprecate-legacy.mjs",
     "release:legacy:deprecate": "node scripts/release/deprecate-legacy.mjs --apply",
-    "typecheck": "pnpm build:runtime && pnpm build:platform && tsc --project tsconfig.json",
+    "typecheck": "pnpm build:runtime && pnpm build:platform && pnpm build:agent && tsc --project tsconfig.json",
     "build:platform": "pnpm build:runtime && pnpm build:web && pnpm build:react",
     "build:web": "node scripts/reuse-build.mjs web packages/web/dist -- pnpm --filter @aeliqo/web build",
     "build:react": "node scripts/reuse-build.mjs react packages/react/dist -- pnpm --filter @aeliqo/react build",
@@ -83,6 +83,8 @@
     "test:meaning-authoring:consumers": "node tests/consumers/meaning-tarballs.mjs",
     "test:protocol-mcp": "pnpm build:agent && vitest run --config tests/protocol-mcp/vitest.config.mjs && tsc -p tests/protocol-mcp/tsconfig.json",
     "test:protocol-webmcp": "pnpm build:agent && vitest run --config tests/protocol-webmcp/vitest.config.mjs && tsc -p tests/protocol-webmcp/tsconfig.json",
+    "test:protocol-webmcp:simulated": "pnpm test:protocol-webmcp",
+    "test:protocol-webmcp:native": "pnpm build:agent && node tests/protocol-webmcp/native-probe.mjs",
     "test:protocol-model": "pnpm build:agent && vitest run --config tests/protocol-model/vitest.config.mjs && tsc -p tests/protocol-model/tsconfig.json",
     "test:compounds": "pnpm build:platform && vitest run --config tests/compound/vitest.config.mjs && tsc -p tests/compound/tsconfig.json && node tests/compound/ssr.mjs",
     "test:compounds:browser": "playwright test --config tests/compound/playwright.config.mjs",

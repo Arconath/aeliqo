@@ -68,4 +68,4 @@ Leave enough width for the localized date at 200% text. Keep the label and decla
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

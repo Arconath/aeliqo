@@ -6,7 +6,7 @@ test('the local runner pairs one browser Region with the three real MCP tools', 
   if (baseURL === undefined) throw new Error('The local-runner test requires a configured base URL.');
   await page.goto('/playground/');
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
-  await page.getByRole('button', { name: 'Connected agent' }).click();
+  await page.getByRole('button', { name: 'Connect AI' }).click();
   await page.getByRole('button', { name: 'Check local connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText('Local agent host connected');
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
@@ -44,7 +44,7 @@ test('the local runner pairs one browser Region with the three real MCP tools', 
         { requestId: 'local-render' },
       ),
     ).resolves.toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
-    await expect(page.locator('#pg-status')).toContainText('data.card-collection renderer');
+    await expect(page.locator('#pg-status')).toContainText('validated browse intent');
     await expect(page.locator('aeliqo-card-collection')).toContainText('Desk lamp');
   } finally {
     endpoint.close();

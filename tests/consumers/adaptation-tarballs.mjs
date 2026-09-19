@@ -71,6 +71,17 @@ const source = (await readFile(join(root, 'tests/adaptation-semantic/browser.ts'
   "'./fixtures.js'",
 );
 await writeFile(join(consumer, 'browser.ts'), source);
+await writeFile(
+  join(consumer, 'recipes.ts'),
+  `import type {RecipeContext, RecipePresentationPolicy} from '@aeliqo/web';
+import type {RecipePresentationPolicy as SubpathPolicy} from '@aeliqo/web/recipes';
+export const policy = {allowedRepresentations: ['data.table']} satisfies RecipePresentationPolicy;
+const subpathPolicy: SubpathPolicy = policy;
+declare const context: RecipeContext;
+void context.presentationPolicy;
+void subpathPolicy;
+`,
+);
 await writeFile(join(consumer, 'fixtures.ts'), await readFile(join(root, 'tests/contracts/fixtures.ts')));
 await writeFile(join(consumer, 'index.html'), await readFile(join(root, 'tests/adaptation-semantic/index.html')));
 await writeFile(
@@ -86,7 +97,7 @@ await writeFile(
       skipLibCheck: false,
       noEmit: true,
     },
-    include: ['browser.ts', 'fixtures.ts'],
+    include: ['browser.ts', 'fixtures.ts', 'recipes.ts'],
   }),
 );
 run(['node', 'node_modules/typescript/bin/tsc', '-p', 'tsconfig.json'], consumer);

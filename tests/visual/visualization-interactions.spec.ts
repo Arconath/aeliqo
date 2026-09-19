@@ -1,8 +1,12 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-
-const VARIANTS = ['desktop-light', 'narrow-dark-rtl'] as const;
-type Variant = (typeof VARIANTS)[number];
+import {
+  REVIEW_VARIANTS,
+  reviewColorScheme,
+  reviewDirection,
+  reviewViewport,
+  type ReviewVariant,
+} from './review-variants.js';
 
 const CARTESIAN = ['trend', 'bar', 'area', 'scatter', 'histogram', 'heatmap'] as const;
 const TEMPORAL = ['matrix', 'timeline', 'calendar-grid'] as const;
@@ -83,15 +87,15 @@ function componentLocator(page: Page, id: VisualizationId): Locator {
 async function openVisualization(
   page: Page,
   id: VisualizationId,
-  variant: Variant,
+  variant: ReviewVariant,
 ): Promise<{ readonly host: Locator; readonly errors: string[] }> {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.setViewportSize(variant === 'desktop-light' ? { width: 1280, height: 900 } : { width: 360, height: 800 });
-  await page.emulateMedia({ colorScheme: variant === 'desktop-light' ? 'light' : 'dark', reducedMotion: 'reduce' });
+  await page.setViewportSize(reviewViewport(variant));
+  await page.emulateMedia({ colorScheme: reviewColorScheme(variant), reducedMotion: 'reduce' });
   await page.goto(`/tests/visual/index.html?component=${id}&variant=${variant}`);
   await page.waitForFunction(() => Boolean((window as ReviewWindow).aeliqoReviewReady));
   const host = componentLocator(page, id);
@@ -109,8 +113,8 @@ async function openVisualization(
     direction: document.documentElement.dir,
   }));
   expect(environment).toEqual({
-    theme: variant === 'desktop-light' ? 'light' : 'dark',
-    direction: variant === 'desktop-light' ? 'ltr' : 'rtl',
+    theme: reviewColorScheme(variant),
+    direction: reviewDirection(variant),
   });
   return { host, errors };
 }
@@ -249,7 +253,7 @@ async function setBoundedRows(host: Locator, id: 'trend' | 'timeline' | 'tree'):
   }, rows);
 }
 
-for (const variant of VARIANTS) {
+for (const variant of REVIEW_VARIANTS) {
   test.describe(`${variant} visualization interactions`, () => {
     for (const id of VISUALIZATIONS) {
       test(`${id} selects a stable identity with exact result lineage`, async ({ page }) => {
@@ -306,7 +310,7 @@ for (const variant of VARIANTS) {
 }
 
 for (const id of ['trend', 'timeline', 'tree'] as const) {
-  for (const variant of VARIANTS) {
+  for (const variant of REVIEW_VARIANTS) {
     test(`${id} ${variant} paginates 30 rows while retaining a bounded data-only path`, async ({ page }) => {
       const session = await openVisualization(page, id, variant);
       await setBoundedRows(session.host, id);

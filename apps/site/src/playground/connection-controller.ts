@@ -18,7 +18,7 @@ export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<Playgr
       : {
           state: 'unavailable',
           kind: 'webmcp',
-          label: `Native WebMCP is unavailable in this browser. ${detected.reason ?? 'Manual modes remain available.'}`,
+          label: `Native WebMCP is unavailable in this browser. ${detected.reason ?? 'Without AI remains available.'}`,
         };
   }
   try {
@@ -27,7 +27,7 @@ export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<Playgr
       return {
         state: 'unavailable',
         kind: 'local',
-        label: 'Local host is not running. Manual modes remain available.',
+        label: 'Local host is not running. Without AI remains available.',
       };
     const value: unknown = await response.json();
     if (!isRecord(value) || value.status !== 'ready')
@@ -42,7 +42,7 @@ export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<Playgr
         : 'Local agent host connected for MCP. Configure a model in the local process to enable this composer.',
     };
   } catch {
-    return { state: 'unavailable', kind: 'local', label: 'Local host is not running. Manual modes remain available.' };
+    return { state: 'unavailable', kind: 'local', label: 'Local host is not running. Without AI remains available.' };
   }
 }
 

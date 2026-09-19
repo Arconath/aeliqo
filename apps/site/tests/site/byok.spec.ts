@@ -20,7 +20,7 @@ interface FetchProbe {
 }
 
 async function prepareDeepSeek(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Connected agent' }).click();
+  await page.getByRole('button', { name: 'Connect AI' }).click();
   await page.locator('#pg-connection-kind').selectOption('deepseek');
   await expect(page.locator('#pg-deepseek-consent')).not.toBeChecked();
   await expect(page.locator('#pg-deepseek-connect')).toBeDisabled();
@@ -32,7 +32,8 @@ async function prepareDeepSeek(page: Page): Promise<void> {
 
 async function connectDeepSeek(page: Page): Promise<void> {
   await page.locator('#pg-deepseek-connect').click();
-  await expect(page.locator('#pg-connection-label')).toContainText('Connected directly to DeepSeek');
+  await expect(page.locator('#pg-connection-label')).toContainText('DeepSeek is configured');
+  await expect(page.locator('#pg-connection-dot')).toHaveAttribute('data-state', 'configured');
   await expect(page.locator('#pg-deepseek-key')).toHaveValue('');
   await expect(page.locator('#pg-prompt')).toBeEnabled();
 }
@@ -127,7 +128,7 @@ test('requires opt-in and sends a bounded tool loop directly to DeepSeek', async
       expect(body.max_tokens).toBeLessThanOrEqual(1_024);
       expect(body.tools.map((tool) => tool.function.name)).toContain('aeliqo_context');
       expect(body.messages.map((message) => message.content ?? '').join('\n')).toContain('People (people)');
-      expect(body.messages.map((message) => message.content ?? '').join('\n')).toContain('Browse records');
+      expect(body.messages.map((message) => message.content ?? '').join('\n')).toContain('Browse employees');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -153,6 +154,8 @@ test('requires opt-in and sends a bounded tool loop directly to DeepSeek', async
 
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
   await expect(page.locator('#pg-connect-status')).toContainText('renderer confirmed the view');
+  await expect(page.locator('#pg-connection-label')).toContainText('DeepSeek verified');
+  await expect(page.locator('#pg-connection-dot')).toHaveAttribute('data-state', 'verified');
   await expect(page.locator('#pg-model-calls')).toHaveText('2');
   expect(providerRequests.map(({ headers }) => headers.authorization)).toEqual([
     `Bearer ${fakeKey}`,
@@ -188,6 +191,7 @@ test('requires opt-in and sends a bounded tool loop directly to DeepSeek', async
   expect(persisted).toBe(false);
 
   await page.locator('#pg-deepseek-disconnect').click();
+  await expect(page.locator('#pg-connection-dot')).toHaveAttribute('data-state', 'disconnected');
   await expect(page.locator('#pg-deepseek-key')).toHaveValue('');
   await expect(page.locator('#pg-deepseek-consent')).not.toBeChecked();
   await expect(page.locator('#pg-prompt')).toBeDisabled();
@@ -202,7 +206,7 @@ test('reset clears the key and requires a fresh opt-in', async ({ page }) => {
   await expect(page.locator('#pg-deepseek-key')).toHaveValue('');
   await expect(page.locator('#pg-deepseek-consent')).not.toBeChecked();
   await expect(page.locator('#pg-prompt')).toBeDisabled();
-  await page.getByRole('button', { name: 'Connected agent' }).click();
+  await page.getByRole('button', { name: 'Connect AI' }).click();
   await page.locator('#pg-connection-kind').selectOption('deepseek');
   await expect(page.locator('#pg-deepseek-connect')).toBeDisabled();
 });
@@ -252,6 +256,43 @@ test('pagehide aborts an in-flight provider request and closes the browser conne
   release();
 });
 
+test('changing scenarios cancels an in-flight request without reporting provider verification', async ({ page }) => {
+  let started!: () => void;
+  let release!: () => void;
+  const providerStarted = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const releaseRoute = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.goto('/playground/');
+  await prepareDeepSeek(page);
+  await page.route(endpoint, async (route) => {
+    if (await fulfillCorsPreflight(route, new URL(page.url()).origin)) return;
+    started();
+    await releaseRoute;
+    try {
+      await route.abort();
+    } catch {
+      // The request may already have been cancelled by the scenario change.
+    }
+  });
+  await connectDeepSeek(page);
+  await page.locator('#pg-prompt').fill('Browse people');
+  await page.locator('#pg-send').click();
+  await providerStarted;
+  try {
+    await page.locator('#pg-scenario').selectOption('products');
+    await expect(page.locator('#pg-connect-status')).toContainText('request was cancelled');
+    await expect(page.locator('#pg-connection-label')).toContainText('DeepSeek is configured');
+    await expect(page.locator('#pg-connection-label')).not.toContainText('verified');
+    await expect(page.locator('#pg-connection-dot')).toHaveAttribute('data-state', 'configured');
+    await expect(page.locator('#pg-model-calls')).toHaveText('0');
+  } finally {
+    release();
+  }
+});
+
 test('a restored page clears a replacement connection on its next pagehide', async ({ page }) => {
   let started!: () => void;
   let release!: () => void;
@@ -275,7 +316,7 @@ test('a restored page clears a replacement connection on its next pagehide', asy
   await expect(page.locator('#pg-deepseek-consent')).not.toBeChecked();
   await expect(page.locator('#pg-connect-status')).toContainText('Reconnect to continue');
   await page.getByRole('button', { name: 'Reset playground' }).click();
-  await page.locator('[data-mode="guided"]').click();
+  await page.getByRole('button', { name: 'Without AI' }).click();
   await page.locator('#pg-steps [data-step]').first().click();
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await prepareDeepSeek(page);
@@ -306,21 +347,45 @@ test('a restored page clears a replacement connection on its next pagehide', asy
 });
 
 test('provider failures are sanitized before they reach the Playground', async ({ page }) => {
+  let providerAttempt = 0;
   await page.goto('/playground/');
   await prepareDeepSeek(page);
   await page.route(endpoint, async (route) => {
     if (await fulfillCorsPreflight(route, new URL(page.url()).origin)) return;
+    providerAttempt += 1;
+    const headers = { 'access-control-allow-origin': new URL(page.url()).origin };
+    if (providerAttempt === 1) {
+      await route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        headers,
+        body: JSON.stringify({ error: `invalid key ${fakeKey}` }),
+      });
+      return;
+    }
     await route.fulfill({
-      status: 401,
+      status: 200,
       contentType: 'application/json',
-      headers: { 'access-control-allow-origin': new URL(page.url()).origin },
-      body: JSON.stringify({ error: `invalid key ${fakeKey}` }),
+      headers,
+      body: JSON.stringify(
+        providerAttempt === 2
+          ? completion({ name: 'aeliqo_context', id: 'recovery-context', input: {} })
+          : completion({ name: 'aeliqo_render', id: 'recovery-render', input: renderIntent }),
+      ),
     });
   });
   await connectDeepSeek(page);
   await page.locator('#pg-prompt').fill('Browse people');
   await page.locator('#pg-send').click();
   await expect(page.locator('#pg-connect-status')).toContainText('stopped as failed');
+  await expect(page.locator('#pg-connection-dot')).toHaveAttribute('data-state', 'failed');
   await expect(page.locator('#pg-connected')).not.toContainText(fakeKey);
   await expect(page.locator('#pg-error')).not.toContainText(fakeKey);
+
+  await page.locator('#pg-send').click();
+  await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
+  await expect(page.locator('#pg-connection-label')).toContainText('DeepSeek verified');
+  await expect(page.locator('#pg-connection-dot')).toHaveAttribute('data-state', 'verified');
+  await expect(page.locator('#pg-model-calls')).toHaveText('2');
+  expect(providerAttempt).toBe(3);
 });

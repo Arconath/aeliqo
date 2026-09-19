@@ -4,6 +4,7 @@ artifacts/
 coverage/
 .env
 .env.*
+!.env.example
 *.local.json
 playwright-report/
 test-results/

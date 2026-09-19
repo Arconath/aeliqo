@@ -68,4 +68,4 @@ Bound its height only when independent scrolling is needed. Keep enough visible 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

@@ -68,4 +68,4 @@ Allow long messages to wrap within the available width. Place transient feedback
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

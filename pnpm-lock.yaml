@@ -203,18 +203,37 @@ importers:
 
   examples/quickstart:
     dependencies:
+      '@aeliqo/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
       '@aeliqo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@aeliqo/react':
+        specifier: workspace:*
+        version: link:../../packages/react
       '@aeliqo/runtime':
         specifier: workspace:*
         version: link:../../packages/runtime
       '@aeliqo/web':
         specifier: workspace:*
         version: link:../../packages/web
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
       zod:
         specifier: 4.5.4
         version: 4.5.4
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 19.2.7
+        version: 19.2.7(@types/react@19.2.18)
 
   examples/reference-host:
     dependencies:

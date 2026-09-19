@@ -68,4 +68,4 @@ Let long labels and formatted values wrap instead of clipping. Keep the unit vis
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

@@ -59,7 +59,7 @@ Keep package guidance in `docs/packages/`. Release staging may generate the npm 
 
 1. Complete review and all acceptance checks on `codex/aeliqo-0.4`; make one accepted source commit for the candidate.
 2. Publish a release candidate from that commit with the `next` tag; reinstall and verify its five registry packages in a clean consumer.
-3. Publish the matching stable `0.4.1` versions with the `latest` tag, tied to the exact verified candidate and source commit.
+3. Publish the matching stable `0.4.2` versions with the `latest` tag, tied to the exact verified candidate and source commit.
 4. Build and deploy one immutable site image from the same commit. Switch production directly after the image passes health, route, search, playground, and package-install smoke checks.
 5. Keep the prior site image available for rollback. Repair a published npm version with a patch release; do not unpublish it.
 6. After the new site is stable, archive the old UI surfaces and publish the deprecation notice for `@aeliqo/devtools@0.3.0`. Keep old npm artifacts and Git tags available.

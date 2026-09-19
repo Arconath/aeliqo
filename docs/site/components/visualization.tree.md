@@ -68,4 +68,4 @@ The hierarchy viewport can scroll inside its host. Bound marks and keep parent l
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

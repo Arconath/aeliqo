@@ -68,4 +68,4 @@ The item minimum controls how many columns fit. Check the smallest supported wid
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

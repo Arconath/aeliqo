@@ -59,10 +59,12 @@ The adapter does not create a polyfill when the surface is absent. Native
 support remains experimental and requires a real supported browser/version run;
 simulated adapter tests prove the contract and lifecycle only.
 
-The current focused suite covers absent-host detection, simulated registration
-and shared execution, native-versus-simulated labeling, operation-derived
+The focused suite covers absent-host detection, simulated registration and
+shared execution, native-versus-simulated labeling, operation-derived
 annotations, native name validation, malformed discovery, native cancellation,
-late rejection classification, and disposal/registration races. The local headless
-Chromium 153 probe on 9 September 2026 reported no
-`document.modelContext.registerTool`, so native browser evidence is unavailable
-in that environment and is not advertised as a pass.
+late rejection classification, and disposal/registration races. On 18 September
+2026, the isolated headed Chrome for Testing 153.0.8010.12 probe reported the
+API unavailable in its default state and passed with Chrome's local
+`WebMCPTesting` feature enabled. The enabled run proved native registration,
+discovery, invocation, cancellation propagation, unregistration, and late-call
+denial. This is local experimental evidence, not a cross-browser support claim.

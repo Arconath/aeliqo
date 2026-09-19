@@ -68,4 +68,4 @@ Avatar uses its selected size. Pair it with wrapping identity text when initials
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

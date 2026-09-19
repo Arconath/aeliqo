@@ -68,4 +68,4 @@ Keep the menu within the visible viewport and its commands keyboard reachable. A
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

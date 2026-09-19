@@ -11,7 +11,9 @@ contract: 'Named panels with stable selection; automatic activation only when la
 
 ## Purpose
 
-Named panels with stable selection; automatic activation only when latency permits.
+Named panels with stable selection. The default activation mode is automatic, so arrow-key focus also selects a
+panel. Set `activation="manual"` when selecting a panel starts work that is not immediate; users then move focus with
+the arrow keys and activate with Enter or Space.
 
 ## When to use it
 
@@ -68,4 +70,4 @@ Keep each tab label distinct at narrow widths. Ensure the selected state and key
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

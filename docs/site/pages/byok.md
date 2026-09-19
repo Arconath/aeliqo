@@ -3,7 +3,7 @@ id: 'byok'
 path: '/agents/byok/'
 section: 'Connect agents'
 title: 'Bring your own model'
-description: 'Run the provider SDK and bounded tool loop in a trusted host process without sending keys to the public playground.'
+description: 'Connect a provider through a trusted local host or an explicitly opted-in direct browser session.'
 ---
 
 BYOK connects a user's own provider account to Aeliqo's bounded tool loop.
@@ -31,7 +31,7 @@ Start the runner from the repository root:
 pnpm playground:local
 ```
 
-Open the local URL it prints, choose **Connected agent**, and select the local
+Open the local URL it prints, choose **Connect AI**, and select the local
 host. The prompt control stays unavailable until the runner has a complete
 configuration and the browser acknowledges the session. The runner binds to
 loopback by default. For an HTTP test endpoint on loopback, also set
@@ -51,11 +51,25 @@ and [data boundaries](/concepts/safety/) for failure handling.
 
 ## Use DeepSeek from the hosted Playground
 
-In **Connected agent**, select **DeepSeek BYOK (direct from browser)**. Read the
+In **Connect AI**, select **DeepSeek BYOK (direct from browser)**. Read the
 disclosure, opt in, and enter your own DeepSeek API key. The Playground uses the
 fixed `https://api.deepseek.com/chat/completions` endpoint and the
 `deepseek-flash` model; it does not accept a custom base URL or use an Aeliqo
 provider key.
+
+The connection indicator uses five explicit states:
+
+| State | Meaning |
+| --- | --- |
+| Configured | The browser accepted the local key and created a bounded connection; no provider response has succeeded yet |
+| Connecting | Setup or a connection transition is in progress |
+| Verified | DeepSeek returned a valid provider response during the current connection |
+| Failed | Authentication, network, timeout, or response validation failed; the existing configuration may be retried |
+| Disconnected | The connection is closed and the browser-held key is cleared |
+
+Entering a key does not prove that it is valid. The first prompt performs
+provider verification. A failed or malformed response never changes the state
+to verified and never commits a UI update.
 
 The key is held in the password field until connection, then only in a
 short-lived browser memory closure. It is cleared on disconnect, reset, or page
@@ -69,6 +83,13 @@ synthetic metadata returned by the tools are sent directly to DeepSeek. DeepSeek
 charges usage to the account that owns the key. Playground records remain in
 the browser; model-generated intents still pass through Aeliqo's dispatcher,
 and actions still require the existing user confirmation.
+
+The browser tests intercept the provider boundary and verify opt-in, request
+limits, direct CORS requests, authorization-header placement, omission of
+cookies and referrers, key non-persistence, valid and invalid response handling,
+timeouts through the bounded model loop, cancellation on page close, reset,
+disconnect, and sanitization of provider failures. They use placeholder keys
+and never make a paid provider call.
 
 The production image serves static files and does not include the local runner,
 a model endpoint, or an Aeliqo provider key. The local runner remains a

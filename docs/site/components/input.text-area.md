@@ -68,4 +68,4 @@ Rows set the starting height. Keep the draft readable when the form narrows and 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

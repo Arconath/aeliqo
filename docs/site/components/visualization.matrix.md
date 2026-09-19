@@ -68,4 +68,4 @@ Temporal columns may need horizontal scrolling. Keep row identity visible and le
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

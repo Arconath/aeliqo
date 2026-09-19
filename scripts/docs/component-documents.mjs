@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import { routeById } from '../../docs/public-site/routes.mjs';
+import { documentedEvents, listenerExample, propertyDescription } from './component-doc-copy.mjs';
 
 function escape(value) {
   return String(value)
@@ -169,9 +170,31 @@ function markdownList(values, emptyMessage) {
 
 function propertiesTable(properties) {
   const rows = properties.map(({ name, type, default: initial }) => {
-    return `<tr><th scope="row"><code>${escape(name)}</code></th><td><code>${escape(type)}</code></td><td><code>${escape(initial)}</code></td></tr>`;
+    const property = { name, type, default: initial };
+    return `<tr><th scope="row"><code>${escape(name)}</code></th><td>${escape(propertyDescription(property))}</td><td><code>${escape(type)}</code></td><td><code>${escape(initial)}</code></td></tr>`;
   });
-  return `<div class="api-table" role="region" aria-label="${properties.length} component properties"><table><caption>Properties and initial values</caption><thead><tr><th scope="col">Property</th><th scope="col">Declared type</th><th scope="col">Initial value</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  return `<div class="api-table" role="region" aria-label="${properties.length} component properties" tabindex="0"><table><caption>Properties, ownership, and initial values</caption><thead><tr><th scope="col">Property</th><th scope="col">Use and ownership</th><th scope="col">Declared type</th><th scope="col">Initial value</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+}
+
+function inlineMarkup(value) {
+  return escape(value).replaceAll(/`([^`]+)`/gu, '<code>$1</code>');
+}
+
+function eventsDocumentation(component, values) {
+  const events = documentedEvents(values);
+  if (events.length === 0) return markdownList(values, 'This component does not emit a component event.');
+  const rows = events.map(
+    ({ name, copy }) =>
+      `<tr><th scope="row"><code>${escape(name)}</code></th>${copy.map((value) => `<td>${inlineMarkup(value)}</td>`).join('')}</tr>`,
+  );
+  const table = `<div class="doc-table" role="region" aria-label="${escape(component.name)} component events" tabindex="0"><table><caption>Events, payloads, timing, and application responsibilities</caption><thead><tr><th scope="col">Event</th><th scope="col">Payload</th><th scope="col">Emitted</th><th scope="col">Application responsibility</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  const listeners = events
+    .map(
+      (event) =>
+        `<h3>Listen for <code>${escape(event.name)}</code></h3><figure class="doc-code"><figcaption>TypeScript example</figcaption><pre tabindex="0"><code class="language-ts">${escape(listenerExample(component, event))}</code></pre></figure>`,
+    )
+    .join('');
+  return `${table}<p>Events cross the component boundary as user proposals. Validate their detail and current authority before applying a business effect.</p>${listeners}`;
 }
 
 function componentDocumentationBody(component, example, metadata, api, source) {
@@ -182,7 +205,7 @@ function componentDocumentationBody(component, example, metadata, api, source) {
       '{{aeliqo:properties}}',
       `${escapeMarkdown(example.propsNotes)}\n\n${propertiesTable(metadata.properties)}`,
     )
-    .replace('{{aeliqo:events}}', markdownList(example.events, 'This component does not emit a component event.'))
+    .replace('{{aeliqo:events}}', eventsDocumentation(component, example.events))
     .replace('{{aeliqo:states}}', markdownList(example.states, 'No non-default state is shown in this fixture.'))
     .replace('{{aeliqo:outcome}}', `Expected result: ${escapeMarkdown(example.expectedOutcome)}`)
     .replace(

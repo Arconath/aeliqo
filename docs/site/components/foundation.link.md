@@ -68,4 +68,4 @@ The label follows inline text flow and can wrap. Avoid fixed-width wrappers that
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

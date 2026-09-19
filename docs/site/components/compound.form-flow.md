@@ -68,4 +68,4 @@ Keep the step label, validation, draft, and navigation in DOM order. Let the flo
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

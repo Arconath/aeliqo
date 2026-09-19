@@ -31,9 +31,8 @@ function sourceEntry(target, packageDirectory) {
 function packageWorkspace(directoryName) {
   const directory = join(packageRoot, directoryName);
   const manifest = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
-  const targets = exportTargets(manifest.exports);
-  const entry = [...new Set(targets.map((target) => sourceEntry(target, directory)).filter(Boolean))];
-  return [relative(repositoryRoot, directory), { entry, project: ['src/**/*.{ts,tsx,js,mjs}'] }];
+  for (const target of exportTargets(manifest.exports)) sourceEntry(target, directory);
+  return [relative(repositoryRoot, directory), { project: ['src/**/*.{ts,tsx,js,mjs}'] }];
 }
 
 const packageWorkspaces = Object.fromEntries(
@@ -42,31 +41,10 @@ const packageWorkspaces = Object.fromEntries(
     .map((entry) => packageWorkspace(entry.name)),
 );
 
-const examplesRoot = join(repositoryRoot, 'examples');
-const exampleWorkspaces = Object.fromEntries(
-  readdirSync(examplesRoot, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && existsSync(join(examplesRoot, entry.name, 'package.json')))
-    .map((entry) => [
-      `examples/${entry.name}`,
-      {
-        entry: ['src/main.ts', 'src/index.ts', 'verify.mjs'],
-        project: ['src/**/*.{ts,tsx,mjs}', 'app/**/*.{ts,tsx}', '*.mjs'],
-      },
-    ]),
-);
-
 export default {
-  treatConfigHintsAsErrors: false,
+  treatConfigHintsAsErrors: true,
   ignoreBinaries: ['go', 'build'],
-  ignoreFiles: [
-    '**/dist/**',
-    '**/artifacts/**',
-    '**/*.generated.*',
-    'packages/core/schemas/**',
-    '**/fixtures/**',
-    '**/*.fixture.*',
-    'examples/catalog/fixture.ts',
-  ],
+  ignoreFiles: ['**/*.fixture.*'],
   ignoreIssues: {
     'tests/**/fixtures/**': ['exports', 'types'],
     'tests/**/fixtures.{ts,tsx,js,mjs}': ['exports', 'types'],
@@ -79,6 +57,7 @@ export default {
     '.': {
       entry: [
         'scripts/source-digest.mjs',
+        'docs/public-site/routes.mjs',
         'examples/framework-recipes.ts',
         'examples/quickstart.mjs',
         'tests/**/browser.ts',
@@ -94,68 +73,52 @@ export default {
         'tests/**/*.vite.config.mjs',
         'tests/**/server.mjs',
         'tests/**/*-child.mjs',
-        'tests/agent-evaluation/run.mjs',
         'tests/agent-evaluation/runner.ts',
         'tests/agent-evaluation/ui-development/host.ts',
         'tests/performance/adverse-visualization.ts',
         'tests/performance/perceived-input.ts',
         'tests/performance/standalone.ts',
-        'tests/protocol-webmcp/native-probe.mjs',
         'tests/security/testkit-consumer.mjs',
         'tests/visual/catalog.ts',
-        'tests/consumers/public-package-notices.mjs',
         'tests/**/*.spec.{ts,tsx,js,mjs}',
         'tests/**/*.test.{ts,tsx,js,mjs}',
       ],
-      project: [
-        'scripts/**/*.{mjs,js,ts}',
-        'tests/**/*.{ts,tsx,mjs}',
-        'docs/public-site/**/*.mjs',
-        'examples/framework-recipes.ts',
-        'examples/quickstart.mjs',
-      ],
+      project: ['scripts/**/*.{mjs,js,ts}', 'tests/**/*.{ts,tsx,mjs}', 'docs/public-site/**/*.mjs'],
     },
     ...packageWorkspaces,
-    ...exampleWorkspaces,
     'apps/site': {
       entry: [
-        'generate-pages.mjs',
-        'runner/server.mjs',
-        'runner/mcp-stdio.mjs',
-        'src/site.ts',
         'src/playground/playground.ts',
         'tests/**/*.spec.{ts,tsx,js,mjs}',
         'tests/**/*.test.{ts,tsx,js,mjs}',
         'tests/**/*.playwright.config.mjs',
         'tests/**/vitest.config.mjs',
       ],
-      project: [
-        'generate-pages.mjs',
-        'runner/**/*.{mjs,js}',
-        'src/**/*.{ts,tsx}',
-        'tests/**/*.{ts,tsx,mjs}',
-        'vite.config.mjs',
-      ],
+      project: ['runner/**/*.{mjs,js}', 'src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx,mjs}'],
     },
     'examples/catalog': {
       entry: ['index.ts'],
       project: ['**/*.ts'],
     },
     'examples/platform': {
-      entry: ['src/main.ts', 'src/design.ts', 'src/react.tsx', 'src/vue.ts', 'src/hydrate.ts'],
+      entry: ['src/design.ts', 'src/react.tsx', 'src/vue.ts', 'src/hydrate.ts'],
       project: ['src/**/*.{ts,tsx}', '*.mjs'],
+      vue: false,
     },
     'examples/quickstart': {
-      entry: ['src/app.ts'],
-      project: ['src/**/*.ts', '*.mjs'],
+      entry: ['src/app.ts', 'src/PeopleTutorial.tsx', 'src/agent.ts'],
+      project: ['src/**/*.{ts,tsx}'],
     },
     'examples/vertical-slice': {
-      entry: ['src/main.ts', 'src/ssr.ts', 'src/ssr-client.ts'],
-      project: ['src/**/*.{ts,tsx,mjs}', '*.mjs'],
+      entry: ['src/ssr.ts', 'src/ssr-client.ts'],
+      project: ['src/**/*.{ts,tsx,mjs}'],
     },
     'examples/next-platform': {
-      entry: ['app/page.tsx', 'app/adaptive-people.tsx', 'app/hydrate.tsx'],
+      entry: ['app/adaptive-people.tsx', 'app/hydrate.tsx'],
       project: ['app/**/*.{ts,tsx}', '*.mjs'],
+    },
+    'examples/reference-host': {
+      project: ['*.mjs'],
     },
   },
 };

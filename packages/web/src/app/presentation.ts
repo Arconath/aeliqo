@@ -3,7 +3,7 @@ import type { Diagnostic, Intent, Outcome, Result, Task } from '@aeliqo/core';
 import type { PresentationEnvironment, PresentationRegistry, ValidatedPresentation } from '@aeliqo/core/presentation';
 import type { RuntimeCommittedReceipt } from '@aeliqo/runtime/app';
 import { recipeSupports } from '../recipes/standard.js';
-import type { RecipeDefinition } from '../recipes/types.js';
+import type { RecipeDefinition, RecipePresentationPolicy } from '../recipes/types.js';
 import type { AeliqoRegionResult } from '../region/types.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
 import { createFormBindings } from './form-bindings.js';
@@ -14,6 +14,7 @@ import {
   experience,
   failedAfterRuntime,
   registryFor,
+  presentationPolicy,
   withoutDataRevision,
   type WebAppContext,
   type WebRegion,
@@ -26,6 +27,7 @@ interface PreparedDependencies {
   readonly registry: PresentationRegistry;
   readonly recipe: RecipeDefinition;
   readonly environment: PresentationEnvironment;
+  readonly policy?: RecipePresentationPolicy;
   readonly incumbent?: ValidatedPresentation['plan'];
 }
 
@@ -37,12 +39,13 @@ interface PreparedPresentation {
 type Preparation = { readonly ok: true; readonly value: PreparedPresentation } | PreparationFailure;
 type PreparationFailure = {
   readonly ok: false;
-  readonly status: 'unsupported' | 'failed';
+  readonly status: 'unsupported' | 'failed' | 'needs-input';
   readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]];
 };
 type DependencyResult = { readonly ok: true; readonly value: PreparedDependencies } | PreparationFailure;
+type PolicyResult = { readonly ok: true; readonly value?: RecipePresentationPolicy } | PreparationFailure;
 
-function preparationFailure(status: 'unsupported' | 'failed', item: Diagnostic): PreparationFailure {
+function preparationFailure(status: PreparationFailure['status'], item: Diagnostic): PreparationFailure {
   return { ok: false, status, diagnostics: [item] };
 }
 
@@ -60,6 +63,17 @@ function currentReadSet(
 
 function selectedRecipe(context: WebAppContext, intent: Intent): RecipeDefinition | undefined {
   return context.recipes.find((candidate) => recipeSupports(candidate, intent.kind));
+}
+
+function policyForTask(context: WebAppContext, region: WebRegion, task: Task): PolicyResult {
+  if (task.kind !== 'data') return { ok: true };
+  const resource = context.resources.get(region.resourceId);
+  if (resource === undefined)
+    return preparationFailure(
+      'failed',
+      diagnostic('web.app.resource', 'The mounted resource is unavailable for presentation policy.'),
+    );
+  return { ok: true, value: presentationPolicy(resource) };
 }
 
 function preparedDependencies(
@@ -89,6 +103,9 @@ function preparedDependencies(
       diagnostic('web.app.recipe', 'No recipe supports ' + receipt.intent.kind + '.'),
     );
   const environment = environmentFor(region);
+  const resolvedPolicy = policyForTask(context, region, receipt.task);
+  if (!resolvedPolicy.ok) return resolvedPolicy;
+  const policy = resolvedPolicy.value;
   const prior = region.element.presentation?.plan;
   const incumbent = prior?.preconditions.taskRevision === source.current.taskRevision ? prior : undefined;
   return {
@@ -99,6 +116,7 @@ function preparedDependencies(
       registry,
       recipe,
       environment,
+      ...(policy === undefined ? {} : { policy }),
       ...(incumbent === undefined ? {} : { incumbent }),
     },
   };
@@ -120,14 +138,20 @@ function validatedPlan(
     current,
     environment: prepared.environment,
     availableViews: views,
+    ...(prepared.policy === undefined ? {} : { presentationPolicy: prepared.policy }),
     ...(prepared.incumbent === undefined ? {} : { incumbent: prepared.incumbent }),
   });
-  if (!plan.ok) return { ok: false, status: 'unsupported', diagnostics: plan.diagnostics };
+  if (!plan.ok) {
+    const status = plan.diagnostics.some((item) => item.code.startsWith('web.recipe.needs-input.'))
+      ? 'needs-input'
+      : 'unsupported';
+    return { ok: false, status, diagnostics: plan.diagnostics };
+  }
   const checked = validatePresentationPlan(
     plan.value,
     {
       task: receipt.task,
-      experience: experience(prepared.registry, prepared.current.experienceRevision),
+      experience: experience(prepared.registry, prepared.current.experienceRevision, prepared.policy),
       results: descriptors,
       current,
       environment: prepared.environment,

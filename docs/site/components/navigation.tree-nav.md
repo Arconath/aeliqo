@@ -68,4 +68,4 @@ Allow long node labels to wrap inside the tree. Keep the selected item and expan
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

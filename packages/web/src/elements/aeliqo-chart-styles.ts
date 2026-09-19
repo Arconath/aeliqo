@@ -31,11 +31,11 @@ export const aeliqoChartStyles = [
 
     svg {
       background: var(--aeliqo-chart-background, var(--aeliqo-color-canvas, #fff));
-      block-size: 12rem;
+      block-size: 11.25rem;
       border: var(--aeliqo-control-border-width, 1px) solid
         var(--aeliqo-chart-border, var(--aeliqo-color-border, #c9d0d8));
+      box-sizing: border-box;
       inline-size: 100%;
-      min-block-size: 8rem;
     }
 
     line {

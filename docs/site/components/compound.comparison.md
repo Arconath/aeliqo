@@ -68,4 +68,4 @@ Keep every compared entity and metric in view. Stack comparison rows or allow a 
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

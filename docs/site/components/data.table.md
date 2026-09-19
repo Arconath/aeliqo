@@ -11,7 +11,9 @@ contract: 'Native table first; separate interactive-grid mode; sorting, paging, 
 
 ## Purpose
 
-Native table first; separate interactive-grid mode; sorting, paging, selection, virtualization and precise values.
+Render precise row and column relationships with a native table by default. Sorting, paging, selection, and virtual
+window events are requests: the application applies them to its data source, then updates the table rows, Result
+evidence, and controlled state. Interactive grid mode is an explicit choice for cell-style navigation.
 
 ## When to use it
 
@@ -68,4 +70,4 @@ Use the table’s bounded page or virtualization controls with wide data. Keep a
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

@@ -68,4 +68,4 @@ Let the query field use the available row width. Keep search policy and empty fe
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.

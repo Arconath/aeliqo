@@ -68,4 +68,4 @@ Cards adapt to available width. Let field values wrap and keep each selection co
 
 ## Version
 
-Aeliqo 0.4.1.
+Aeliqo 0.4.2.
