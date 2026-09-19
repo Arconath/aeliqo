@@ -123,6 +123,8 @@ export interface LocalDataServiceOptions {
   readonly authorize?: AuthorizeRead;
   readonly planTtlMs?: number;
   readonly maxPlans?: number;
+  /** Maximum number of distinct source revisions retained for the service lifetime. */
+  readonly maxSourceRevisions?: number;
   /** Host-owned activation policy. It is never accepted from a client request. */
   readonly meaningActivation?: {
     readonly registry: FunctionRegistry;

@@ -13,6 +13,7 @@ import type {
 import type { MountedRegion } from './runtime-state.js';
 import { diagnostic, linkedSignal, uniqueRefs } from './runtime-state.js';
 import type { RuntimeResourceBinding } from './types.js';
+import { readSourceRevisionPin } from '../data/local/source-pin.js';
 
 export interface RuntimeRenderHost {
   readonly regions: RegionStore;
@@ -216,7 +217,7 @@ export class RuntimeRenderCoordinator {
     }
     const committed = await region.value.commit(staged.value, {
       signal: request.signal,
-      recheck: () => this.sequenceCheck(slot, sequence),
+      recheck: () => this.sequenceCheck(slot, sequence, outputs),
     });
     if (!committed.ok) return this.fail(slot, sequence, requestId, committed.diagnostics, compiled.task);
     return this.publishCommit(slot, requestId, compiled, outputs, committed.value);
@@ -230,11 +231,34 @@ export class RuntimeRenderCoordinator {
     return this.host.regions.create({ id: request.slot.regionId, state: { task: seedTask.value } });
   }
 
-  private sequenceCheck(slot: MountedRegion, sequence: number): RegionOutcome<void> {
-    if (slot.sequence === sequence) return { ok: true, value: undefined };
+  private sequenceCheck(
+    slot: MountedRegion,
+    sequence: number,
+    outputs: readonly MaterializedTaskOutput[],
+  ): RegionOutcome<void> {
+    if (slot.sequence !== sequence)
+      return {
+        ok: false,
+        diagnostics: [diagnostic('runtime.render-cancelled', 'A newer render replaced this request.')],
+      };
+    const binding = this.host.getResource(slot);
+    const sourceRevision = binding === undefined ? { kind: 'absent' as const } : readSourceRevisionPin(binding.data);
+    if (sourceRevision.kind === 'invalid')
+      return {
+        ok: false,
+        diagnostics: [diagnostic('runtime.render-stale', 'The local source revision could not be verified.')],
+      };
+    if (
+      sourceRevision.kind === 'current' &&
+      outputs.some((output) => output.handle.key.sourceRevision !== sourceRevision.value)
+    )
+      return {
+        ok: false,
+        diagnostics: [diagnostic('runtime.render-stale', 'A local source changed before Region publication.')],
+      };
     return {
-      ok: false,
-      diagnostics: [diagnostic('runtime.render-cancelled', 'A newer render replaced this request.')],
+      ok: true,
+      value: undefined,
     };
   }
 

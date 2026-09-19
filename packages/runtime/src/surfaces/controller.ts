@@ -33,7 +33,11 @@ interface SurfaceControllerConfig<I, S> {
   readonly runData?: (
     intent: Intent,
     signal: AbortSignal,
-  ) => Promise<{ readonly receipt: RuntimeRenderReceipt; readonly state?: S }>;
+  ) => Promise<{
+    readonly receipt: RuntimeRenderReceipt;
+    readonly state?: S;
+    readonly publicationCheck?: () => string | undefined;
+  }>;
   readonly teardown: () => void;
 }
 
@@ -244,7 +248,11 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
       if (this.config.feature.kind === 'data')
         return this.commitData(
           intent,
-          outcome as { readonly receipt: RuntimeRenderReceipt; readonly state?: S },
+          outcome as {
+            readonly receipt: RuntimeRenderReceipt;
+            readonly state?: S;
+            readonly publicationCheck?: () => string | undefined;
+          },
           before,
         );
       const revision = nextRevision(this.snapshot.revision);
@@ -263,7 +271,14 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private read(
     intent: I,
     signal: AbortSignal,
-  ): Promise<S | { readonly receipt: RuntimeRenderReceipt; readonly state?: S }> {
+  ): Promise<
+    | S
+    | {
+        readonly receipt: RuntimeRenderReceipt;
+        readonly state?: S;
+        readonly publicationCheck?: () => string | undefined;
+      }
+  > {
     if (this.config.feature.kind === 'data') return this.config.runData!(intent as Intent, signal);
     const bindings = this.config.bindings as CapabilitySurfaceBindings<I, S>;
     return bindings.source.read(intent, { scope: this.config.scope.getSnapshot(), signal });
@@ -271,7 +286,11 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
 
   private commitData(
     intent: I,
-    result: { readonly receipt: RuntimeRenderReceipt; readonly state?: S },
+    result: {
+      readonly receipt: RuntimeRenderReceipt;
+      readonly state?: S;
+      readonly publicationCheck?: () => string | undefined;
+    },
     before: SurfaceSnapshot<I, S>,
   ): RequestResult {
     const { receipt } = result;
@@ -284,7 +303,13 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
       return failure('failed', 'surface.state-normalization');
     }
     const revision = nextRevision(this.snapshot.revision);
-    this.publish({ ...this.snapshot, revision, phase: 'ready', intent, state: result.state });
+    const prepared = freezeSnapshot({ ...this.snapshot, revision, phase: 'ready', intent, state: result.state });
+    const publicationDiagnostic = result.publicationCheck?.();
+    if (publicationDiagnostic !== undefined) {
+      this.publish(before);
+      return failure('cancelled', publicationDiagnostic);
+    }
+    this.publishPrepared(prepared);
     return { status: 'committed', revision };
   }
 
@@ -379,7 +404,11 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   }
 
   private publish(input: SurfaceSnapshot<I, S>): void {
-    this.snapshot = freezeSnapshot(input);
+    this.publishPrepared(freezeSnapshot(input));
+  }
+
+  private publishPrepared(input: SurfaceSnapshot<I, S>): void {
+    this.snapshot = input;
     this.maskedSnapshot = undefined;
     this.maskedSnapshotNotified = false;
     this.listeners.notify();

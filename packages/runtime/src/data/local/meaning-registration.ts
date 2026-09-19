@@ -4,7 +4,7 @@ import { authorizeMeaningActivation, validateMeaningBundle } from '@aeliqo/core/
 import type { MeaningActivationReceipt, MeaningBundle } from '@aeliqo/core/semantics';
 import type { LocalSnapshot, MeaningRegistration } from '../types.js';
 import type { LocalDataServiceState } from './service-state.js';
-import { freezeCatalog, normalizeSnapshot } from './source.js';
+import { freezeCatalog, isSourceCapacityError, normalizeSnapshot } from './source.js';
 import { canonical, failure, freezeDeep } from './shared.js';
 
 interface ActivationControl {
@@ -15,12 +15,31 @@ interface ActivationControl {
 export function replaceLocalSnapshot(state: LocalDataServiceState, next: LocalSnapshot): Outcome<void> {
   const normalized = normalizeReplacementSnapshot(state, next);
   if (!normalized.ok) return normalized;
-  if (hasRevisionConflict(state.snapshot, normalized.value))
-    return failure('data.source-revision-conflict', 'Source records changed without a new immutable source revision.', [
+  const revisionState = sameRevisionState(state.snapshot, normalized.value);
+  if (revisionState === 'conflict')
+    return failure(
+      'data.source-revision-conflict',
+      'Source records or catalog changed without a new immutable source revision.',
+      ['sourceRevision'],
+    );
+  if (revisionState === 'equivalent') return { ok: true, value: undefined };
+  if (state.fixedCatalog !== undefined && canonical(state.fixedCatalog) !== canonical(normalized.value.catalog))
+    return failure('data.source-catalog-conflict', 'A feature-owned local source cannot replace its mounted catalog.', [
+      'catalog',
+    ]);
+  if (state.revisionHistory.has(normalized.value.sourceRevision))
+    return failure(
+      'data.source-revision-conflict',
+      'A local source revision cannot be reused after the service has advanced.',
+      ['sourceRevision'],
+    );
+  if (state.revisionHistory.size >= state.maxSourceRevisions)
+    return failure('data.source-revision-capacity', 'The local source revision lifetime limit has been reached.', [
       'sourceRevision',
     ]);
   state.snapshot = normalized.value;
   state.currentCatalog = normalized.value.catalog;
+  state.revisionHistory.add(normalized.value.sourceRevision);
   state.plans.clear();
   state.registeredBundles.clear();
   return { ok: true, value: undefined };
@@ -29,20 +48,26 @@ export function replaceLocalSnapshot(state: LocalDataServiceState, next: LocalSn
 function normalizeReplacementSnapshot(state: LocalDataServiceState, next: LocalSnapshot) {
   try {
     return { ok: true as const, value: normalizeSnapshot(next, state.sourceLimits) };
-  } catch {
+  } catch (error) {
+    const capacity = isSourceCapacityError(error);
     return failure<ReturnType<typeof normalizeSnapshot>>(
-      'data.source-shape',
-      'The replacement source snapshot is not a bounded canonical source.',
+      capacity ? 'data.source-capacity' : 'data.source-shape',
+      capacity
+        ? 'The replacement source snapshot exceeds the configured bounded source capacity.'
+        : 'The replacement source snapshot is not a bounded canonical source.',
     );
   }
 }
 
-function hasRevisionConflict(
+function sameRevisionState(
   current: LocalDataServiceState['snapshot'],
   replacement: LocalDataServiceState['snapshot'],
-): boolean {
-  if (replacement.sourceRevision !== current.sourceRevision) return false;
-  return canonical(replacement.records) !== canonical(current.records);
+): 'different' | 'equivalent' | 'conflict' {
+  if (replacement.sourceRevision !== current.sourceRevision) return 'different';
+  return canonical({ catalog: replacement.catalog, records: replacement.records }) ===
+    canonical({ catalog: current.catalog, records: current.records })
+    ? 'equivalent'
+    : 'conflict';
 }
 
 export function registerMeaningBundle(

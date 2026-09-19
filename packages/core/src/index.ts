@@ -12,6 +12,7 @@ export type {
 export {
   defineDataFeature,
   defineFeature,
+  inferLocalDataShape,
   DATA_FEATURE_VIEW_ALIASES,
   FeatureDefinitionError,
 } from './features/index.js';
@@ -28,3 +29,4 @@ export type {
   NonDataFeatureDefinition,
   NonDataFeatureInput,
 } from './features/index.js';
+export type { LocalDataFieldKind, LocalDataShape, LocalDataShapeField, LocalDataShapeInput } from './features/index.js';

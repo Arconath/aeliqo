@@ -16,7 +16,12 @@ import {
   type SurfaceController,
   type SurfaceScope,
 } from '@aeliqo/runtime';
-import { createLocalDataService, type DataService, type LocalSnapshot } from '@aeliqo/runtime/data';
+import {
+  createLocalDataService,
+  type DataService,
+  type LocalDataService,
+  type LocalSnapshot,
+} from '@aeliqo/runtime/data';
 import {
   createActionPort,
   createActionRegistry,
@@ -77,10 +82,10 @@ function deferredGate(): Gate {
   } as Gate & { readonly waitForRelease: Promise<void> };
 }
 
-function snapshot(scopeId: string, rows: readonly Order[]): LocalSnapshot {
+function snapshot(scopeId: string, rows: readonly Order[], sourceRevision = `orders-${scopeId}-1`): LocalSnapshot {
   return Object.freeze({
     catalog: ordersFeature.catalog,
-    sourceRevision: `orders-${scopeId}-1`,
+    sourceRevision,
     records: Object.freeze({ orders: Object.freeze(rows) }),
   });
 }
@@ -91,12 +96,12 @@ function sourceHarness() {
   const globexRow = Object.freeze({ id: 'globex-order', workspace: 'globex', total: 73 });
   const functions = createQueryFunctionRegistry({ version: '2' });
   if (!functions.ok) throw new TypeError(functions.diagnostics[0].message);
-  const services = new Map<string, DataService>();
+  const services = new Map<string, LocalDataService>();
   let nextGate: (Gate & { readonly waitForRelease: Promise<void> }) | undefined;
   const activeGates = new Set<Gate>();
   const calls = new Map<string, number>();
 
-  const baseFor = (scopeId: string): DataService => {
+  const baseFor = (scopeId: string): LocalDataService => {
     const existing = services.get(scopeId);
     if (existing !== undefined) return existing;
     const rows = scopeId === 'acme' ? [acmePrivateRow, acmeSecondRow] : [globexRow];
@@ -150,6 +155,9 @@ function sourceHarness() {
       if (gate === undefined) throw new TypeError(`No deferred ${scopeId} source request started.`);
       gate.resolve();
       await gate.completed;
+    },
+    replace(scopeId: string, rows: readonly Order[], sourceRevision: string) {
+      return baseFor(scopeId).replaceSnapshot(snapshot(scopeId, rows, sourceRevision));
     },
     callsFor: (scopeId: string) => calls.get(scopeId) ?? 0,
   };

@@ -28,6 +28,17 @@ description: 'The 0.4 release consolidates the public site, documents all compon
   adapters are not part of this candidate step.
 - This candidate has not been published or deployed. Its runtime, React,
   migration, and compatibility gates remain in progress.
+- The unreleased runtime candidate now exposes one canonical
+  `createLocalDataBinding` adapter under `@aeliqo/runtime/surfaces`. It lowers
+  through the existing `LocalDataService`, ResultStore, and Region paths,
+  validates bounded local shape and identity diagnostics, preserves controller
+  addresses across explicit source revisions, and rejects same-revision or
+  catalog conflicts atomically. This candidate remains unpublished and
+  undeployed.
+- `@aeliqo/core` now provides bounded `inferLocalDataShape` diagnostics for
+  declared or structurally inferred scalar fields; it does not infer authority,
+  coverage, relationships, or business identity. The two helpers remain part
+  of the unpublished vNext candidate.
 
 ## 0.4.2
 

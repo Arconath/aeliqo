@@ -1,4 +1,5 @@
 export { createLocalSurfaceScope } from './scope.js';
+export { createLocalDataBinding } from './local-data.js';
 export type {
   CapabilitySourceBinding,
   CapabilitySurfaceBindings,
@@ -29,3 +30,4 @@ export type {
   SurfaceScopeSnapshot,
   SurfaceSnapshot,
 } from './types.js';
+export type { CreateLocalDataBindingInput, LocalDataSurfaceBinding } from './local-data.js';

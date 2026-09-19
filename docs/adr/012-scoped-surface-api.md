@@ -1,6 +1,6 @@
 # ADR 012: Scoped surface API and compatibility boundary
 
-Status: Accepted for the vNext T01 design contract; declaration-only, not yet implemented.
+Status: Accepted for the vNext T01 design contract; T05 local-data implementation reconciled.
 Date: 19 September 2026.
 
 ## Context
@@ -153,6 +153,31 @@ host store before `createSurface()` returns; the host may initialize that store
 from the returned immutable address before its first read. This replaces both
 the original `undefined as I` fallback and the circular interim requirement
 that an external host snapshot supply an address-dependent initial intent.
+
+### T05 implementation reconciliation: canonical local data binding
+
+T05 implements the local convenience seam without changing the decision's
+ownership or evaluation boundaries. `createLocalDataBinding` is the sole public
+adapter for a feature-backed local snapshot. It validates the mounted feature
+and catalog, performs bounded structural shape and identity checks, and returns
+one binding whose `service` is the exact `LocalDataService` mounted by the
+surface. Snapshot replacement remains explicit and revisioned: the service
+copies/freeze-protects caller input, treats an equivalent catalog plus record
+snapshot at the same revision as a no-op, and rejects same-revision conflicts,
+catalog drift, invalid shapes, and capacity failures atomically. Accepted
+revisions invalidate only the existing DataService plans; they do not replace
+the controller or address. Result events, ResultStore handles, and Region
+publication all retain the source pin and fail closed if it changes before
+publication.
+
+The adapter does not infer permissions, fetch absent sources, or create a
+second evaluator, cache, authority, identity, or feature-definition path. Core
+owns the bounded `inferLocalDataShape` helper and reuses resource schema
+semantics; runtime owns the service and lifecycle wiring. T10 still owns the
+React lifecycle adapter and must consume this same binding/controller boundary,
+not introduce a parallel local-data implementation. The candidate remains
+unpublished until the installed consumer, package, and release gates are
+accepted together.
 
 ### Documentation source map
 

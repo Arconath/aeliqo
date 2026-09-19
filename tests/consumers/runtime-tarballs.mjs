@@ -246,14 +246,26 @@ assert(runtimeEntries.includes('package/dist/audit/index.js'), 'Runtime audit di
 assert(runtimeEntries.includes('package/dist/audit/index.d.ts'), 'Runtime audit declarations are absent from tarball');
 assert(runtimeEntries.includes('package/dist/surfaces/index.js'), 'Runtime surfaces dist entry is absent from tarball');
 assert(
+  runtimeEntries.includes('package/dist/surfaces/local-data.js'),
+  'Runtime local binding dist entry is absent from tarball',
+);
+assert(
   runtimeEntries.includes('package/dist/surfaces/index.d.ts'),
   'Runtime surfaces declarations are absent from tarball',
+);
+assert(
+  runtimeEntries.includes('package/dist/surfaces/local-data.d.ts'),
+  'Runtime local binding declarations are absent from tarball',
 );
 assert(runtimeEntries.includes('package/dist/scopes/index.js'), 'Runtime scopes dist entry is absent from tarball');
 assert(
   runtimeEntries.includes('package/dist/scopes/index.d.ts'),
   'Runtime scopes declarations are absent from tarball',
 );
+const runtimeReadme = run(['tar', '-xOf', runtimeTarball, 'package/README.md'], root);
+assert.match(runtimeReadme, /createLocalDataBinding/u, 'Runtime README omits the canonical local binding helper');
+assert.match(runtimeReadme, /replaceSnapshot/u, 'Runtime README omits explicit source replacement');
+assert.match(runtimeReadme, /maxSourceRevisions/u, 'Runtime README omits bounded revision lifetime');
 
 await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
 run(
@@ -991,8 +1003,9 @@ import type {Catalog,
 } from '@aeliqo/core';
 import {defineDataFeature, defineFeature} from '@aeliqo/core/features';
 import {z} from 'zod';
-import {createAeliqoRuntime, type AeliqoRuntime} from '@aeliqo/runtime';
-import type {CapabilitySurfaceBindings, DataSurfaceBindings, ExternalSurfaceStore, SurfaceController} from '@aeliqo/runtime/surfaces';
+import {createAeliqoRuntime, createLocalDataBinding as createRootLocalDataBinding, type AeliqoRuntime} from '@aeliqo/runtime';
+import {createLocalDataBinding} from '@aeliqo/runtime/surfaces';
+import type {CapabilitySurfaceBindings, CreateLocalDataBindingInput, DataSurfaceBindings, ExternalSurfaceStore, LocalDataSurfaceBinding, SurfaceController} from '@aeliqo/runtime/surfaces';
 import type {ScopeBinding, ScopeController} from '@aeliqo/runtime/scopes';
 import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
 import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
@@ -1057,13 +1070,35 @@ const typedEvent: ResultEvent | undefined = undefined;
 void typedEvent;
 const peopleFeature = defineDataFeature({id: 'people', schema: z.object({id: z.string(), name: z.string()}), identity: ['id']});
 type PeopleState = {readonly rows: readonly {readonly id: string; readonly name: string}[]};
+const installedBinding = createLocalDataBinding({
+  feature: peopleFeature,
+  snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-1', records: {people: []}},
+  initialState: {rows: []},
+  coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
+  normalize: async () => ({rows: []}),
+  serviceOptions: {maxSourceRevisions: 2},
+});
+const installedBindingInput: CreateLocalDataBindingInput<PeopleState> = {
+  feature: peopleFeature,
+  snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-input', records: {people: []}},
+  initialState: {rows: []},
+  coverage: installedBinding.source.coverage,
+  normalize: async () => ({rows: []}),
+};
+const typedInstalledBinding: LocalDataSurfaceBinding<PeopleState> = installedBinding;
+const rootBindingFactory: typeof createLocalDataBinding = createRootLocalDataBinding;
+const invalidBindingOptions = {...installedBindingInput, serviceOptions: {snapshot: installedBindingInput.snapshot}};
+// @ts-expect-error The binding snapshot is the sole trusted snapshot input.
+createLocalDataBinding(invalidBindingOptions);
+// @ts-expect-error The binding owns its snapshot; serviceOptions cannot replace it.
+createLocalDataBinding({feature: peopleFeature, snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-1', records: {people: []}}, initialState: {rows: []}, coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async () => ({rows: []}), serviceOptions: {snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'forged', records: {people: []}}}});
 declare const peopleData: DataService;
 const peopleBindings: DataSurfaceBindings<PeopleState> = {
   initialState: {rows: []},
   source: {
     kind: 'data-service',
     service: peopleData,
-    coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'keyset', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
+    coverage: {fields: ['id', 'name'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
     normalize: async () => ({rows: []}),
   },
 };
@@ -1088,7 +1123,7 @@ typedSurface.address.surfaceGeneration = 2;
 declare const bypassBinding: CapabilitySurfaceBindings<Intent, PeopleState>;
 // @ts-expect-error Data features must use DataService bindings.
 surfaceRuntime.createSurface({scope: surfaceScope, id: 'bypass', feature: peopleFeature, bindings: bypassBinding});
-void [createAeliqoRuntime, typedSurface];
+void [createAeliqoRuntime, typedSurface, installedBinding, installedBindingInput, typedInstalledBinding, rootBindingFactory];
 `,
 );
 await writeFile(
@@ -1155,8 +1190,10 @@ import assert from 'node:assert/strict';
 import {z} from 'zod';
 import {defineDataFeature, defineFeature} from '@aeliqo/core/features';
 import {createQueryFunctionRegistry} from '@aeliqo/core/expressions';
-import {createAeliqoRuntime} from '@aeliqo/runtime';
-import {createLocalDataService} from '@aeliqo/runtime/data';
+import {createAeliqoRuntime, createLocalDataBinding as createRootLocalDataBinding} from '@aeliqo/runtime';
+import {createLocalDataBinding} from '@aeliqo/runtime/surfaces';
+assert.equal(createRootLocalDataBinding, createLocalDataBinding);
+const diagnosticsCode = outcome => outcome.ok ? undefined : outcome.diagnostics[0]?.code;
 
 const scopeEntry = await import('@aeliqo/runtime/scopes');
 assert.deepEqual(Object.keys(scopeEntry), []);
@@ -1164,10 +1201,13 @@ assert.deepEqual(Object.keys(scopeEntry), []);
 const feature = defineDataFeature({id: 'people', schema: z.object({id: z.string(), team: z.enum(['Design', 'Engineering'])}), identity: ['id'], fields: {team: {role: 'dimension'}}});
 const functions = createQueryFunctionRegistry({version: '2'});
 assert.equal(functions.ok, true);
-const data = createLocalDataService({snapshot: {catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}}, functionRegistry: functions.value, authorize: () => ({ok: true, value: {scopeDigest: 'local', policyRevision: '1'}})});
+const snapshot = {catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}};
+const binding = createLocalDataBinding({feature, snapshot, initialState: {rows: []}, coverage: {fields: ['id', 'team'], operators: ['eq'], pagination: 'snapshot', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async events => {const rows = []; for await (const event of events) if (event.kind === 'batch') rows.push(...event.rows); return {rows};}, serviceOptions: {functionRegistry: functions.value, authorize: () => ({ok: true, value: {scopeDigest: 'local', policyRevision: '1'}}), maxSourceRevisions: 3}});
+const data = binding.service;
+assert.equal(data, binding.source.service);
 const runtime = createAeliqoRuntime({runtimeId: 'installed-runtime', resources: [{resource: feature.resource, data}], authority: {read: () => ({ok: true, value: {principalKey: 'local', scopeDigest: 'local', policyRevision: '1', experienceRevision: '1', grants: ['catalog.read', 'task.evaluate', 'result.inspect'], readContext: {principal: 'local'}}})}});
 const scope = runtime.createLocalSurfaceScope({id: 'installed-scope', allowedFeatures: ['people', 'report']});
-const bindings = {initialState: {rows: []}, source: {kind: 'data-service', service: data, coverage: {fields: ['id', 'team'], operators: ['eq'], pagination: 'keyset', stableOrder: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async events => {const rows = []; for await (const event of events) if (event.kind === 'batch') rows.push(...event.rows); return {rows};}}};
+const bindings = binding;
 const left = runtime.createSurface({scope, id: 'left', feature, bindings});
 const right = runtime.createSurface({scope, id: 'right', feature, bindings});
 const rightBefore = right.getSnapshot();
@@ -1175,6 +1215,47 @@ assert.equal((await left.request({kind: 'browse', filter: {op: 'compare', field:
 assert.equal(right.getSnapshot(), rightBefore);
 assert.deepEqual(left.getSnapshot().state.rows, [{id: 'sam', team: 'Engineering'}]);
 assert.equal((await left.request({kind: 'browse'}, {expectedAddress: right.address})).status, 'stale');
+const leftAddress = left.address;
+const updatedSnapshot = {catalog: feature.catalog, sourceRevision: 'people-2', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Design'}]}};
+assert.deepEqual(data.replaceSnapshot(updatedSnapshot), {ok: true, value: undefined});
+assert.equal((await left.request({kind: 'browse'})).status, 'committed');
+assert.equal(left.address, leftAddress);
+assert.deepEqual(left.getSnapshot().state.rows, [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Design'}]);
+const partialPlan = await data.plan({version: '1', requestId: 'partial-page', catalogRevision: feature.catalog.revision, target: {taskId: 'partial-page-task', outputId: 'rows'}, query: {entity: 'people', fields: ['id', 'team'], measures: [], relations: [], groupBy: [], population: {kind: 'all-authorized'}, order: [], page: {size: 1}}, budget: {maxRows: 10, maxColumns: 4, maxBytes: 100_000, maxMessages: 8, maxMilliseconds: 10_000}}, {principal: 'local'});
+assert.equal(partialPlan.ok, true);
+if (partialPlan.ok) {
+  const partialEvents = [];
+  for await (const event of data.execute(partialPlan.value, {principal: 'local'})) partialEvents.push(event);
+  const partialDescriptor = partialEvents.find(event => event.kind === 'descriptor');
+  assert.deepEqual(partialDescriptor?.descriptor.counts.population.kind, 'exact');
+  assert.equal(partialDescriptor?.descriptor.counts.population.value, 2);
+  assert.deepEqual(partialDescriptor?.descriptor.coverage, {kind: 'partial', populationDigest: partialDescriptor.descriptor.coverage.populationDigest, reason: 'page'});
+  const partialComplete = partialEvents.find(event => event.kind === 'complete');
+  assert.deepEqual(partialComplete?.finalCoverage.reason, 'page');
+  assert.equal(typeof partialComplete?.cursor, 'string');
+}
+assert.deepEqual(data.replaceSnapshot(updatedSnapshot), {ok: true, value: undefined});
+const conflict = data.replaceSnapshot({catalog: feature.catalog, sourceRevision: 'people-2', records: {people: [{id: 'ada', team: 'Engineering'}, {id: 'sam', team: 'Design'}]}});
+assert.equal(conflict.ok, false);
+assert.equal(left.getSnapshot().state.rows[0].team, 'Design');
+const historicalReplay = data.replaceSnapshot({catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}});
+assert.equal(historicalReplay.ok, false);
+assert.equal(diagnosticsCode(historicalReplay), 'data.source-revision-conflict');
+const rollbackSnapshot = {catalog: feature.catalog, sourceRevision: 'people-3', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}};
+assert.deepEqual(data.replaceSnapshot(rollbackSnapshot), {ok: true, value: undefined});
+const rollbackAccepted = await data.plan({version: '1', requestId: 'rollback-plan', catalogRevision: feature.catalog.revision, target: {taskId: 'rollback-task', outputId: 'rows'}, query: {entity: 'people', fields: ['id', 'team'], measures: [], relations: [], groupBy: [], population: {kind: 'all-authorized'}, order: []}, budget: {maxRows: 10, maxColumns: 4, maxBytes: 100_000, maxMessages: 8, maxMilliseconds: 10_000}}, {principal: 'local'});
+assert.equal(rollbackAccepted.ok, true);
+if (rollbackAccepted.ok) {
+  const rollbackEvents = [];
+  for await (const event of data.execute(rollbackAccepted.value, {principal: 'local'})) rollbackEvents.push(event);
+  assert.equal(rollbackEvents[0].descriptor.consistency.snapshotId, 'people-3');
+  assert.equal(rollbackEvents[1].rows[0].team, 'Design');
+}
+const capacity = data.replaceSnapshot({catalog: feature.catalog, sourceRevision: 'people-4', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}});
+assert.equal(capacity.ok, false);
+assert.equal(diagnosticsCode(capacity), 'data.source-revision-capacity');
+assert.deepEqual(data.replaceSnapshot(rollbackSnapshot), {ok: true, value: undefined});
+assert.throws(() => createLocalDataBinding({feature, snapshot, initialState: {rows: []}, coverage: binding.source.coverage, normalize: binding.source.normalize, serviceOptions: {sourceLimits: {rows: 1, bytes: 100_000}}}), /data\.shape-capacity/u);
 
 let hostSnapshot;
 const listeners = new Set();
@@ -1266,7 +1347,9 @@ appScope.dispose();
 appScope.dispose();
 runtime.dispose();
 scope.dispose();
-process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true, externalCapability: true, scopes: true}));
+assert.deepEqual(data.replaceSnapshot(rollbackSnapshot), {ok: true, value: undefined});
+assert.equal((await left.request({kind: 'browse'})).status, 'disposed');
+process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true, externalCapability: true, scopes: true, bindingExactService: true, updateStableAddress: true, historicalRevisionRejected: true, revisionCapacityRejected: true, rollbackExecuted: true, shapeCapacityRejected: true, partialCoverage: true, disposedUpdateSafe: true}));
 `,
 );
 const surfaceProof = JSON.parse(run([process.execPath, 'surface-consumer.mjs'], consumerDirectory));
@@ -1276,6 +1359,14 @@ assert.deepEqual(surfaceProof, {
   rejected: true,
   externalCapability: true,
   scopes: true,
+  bindingExactService: true,
+  updateStableAddress: true,
+  historicalRevisionRejected: true,
+  revisionCapacityRejected: true,
+  rollbackExecuted: true,
+  shapeCapacityRejected: true,
+  partialCoverage: true,
+  disposedUpdateSafe: true,
 });
 
 await writeFile(
@@ -1589,7 +1680,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
     audit: auditProof,
     auditOffline: ${JSON.stringify(auditOfflineProof)},
     interaction: interactionProof,
-    surfaces: ${JSON.stringify({ installed: true, twoInstances: true, controlled: true, externalCapability: true })},
+    surfaces: ${JSON.stringify({ installed: true, ...surfaceProof })},
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
   console.log('Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.');

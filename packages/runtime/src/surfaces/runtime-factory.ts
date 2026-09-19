@@ -6,6 +6,7 @@ import type {
   RuntimeResourceBinding,
 } from '../app/types.js';
 import type { ResultEvent } from '../results/types.js';
+import { readSourceRevisionPin } from '../data/local/source-pin.js';
 import { SurfaceControllerImpl } from './controller.js';
 import { SurfaceRegistry } from './registration.js';
 import { createLocalSurfaceScope } from './scope.js';
@@ -105,9 +106,27 @@ export class RuntimeSurfaceFactory {
       if (receipt.status !== 'committed') return { receipt };
       const binding = input.bindings as DataSurfaceBindings<unknown>;
       const state = await binding.source.normalize(resultEvents(receipt), { scope: input.scope.getSnapshot(), signal });
-      return { receipt, state };
+      return {
+        receipt,
+        state,
+        publicationCheck: () => sourcePublicationDiagnostic(receipt, binding.source.service),
+      };
     };
   }
+}
+
+function sourcePublicationDiagnostic(
+  receipt: Extract<RuntimeRenderReceipt, { readonly status: 'committed' }>,
+  service: DataSurfaceBindings<unknown>['source']['service'],
+): string | undefined {
+  const sourcePin = readSourceRevisionPin(service);
+  if (sourcePin.kind === 'invalid') return 'runtime.render-stale';
+  if (
+    sourcePin.kind === 'current' &&
+    receipt.outputs.some((output) => output.handle.key.sourceRevision !== sourcePin.value)
+  )
+    return 'runtime.render-stale';
+  return undefined;
 }
 
 function initialIntent(input: SurfaceInput, ownership: SurfaceOwnership<unknown, unknown>): unknown {

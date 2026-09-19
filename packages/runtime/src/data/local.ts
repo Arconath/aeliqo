@@ -1,3 +1,4 @@
+import type { Catalog } from '@aeliqo/core';
 import type { LocalDataService, LocalDataServiceOptions } from './types.js';
 import { describeLocalData } from './local/describe.js';
 import { executeLocalData } from './local/execute.js';
@@ -11,9 +12,19 @@ import { DEFAULT_BUDGET } from './local/budget.js';
 import { DEFAULT_SOURCE_LIMITS } from './local/source.js';
 
 export function createLocalDataService(options: LocalDataServiceOptions): LocalDataService {
-  const state = createLocalDataServiceState(options);
+  return createService(createLocalDataServiceState(options));
+}
+
+export function createFeatureLocalDataService(
+  options: LocalDataServiceOptions,
+  fixedCatalog: Catalog,
+): LocalDataService {
+  return createService(createLocalDataServiceState(options, fixedCatalog));
+}
+
+function createService(state: ReturnType<typeof createLocalDataServiceState>): LocalDataService {
   return {
-    ...(options.cohortResolver === undefined ? {} : { cohortResolver: options.cohortResolver }),
+    ...(state.options.cohortResolver === undefined ? {} : { cohortResolver: state.options.cohortResolver }),
     get catalog() {
       return state.currentCatalog;
     },

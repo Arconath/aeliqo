@@ -78,6 +78,53 @@ const parsed = documentJob.parseIntent({
 });
 ```
 
+## Bounded local shape inference
+
+`inferLocalDataShape` is the bounded structural check used by the runtime local
+binding. It accepts a complete row array and an optional declared Zod object
+schema, validates field names and scalar values against the existing resource
+schema semantics, and returns either a ready shape or an explicit diagnostic.
+It never invents a field or a business identity. Empty input therefore needs a
+declared schema; schema-less all-null or nested values, inconsistent row keys, duplicate
+canonical identities, and values that exceed the configured row/field/byte
+bounds are rejected with `data.*` diagnostics. Use an explicit `identity` field
+list or a callback that resolves to exactly one real scalar field:
+Declared nullable schema fields may contain `null`; the schema-less all-null
+case is the ambiguous case.
+
+```ts
+import { inferLocalDataShape } from '@aeliqo/core/features';
+
+const shape = inferLocalDataShape({
+  id: 'people',
+  rows: [{ id: 'ada', name: 'Ada' }],
+  identity: ['id'],
+  limits: { rows: 1_000, fields: 32, bytes: 1_000_000 },
+});
+if (!shape.ok) throw new Error(shape.diagnostics[0].message);
+```
+
+An empty collection can still report its declared fields:
+
+```ts
+const empty = inferLocalDataShape({
+  id: 'people',
+  rows: [],
+  schema: peopleFeature.schema,
+  identity: ['id'],
+});
+```
+
+The result reports field kind and nullability and is safe to use as a
+diagnostic/coverage input. It is not a second resource definition or query
+planner; data features still own the canonical Catalog and schema lowering.
+Structural inference supports `text`, `boolean`, `integer`, `float`, and
+`decimal`; a declared schema additionally reports its resource-compatible
+`date` and `instant` kinds. The helper does not infer permissions, units,
+currency, metrics, relationships, pagination/coverage, or business IDs; those
+remain explicit host/resource and binding contracts. The same helper is
+re-exported from `@aeliqo/core` for root consumers.
+
 References must be namespaced and versioned. Intent and view references can
 only name capabilities and views declared by the same feature. Capability
 `kind` is explicit because a schema shape does not imply read, status, command,
@@ -90,7 +137,7 @@ cancel, or output semantics.
 | `@aeliqo/core/schema`        | JSON schemas for persisted or transported contracts            |
 | `@aeliqo/core/contracts`     | Contract parsing, validation, scalar handling, and wire limits |
 | `@aeliqo/core/app`           | Custom intent compilers and resource validation                |
-| `@aeliqo/core/features`      | Immutable data and non-data feature definitions                |
+| `@aeliqo/core/features`      | Immutable features and bounded local shape inference           |
 | `@aeliqo/core/expressions`   | Typed expression builders and function registries              |
 | `@aeliqo/core/semantics`     | Catalog indexes and meaning validation or activation           |
 | `@aeliqo/core/query`         | Query planning, logical plans, and evaluation                  |

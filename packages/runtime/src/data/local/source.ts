@@ -18,6 +18,12 @@ interface ByteBudget {
   bytes: number;
 }
 
+class SourceCapacityError extends TypeError {}
+
+export function isSourceCapacityError(error: unknown): boolean {
+  return error instanceof SourceCapacityError;
+}
+
 export const DEFAULT_SOURCE_LIMITS: SourceLimits = Object.freeze({ rows: WIRE_LIMITS.array, bytes: WIRE_LIMITS.bytes });
 
 export function normalizeSourceLimits(input: LocalDataServiceOptions['sourceLimits'] | undefined): SourceLimits {
@@ -69,8 +75,17 @@ function validSourceString(value: string, field: CatalogEntity['fields'][number]
 
 function validDecimalRecord(value: object, field: CatalogEntity['fields'][number]): boolean {
   if (field.type.value !== 'decimal' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return false;
   const record = value as Record<string, unknown>;
-  return Object.keys(record).length === 1 && typeof record.decimal === 'string' && validDecimal(record.decimal);
+  const descriptor = Object.getOwnPropertyDescriptor(record, 'decimal');
+  return (
+    Object.keys(record).length === 1 &&
+    descriptor !== undefined &&
+    'value' in descriptor &&
+    typeof descriptor.value === 'string' &&
+    validDecimal(descriptor.value)
+  );
 }
 
 function validSourceValue(value: unknown, field: CatalogEntity['fields'][number]): value is DataValue {
@@ -114,27 +129,38 @@ function sourceJsonBytes(value: unknown): number {
   return new TextEncoder().encode(serialized).byteLength;
 }
 
+function wireSourceValue(value: DataValue): DataValue | { readonly decimal: string } {
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, 'decimal');
+    if (descriptor !== undefined && 'value' in descriptor && typeof descriptor.value === 'string')
+      return { decimal: descriptor.value };
+  }
+  return value;
+}
+
 function addBytes(budget: ByteBudget, value: unknown): void {
   addCount(budget, sourceJsonBytes(value));
 }
 
 function addCount(budget: ByteBudget, count: number): void {
   if (count > budget.limits.bytes - budget.bytes)
-    throw new TypeError('Local data snapshot exceeds the bounded source byte limit.');
+    throw new SourceCapacityError('Local data snapshot exceeds the bounded source byte limit.');
   budget.bytes += count;
 }
 
 function catalogForSnapshot(catalog: Catalog): Catalog {
   const parsed = parseCatalog(catalog);
   if (!parsed.ok) throw new TypeError('Local data snapshot catalog is not canonical.');
-  const indexed = createCatalogIndex(parsed.value);
+  const copied = parseCatalog(parsed.value);
+  if (!copied.ok) throw new TypeError('Local data snapshot catalog is not canonical.');
+  const indexed = createCatalogIndex(copied.value);
   if (!indexed.ok)
     throw new TypeError('Local data snapshot catalog has invalid entity, relationship or capability references.');
-  const invalidKeys = parsed.value.entities.some(
+  const invalidKeys = copied.value.entities.some(
     (entity) => entity.id === '__proto__' || entity.fields.some((field) => field.id === '__proto__'),
   );
   if (invalidKeys) throw new TypeError('Local source identifiers must be representable as wire record keys.');
-  return parsed.value;
+  return copied.value;
 }
 
 function createByteBudget(limits: SourceLimits): ByteBudget {
@@ -143,11 +169,79 @@ function createByteBudget(limits: SourceLimits): ByteBudget {
   return budget;
 }
 
-function assertSnapshotRecords(records: LocalSnapshot['records']): void {
+function snapshotRowsLength(value: readonly unknown[], entityId: string): number {
+  try {
+    const descriptor = Object.getOwnPropertyDescriptor(value, 'length');
+    if (descriptor === undefined || !('value' in descriptor)) throw new TypeError('array length is not readable');
+    const length = descriptor.value;
+    if (!Number.isSafeInteger(length) || length < 0) throw new TypeError('array length is invalid');
+    return length;
+  } catch {
+    throw new TypeError(`Rows for ${entityId} could not be safely inspected.`);
+  }
+}
+
+function validateSnapshotRowKeys(value: readonly unknown[], entityId: string, length: number): void {
+  const ownKeys = Reflect.ownKeys(value);
+  for (const key of ownKeys) {
+    if (key === 'length') continue;
+    if (typeof key !== 'string' || !/^(?:0|[1-9][0-9]*)$/u.test(key) || Number(key) >= length)
+      throw new TypeError(`Rows for ${entityId} must be a dense array without extra fields.`);
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (descriptor === undefined || !('value' in descriptor))
+      throw new TypeError(`Rows for ${entityId} contain an accessor item.`);
+  }
+}
+
+function captureSnapshotRowItems(value: readonly unknown[], entityId: string, length: number): readonly DataRecord[] {
+  const captured: DataRecord[] = [];
+  for (let index = 0; index < length; index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (descriptor === undefined || !('value' in descriptor))
+      throw new TypeError(`Rows for ${entityId} must contain plain object records in a dense array.`);
+    captured.push(descriptor.value as DataRecord);
+  }
+  return Object.freeze(captured);
+}
+
+function captureSnapshotRows(value: unknown, entityId: string, maxRows: number): readonly DataRecord[] {
+  if (!Array.isArray(value)) throw new TypeError(`Rows for ${entityId} must be an array.`);
+  const length = snapshotRowsLength(value, entityId);
+  if (length > maxRows) throw new SourceCapacityError('Local data snapshot exceeds the bounded source row limit.');
+  validateSnapshotRowKeys(value, entityId, length);
+  return captureSnapshotRowItems(value, entityId, length);
+}
+
+function captureSnapshotRecords(
+  records: LocalSnapshot['records'],
+  maxRows: number,
+): Readonly<Record<string, readonly DataRecord[]>> {
   if (records === null || typeof records !== 'object' || Array.isArray(records))
     throw new TypeError('Local data snapshot records must be an entity-to-records map.');
-  if (Object.keys(records).length > WIRE_LIMITS.properties)
+  const keys = Reflect.ownKeys(records);
+  if (keys.length > WIRE_LIMITS.properties)
     throw new TypeError('Local data snapshot records exceed the bounded entity map limit.');
+  const captured: Record<string, readonly DataRecord[]> = Object.create(null) as Record<string, readonly DataRecord[]>;
+  for (const key of keys) {
+    if (typeof key !== 'string') throw new TypeError('Local data snapshot records contain a symbol entity.');
+    const descriptor = Object.getOwnPropertyDescriptor(records, key);
+    if (descriptor === undefined || !('value' in descriptor))
+      throw new TypeError(`Rows for ${key} contain an accessor entity.`);
+    captured[key] = captureSnapshotRows(descriptor.value, key, maxRows);
+  }
+  return Object.freeze(captured);
+}
+
+function captureSnapshotInput(snapshot: LocalSnapshot): LocalSnapshot {
+  if (snapshot === null || typeof snapshot !== 'object') throw new TypeError('Local data snapshot must be an object.');
+  const captured: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
+  for (const key of ['catalog', 'sourceRevision', 'records'] as const) {
+    const descriptor = Object.getOwnPropertyDescriptor(snapshot, key);
+    if (descriptor === undefined || !('value' in descriptor))
+      throw new TypeError(`Local data snapshot ${key} must be a data property.`);
+    captured[key] = descriptor.value;
+  }
+  return captured as unknown as LocalSnapshot;
 }
 
 function normalizeEntityRows(
@@ -158,7 +252,7 @@ function normalizeEntityRows(
 ): readonly DataRecord[] {
   if (!Array.isArray(rows)) throw new TypeError(`Rows for ${entityId} must be an array.`);
   if (rows.length > budget.limits.rows - budget.rows)
-    throw new TypeError('Local data snapshot exceeds the bounded source row limit.');
+    throw new SourceCapacityError('Local data snapshot exceeds the bounded source row limit.');
   budget.rows += rows.length;
   addCount(budget, 3);
   const identityKeys = new Set<string>();
@@ -179,28 +273,60 @@ function normalizeRow(
   identityKeys: Set<string>,
   budget: ByteBudget,
 ): DataRecord {
-  assertPlainRecord(row, entity.id);
-  const keys = Object.keys(row);
+  const captured = capturePlainRecord(row, entity.id);
+  const keys = Object.keys(captured);
   if (keys.length > WIRE_LIMITS.properties)
     throw new TypeError(`Row for ${entity.id} exceeds the bounded field limit.`);
   addCount(budget, 2 + (rowIndex > 0 ? 1 : 0));
-  writeValidatedFields(row, keys, fields, entity.id, budget);
-  validateRequiredFields(row, entity);
-  validateIdentityFields(row, entity);
+  writeValidatedFields(captured, keys, fields, entity.id, budget);
+  validateRequiredFields(captured, entity);
+  validateIdentityFields(captured, entity);
   const identityKey = canonical(
-    entity.identity.map((identity) => identityPart(row[identity]!, fields.get(identity)!.type.value)),
+    entity.identity.map((identity) => identityPart(captured[identity]!, fields.get(identity)!.type.value)),
   );
   if (identityKeys.has(identityKey)) throw new TypeError(`Rows for ${entity.id} contain a duplicate identity tuple.`);
   identityKeys.add(identityKey);
-  return deepFreezeRecord(row);
+  return deepFreezeRecord(captured);
 }
 
-function assertPlainRecord(row: unknown, entityId: string): asserts row is DataRecord {
+function captureSourceValue(value: unknown, entityId: string, fieldId: string): unknown {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
+  let prototype: object | null;
+  let keys: (string | symbol)[];
+  try {
+    prototype = Object.getPrototypeOf(value);
+    keys = Reflect.ownKeys(value);
+  } catch {
+    throw new TypeError(`Row for ${entityId} has an unreadable value for ${fieldId}.`);
+  }
+  if (prototype !== Object.prototype && prototype !== null) return value;
+  const copy: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
+  for (const key of keys) {
+    if (typeof key !== 'string') throw new TypeError(`Row for ${entityId} contains a symbol field.`);
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (descriptor === undefined || !('value' in descriptor))
+      throw new TypeError(`Row for ${entityId} contains an accessor field.`);
+    copy[key] = descriptor.value;
+  }
+  return Object.freeze(copy);
+}
+
+function capturePlainRecord(row: unknown, entityId: string): DataRecord {
   if (row === null || typeof row !== 'object' || Array.isArray(row))
     throw new TypeError(`Row for ${entityId} must be a plain object.`);
   const prototype = Object.getPrototypeOf(row);
   if (prototype !== Object.prototype && prototype !== null)
     throw new TypeError(`Row for ${entityId} must be a plain object.`);
+  const captured: Record<string, DataValue> = Object.create(null) as Record<string, DataValue>;
+  for (const key of Reflect.ownKeys(row)) {
+    if (typeof key !== 'string') throw new TypeError(`Row for ${entityId} contains a symbol field.`);
+    const descriptor = Object.getOwnPropertyDescriptor(row, key);
+    if (descriptor === undefined || !('value' in descriptor))
+      throw new TypeError(`Row for ${entityId} contains an accessor field.`);
+    if (key === 'toJSON' && typeof descriptor.value === 'function') continue;
+    captured[key] = captureSourceValue(descriptor.value, entityId, key) as DataValue;
+  }
+  return captured;
 }
 
 function writeValidatedFields(
@@ -217,7 +343,7 @@ function writeValidatedFields(
       throw new TypeError(`Row for ${entityId} has an invalid value for ${key}.`);
     addCount(budget, 1 + (index > 0 ? 1 : 0));
     addBytes(budget, key);
-    addBytes(budget, value !== null && typeof value === 'object' ? { decimal: value.decimal } : value);
+    addBytes(budget, wireSourceValue(value));
   }
 }
 
@@ -237,7 +363,7 @@ function validateIdentityFields(row: DataRecord, entity: CatalogEntity): void {
 }
 
 function deepFreezeRecord(record: DataRecord): DataRecord {
-  const copy: Record<string, DataValue> = {};
+  const copy: Record<string, DataValue> = Object.create(null) as Record<string, DataValue>;
   for (const key of Object.keys(record)) {
     const value = record[key];
     if (value !== undefined && value !== null && typeof value === 'object')
@@ -263,13 +389,14 @@ function freezeDeep<T>(value: T): T {
 }
 
 export function normalizeSnapshot(snapshot: LocalSnapshot, sourceLimits: SourceLimits): StoredSnapshot {
-  const catalog = catalogForSnapshot(snapshot.catalog);
-  assertSafeId(snapshot.sourceRevision, 'sourceRevision');
-  assertSnapshotRecords(snapshot.records);
+  const capturedSnapshot = captureSnapshotInput(snapshot);
+  const catalog = catalogForSnapshot(capturedSnapshot.catalog);
+  assertSafeId(capturedSnapshot.sourceRevision, 'sourceRevision');
+  const sourceRecords = captureSnapshotRecords(capturedSnapshot.records, sourceLimits.rows);
   const budget = createByteBudget(sourceLimits);
   const entities = new Map(catalog.entities.map((entity) => [entity.id, entity] as const));
   const records: Record<string, readonly DataRecord[]> = Object.create(null) as Record<string, readonly DataRecord[]>;
-  for (const [entityId, rows] of Object.entries(snapshot.records)) {
+  for (const [entityId, rows] of Object.entries(sourceRecords)) {
     assertSafeId(entityId, 'entity id');
     const entity = entities.get(entityId);
     if (entity === undefined) throw new TypeError(`Rows reference unknown entity ${entityId}.`);
@@ -279,7 +406,7 @@ export function normalizeSnapshot(snapshot: LocalSnapshot, sourceLimits: SourceL
   }
   return Object.freeze({
     catalog: freezeCatalog(catalog),
-    sourceRevision: snapshot.sourceRevision,
+    sourceRevision: capturedSnapshot.sourceRevision,
     records: Object.freeze(records),
   });
 }

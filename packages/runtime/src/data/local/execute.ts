@@ -76,7 +76,7 @@ export async function* executeLocalData(
     );
     return;
   }
-  yield* emitEvents(events.value, loaded.value.input.requestId, context, prepared.value);
+  yield* emitEvents(state, events.value, loaded.value.input.requestId, context, prepared.value);
 }
 
 function loadExecutionHandle(state: LocalDataServiceState, request: unknown, startedAt: number): ExecutionLoad {
@@ -329,13 +329,14 @@ function outcomeError<T>(
 }
 
 async function* emitEvents(
+  state: LocalDataServiceState,
   events: readonly DataResultEvent[],
   requestId: string,
   context: ReadContext,
   execution: PreparedExecution,
 ): AsyncGenerator<DataResultEvent> {
   for (const event of events) {
-    const error = emissionError(requestId, context, execution);
+    const error = emissionError(state, requestId, context, execution);
     if (error !== undefined) {
       yield error;
       return;
@@ -345,11 +346,14 @@ async function* emitEvents(
 }
 
 function emissionError(
+  state: LocalDataServiceState,
   requestId: string,
   context: ReadContext,
   execution: PreparedExecution,
 ): DataResultEvent | undefined {
   if (context.signal?.aborted) return resultError(requestId, 'data.aborted', 'The result execution was cancelled.');
+  if (!isCurrentHandle(state, execution.handle))
+    return resultError(requestId, 'data.stale-plan', 'The catalog or source changed while emitting the response.');
   if (Date.now() - execution.handle.startedAt > execution.budget.maxMilliseconds)
     return resultError(
       requestId,

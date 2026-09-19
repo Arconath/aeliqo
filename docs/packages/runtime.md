@@ -78,6 +78,73 @@ it is not a remote credential or tenant selector. Backend authorization remains
 authoritative for every data operation. Dispose controllers, the scope, and
 finally the owning runtime; every dispose operation is idempotent.
 
+### Canonical local data binding
+
+For an application-owned snapshot, use the one public convenience adapter so
+the surface, `LocalDataService`, ResultStore, and Region lifecycle share one
+source and one address:
+
+```ts
+import { createLocalDataBinding } from '@aeliqo/runtime/surfaces';
+
+const bindings = createLocalDataBinding({
+  feature: peopleFeature,
+  snapshot: { catalog: peopleFeature.catalog, sourceRevision: 'people-1', records: { people: rows } },
+  initialState: { rows: [], selection: [] },
+  coverage,
+  normalize: normalizePeopleResults,
+});
+const surface = runtime.createSurface({
+  scope,
+  id: 'people-main',
+  feature: peopleFeature,
+  bindings,
+});
+```
+
+`bindings.service` is the exact service mounted by the surface. Replacing its
+snapshot is explicit: the input is copied and frozen, a new `sourceRevision`
+is required for changed records, and equivalent catalog-plus-record content at
+the same revision is a no-op that retains plans and registered meanings. A
+same-revision conflict, a feature/catalog mismatch, an invalid shape, or a
+capacity violation is rejected atomically, leaving the last committed surface
+state and address intact. The replacement returns an `Outcome`; use it before
+issuing a new request:
+
+```ts
+const replaced = bindings.service.replaceSnapshot({
+  catalog: peopleFeature.catalog,
+  sourceRevision: 'people-2',
+  records: { people: nextRows },
+});
+if (!replaced.ok) throw new Error(replaced.diagnostics[0].message);
+await surface.request({ kind: 'browse' });
+// surface.address is unchanged; rows now come from people-2.
+```
+
+Local snapshots use `pagination: 'snapshot'`: they are complete bounded
+application-owned inputs, not remote cursors. Query and page budgets can still
+produce explicit partial results: the descriptor carries `coverage.kind` and
+`coverage.reason`, `counts.population` is exact when the source is complete,
+and a page can carry a continuation cursor. If even one row cannot fit the
+response byte budget, execution returns a `data.budget` diagnostic; results
+never silently truncate. `maxSourceRevisions` defaults to 256 and is bounded at
+10,000; it caps the service lifetime's non-reusable revision history. A cap
+failure preserves the current snapshot, and a deliberate rollback uses a
+fresh revision.
+
+The binding validates bounded scalar structure before it can emit a result:
+empty/no-schema, schema-less all-null fields, nested/accessor/executable rows, invalid identifiers,
+ambiguous or duplicate identities, and row/byte source limits are explicit
+diagnostics; field count remains bounded by the wire/schema boundary. The
+adapter is local and read-only; it does not infer permission,
+fetch a missing source, or add another evaluator/cache/authority path. Dispose
+the surface and its owning scope when the address ends; source replacement and
+pending requests after disposal cannot resurrect it. T10's React lifecycle
+adapter remains responsible for mounting and disposing this same controller;
+it does not create a second local-data path. The helper is also re-exported
+from `@aeliqo/runtime` for root consumers.
+
 ## Application scopes (vNext candidate)
 
 `createScope` coordinates a trusted host-owned workspace or account selection.
@@ -147,7 +214,7 @@ to the address that created it and is released when that activation ends.
 | `@aeliqo/runtime/persistence`  | Explicit export and restore of runtime documents                                      |
 | `@aeliqo/runtime/audit`        | Bounded in-memory audit collection                                                    |
 | `@aeliqo/runtime/meaning`      | Host-owned meaning registration and evaluation                                        |
-| `@aeliqo/runtime/surfaces`     | Scoped surface controller, ownership, address, and binding contracts                  |
+| `@aeliqo/runtime/surfaces`     | Scoped controllers, ownership/address contracts, and the canonical local data binding |
 | `@aeliqo/runtime/scopes`       | Host-resolved scope transitions, leave guards, invalidation, and activation contracts |
 
 `@aeliqo/runtime/app` is also available for applications that want to make the

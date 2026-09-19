@@ -84,6 +84,11 @@ function inferType(schema: z.ZodType, path: Path): Outcome<SemanticType> {
   return { ok: true, value: { value, nullable: unwrapped.nullable, ...(temporal === undefined ? {} : { temporal }) } };
 }
 
+/** Reuses resource schema semantics for other core-owned bounded adapters. */
+export function inferResourceFieldType(schema: z.ZodType): Outcome<SemanticType> {
+  return inferType(schema, ['schema']);
+}
+
 function literalType(value: unknown): SemanticType['value'] | undefined {
   if (typeof value === 'boolean') return 'boolean';
   if (typeof value === 'string') return 'text';

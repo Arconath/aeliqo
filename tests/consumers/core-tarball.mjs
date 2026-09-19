@@ -189,6 +189,14 @@ for (const entry of tarEntries) {
   assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unexpected archive path: ${entry}`);
 }
 assert(tarEntries.includes('package/LICENSE'), 'Apache license is absent from the tarball');
+assert(
+  tarEntries.includes('package/dist/features/local-shape.js'),
+  'Local shape implementation is absent from tarball',
+);
+assert(
+  tarEntries.includes('package/dist/features/local-shape.d.ts'),
+  'Local shape declarations are absent from tarball',
+);
 for (const name of expectedSchemas) {
   assert(tarEntries.includes(`package/schemas/${name}.schema.json`), `Schema is absent from tarball: ${name}`);
 }
@@ -918,6 +926,7 @@ import {
   validateTaskStructure,
   resolveExperienceConstraints,
   validateCommitReadSet,
+  inferLocalDataShape,
 } from '@aeliqo/core';
 import {
   composePresentation,
@@ -970,6 +979,7 @@ import {
   createTypedAuthoring,
   createQueryFunctionRegistry,
 } from '@aeliqo/core/expressions';
+import { inferLocalDataShape as inferFeatureLocalDataShape } from '@aeliqo/core/features';
 import {
   NarrativeClaim,
   OperationGrant,
@@ -1009,7 +1019,13 @@ const parsedInstalledJob = installedJobFeature.parseIntent({intent:{id:'job.conf
 installedPeopleFeature.identity.push('name');
 // @ts-expect-error A typed job intent requires the declared input shape.
 const wrongInstalledJobInput: FeatureIntentValue<typeof installedJobFeature.intents> = {intent:{id:'job.configure', revision:'1'}, input:{template:7}};
-void [typedPeopleFeature, parsedInstalledJob, wrongInstalledJobInput];
+const installedShapeOutcome = inferLocalDataShape({id:'installed-shape', rows:[{id:'one'}], identity:['id']});
+if (!installedShapeOutcome.ok) throw new Error('shape');
+const installedShape: import('@aeliqo/core/features').LocalDataShape = installedShapeOutcome.value;
+const installedFeatureShape = inferFeatureLocalDataShape({id:'installed-feature-shape', rows:[], schema:installedPersonSchema, identity:['id']});
+// @ts-expect-error Local shape identity fields and callback are mutually exclusive.
+inferLocalDataShape({id:'installed-invalid', rows:[{id:'one'}], identity:['id'], getRowId: row => row});
+void [typedPeopleFeature, parsedInstalledJob, wrongInstalledJobInput, installedShape, installedFeatureShape];
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
 declare const visualizationResult: Result;
 const visualization: VisualizationSpec = {version: '1',
@@ -1251,6 +1267,7 @@ import {
   validateTaskStructure,
   resolveExperienceConstraints,
   validateCommitReadSet,
+  inferLocalDataShape,
 } from '@aeliqo/core';
 import { bindVisualizationSpec } from '@aeliqo/core/visualization';
 import {
@@ -1268,6 +1285,8 @@ import {
   createStandardFunctionRegistry,
   createTypedAuthoring,
 } from '@aeliqo/core/expressions';
+import { inferLocalDataShape as inferFeatureLocalDataShape } from '@aeliqo/core/features';
+import { z } from 'zod';
 import { authorizeMeaningActivation } from '@aeliqo/core/semantics';
 import { createQueryPlanner } from '@aeliqo/core/query';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'),
@@ -1277,6 +1296,13 @@ assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok,
   false);
 assert.equal(parseWireValue({requestId:undefined}).ok,
   false);
+const localSchema = z.object({id: z.string(), value: z.string().nullable()});
+const localReady = inferLocalDataShape({id: 'installed-local', rows: [{id: 'one', value: 'ready'}], schema: localSchema, identity: ['id']});
+assert.equal(localReady.ok, true);
+assert.equal(inferFeatureLocalDataShape({id: 'installed-empty', rows: [], schema: localSchema, identity: ['id']}).ok, true);
+assert.equal(inferLocalDataShape({id: 'installed-duplicate', rows: [{id: 'one'}, {id: 'one'}], identity: ['id']}).ok, false);
+// @ts-expect-error A local shape cannot declare identity fields and a callback together.
+inferLocalDataShape({id: 'installed-invalid', rows: [{id: 'one'}], identity: ['id'], getRowId: row => row});
 const commitPins = ${JSON.stringify(commitPins)};
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};

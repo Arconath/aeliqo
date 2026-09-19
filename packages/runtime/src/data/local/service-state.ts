@@ -1,7 +1,7 @@
 import type { Catalog, ResultRef } from '@aeliqo/core';
 import type { LogicalPlan } from '@aeliqo/core/query';
 import type { LocalDataServiceOptions, MeaningRegistration, PlanAcceptance } from '../types.js';
-import { isSafePositive } from './shared.js';
+import { canonical, isSafePositive } from './shared.js';
 import { normalizeSnapshot, normalizeSourceLimits } from './source.js';
 import type { SourceLimits } from './shared.js';
 import type { StoredSnapshot } from './source.js';
@@ -9,6 +9,7 @@ import type { PlanDependencies } from './query-planning.js';
 
 const DEFAULT_PLAN_TTL_MS = 5 * 60_000;
 const DEFAULT_MAX_PLANS = 256;
+const DEFAULT_MAX_SOURCE_REVISIONS = 256;
 
 export interface StoredPlan {
   readonly accepted: PlanAcceptance;
@@ -26,32 +27,52 @@ export interface LocalDataServiceState {
   readonly registeredBundles: Map<string, MeaningRegistration>;
   readonly planTtlMs: number;
   readonly maxPlans: number;
+  readonly maxSourceRevisions: number;
+  readonly revisionHistory: Set<string>;
   snapshot: StoredSnapshot;
   currentCatalog: Catalog;
+  readonly fixedCatalog?: Catalog;
 }
 
-export function createLocalDataServiceState(options: LocalDataServiceOptions): LocalDataServiceState {
+export function createLocalDataServiceState(
+  options: LocalDataServiceOptions,
+  fixedCatalogInput?: Catalog,
+): LocalDataServiceState {
   const sourceLimits = normalizeSourceLimits(options.sourceLimits);
   const snapshot = normalizeSnapshot(options.snapshot, sourceLimits);
+  const fixedCatalog = normalizeFixedCatalog(fixedCatalogInput, snapshot.catalog);
   const planTtlMs = options.planTtlMs ?? DEFAULT_PLAN_TTL_MS;
   const maxPlans = options.maxPlans ?? DEFAULT_MAX_PLANS;
-  validatePlanLimits(planTtlMs, maxPlans);
+  const maxSourceRevisions = options.maxSourceRevisions ?? DEFAULT_MAX_SOURCE_REVISIONS;
+  validatePlanLimits(planTtlMs, maxPlans, maxSourceRevisions);
   return {
     options,
     sourceLimits,
     snapshot,
     currentCatalog: snapshot.catalog,
+    ...(fixedCatalog === undefined ? {} : { fixedCatalog }),
     plans: new Map(),
     registeredBundles: new Map(),
     planTtlMs,
     maxPlans,
+    maxSourceRevisions,
+    revisionHistory: new Set([snapshot.sourceRevision]),
   };
 }
 
-function validatePlanLimits(planTtlMs: number, maxPlans: number): void {
+function normalizeFixedCatalog(input: Catalog | undefined, snapshot: Catalog): Catalog | undefined {
+  if (input === undefined) return undefined;
+  if (canonical(input) !== canonical(snapshot))
+    throw new TypeError('fixedCatalog must match the initial local snapshot catalog.');
+  return snapshot;
+}
+
+function validatePlanLimits(planTtlMs: number, maxPlans: number, maxSourceRevisions: number): void {
   if (!isSafePositive(planTtlMs) || planTtlMs > 86_400_000)
     throw new TypeError('planTtlMs must be a bounded positive duration.');
   if (!isSafePositive(maxPlans) || maxPlans > 10_000) throw new TypeError('maxPlans must be a bounded positive count.');
+  if (!isSafePositive(maxSourceRevisions) || maxSourceRevisions > 10_000)
+    throw new TypeError('maxSourceRevisions must be a bounded positive count.');
 }
 
 export function reapExpiredPlans(state: LocalDataServiceState, now: number): void {
