@@ -40,6 +40,7 @@ interface SurfaceControllerConfig<I, S> {
 interface PendingProposal<I> {
   readonly proposal: ReturnType<ProposalSequencer<I>['create']>;
   readonly scope: SurfaceScopeSnapshot;
+  readonly releaseFence: () => void;
 }
 
 function failure(status: Exclude<RequestResult['status'], 'committed' | 'proposed'>, diagnosticCode: string) {
@@ -91,6 +92,9 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private active: AbortController | undefined;
   private sequence = 0;
   private disposed = false;
+  private fenceReferences = 0;
+  private unsubscribeFence: (() => void) | undefined;
+  private unregisterTarget: (() => void) | undefined;
 
   constructor(private readonly config: SurfaceControllerConfig<I, S>) {
     this.id = config.id;
@@ -105,6 +109,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
       state: config.initialState,
     });
     this.safeState = this.snapshot.state;
+    this.unregisterTarget = config.scope.registerTarget?.(this.address, () => this.fenceAndDispose());
   }
 
   getSnapshot(): SurfaceSnapshot<I, S> {
@@ -116,6 +121,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
 
   subscribe(listener: () => void): () => void {
     if (this.disposed) return () => undefined;
+    const releaseFence = this.retainFence();
     const ownership = this.ownership;
     const attach =
       ownership.mode === 'external'
@@ -130,26 +136,45 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
               }
             })
         : undefined;
-    return this.listeners.subscribe(listener, attach);
+    const unsubscribe = this.listeners.subscribe(listener, attach);
+    return () => {
+      unsubscribe();
+      releaseFence();
+    };
   }
 
   async request(intent: SurfaceRequest<I>, options: RequestOptions = {}): Promise<RequestResult> {
-    if (this.disposed) return failure('disposed', 'surface.disposed');
-    const invalid = this.validateRequest(options);
-    if (invalid !== undefined) return invalid;
-    const parsed = this.parseIntent(intent);
-    if (!parsed.ok) return failure('unsupported', parsed.diagnostics[0].code);
-    if (this.ownership.mode === 'external') return this.propose(parsed.value);
-    return this.commitInternal(parsed.value, options.signal);
+    const releaseFence = this.retainFence();
+    let proposalOwnsFence = false;
+    try {
+      if (this.disposed) return failure('disposed', 'surface.disposed');
+      const invalid = this.validateRequest(options);
+      if (invalid !== undefined) return invalid;
+      const parsed = this.parseIntent(intent);
+      if (!parsed.ok) return failure('unsupported', parsed.diagnostics[0].code);
+      if (this.ownership.mode === 'external') {
+        const proposed = this.propose(parsed.value, releaseFence);
+        proposalOwnsFence = proposed.status === 'proposed';
+        return proposed;
+      }
+      return await this.commitInternal(parsed.value, options.signal);
+    } finally {
+      if (!proposalOwnsFence) releaseFence();
+    }
   }
 
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
     this.active?.abort();
+    this.clearPendingProposals();
+    this.unregisterTarget?.();
+    this.unregisterTarget = undefined;
+    this.unsubscribeFence?.();
+    this.unsubscribeFence = undefined;
+    this.fenceReferences = 0;
     this.config.teardown();
     this.config.registration.release();
-    this.pendingProposals.clear();
     this.snapshot = freezeSnapshot({ ...this.snapshot, phase: 'disposed' });
     this.listeners.notify();
     this.listeners.dispose();
@@ -159,6 +184,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     if (options.signal?.aborted === true) return failure('cancelled', 'surface.request-aborted');
     if (options.expectedAddress !== undefined && !sameAddress(options.expectedAddress, this.address))
       return failure('stale', 'surface.target-mismatch');
+    if (!this.addressIsActive()) return failure('stale', 'surface.activation-stale');
     const current = this.getSnapshot();
     if (options.expectedRevision !== undefined && options.expectedRevision !== current.revision)
       return failure('stale', 'surface.revision-mismatch');
@@ -178,22 +204,23 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     return this.config.feature.parseIntent(candidate);
   }
 
-  private propose(intent: I): RequestResult {
+  private propose(intent: I, releaseFence: () => void): RequestResult {
     const current = this.getSnapshot();
     const proposal = this.proposals.create(this.address, current.revision, intent);
     this.pendingProposals.set(proposal.proposalId, {
       proposal,
       scope: this.config.scope.getSnapshot(),
+      releaseFence,
     });
     if (this.pendingProposals.size > 32) {
       const oldest = this.pendingProposals.keys().next().value;
-      if (oldest !== undefined) this.pendingProposals.delete(oldest);
+      if (oldest !== undefined) this.deletePendingProposal(oldest);
     }
     try {
       (this.ownership as ExternalOwnership<I, S>).onProposal(proposal);
       return { status: 'proposed', proposalId: proposal.proposalId };
     } catch {
-      this.pendingProposals.delete(proposal.proposalId);
+      this.deletePendingProposal(proposal.proposalId);
       return failure('failed', 'surface.proposal-failed');
     }
   }
@@ -314,7 +341,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
       proposal.expectedRevision !== (this.externalSnapshot ?? this.snapshot).revision
     )
       return 'ignored';
-    this.pendingProposals.delete(decision.proposalId);
+    this.deletePendingProposal(decision.proposalId);
     if (decision.status === 'rejected') return 'ignored';
     if (!this.scopeStillValid(pending.scope)) return 'denied';
     return 'accepted';
@@ -334,7 +361,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
 
   private maskDenied(notify: boolean): SurfaceSnapshot<I, S> {
     const current = this.externalSnapshot ?? this.snapshot;
-    this.pendingProposals.clear();
+    this.clearPendingProposals();
     if (current === this.maskedSnapshot) {
       if (notify && !this.maskedSnapshotNotified) {
         this.maskedSnapshotNotified = true;
@@ -356,5 +383,59 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     this.maskedSnapshot = undefined;
     this.maskedSnapshotNotified = false;
     this.listeners.notify();
+  }
+
+  private addressIsActive(): boolean {
+    const scope = this.config.scope.getSnapshot();
+    return (
+      scope.active &&
+      scope.runtimeId === this.address.runtimeId &&
+      scope.scopeInstanceId === this.address.scopeInstanceId &&
+      scope.activationEpoch === this.address.activationEpoch
+    );
+  }
+
+  private fenceIfInactive(): void {
+    if (this.disposed || this.addressIsActive()) return;
+    this.active?.abort();
+    this.sequence += 1;
+    this.clearPendingProposals();
+    this.maskDenied(true);
+  }
+
+  private fenceAndDispose(): void {
+    if (this.disposed) return;
+    this.active?.abort();
+    this.clearPendingProposals();
+    this.maskDenied(false);
+    this.dispose();
+  }
+
+  private retainFence(): () => void {
+    if (this.disposed || this.config.scope.subscribeFence === undefined) return () => undefined;
+    this.fenceReferences += 1;
+    if (this.fenceReferences === 1)
+      this.unsubscribeFence = this.config.scope.subscribeFence(() => this.fenceIfInactive());
+    let retained = true;
+    return () => {
+      if (!retained) return;
+      retained = false;
+      if (this.fenceReferences === 0) return;
+      this.fenceReferences -= 1;
+      if (this.fenceReferences !== 0) return;
+      this.unsubscribeFence?.();
+      this.unsubscribeFence = undefined;
+    };
+  }
+
+  private deletePendingProposal(proposalId: string): void {
+    const pending = this.pendingProposals.get(proposalId);
+    if (pending === undefined) return;
+    this.pendingProposals.delete(proposalId);
+    pending.releaseFence();
+  }
+
+  private clearPendingProposals(): void {
+    for (const proposalId of [...this.pendingProposals.keys()]) this.deletePendingProposal(proposalId);
   }
 }

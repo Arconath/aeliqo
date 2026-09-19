@@ -1,0 +1,630 @@
+import type { Intent, Outcome } from '@aeliqo/core';
+import { defineDataFeature } from '@aeliqo/core/features';
+import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
+import {
+  createAeliqoRuntime,
+  type DataSurfaceBindings,
+  type ExternalSurfaceSnapshot,
+  type SurfaceProposal,
+  type ScopeBinding,
+  type ScopeLeaveDecision,
+  type ScopeResolution,
+  type ScopeSelector,
+  type SurfaceAddress,
+  type SurfaceController,
+  type SurfaceScope,
+} from '@aeliqo/runtime';
+import { createLocalDataService, type DataService, type LocalSnapshot } from '@aeliqo/runtime/data';
+import {
+  createActionPort,
+  createActionRegistry,
+  type ActionDispatchResult,
+  type ActionPayload,
+  type ActionPort,
+} from '@aeliqo/runtime/actions';
+import { z } from 'zod';
+
+const OrderSchema = z.object({ id: z.string(), workspace: z.string(), total: z.number() });
+type Order = z.infer<typeof OrderSchema>;
+
+const ordersFeature = defineDataFeature({
+  id: 'orders',
+  schema: OrderSchema,
+  identity: ['id'],
+  fields: { workspace: { role: 'dimension' }, total: { role: 'measure' } },
+});
+
+interface OrdersState {
+  readonly rows: readonly Order[];
+  readonly selection: readonly string[];
+  readonly cursor?: string;
+}
+
+interface Gate {
+  readonly started: Promise<void>;
+  readonly completed: Promise<void>;
+  readonly resolve: () => void;
+  markStarted(scopeId: string): void;
+  markCompleted(): void;
+  scopeId?: string;
+}
+
+function deferredGate(): Gate {
+  let start!: () => void;
+  let release!: () => void;
+  let complete!: () => void;
+  const started = new Promise<void>((resolve) => {
+    start = resolve;
+  });
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const completed = new Promise<void>((resolve) => {
+    complete = resolve;
+  });
+  return {
+    started,
+    completed,
+    resolve: release,
+    markStarted(scopeId) {
+      this.scopeId = scopeId;
+      start();
+    },
+    markCompleted: complete,
+    waitForRelease: released,
+  } as Gate & { readonly waitForRelease: Promise<void> };
+}
+
+function snapshot(scopeId: string, rows: readonly Order[]): LocalSnapshot {
+  return Object.freeze({
+    catalog: ordersFeature.catalog,
+    sourceRevision: `orders-${scopeId}-1`,
+    records: Object.freeze({ orders: Object.freeze(rows) }),
+  });
+}
+
+function sourceHarness() {
+  const acmePrivateRow = Object.freeze({ id: 'acme-private', workspace: 'acme', total: 41 });
+  const acmeSecondRow = Object.freeze({ id: 'acme-second', workspace: 'acme', total: 19 });
+  const globexRow = Object.freeze({ id: 'globex-order', workspace: 'globex', total: 73 });
+  const functions = createQueryFunctionRegistry({ version: '2' });
+  if (!functions.ok) throw new TypeError(functions.diagnostics[0].message);
+  const services = new Map<string, DataService>();
+  let nextGate: (Gate & { readonly waitForRelease: Promise<void> }) | undefined;
+  const activeGates = new Set<Gate>();
+  const calls = new Map<string, number>();
+
+  const baseFor = (scopeId: string): DataService => {
+    const existing = services.get(scopeId);
+    if (existing !== undefined) return existing;
+    const rows = scopeId === 'acme' ? [acmePrivateRow, acmeSecondRow] : [globexRow];
+    const service = createLocalDataService({
+      snapshot: snapshot(scopeId, rows),
+      functionRegistry: functions.value,
+      authorize: ({ context }) =>
+        context.principal === 'scope-user'
+          ? { ok: true, value: { scopeDigest: `workspace:${scopeId}`, policyRevision: 'policy-1' } }
+          : {
+              ok: false,
+              diagnostics: [{ code: 'data.denied', message: 'The scoped read was denied.', retryable: false }],
+            },
+    });
+    services.set(scopeId, service);
+    return service;
+  };
+
+  return {
+    acmePrivateRow,
+    deferNext() {
+      const gate = deferredGate() as Gate & { readonly waitForRelease: Promise<void> };
+      nextGate = gate;
+      activeGates.add(gate);
+      return { started: gate.started, resolve: gate.resolve };
+    },
+    forScope(scopeId: string): DataService {
+      const base = baseFor(scopeId);
+      return {
+        describe: (...args) => base.describe(...args),
+        plan: (...args) => base.plan(...args),
+        async *execute(...args) {
+          calls.set(scopeId, (calls.get(scopeId) ?? 0) + 1);
+          const gate = nextGate;
+          if (gate !== undefined) {
+            nextGate = undefined;
+            gate.markStarted(scopeId);
+            await gate.waitForRelease;
+          }
+          try {
+            yield* base.execute(...args);
+          } finally {
+            gate?.markCompleted();
+            if (gate !== undefined) activeGates.delete(gate);
+          }
+        },
+      };
+    },
+    async release(scopeId: string) {
+      const gate = [...activeGates].find((candidate) => candidate.scopeId === scopeId);
+      if (gate === undefined) throw new TypeError(`No deferred ${scopeId} source request started.`);
+      gate.resolve();
+      await gate.completed;
+    },
+    callsFor: (scopeId: string) => calls.get(scopeId) ?? 0,
+  };
+}
+
+function bindings(source: DataService): DataSurfaceBindings<OrdersState> {
+  return {
+    initialState: Object.freeze({ rows: Object.freeze([]), selection: Object.freeze([]) }),
+    source: {
+      kind: 'data-service',
+      service: source,
+      coverage: {
+        fields: ['id', 'workspace', 'total'],
+        operators: ['eq', 'contains'],
+        pagination: 'keyset',
+        stableOrder: ['id'],
+        sorting: 'stable-fields-only',
+        aggregation: 'registered-only',
+        streaming: 'finite',
+        updates: 'snapshot-replace',
+        unsupported: ['streaming', 'live-updates'],
+      },
+      normalize: async (events) => {
+        const rows: Order[] = [];
+        let cursor: string | undefined;
+        for await (const event of events) {
+          if (event.kind === 'complete') cursor = event.cursor;
+          if (event.kind === 'batch') {
+            for (const row of event.rows) {
+              const parsed = ordersFeature.parseRecord(row);
+              if (!parsed.ok) throw new TypeError(parsed.diagnostics[0].message);
+              rows.push(parsed.value);
+            }
+          }
+        }
+        return Object.freeze({
+          rows: Object.freeze(rows),
+          selection: Object.freeze([]),
+          ...(cursor === undefined ? {} : { cursor }),
+        });
+      },
+    },
+  };
+}
+
+let nextFixtureId = 1;
+
+export async function createScopeFixture() {
+  const fixtureId = nextFixtureId++;
+  const runtimeId = `scope-runtime-${fixtureId}`;
+  let activeSelector: ScopeSelector | undefined;
+  let permissionRevision = 1;
+  let leaveState = { dirty: false, revision: 'draft-0' };
+  let guardDecision: ScopeLeaveDecision = { status: 'clean' };
+  let resolveCalls = 0;
+  let guardCalls = 0;
+  let recoveryEnabled = false;
+  const deniedSelectors = new Set<string>();
+  const recoveries: { readonly selector: ScopeSelector; readonly policyRevision: string }[] = [];
+  const events: string[] = [];
+  let throwOnDeactivate = false;
+  let throwOnRecover = false;
+  let lastResolution: ScopeResolution | undefined;
+  const allowedFeatures = ['orders'];
+  let activeActionPort: ActionPort | undefined;
+  let actionGate:
+    | {
+        readonly started: Promise<void>;
+        start(): void;
+        readonly promise: Promise<ActionDispatchResult>;
+        resolve(value: ActionDispatchResult): void;
+      }
+    | undefined;
+  const backendEffects: { readonly scopeId: string; readonly input: ActionPayload }[] = [];
+  const actionDescriptor = {
+    ref: { id: 'orders.update', revision: '1' },
+    input: { id: 'orders.update-input', revision: '1' },
+    output: { id: 'orders.update-output', revision: '1' },
+    sideEffect: 'domain-write' as const,
+    confirmation: 'required' as const,
+    idempotency: 'required' as const,
+    entityRevision: 'none' as const,
+  };
+  const createScopedActionPort = (selector: ScopeSelector): ActionPort => {
+    const registry = createActionRegistry();
+    const parsed = (value: unknown): Outcome<ActionPayload> => ({ ok: true, value: value as ActionPayload });
+    const registered = registry.register({
+      descriptor: actionDescriptor,
+      inputSchema: { ref: actionDescriptor.input, parse: parsed },
+      outputSchema: { ref: actionDescriptor.output, parse: parsed },
+      dispatch: async ({ input }) => {
+        const gate = actionGate;
+        if (gate !== undefined) {
+          actionGate = undefined;
+          gate.start();
+          const result = await gate.promise;
+          backendEffects.push({ scopeId: selector.id, input });
+          return result;
+        }
+        backendEffects.push({ scopeId: selector.id, input });
+        return { state: 'completed', output: { saved: true } };
+      },
+    });
+    if (!registered.ok) throw new TypeError(registered.diagnostics[0].message);
+    return createActionPort({
+      registry,
+      host: {
+        readContext: () => ({
+          ok: true,
+          value: {
+            principalKey: 'scope-user',
+            actorKey: 'scope-user',
+            scopeDigest: JSON.stringify(selector),
+            policyRevision: 'policy-1',
+            domainRevision: 'domain-1',
+            confirmationEpoch: 'confirmation-1',
+            grants: ['action.propose', 'action.execute'] as const,
+          },
+        }),
+        issueConfirmation: () => ({ ok: true, value: undefined }),
+      },
+    });
+  };
+  const resolveGates = new Map<
+    string,
+    {
+      readonly started: Promise<void>;
+      start(): void;
+      readonly promise: Promise<Outcome<ScopeResolution>>;
+      resolve(outcome?: Outcome<ScopeResolution>): void;
+    }
+  >();
+  let guardGate:
+    | {
+        readonly started: Promise<void>;
+        start(): void;
+        readonly promise: Promise<ScopeLeaveDecision>;
+        resolve(decision: ScopeLeaveDecision): void;
+      }
+    | undefined;
+
+  const host: ScopeBinding & {
+    readonly resolveCalls: number;
+    readonly guardCalls: number;
+    readonly recoveries: readonly { readonly selector: ScopeSelector; readonly policyRevision: string }[];
+    readonly events: readonly string[];
+    revoke(id: string): void;
+    deny(id: string): void;
+    allow(id: string): void;
+    setDirty(dirty: boolean): void;
+    setGuard(decision: ScopeLeaveDecision): void;
+    deferGuard(): { readonly started: Promise<void>; resolve(decision: ScopeLeaveDecision): void };
+    deferResolve(id: string): { readonly started: Promise<void>; resolve(outcome?: Outcome<ScopeResolution>): void };
+    enableRecovery(): void;
+    failDeactivate(): void;
+    failRecovery(): void;
+    mutateLastResolution(): void;
+  } = {
+    get resolveCalls() {
+      return resolveCalls;
+    },
+    get guardCalls() {
+      return guardCalls;
+    },
+    get recoveries() {
+      return recoveries;
+    },
+    get events() {
+      return events;
+    },
+    async resolve(selector) {
+      resolveCalls += 1;
+      const gate = resolveGates.get(JSON.stringify(selector));
+      if (gate !== undefined) {
+        gate.start();
+        return gate.promise;
+      }
+      if (deniedSelectors.has(JSON.stringify(selector)))
+        return {
+          ok: false,
+          diagnostics: [{ code: 'scope.membership-denied', message: 'Membership was denied.', retryable: false }],
+        };
+      lastResolution = {
+        selector: {
+          kind: selector.kind,
+          id: selector.id,
+          ...(selector.lineage === undefined
+            ? {}
+            : { lineage: selector.lineage.map((entry) => ({ kind: entry.kind, id: entry.id })) }),
+        },
+        permissionRevision,
+        policyRevision: 'policy-1',
+        allowedFeatures,
+      };
+      return { ok: true, value: lastResolution };
+    },
+    authorize(input) {
+      if (input.permissionRevision !== permissionRevision)
+        return {
+          ok: false,
+          diagnostics: [{ code: 'scope.permission-stale', message: 'Scope permission changed.', retryable: false }],
+        };
+      return { ok: true, value: undefined };
+    },
+    activate(input) {
+      events.push(`activate:${input.selector.id}`);
+      activeSelector = input.selector;
+      activeActionPort = createScopedActionPort(input.selector);
+      return { ok: true, value: undefined };
+    },
+    deactivate(input) {
+      events.push(`deactivate:${input.selector.id}`);
+      if (throwOnDeactivate) throw new Error('deactivate failed');
+      activeActionPort?.revoke('scope transition');
+      activeActionPort = undefined;
+      if (JSON.stringify(activeSelector) === JSON.stringify(input.selector)) activeSelector = undefined;
+    },
+    readLeaveState() {
+      return leaveState;
+    },
+    async beforeLeave() {
+      guardCalls += 1;
+      if (guardGate === undefined) return guardDecision;
+      guardGate.start();
+      const pending = guardGate;
+      guardGate = undefined;
+      return pending.promise;
+    },
+    recover(input) {
+      if (throwOnRecover) throw new Error('recovery failed');
+      if (recoveryEnabled) recoveries.push({ selector: input.selector, policyRevision: input.policyRevision });
+    },
+    revoke() {
+      permissionRevision += 1;
+    },
+    deny(id) {
+      deniedSelectors.add(JSON.stringify({ kind: 'workspace', id }));
+    },
+    allow(id) {
+      deniedSelectors.delete(JSON.stringify({ kind: 'workspace', id }));
+    },
+    setDirty(dirty) {
+      leaveState = { dirty, revision: `draft-${Number(leaveState.revision.split('-')[1]) + 1}` };
+    },
+    setGuard(decision) {
+      guardDecision = decision;
+    },
+    deferGuard() {
+      let start!: () => void;
+      let resolve!: (decision: ScopeLeaveDecision) => void;
+      const started = new Promise<void>((done) => {
+        start = done;
+      });
+      const promise = new Promise<ScopeLeaveDecision>((done) => {
+        resolve = done;
+      });
+      guardGate = { started, start, promise, resolve };
+      return { started, resolve };
+    },
+    deferResolve(id) {
+      const selector = { kind: 'workspace', id } as const;
+      let start!: () => void;
+      let resolvePromise!: (outcome: Outcome<ScopeResolution>) => void;
+      const started = new Promise<void>((done) => {
+        start = done;
+      });
+      const promise = new Promise<Outcome<ScopeResolution>>((done) => {
+        resolvePromise = done;
+      });
+      const gate = {
+        started,
+        start,
+        promise,
+        resolve(
+          outcome: Outcome<ScopeResolution> = {
+            ok: true,
+            value: { selector, permissionRevision, policyRevision: 'policy-1' },
+          },
+        ) {
+          resolvePromise(outcome);
+        },
+      };
+      resolveGates.set(JSON.stringify(selector), gate);
+      return { started, resolve: gate.resolve };
+    },
+    enableRecovery() {
+      recoveryEnabled = true;
+    },
+    failDeactivate() {
+      throwOnDeactivate = true;
+    },
+    failRecovery() {
+      throwOnRecover = true;
+    },
+    mutateLastResolution() {
+      if (lastResolution === undefined) throw new TypeError('No resolution was produced.');
+      (lastResolution.selector as { id: string }).id = 'mutated-host-id';
+      allowedFeatures.splice(0, allowedFeatures.length);
+    },
+  };
+  const source = sourceHarness();
+  const runtime = createAeliqoRuntime({
+    runtimeId,
+    maxRegions: 2,
+    resources: [{ resource: ordersFeature.resource, data: source.forScope('acme') }],
+    authority: {
+      read: () => {
+        const id = activeSelector?.id;
+        if (id === undefined)
+          return {
+            ok: false,
+            diagnostics: [{ code: 'scope.inactive', message: 'No scope is active.', retryable: false }],
+          };
+        return {
+          ok: true,
+          value: {
+            principalKey: 'scope-user',
+            scopeDigest: `workspace:${id}`,
+            policyRevision: 'policy-1',
+            experienceRevision: 'experience-1',
+            grants: ['catalog.read', 'task.evaluate', 'result.inspect'],
+            readContext: { principal: 'scope-user' },
+          },
+        };
+      },
+    },
+  });
+  const scope = runtime.createScope({ binding: host, initial: { kind: 'workspace', id: 'acme' } });
+  let fenceSubscriptions = 0;
+  const observedScope: SurfaceScope = {
+    getSnapshot: () => scope.getSnapshot(),
+    authorize: (featureId) => scope.authorize(featureId),
+    subscribeFence(listener) {
+      fenceSubscriptions += 1;
+      const unsubscribe = scope.subscribeFence!(listener);
+      let active = true;
+      return () => {
+        if (!active) return;
+        active = false;
+        fenceSubscriptions -= 1;
+        unsubscribe();
+      };
+    },
+    registerTarget: (address, fence) => scope.registerTarget!(address, fence),
+  };
+  let current: SurfaceController<Intent, OrdersState> | undefined;
+  let retiredSurfaces = 0;
+  const createCurrent = () => {
+    const next = scope.getSnapshot();
+    if (next.status !== 'active' || next.selector === null) return;
+    if (current?.address.activationEpoch === next.activationEpoch) return;
+    if (current !== undefined) {
+      if (current.getSnapshot().phase !== 'disposed')
+        throw new TypeError('The previous activation surface was not fenced before child replacement.');
+      retiredSurfaces += 1;
+    }
+    current = runtime.createSurface({
+      scope: observedScope,
+      id: 'orders',
+      feature: ordersFeature,
+      bindings: bindings(source.forScope(next.selector.id)),
+    });
+  };
+  const unsubscribe = scope.subscribe(createCurrent);
+  let detach: (() => void) | undefined;
+
+  return {
+    scope,
+    currentOrders() {
+      if (current === undefined) throw new TypeError('The Orders surface is not active.');
+      return current;
+    },
+    host,
+    source,
+    view: {
+      readRows: () => current?.getSnapshot().state.rows ?? [],
+    },
+    release: (scopeId: string) => source.release(scopeId),
+    async activate(scopeId: string) {
+      if (detach === undefined) detach = scope.attach();
+      if (scope.getSnapshot().status === 'active' && scope.getSnapshot().selector?.id === scopeId) return;
+      if (scope.getSnapshot().status === 'active') {
+        await scope.requestChange({ kind: 'workspace', id: scopeId });
+        return;
+      }
+      await new Promise<void>((resolve) => {
+        const stop = scope.subscribe(() => {
+          if (scope.getSnapshot().status !== 'active') return;
+          stop();
+          resolve();
+        });
+      });
+    },
+    captureAddress: (): SurfaceAddress => ({ ...current!.address }),
+    fenceSubscriptions: () => fenceSubscriptions,
+    retiredSurfaces: () => retiredSurfaces,
+    createControlledOrders() {
+      let snapshot: ExternalSurfaceSnapshot<Intent, OrdersState> | undefined;
+      const listeners = new Set<() => void>();
+      const proposals: SurfaceProposal<Intent>[] = [];
+      const surface = runtime.createSurface({
+        scope: observedScope,
+        id: `controlled-orders-${scope.getSnapshot().activationEpoch}`,
+        feature: ordersFeature,
+        bindings: bindings(source.forScope(scope.getSnapshot().selector!.id)),
+        ownership: {
+          mode: 'external',
+          store: {
+            getSnapshot() {
+              if (snapshot === undefined) throw new TypeError('Controlled store is not initialized.');
+              return snapshot;
+            },
+            subscribe(listener) {
+              listeners.add(listener);
+              return () => listeners.delete(listener);
+            },
+          },
+          onProposal: (proposal) => proposals.push(proposal),
+        },
+      });
+      snapshot = Object.freeze({
+        id: surface.id,
+        address: surface.address,
+        revision: '0',
+        phase: 'idle',
+        intent: Object.freeze({ version: '1', id: 'controlled-0', resource: 'orders', kind: 'browse' }),
+        state: Object.freeze({ rows: Object.freeze([]), selection: Object.freeze([]) }),
+      });
+      return {
+        surface,
+        proposals,
+        accept(proposalId: string) {
+          const proposal = proposals.find((candidate) => candidate.proposalId === proposalId);
+          if (proposal === undefined) throw new TypeError('Unknown proposal.');
+          snapshot = Object.freeze({
+            ...snapshot!,
+            revision: '1',
+            phase: 'ready',
+            intent: proposal.intent,
+            state: Object.freeze({ rows: Object.freeze([source.acmePrivateRow]), selection: Object.freeze([]) }),
+            proposalDecision: Object.freeze({
+              proposalId,
+              address: proposal.address,
+              expectedRevision: proposal.expectedRevision,
+              status: 'accepted',
+            }),
+          });
+          for (const listener of [...listeners]) listener();
+        },
+      };
+    },
+    actions: {
+      descriptor: actionDescriptor,
+      current() {
+        if (activeActionPort === undefined) throw new TypeError('No scoped ActionPort is active.');
+        return activeActionPort;
+      },
+      backendEffects,
+      deferNextDispatch() {
+        let start!: () => void;
+        let resolve!: (value: ActionDispatchResult) => void;
+        const started = new Promise<void>((done) => {
+          start = done;
+        });
+        const promise = new Promise<ActionDispatchResult>((done) => {
+          resolve = done;
+        });
+        actionGate = { started, start, promise, resolve };
+        return { started, resolve };
+      },
+    },
+    dispose: async () => {
+      detach?.();
+      unsubscribe();
+      current?.dispose();
+      scope.dispose();
+      runtime.dispose();
+    },
+  };
+}

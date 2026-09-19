@@ -22,6 +22,7 @@ import type {
   LocalSurfaceScope,
   SurfaceController,
 } from '../surfaces/types.js';
+import type { CreateScopeInput, ScopeController } from '../scopes/types.js';
 
 export type RuntimeEffect = 'render' | 'commit' | 'action' | 'context';
 
@@ -159,6 +160,7 @@ export type RuntimeUnsubscribe = () => void;
 
 export interface AeliqoRuntime {
   readonly actionPort?: ActionPort;
+  createScope(input: CreateScopeInput): ScopeController;
   createLocalSurfaceScope(input?: CreateLocalSurfaceScopeInput): LocalSurfaceScope;
   createSurface<S>(input: CreateDataSurfaceInput<S>): SurfaceController<Intent, S>;
   createSurface<I, S>(input: CreateCapabilitySurfaceInput<I, S>): SurfaceController<I, S>;

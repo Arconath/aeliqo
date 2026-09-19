@@ -75,26 +75,67 @@ interrupt request completion or teardown.
 
 `createLocalSurfaceScope` grants only the feature IDs named by the application;
 it is not a remote credential or tenant selector. Backend authorization remains
-authoritative for every data operation. Workspace transitions, dirty guards,
-and forced invalidation are later scope-controller behavior and are not implied
-by this local kernel. Dispose controllers, the scope, and finally the owning
-runtime; every dispose operation is idempotent.
+authoritative for every data operation. Dispose controllers, the scope, and
+finally the owning runtime; every dispose operation is idempotent.
+
+## Application scopes (vNext candidate)
+
+`createScope` coordinates a trusted host-owned workspace or account selection.
+A selector is only an address presented to the host: it never grants data or
+action authority. The host resolves and authorizes it, then returns revisions
+that the runtime captures in immutable activation addresses.
+
+```ts
+import { createAeliqoRuntime } from '@aeliqo/runtime';
+import type { ScopeBinding } from '@aeliqo/runtime/scopes';
+
+const runtime = createAeliqoRuntime({ resources, authority });
+const binding: ScopeBinding = {
+  resolve: (selector) => host.resolveWorkspace(selector),
+  authorize: (resolution) => host.authorizeWorkspace(resolution),
+  readLeaveState: () => drafts.readLeaveState(),
+  beforeLeave: (request) => drafts.confirmLeave(request),
+  recover: (request) => host.navigateAfterRevocation(request),
+};
+const workspace = runtime.createScope({
+  initial: { kind: 'workspace', id: 'acme' },
+  binding,
+});
+const detach = workspace.attach();
+const transition = await workspace.requestChange({ kind: 'workspace', id: 'globex' });
+```
+
+Construction is inert. The first `attach()` starts resolution, and the last
+detach aborts an unfinished initial resolution so a later attach can restart
+it. Voluntary transitions keep the old activation available while the host
+chooses Save, Discard, or Stay. A failed or denied target does not replace a
+still-authorized old activation. The runtime fences the old activation before
+publishing any new activation effects; epochs only increase, so late A-B-A work
+cannot commit into the new A.
+
+Call `invalidate('logout' | 'revoked' | 'expired' | 'external-switch')` for a
+forced authority loss. Invalidation synchronously masks the scope and fences
+its child surfaces before optional recovery hooks run. Recovery navigation is
+therefore host-controlled and cannot delay revocation. Child DataService,
+Result, Region, action, cursor, proposal, and subscription work remains bound
+to the address that created it and is released when that activation ends.
 
 ## Subpaths
 
-| Subpath | Responsibility |
-| --- | --- |
-| `@aeliqo/runtime/data` | Local and HTTP data services, bounded reads, and materialization |
-| `@aeliqo/runtime/evaluation` | Task evaluation |
-| `@aeliqo/runtime/results` | Result storage, handles, and leases |
-| `@aeliqo/runtime/regions` | Region state and atomic commit lifecycle |
-| `@aeliqo/runtime/actions` | Registered application effects and action boundaries |
-| `@aeliqo/runtime/interaction` | Routed interaction state and dispatch |
-| `@aeliqo/runtime/presentation` | Runtime presentation adaptation |
-| `@aeliqo/runtime/persistence` | Explicit export and restore of runtime documents |
-| `@aeliqo/runtime/audit` | Bounded in-memory audit collection |
-| `@aeliqo/runtime/meaning` | Host-owned meaning registration and evaluation |
-| `@aeliqo/runtime/surfaces` | Scoped surface controller, ownership, address, and binding contracts |
+| Subpath                        | Responsibility                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `@aeliqo/runtime/data`         | Local and HTTP data services, bounded reads, and materialization                      |
+| `@aeliqo/runtime/evaluation`   | Task evaluation                                                                       |
+| `@aeliqo/runtime/results`      | Result storage, handles, and leases                                                   |
+| `@aeliqo/runtime/regions`      | Region state and atomic commit lifecycle                                              |
+| `@aeliqo/runtime/actions`      | Registered application effects and action boundaries                                  |
+| `@aeliqo/runtime/interaction`  | Routed interaction state and dispatch                                                 |
+| `@aeliqo/runtime/presentation` | Runtime presentation adaptation                                                       |
+| `@aeliqo/runtime/persistence`  | Explicit export and restore of runtime documents                                      |
+| `@aeliqo/runtime/audit`        | Bounded in-memory audit collection                                                    |
+| `@aeliqo/runtime/meaning`      | Host-owned meaning registration and evaluation                                        |
+| `@aeliqo/runtime/surfaces`     | Scoped surface controller, ownership, address, and binding contracts                  |
+| `@aeliqo/runtime/scopes`       | Host-resolved scope transitions, leave guards, invalidation, and activation contracts |
 
 `@aeliqo/runtime/app` is also available for applications that want to make the
 composition boundary explicit.

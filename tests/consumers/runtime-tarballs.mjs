@@ -160,6 +160,10 @@ assert.deepEqual(runtimeManifest.exports?.['./surfaces'], {
   types: './dist/surfaces/index.d.ts',
   import: './dist/surfaces/index.js',
 });
+assert.deepEqual(runtimeManifest.exports?.['./scopes'], {
+  types: './dist/scopes/index.d.ts',
+  import: './dist/scopes/index.js',
+});
 assert.equal(runtimeManifest.exports?.['./data']?.types, './dist/data/index.d.ts');
 assert.equal(runtimeManifest.exports?.['./data']?.import, './dist/data/index.js');
 assert(await fileExists(join(runtimeDirectory, 'src', 'data')), 'Runtime data source is not ready');
@@ -244,6 +248,11 @@ assert(runtimeEntries.includes('package/dist/surfaces/index.js'), 'Runtime surfa
 assert(
   runtimeEntries.includes('package/dist/surfaces/index.d.ts'),
   'Runtime surfaces declarations are absent from tarball',
+);
+assert(runtimeEntries.includes('package/dist/scopes/index.js'), 'Runtime scopes dist entry is absent from tarball');
+assert(
+  runtimeEntries.includes('package/dist/scopes/index.d.ts'),
+  'Runtime scopes declarations are absent from tarball',
 );
 
 await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
@@ -984,6 +993,7 @@ import {defineDataFeature, defineFeature} from '@aeliqo/core/features';
 import {z} from 'zod';
 import {createAeliqoRuntime, type AeliqoRuntime} from '@aeliqo/runtime';
 import type {CapabilitySurfaceBindings, DataSurfaceBindings, ExternalSurfaceStore, SurfaceController} from '@aeliqo/runtime/surfaces';
+import type {ScopeBinding, ScopeController} from '@aeliqo/runtime/scopes';
 import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
 import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument} from '@aeliqo/runtime/persistence';
@@ -1058,6 +1068,12 @@ const peopleBindings: DataSurfaceBindings<PeopleState> = {
   },
 };
 declare const surfaceRuntime: AeliqoRuntime;
+declare const scopeBinding: ScopeBinding;
+const appScope: ScopeController = surfaceRuntime.createScope({binding: scopeBinding, initial: {kind: 'workspace', id: 'acme'}});
+appScope.attach();
+appScope.requestChange({kind: 'workspace', id: 'globex'});
+appScope.invalidate('logout');
+appScope.dispose();
 declare const externalStore: ExternalSurfaceStore<Intent, PeopleState>;
 const surfaceScope = surfaceRuntime.createLocalSurfaceScope({id: 'local', allowedFeatures: ['people']});
 const typedSurface: SurfaceController<Intent, PeopleState> = surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-main', feature: peopleFeature, bindings: peopleBindings});
@@ -1142,6 +1158,9 @@ import {createQueryFunctionRegistry} from '@aeliqo/core/expressions';
 import {createAeliqoRuntime} from '@aeliqo/runtime';
 import {createLocalDataService} from '@aeliqo/runtime/data';
 
+const scopeEntry = await import('@aeliqo/runtime/scopes');
+assert.deepEqual(Object.keys(scopeEntry), []);
+
 const feature = defineDataFeature({id: 'people', schema: z.object({id: z.string(), team: z.enum(['Design', 'Engineering'])}), identity: ['id'], fields: {team: {role: 'dimension'}}});
 const functions = createQueryFunctionRegistry({version: '2'});
 assert.equal(functions.ok, true);
@@ -1193,13 +1212,68 @@ const reportProposal = reportProposals[0];
 reportSnapshot = Object.freeze({...reportSnapshot, revision: '1', phase: 'ready', intent: reportProposal.intent, state: {value: 'accepted'}, proposalDecision: {proposalId: reportProposal.proposalId, address: reportProposal.address, expectedRevision: reportProposal.expectedRevision, status: 'accepted'}});
 for (const listener of reportListeners) listener();
 assert.equal(report.getSnapshot().state.value, 'accepted');
+
+const waitForScope = (controller, predicate) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => reject(new Error('Timed out waiting for installed scope state.')), 2_000);
+  let unsubscribe = () => {};
+  const check = () => {
+    const snapshot = controller.getSnapshot();
+    if (!predicate(snapshot)) return;
+    clearTimeout(timer);
+    unsubscribe();
+    resolve(snapshot);
+  };
+  unsubscribe = controller.subscribe(check);
+  check();
+});
+let scopeResolutions = 0;
+const appScope = runtime.createScope({
+  initial: {kind: 'workspace', id: 'acme'},
+  binding: {
+    resolve: async selector => {
+      scopeResolutions += 1;
+      return {ok: true, value: {selector, permissionRevision: scopeResolutions, policyRevision: 'policy-1', allowedFeatures: ['people']}};
+    },
+    authorize: () => ({ok: true, value: undefined}),
+    readLeaveState: () => ({kind: 'clean', revision: 'leave-1'}),
+  },
+});
+assert.equal(appScope.getSnapshot().status, 'idle');
+assert.equal(scopeResolutions, 0);
+const initialScope = waitForScope(appScope, snapshot => snapshot.status === 'active');
+const detachAppScope = appScope.attach();
+const activeA = await initialScope;
+assert.equal(activeA.selector.id, 'acme');
+const appA = runtime.createSurface({scope: appScope, id: 'people-app', feature, bindings});
+assert.equal((await appA.request({kind: 'browse'})).status, 'committed');
+const addressA = appA.address;
+const changed = await appScope.requestChange({kind: 'workspace', id: 'globex'});
+assert.equal(changed.status, 'active');
+assert.equal(changed.activationEpoch > addressA.activationEpoch, true);
+assert.equal(appA.getSnapshot().phase, 'disposed');
+const appB = runtime.createSurface({scope: appScope, id: 'people-app', feature, bindings});
+assert.notEqual(appB.address.activationEpoch, addressA.activationEpoch);
+appScope.invalidate('logout');
+assert.equal(appScope.getSnapshot().status, 'denied');
+assert.equal(appScope.getSnapshot().selector, null);
+assert.equal(appB.getSnapshot().phase, 'disposed');
+detachAppScope();
+detachAppScope();
+appScope.dispose();
+appScope.dispose();
 runtime.dispose();
 scope.dispose();
-process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true, externalCapability: true}));
+process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true, externalCapability: true, scopes: true}));
 `,
 );
 const surfaceProof = JSON.parse(run([process.execPath, 'surface-consumer.mjs'], consumerDirectory));
-assert.deepEqual(surfaceProof, { twoInstances: true, controlled: true, rejected: true, externalCapability: true });
+assert.deepEqual(surfaceProof, {
+  twoInstances: true,
+  controlled: true,
+  rejected: true,
+  externalCapability: true,
+  scopes: true,
+});
 
 await writeFile(
   join(consumerDirectory, 'consumer.mjs'),

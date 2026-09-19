@@ -42,6 +42,10 @@ export class RuntimeSurfaceFactory {
     this.registry = new SurfaceRegistry(ports.runtimeId);
   }
 
+  get runtimeId(): string {
+    return this.ports.runtimeId;
+  }
+
   createLocalScope(input?: CreateLocalSurfaceScopeInput): LocalSurfaceScope {
     if (this.disposed) throw new TypeError('The Aeliqo runtime is disposed.');
     return createLocalSurfaceScope(this.ports.runtimeId, input);

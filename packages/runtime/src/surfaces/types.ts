@@ -75,6 +75,8 @@ export interface SurfaceScopeSnapshot {
 export interface SurfaceScope {
   getSnapshot(): SurfaceScopeSnapshot;
   authorize(featureId: string): Outcome<void>;
+  subscribeFence?(listener: () => void): () => void;
+  registerTarget?(address: SurfaceAddress, fence: () => void): () => void;
 }
 
 export interface LocalSurfaceScope extends SurfaceScope {

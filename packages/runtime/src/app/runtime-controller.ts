@@ -6,6 +6,8 @@ import type { RegionAuthority, RegionHandle, RegionOutcome, RegionSnapshot, Regi
 import type { ResultHandle, ResultStore } from '../results/types.js';
 import { RuntimeSurfaceFactory } from '../surfaces/runtime-factory.js';
 import type { CreateCapabilitySurfaceInput, CreateDataSurfaceInput } from '../surfaces/types.js';
+import { ScopeControllerImpl } from '../scopes/controller.js';
+import type { CreateScopeInput, ScopeController } from '../scopes/types.js';
 import type {
   AeliqoRuntime,
   AeliqoRuntimeOptions,
@@ -44,6 +46,7 @@ export class RuntimeController implements RuntimeRenderHost {
   private readonly mounted = new Map<string, MountedRegion>();
   private readonly renderer: RuntimeRenderCoordinator;
   private readonly surfaceFactory: RuntimeSurfaceFactory;
+  private readonly scopes = new Set<ScopeController>();
   private disposed = false;
 
   constructor(options: AeliqoRuntimeOptions) {
@@ -76,6 +79,7 @@ export class RuntimeController implements RuntimeRenderHost {
   create(): AeliqoRuntime {
     const runtime: AeliqoRuntime = {
       ...(this.options.actionPort === undefined ? {} : { actionPort: this.options.actionPort }),
+      createScope: (input) => this.createScope(input),
       createLocalSurfaceScope: (input) => this.surfaceFactory.createLocalScope(input),
       createSurface: ((input: CreateDataSurfaceInput<unknown> | CreateCapabilitySurfaceInput<unknown, unknown>) =>
         this.surfaceFactory.create(input)) as AeliqoRuntime['createSurface'],
@@ -228,11 +232,21 @@ export class RuntimeController implements RuntimeRenderHost {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    for (const scope of [...this.scopes]) scope.dispose();
+    this.scopes.clear();
     this.surfaceFactory.dispose();
     for (const slot of this.mounted.values()) this.disposeMountedRegion(slot);
     this.mounted.clear();
     this.regions.dispose();
     this.releaseResultStore();
+  }
+
+  private createScope(input: CreateScopeInput): ScopeController {
+    if (this.disposed) throw new TypeError('The Aeliqo runtime is disposed.');
+    let scope!: ScopeController;
+    scope = new ScopeControllerImpl(this.surfaceFactory.runtimeId, input, () => this.scopes.delete(scope));
+    this.scopes.add(scope);
+    return scope;
   }
 
   private validateMount(input: RuntimeMountInput, surfaceBinding?: RuntimeResourceBinding): Outcome<void> {

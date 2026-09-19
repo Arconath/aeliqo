@@ -16,10 +16,12 @@ description: 'The 0.4 release consolidates the public site, documents all compon
   instance addresses, per-runtime reference-counted registration, internal and
   explicitly controlled host ownership, and real `DataService`/Region/Result
   integration. Capability bindings carry an address-independent typed initial
-  intent, and permission changes fence pending host proposals. Existing
-  app/Region APIs remain the compatibility path;
-  workspace transitions and React lifecycle adapters are not part of this
-  candidate step.
+  intent, and permission changes fence pending host proposals. The new
+  host-resolved scope controller adds inert attachment, guarded Save/Discard/Stay
+  workspace transitions, forced revocation, monotonic activation epochs, and
+  child-surface fencing without treating a client workspace ID as authority.
+  Existing app/Region APIs remain the compatibility path; React lifecycle
+  adapters are not part of this candidate step.
 - This candidate has not been published or deployed. Its runtime, React,
   migration, and compatibility gates remain in progress.
 

@@ -1,0 +1,18 @@
+export type {
+  CreateScopeInput,
+  ScopeBinding,
+  ScopeController,
+  ScopeInvalidationReason,
+  ScopeLeaveDecision,
+  ScopeLeaveGuardInput,
+  ScopeLeaveState,
+  ScopePendingTransition,
+  ScopeRecoveryInput,
+  ScopeRequestOptions,
+  ScopeResolution,
+  ScopeSelector,
+  ScopeSelectorPart,
+  ScopeSnapshot,
+  ScopeStatus,
+  ScopeTransitionResult,
+} from './types.js';

@@ -1,4 +1,5 @@
 export { createAeliqoRuntime } from './runtime.js';
+export type { CreateScopeInput, ScopeBinding, ScopeController } from '../scopes/types.js';
 export type {
   AeliqoAuthority,
   AeliqoRuntime,
