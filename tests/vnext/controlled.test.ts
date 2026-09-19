@@ -101,6 +101,26 @@ it('retires a pending proposal and masks state when permission changes before ac
   f.dispose();
 });
 
+it('publishes one safe denial when external acceptance loses permission', async () => {
+  const f = createControlledFixture();
+  const result = await f.surface.request({ kind: 'browse' });
+  if (result.status !== 'proposed') throw new Error('Expected a proposal.');
+  const observed: unknown[] = [];
+  f.surface.subscribe(() => observed.push(f.surface.getSnapshot()));
+  f.scope.setFeaturePermission('people', false);
+
+  await expect(f.hostStore.accept(result.proposalId)).resolves.toEqual({ status: 'accepted' });
+  expect(observed).toHaveLength(1);
+  expect(observed[0]).toMatchObject({ phase: 'denied', state: { rows: [], selection: [] } });
+
+  expect(f.surface.getSnapshot()).toBe(observed[0]);
+  f.hostStore.publishCurrent();
+  expect(f.surface.getSnapshot()).toBe(observed[0]);
+  await expect(f.surface.request({ kind: 'browse' })).resolves.toMatchObject({ status: 'denied' });
+  expect(observed).toHaveLength(1);
+  f.dispose();
+});
+
 it('detaches the external store when a listener throws during disposal', () => {
   const f = createControlledFixture();
   f.surface.subscribe(() => {

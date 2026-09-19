@@ -108,6 +108,10 @@ class ControlledHostStore implements ExternalSurfaceStore<Intent, PeopleSurfaceS
     for (const listener of [...this.listeners]) listener();
   }
 
+  publishCurrent(): void {
+    for (const listener of [...this.listeners]) listener();
+  }
+
   listenerCount(): number {
     return this.listeners.size;
   }

@@ -124,7 +124,10 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
               if (this.disposed) return;
               const before = this.externalSnapshot;
               const after = this.refreshExternal(ownership.store.getSnapshot());
-              if (after !== before) this.listeners.notify();
+              if (after !== before) {
+                if (after === this.maskedSnapshot) this.maskedSnapshotNotified = true;
+                this.listeners.notify();
+              }
             })
         : undefined;
     return this.listeners.subscribe(listener, attach);
@@ -289,7 +292,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     const decisionResult = decision === undefined ? 'accepted' : this.acceptDecision(decision);
     if (decisionResult === 'denied') {
       this.externalSource = candidate;
-      return this.maskDenied(true);
+      return this.maskDenied(false);
     }
     if (decisionResult === 'ignored') return this.externalSnapshot ?? this.snapshot;
     this.externalSource = candidate;
