@@ -8,7 +8,7 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 | T01  | design-contract-verified | ADR 012 and complete positive/negative declaration-only consumers pass strict TypeScript. This is not installed-package or runtime acceptance.                                                                               |
 | T02  | implemented-and-verified | Immutable data/non-data definitions, compatibility lowering, package export/docs and clean tarball consumer pass; collision and nested-mutation regressions added after independent review; full matrix passed at `dedc15e`. |
 | T03  | implemented-and-verified | Accepted `4422b0d`: authority-fenced proposals, typed safe denial and capability intent, exception-isolated observers, failed-proposal retirement, bounded generations, exactly-once internal/external denial publication, 34/34 vNext, installed evidence at `artifacts/runtime-consumers/run-edxqqJ/report.json`; not published. |
-| T04  | review-fixes-candidate   | Initial candidate `7030e97`; blocking review/audit fixes are uncommitted on that source. Focused 45/45, vNext 79/79, runtime regressions and installed consumer pass; independent re-review pending. |
+| T04  | implemented-and-verified | Accepted `f2c5389`: guarded two-phase scope activation, reentrancy-safe terminal receipts, real parent/child/peer isolation, 61/61 focused, 95/95 vNext, runtime regressions, and installed evidence at `artifacts/runtime-consumers/run-pKLQlG/report.json`; not published. |
 | T05  | not-started              | Depends on T04.                                                                                                                                                                                                              |
 | T06  | not-started              | Depends on T05.                                                                                                                                                                                                              |
 | T07  | not-started              | Depends on T03 and T06.                                                                                                                                                                                                      |
@@ -41,7 +41,7 @@ or runtime-verified, until those downstream gates close the same requirement.
 - Stable published: no.
 - Image published: no.
 - Deployed: no.
-- Runtime verified: focused T02 core behavior and T03 headless scoped-surface/runtime consumer behavior; framework, transition, end-to-end, and release verification remain open.
+- Runtime verified: focused T02 core behavior, T03 headless scoped-surface behavior, and T04 guarded scope-transition/reentrancy behavior through clean installed runtime consumers; framework, end-to-end, and release verification remain open.
 
 ## Component documentation inventory
 
