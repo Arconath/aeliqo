@@ -219,7 +219,7 @@ test('trusted publishing and dist-tag movement fail closed', () => {
         name: packages[0].name,
         tag: 'next',
         desiredVersion: rc2,
-        currentVersion: '0.5.0-rc.1',
+        currentVersion: '0.6.0-rc.1',
         versionAlreadyExists: false,
       }),
     /Refusing to move/,

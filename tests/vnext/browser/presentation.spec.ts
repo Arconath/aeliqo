@@ -43,6 +43,7 @@ test.describe('public app presentation paths', () => {
 
   test('preserves the last valid table when a later request is unsupported', async ({ page }) => {
     await page.getByRole('button', { name: 'Table' }).click();
+    await expect(page.locator('#people-status')).toContainText('renderer-ready:data.table');
     await expect(page.locator('#people-host aeliqo-table')).toHaveCount(1);
     await page.getByRole('button', { name: 'Unsupported request' }).click();
     await expect(page.locator('#people-status')).toContainText('unsupported:');
@@ -61,6 +62,7 @@ test.describe('public app presentation paths', () => {
     await expect(draft).toHaveValue('keep this draft');
 
     await page.getByRole('heading', { name: 'People browse' }).click();
+    await expect(page.locator('#people-status')).toContainText('renderer-ready:data.table');
     await page.getByRole('button', { name: 'Cards' }).click();
     await expect(page.locator('#people-status')).toContainText('renderer-ready:data.card-collection');
     await expect(draft).toHaveValue('keep this draft');

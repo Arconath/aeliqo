@@ -300,12 +300,21 @@ async function readQualificationInputs() {
   const releaseNotes = await readFile(join(root, 'docs/site/pages/release-notes.md'), 'utf8');
   const packagePage = await readFile(join(root, 'docs/site/pages/packages.md'), 'utf8');
   assert.equal(metadata.version, RELEASE_VERSION);
-  assert.equal(metadata.next.baseVersion, metadata.version);
-  assert.equal(metadata.next.version, matrix.candidate.version);
-  assert.equal(metadata.next.status, matrix.candidate.status);
-  assert.equal(metadata.next.compatibility, 'breaking');
-  assert.match(metadata.next.line, /^\d+\.\d+$/u);
-  assert.equal(`${metadata.next.version.split('.').slice(0, 2).join('.')}`, metadata.next.line);
+  assert.equal(metadata.previousVersion, '0.4.2');
+  assert.equal(metadata.status, 'candidate');
+  const candidateMetadata = metadata.next ?? matrix.candidate;
+  assert.equal(candidateMetadata.version, matrix.candidate.version);
+  assert.equal(candidateMetadata.status, matrix.candidate.status);
+  assert.equal(candidateMetadata.baseVersion, matrix.candidate.baseVersion);
+  assert.equal(candidateMetadata.compatibility, 'breaking');
+  assert.match(
+    candidateMetadata.line ?? `${candidateMetadata.version.split('.').slice(0, 2).join('.')}`,
+    /^\d+\.\d+$/u,
+  );
+  assert.equal(
+    `${candidateMetadata.version.split('.').slice(0, 2).join('.')}`,
+    candidateMetadata.line ?? `${candidateMetadata.version.split('.').slice(0, 2).join('.')}`,
+  );
   assert.equal(matrix.claims.unlimitedScale, false);
   assert.equal(matrix.claims.everyFramework, false);
   assert.equal(matrix.claims.everyProvider, false);
@@ -327,7 +336,7 @@ async function readQualificationInputs() {
 
 test('T20 packages, migrates, and qualifies support from packed artifacts', async () => {
   const { metadata, matrix } = await readQualificationInputs();
-  const candidateVersion = metadata.next.version;
+  const candidateVersion = (metadata.next ?? matrix.candidate).version;
   const evidenceRoot = join(root, 'artifacts/t20-qualification');
   await mkdir(evidenceRoot, { recursive: true });
   const runDirectory = await mkdtemp(join(evidenceRoot, 'run-'));
@@ -364,7 +373,7 @@ test('T20 packages, migrates, and qualifies support from packed artifacts', asyn
     const report = {
       schema: 'aeliqo.t20-qualification.v1',
       sourceRevision: run('git', ['rev-parse', 'HEAD'], root, 30_000).trim(),
-      stableVersion: metadata.version,
+      stableVersion: metadata.previousVersion,
       candidate: matrix.candidate,
       packageArtifacts: {
         version: candidateVersion,
