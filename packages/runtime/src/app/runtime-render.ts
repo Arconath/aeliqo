@@ -13,7 +13,7 @@ import type {
 import type { MountedRegion } from './runtime-state.js';
 import { diagnostic, linkedSignal, statusFor, uniqueRefs } from './runtime-state.js';
 import type { RuntimeResourceBinding } from './types.js';
-import { readSourceRevisionPin } from '../data/local/source-pin.js';
+import { readSourceRevisionPin } from '../data/local.js';
 
 export interface RuntimeRenderHost {
   readonly regions: RegionStore;

@@ -8,7 +8,7 @@ import type {
 import type { MaterializedTaskOutput } from '../evaluation/types.js';
 import type { RuntimeRenderPrepare } from '../app/runtime-render.js';
 import type { ResultEvent } from '../results/types.js';
-import { readSourceRevisionPin } from '../data/local/source-pin.js';
+import { readSourceRevisionPin } from '../data/local.js';
 import { SurfaceControllerImpl } from './controller.js';
 import { SurfaceRegistry } from './registration.js';
 import { createLocalSurfaceScope } from './scope.js';
