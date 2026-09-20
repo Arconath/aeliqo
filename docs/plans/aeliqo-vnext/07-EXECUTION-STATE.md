@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-20 07:48 Asia/Jakarta (T07 accepted at `1e4fa2f`; T08 unblocked).
+Updated: 2026-09-20 08:50 Asia/Jakarta (T08 accepted at `61ab509`; T09 unblocked).
 
 ## Source and authority
 
@@ -9,7 +9,9 @@ Updated: 2026-09-20 07:48 Asia/Jakarta (T07 accepted at `1e4fa2f`; T08 unblocked
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
 - Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, and accepted T02–T07 implementation through source `1e4fa2f`.
-- Public registry changes: none.
+- Public registry changes: T08 registered the existing bar visualization path and
+  bounded data-detail comparison composition through the existing registry;
+  no new public package was published.
 - Production changes: T02 core feature definitions; T03 runtime surface modules; T04 host-resolved scopes and safe transitions; T05 bounded local binding and source replacement; T06 remote capability/coverage contracts, authoritative stream/result pins, bounded cursor/cache semantics, and validated analytics meanings; T07 deterministic adaptive resolution, candidate isolation, and fenced renderer commitment. T07 has completed independent review.
 - Live paid-model authorization for this vNext execution: not established.
 - Merge/publication/deployment authorization for this vNext execution: must be verified against current policy and owner approvals.
@@ -28,7 +30,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T05  | implemented-and-verified | Accepted source `867192f`; bounded local binding and inference, atomic schema-validated updates, pre-commit source fencing, 47/47 focused, 129/129 vNext, full data/query/semantics/evaluation/Region/Result regressions, installed core/runtime consumers, site and visual gates; not published         |
 | T06  | implemented-and-verified | Accepted source `22b6950`; real HTTP protocol fixture, explicit unsupported/coverage behavior, snapshot/live cursor fencing, authoritative aggregate/lineage proof, semantic expected-value fixtures, 178/178 vNext, regressions, installed core/runtime consumers, site and visual gates; not published |
 | T07  | implemented-and-verified | Accepted source `1e4fa2f`; deterministic owned-input resolver, bounded candidate IDs, pins/eligibility/clarification, candidate isolation, cancellation rollback, hostile Proxy/accessor rejection, 204/204 vNext, 52/52 adaptation, browser/consumer/site/performance evidence; not published                       |
-| T08  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
+| T08  | implemented-and-verified | Accepted source `61ab509`; registered bar analysis, identity-scoped comparison split, adaptive table/cards, exact ResultRef lineage isolation through data/visualization/plot boundaries, browser/SSR/docs/consumer evidence, and independent review; not published |
 | T09  | not-started              | Workspace composition not implemented                                                                                                                                                                                                                                                                    |
 | T10  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
 | T11  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
@@ -45,7 +47,10 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 
 ## Next executable action
 
-Execute T08's registered bar and bounded split/comparison composition from accepted T07 source `1e4fa2f`, extending the existing registry, recipes, state mappings, and renderer path without introducing a second resolver or renderer stack.
+Execute T09's workspace-wide adaptive presentation seam on accepted T08 source
+`61ab509`. Reuse the existing presentation graph, one coordinating surface,
+scoped child addresses, and the runtime adaptation boundary; do not create a
+parallel workspace engine or universal component.
 
 ## Decisions to preserve
 
@@ -56,6 +61,21 @@ Feature template != live surface instance. Render components receive controllers
 Record task ID and requirements; current branch/SHA/diff hash; files changed/owned; command and exit status; artifact location; verified behavior; failures/blockers; decision and reason; next exact command/action. Keep important failures rather than replacing them with a later summary of successes.
 
 ## Execution log
+
+### T08 / RQ12 — registered views, bounded composition, and state transfer
+
+- Accepted source `61ab509bd8dd46a11fc6b583a31f9d8fba41d477`; clean source digest
+  `8fba255d856f54690f66e1a246cb8261ca1fe3a6fcf81268cfbd8b073e7addbf`.
+- Added the registered bar analysis path, identity-scoped split comparison,
+  adaptive table/cards behavior, exact `sourceLineage` identity through data,
+  visualization, and plot internals, plus runnable examples and docs.
+- Verification: vNext 209/209, adaptation 56/56, vNext browser 6/6,
+  adaptation browser 2/2, data semantic 42/42, plot 12/12, visualization
+  30/30, visualization semantic 8/8, docs artifact, catalog examples, and
+  packed consumer all passed. Evidence is recorded in
+  `.superpowers/sdd/02-EXECPLAN/task-8-report.md`.
+- Independent final review found no Critical or Important findings. Published,
+  deployed, and production-runtime-verified remain false.
 
 ### T00 / RQ01 / RQ32 — baseline and harness
 

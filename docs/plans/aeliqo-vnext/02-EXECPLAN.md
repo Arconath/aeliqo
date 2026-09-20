@@ -308,7 +308,7 @@ it('uses explicit tie-breaking instead of registration accidents', () => {
 
 **Produces:** real built-in browse, detail, compare, registered trend/bar, form, and bounded split/comparison presentation with validated links/coverage.
 
-- [ ] Add a failing ambiguity test:
+- [x] Add and retain the failing ambiguity test:
 
 ```ts
 it('asks for a metric rather than guessing the first number', () => {
@@ -320,10 +320,10 @@ it('asks for a metric rather than guessing the first number', () => {
 });
 ```
 
-- [ ] Candidate-plan details may use existing Outcome types; reconcile this acceptance shape once in T01/T07 rather than add parallel status systems.
-- [ ] Implement explicit missing-candidate vs needs-input fallback behavior, bounded composition nodes/edges, view pin enforcement, and role/field/config validation.
-- [ ] Test focus/selection/draft mapping between compatible views; reject unsupported mappings; do not force table-to-cards when simultaneous comparison is required.
-- [ ] Add resize hysteresis, coalescing, and previous-UI preservation tests. Run adaptation/browser/consumer suites and document real adaptive eligibility per view.
+- [x] Candidate-plan details use the existing Outcome and resolver types; no parallel status system was added.
+- [x] Implement explicit missing-candidate vs needs-input fallback behavior, bounded composition nodes/edges, view pin enforcement, and role/field/config validation.
+- [x] Test focus/selection/draft mapping between compatible views; reject unsupported mappings; do not force table-to-cards when simultaneous comparison is required.
+- [x] Add resize hysteresis, coalescing, and previous-UI preservation tests. Run adaptation/browser/consumer suites and document real adaptive eligibility per view.
 
 ## T09 — Workspace-wide adaptive presentation without tenancy changes
 
