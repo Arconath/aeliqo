@@ -99,6 +99,7 @@ test('announces denial and immediately removes revoked presentation content', as
 });
 
 test('keeps the adaptive control surface free of automated accessibility violations', async ({ page }) => {
+  await expect(page.locator('#page-status')).toHaveText('Ready', { timeout: 15_000 });
   const result = await new AxeBuilder({ page }).include('main').analyze();
   expect(result.violations).toEqual([]);
 });
