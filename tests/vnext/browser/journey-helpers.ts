@@ -27,6 +27,7 @@ export async function runManualCompareJourney(page: Page): Promise<CompareJourne
 export async function runFixtureAgentCompareJourney(page: Page): Promise<CompareJourneyResult> {
   await page.getByRole('button', { name: 'Fixture-agent compare p1 and p2' }).click();
   await expect(page.locator('#catalog-status')).toContainText('fixture-agent comparison renderer-ready');
+  await expect(page.locator('#catalog-intent')).toHaveAttribute('data-bridge-receipt', 'renderer-ready');
   return readComparison(page);
 }
 
