@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-20 05:06 Asia/Jakarta (T06 accepted at `22b6950`; T07 unblocked).
+Updated: 2026-09-20 07:48 Asia/Jakarta (T07 accepted at `1e4fa2f`; T08 unblocked).
 
 ## Source and authority
 
@@ -8,9 +8,9 @@ Updated: 2026-09-20 05:06 Asia/Jakarta (T06 accepted at `22b6950`; T07 unblocked
 - Inspected reference SHA: 9092d6cff454b81cd623a7a4be7621c6a750d9c7.
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
-- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, and accepted T02–T06 implementation through source `22b6950`.
+- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, and accepted T02–T07 implementation through source `1e4fa2f`.
 - Public registry changes: none.
-- Production changes: T02 core feature definitions; T03 runtime surface modules; T04 host-resolved scopes and safe transitions; T05 bounded local binding and source replacement; T06 remote capability/coverage contracts, authoritative stream/result pins, bounded cursor/cache semantics, and validated analytics meanings. T06 has completed independent review.
+- Production changes: T02 core feature definitions; T03 runtime surface modules; T04 host-resolved scopes and safe transitions; T05 bounded local binding and source replacement; T06 remote capability/coverage contracts, authoritative stream/result pins, bounded cursor/cache semantics, and validated analytics meanings; T07 deterministic adaptive resolution, candidate isolation, and fenced renderer commitment. T07 has completed independent review.
 - Live paid-model authorization for this vNext execution: not established.
 - Merge/publication/deployment authorization for this vNext execution: must be verified against current policy and owner approvals.
 
@@ -27,7 +27,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T04  | implemented-and-verified | Accepted source `f2c5389`; two-phase acceptance/commit, terminal-state and truthful-receipt reentrancy checks, real parent/child/peer isolation, 61/61 focused, 95/95 vNext, regressions, and installed runtime consumer pass; not published                                                             |
 | T05  | implemented-and-verified | Accepted source `867192f`; bounded local binding and inference, atomic schema-validated updates, pre-commit source fencing, 47/47 focused, 129/129 vNext, full data/query/semantics/evaluation/Region/Result regressions, installed core/runtime consumers, site and visual gates; not published         |
 | T06  | implemented-and-verified | Accepted source `22b6950`; real HTTP protocol fixture, explicit unsupported/coverage behavior, snapshot/live cursor fencing, authoritative aggregate/lineage proof, semantic expected-value fixtures, 178/178 vNext, regressions, installed core/runtime consumers, site and visual gates; not published |
-| T07  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
+| T07  | implemented-and-verified | Accepted source `1e4fa2f`; deterministic owned-input resolver, bounded candidate IDs, pins/eligibility/clarification, candidate isolation, cancellation rollback, hostile Proxy/accessor rejection, 204/204 vNext, 52/52 adaptation, browser/consumer/site/performance evidence; not published                       |
 | T08  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
 | T09  | not-started              | Workspace composition not implemented                                                                                                                                                                                                                                                                    |
 | T10  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
@@ -45,7 +45,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 
 ## Next executable action
 
-Execute T07's one deterministic adaptive decision engine from accepted T06 source `22b6950`, using the prepared resolver audit and API seam without introducing a second presentation engine.
+Execute T08's registered bar and bounded split/comparison composition from accepted T07 source `1e4fa2f`, extending the existing registry, recipes, state mappings, and renderer path without introducing a second resolver or renderer stack.
 
 ## Decisions to preserve
 
@@ -134,6 +134,15 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 - Clean installed evidence: `artifacts/core-consumers/run-VU28KW/report.json` and `artifacts/runtime-consumers/run-SnH2yw/report.json`; package source digests are unchanged across each run. The core JavaScript consumer remains within its 71,680-byte gzip budget at 71,676 bytes.
 - Full site evidence passes unit, build/typecheck, browser, BYOK, local-runner, all 71 documentation previews, responsive/layout, server/provenance, and 24 visual-baseline checks. Repeated render observation performs 256 subscribe/snapshot cycles without a new ResultStore allocation or HTTP request.
 - Detailed evidence: `.superpowers/sdd/02-EXECPLAN/task-6-report.md`. Implemented and verified locally through production source, real protocol handlers, and clean installed packages. Nothing was published, deployed, pushed, or runtime-verified in production; no paid provider model was invoked.
+
+### T07 / RQ11 — deterministic adaptive resolution and safe commitment
+
+- Accepted source: `1e4fa2fca6cf1a818fb101db467c4f7f8588fe9e`; complete `6067d31..1e4fa2f` diff SHA-256 `dbaaf5f0f809b3f843cad1bf1780e49d78f8a45035866b39a9e5b6ea5b889f69`.
+- Added one pure `resolvePresentation` facade over the existing composition, registry, validation, ranking, and transition path. Inputs are owned and bounded; decisions are deterministic; explicit candidates, pins, coverage, role/field/config requirements, clarification, and target identity fail closed without I/O or model use.
+- Web recipe candidate failures are isolated, internal candidate IDs are bounded, and runtime commits are region-owned, cancellation-aware, target-fenced, and capable of restoring an authorized prior UI without overwriting a newer successor.
+- Independent security review found one Important legacy adapter gap after the first exact-diff reviews: runtime candidate normalization read Proxy/accessor values before ownership. `1e4fa2f` now performs bounded inspection and structured cloning before field reads; regressions prove no hostile getter/value trap execution and controlled failure. Two independent final re-reviews report no Critical or Important findings.
+- Fresh exact-source evidence: vNext 204/204; presentation adaptation 52/52; adaptation browser 2/2; clean installed adaptation consumer at `artifacts/adaptation-consumers/run-bxRJcH/report.json`; performance report `artifacts/performance-bundles/run-g9eMOj/report.json`; lint, format, diff, exact docs artifact, and the full site/browser/visual matrix pass.
+- Detailed evidence: `.superpowers/sdd/02-EXECPLAN/task-7-report.md`. Implemented and locally/runtime verified through real source, browser, and installed packages; not published, deployed, pushed, or production-runtime verified. No paid provider model was invoked.
 
 ## Resuming existing work
 
