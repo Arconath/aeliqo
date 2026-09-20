@@ -285,11 +285,14 @@ export const openAICompatibleChatAdapter: ToolModelProtocolAdapter = Object.free
 export interface OpenAICompatibleToolModelOptions {
   readonly baseURL: string;
   readonly model: string;
-  readonly secret: OpaqueModelSecret;
-  readonly auth?: {
-    readonly scheme?: ToolModelAuthScheme;
-    readonly headerName?: string;
-  };
+  /** Required for bearer/header auth; omitted only for explicit `auth: { scheme: 'none' }`. */
+  readonly secret?: OpaqueModelSecret;
+  readonly auth?:
+    | {
+        readonly scheme?: Exclude<ToolModelAuthScheme, 'none'>;
+        readonly headerName?: string;
+      }
+    | { readonly scheme: 'none' };
   /** Required endpoint features, declared by the application configuration. */
   readonly capabilities: readonly ToolModelCapability[];
   readonly headers?: Readonly<Record<string, string>>;
@@ -307,15 +310,23 @@ export interface OpenAICompatibleToolModelOptions {
  * not identify or branch on a vendor; compatible gateways use the same adapter.
  */
 export function createOpenAICompatibleToolModel(options: OpenAICompatibleToolModelOptions): ToolModelPort {
+  const scheme = options.auth?.scheme ?? 'bearer';
+  if (scheme === 'none') {
+    if (options.secret !== undefined) throw new Error('No-auth model connections cannot include a credential.');
+  } else if (options.secret === undefined) {
+    throw new Error('Bearer/header model connections require an explicit server-owned credential.');
+  }
+  const headerName = options.auth !== undefined && options.auth.scheme !== 'none' ? options.auth.headerName : undefined;
   return createToolModelConnection({
     adapter: openAICompatibleChatAdapter,
     baseURL: options.baseURL,
     model: options.model,
-    auth: {
-      scheme: options.auth?.scheme ?? 'bearer',
-      secret: options.secret,
-      ...(options.auth?.headerName === undefined ? {} : { headerName: options.auth.headerName }),
-    },
+    auth:
+      scheme === 'none'
+        ? { scheme: 'none' }
+        : scheme === 'header'
+          ? { scheme: 'header', secret: options.secret!, headerName: headerName ?? '' }
+          : { scheme: 'bearer', secret: options.secret! },
     capabilities: options.capabilities,
     ...(options.headers === undefined ? {} : { headers: options.headers }),
     policy: options.policy,

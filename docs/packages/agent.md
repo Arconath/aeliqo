@@ -42,3 +42,19 @@ or executable code.
 Install optional provider or transport dependencies only for the integrations
 the host enables. Keep credentials in the host and outside prompts or tool
 arguments.
+
+## Model profile configuration
+
+Use `createOpenAICompatibleToolModel` for a generic Chat Completions endpoint.
+Its `baseURL`, model ID, auth scheme, capabilities, and egress policy are
+explicit configuration; the adapter never infers a provider or model from a
+hostname or key format. A local/self-hosted endpoint may use
+`auth: { scheme: 'none' }` only when its exact origin is in
+`policy.allowedOrigins` and insecure HTTP has been explicitly enabled. Hosted
+bearer and custom-header connections require a server-owned
+`createOpaqueModelSecret` handle, and missing credentials fail closed.
+
+The model connection is non-streaming and supports bounded retries,
+cancellation, request/response limits, optional provider usage, and local input
+token estimation. Declare only capabilities the endpoint actually supports;
+protocol fixtures do not qualify model quality or live provider support.
