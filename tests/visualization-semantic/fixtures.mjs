@@ -9,6 +9,7 @@ import {
 const temporalRef = {
   id: 'semantic-temporal',
   revision: '1',
+  sourceLineage: 'fixture-source',
   outputId: 'rows',
   queryDigest: 'query',
   scopeDigest: 'scope',
