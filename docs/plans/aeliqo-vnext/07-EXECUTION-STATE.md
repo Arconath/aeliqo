@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-20 09:28 Asia/Jakarta (T09 implementation checkpoint at `756dbf6`; browser evidence remains with T10/T13).
+Updated: 2026-09-20 11:24 Asia/Jakarta (T20 qualification checkpoint at `d9cd85a`; T21 independent final review in progress).
 
 ## Source and authority
 
@@ -8,7 +8,7 @@ Updated: 2026-09-20 09:28 Asia/Jakarta (T09 implementation checkpoint at `756dbf
 - Inspected reference SHA: 9092d6cff454b81cd623a7a4be7621c6a750d9c7.
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
-- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, and accepted T02–T07 implementation through source `1e4fa2f`.
+- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, accepted T02–T20 implementation, and runtime bundle qualification through source `d9cd85a`; the live 0.4.2 line remains unchanged and no publish/deploy was authorized.
 - Public registry changes: T08 registered the existing bar visualization path and
   bounded data-detail comparison composition through the existing registry;
   no new public package was published.
@@ -32,25 +32,25 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T07  | implemented-and-verified | Accepted source `1e4fa2f`; deterministic owned-input resolver, bounded candidate IDs, pins/eligibility/clarification, candidate isolation, cancellation rollback, hostile Proxy/accessor rejection, 204/204 vNext, 52/52 adaptation, browser/consumer/site/performance evidence; not published                       |
 | T08  | implemented-and-verified | Accepted source `61ab509`; registered bar analysis, identity-scoped comparison split, adaptive table/cards, exact ResultRef lineage isolation through data/visualization/plot boundaries, browser/SSR/docs/consumer evidence, and independent review; not published |
 | T09  | implemented-and-verified | Source `756dbf6`; real runtime coordinating surface, registered custom layout/selection intents, validated bounded single/split/compare plans, immutable child addresses, renderer-failure retention, cancellation, unknown-intent rejection, 4/4 focused workspace tests, and strict vNext typecheck. Browser focus/resize/draft evidence remains T10/T13; not published or deployed. |
-| T10  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
-| T11  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
-| T12  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
-| T13  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
-| T14  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
-| T15  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
-| T16  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
-| T17  | not-started              | Full live catalog inventory still required                                                                                                                                                                                                                                                               |
-| T18  | not-started              | No reference journey evidence                                                                                                                                                                                                                                                                            |
-| T19  | not-started              | No qualification measurements                                                                                                                                                                                                                                                                            |
-| T20  | not-started              | Version/support decision not yet executed                                                                                                                                                                                                                                                                |
-| T21  | not-started              | No reviewed/released vNext candidate                                                                                                                                                                                                                                                                     |
+| T10  | implemented-and-verified | Source `42d0c5b` plus test/config corrections `5e00232` and `ce00be0`; native React/headless bindings, effect-owned lifecycle, SSR-safe views, 5/5 React tests, 13/13 vNext browser tests, strict TypeScript, and packed framework consumer evidence; not published. |
+| T11  | implemented-and-verified | Source `b3f0aa8`; real host action confirmation and non-data job capability/progress/cancel/output references; 8/8 focused tests, strict TypeScript, and runtime build; not published. |
+| T12  | implemented-and-verified | Source `617a7ed` plus race correction `ce00be0`; request-scoped SSR/static island, no-JS useful DOM, principal isolation, slow hydration, rapid navigation, RTL/theme and browser evidence 13/13; not published. |
+| T13  | implemented-and-verified | Source `d452c77`; adaptive focus/draft/resize/RTL/reduced-motion behavior, keyboard clarification, partial/unsupported/cancelled/denied recovery, and automated accessibility scan; focused 5/5, vNext browser 22/22, a11y 12/12; three-engine visual gate is recorded by the clean final matrix. |
+| T14  | implemented-and-verified | Sources `a1db42d` and `aa1ef45`; explicit scope/target browser bridge, bounded metadata, actual SurfaceController/renderer receipts, scope rebind and continuation reset; focused 6/6, agent 116/116, strict TypeScript and agent build; not published. |
+| T15  | implemented-and-verified | Source `2f8df85`; explicit no-auth allowlist, bearer/custom-header profiles, correlation/malformed/oversize/retry/rate/timeout/cancel/streaming tests and local HTTP fixture; focused 7/7, protocol 11/11, agents 116/116; no paid call. |
+| T16  | implemented-and-verified | Source `b79ab59`; real security and trust-boundary fixtures for cross-tenant requests/cursors, ResultStore principal cache/revoke/TTL, origin/CSRF/redirect/SSR escaping, forged target/getter payloads, stale action confirmation, bounded agent quotas, and endpoint expiry; security 14/14, focused vNext security/local-data 45/45, boundaries 4/4, auth-retention 1000/1000, strict vNext TypeScript. |
+| T17  | implemented-and-verified | Sources `b64e043` and `733ed14`; source-driven 71-ID page/example/export inventory, public-doc wording checks, and docs artifact verification; inventory 71/71 and docs artifact 10/10; not published. |
+| T18  | implemented-and-verified | Sources `52b2bfe` and `adef0f3`; public island, consumer manual/agent parity through real scoped bridge, enterprise independent remote transport/approval/revocation, and non-data job flows; Vitest remote 1/1 and Chromium/Firefox/WebKit 4/4 each; not published. |
+| T19  | implemented-and-verified | Sources `6fd4901` and `d9cd85a`; module-scale 10/100/1000 with 5 active surfaces and raw 5×100 interactions/tier; vNext workload p95 8.08/7.38/10.45ms, bundle gate 6/6 pass with region-table 163837/163840 gzip, runtime/browser/heap checks green. |
+| T20  | implemented-and-verified | Source `2f483c3` plus qualification `d9cd85a`; candidate line is explicitly unreleased breaking 0.5.0 based on stable 0.4.2; packed five-package legacy/vNext/no-agent consumers, support matrix, migration/release docs, and release tooling 31/31 pass. Published/deployed remain false. |
+| T21  | in-review                | Independent final review dispatched on source `d9cd85a`; release readiness remains local-only until review and clean full matrix complete. |
 
 ## Next executable action
 
-Execute T10's React DX and native/headless integration on accepted T09 source
-`756dbf6`. Preserve the one coordinating workspace surface, existing
-presentation graph, scoped child addresses, and the no-AI default path; do not
-create a parallel workspace engine or universal component.
+Complete T21 independent review, then run the clean source-bound `pnpm check`
+including the vNext browser, performance, docs-inventory, and release-tooling
+gates. Keep candidate artifacts local and unpublishable until explicit release
+authorization exists; do not alter the stable 0.4.2 line.
 
 ## Decisions to preserve
 
@@ -184,6 +184,65 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 - Independent security review found one Important legacy adapter gap after the first exact-diff reviews: runtime candidate normalization read Proxy/accessor values before ownership. `1e4fa2f` now performs bounded inspection and structured cloning before field reads; regressions prove no hostile getter/value trap execution and controlled failure. Two independent final re-reviews report no Critical or Important findings.
 - Fresh exact-source evidence: vNext 204/204; presentation adaptation 52/52; adaptation browser 2/2; clean installed adaptation consumer at `artifacts/adaptation-consumers/run-bxRJcH/report.json`; performance report `artifacts/performance-bundles/run-g9eMOj/report.json`; lint, format, diff, exact docs artifact, and the full site/browser/visual matrix pass.
 - Detailed evidence: `.superpowers/sdd/02-EXECPLAN/task-7-report.md`. Implemented and locally/runtime verified through real source, browser, and installed packages; not published, deployed, pushed, or production-runtime verified. No paid provider model was invoked.
+
+### T10 / RQ02 / RQ06 / RQ13 — native React/headless integration
+
+- Accepted implementation source `42d0c5b`; test/config corrections `5e00232` and `ce00be0`. Added the scoped React surface subpath, effect-owned controller lifecycle, SSR-safe native views, adaptive/view bindings, and a runtime-backed React consumer without introducing a second workspace engine.
+- Evidence: React-focused tests 5/5, vNext suite 226/226 before downstream T13 additions, strict `tests/vnext` TypeScript, package build, packed framework consumer, and vNext browser suite 13/13. No model call, publication, deployment, or production runtime verification occurred.
+
+### T11 / RQ14 / RQ15 — host-owned actions and non-data jobs
+
+- Accepted implementation source `b3f0aa8`. The action fixture uses the production ActionRegistry/ActionPort boundary with host-owned durable effects, stale authorization/entity checks, ambiguity/restart and idempotency handling. The job fixture uses a host-owned capability for progress, cancellation, and opaque output references without rows or catalog data.
+- Evidence: focused action/job tests 8/8, runtime build, strict vNext TypeScript, and full vNext suite before downstream additions. No model call, publication, deployment, or production runtime verification occurred.
+
+### T12 / RQ16 / RQ17 — request-scoped SSR and static islands
+
+- Accepted implementation source `617a7ed` with React browser race correction `ce00be0`. Added request-scoped SSR and a static island path that reuse the same runtime contracts and keep server-only work out of browser entrypoints.
+- Evidence: SSR/browser suite and full vNext browser suite 13/13, including no-JS useful DOM, principal isolation, slow hydration, rapid navigation, RTL/theme, and static-island checks; platform build and strict TypeScript pass. No deployment or production runtime verification occurred.
+
+### T13 / RQ18 / RQ19 — adaptive experience recovery and accessibility
+
+- Accepted implementation source `d452c77`. The real example path preserves focus and dirty drafts across resize/RTL/reduced-motion changes, exposes keyboard-completable clarification, distinguishes partial/unsupported/cancelled/denied states, and removes revoked content immediately. Accessibility assertions include keyboard/focus behavior and axe checks; manual assistive-technology certification remains unclaimed.
+- Evidence: focused Playwright 5/5, vNext unit suite 256/256, component accessibility 12/12, and fresh vNext browser 22/22. The three-engine visual runs remain a clean-matrix gate; manual assistive-technology certification is not claimed. No publication/deployment occurred.
+
+### T17 / RQ24 / RQ25 — source-driven catalog and documentation inventory
+
+- Accepted sources `b64e043` and `733ed14`. The inventory loads active IDs from `catalog/components.json`, checks page/example/declaration/public-export parity and required authored sections/directives, and keeps public wording source-driven rather than relying on hard-coded counts.
+- Evidence: `pnpm test:docs-inventory` reports 71/71 active IDs with 71/71 pages and examples; `pnpm test:docs-artifact` reports 10/10 verification tests and 121 authored/generated pages. No publication/deployment occurred.
+
+### T14 / RQ20 / RQ21 — scoped optional agent bridge
+
+- Accepted sources `a1db42d` and `aa1ef45`; the browser adapter is explicitly scoped by instance, surface, target and allowlist, carries bounded metadata, calls the real SurfaceController path, and reports renderer receipts. Rebinding changes scope identity and resets continuation instead of retargeting a prior controller.
+- Evidence: focused bridge 6/6, agent suite 116/116, strict vNext TypeScript, agent build, and browser journey coverage. No provider/model call, publication, deployment, or production runtime verification occurred.
+
+### T15 / RQ22 / RQ23 — provider-neutral model adapter and protocol limits
+
+- Accepted source `2f8df85`; BYOK profiles require explicit endpoint/origin/auth policy, keep server credentials out of browser graphs, and exercise malformed/oversized/correlation/retry/rate/timeout/cancel/streaming behavior on a local HTTP fixture. The fixture does not contact a paid provider.
+- Evidence: focused model profile 7/7, protocol model 11/11, agents 116/116, agent build, and strict TypeScript. Live paid-model qualification remains unperformed because authorization and credentials were not established.
+
+### T16 / RQ26 / RQ27 / RQ28 / RQ29 / RQ30 — security and trust-boundary qualification
+
+- Accepted source `b79ab59`; real tests cover cross-tenant serialized requests/cursors, ResultStore principal cache/revoke/TTL behavior, origin/CSRF and redirect fencing, SSR escaping/unsafe URLs, prompt/forged target/getter payloads, stale action confirmation, pending/oversized agent quotas, and expiring scoped endpoints.
+- Evidence: `pnpm test:security` 5 files/14 tests, focused vNext security plus local-data 45/45, `pnpm test:boundaries` 4/4, `pnpm test:data:auth-retention` 1000/1000, and strict vNext TypeScript. No secrets, paid calls, publication, deployment, or production traffic were used.
+
+### T18 / RQ34 / RQ35 — reference journeys and manual/agent parity
+
+- Accepted sources `52b2bfe` and `adef0f3`; public no-JS content, manual and optional-agent comparison, independent enterprise windows with explicit host approval/revocation, remote transport, and host-owned non-data jobs all use the same runtime boundary and scoped receipts.
+- Evidence: remote transport 1/1; Playwright journeys 4/4 in Chromium, Firefox, and WebKit; fresh vNext browser matrix 22/22. Browser fixtures and local HTTP transport were used; no live provider or production endpoint was contacted.
+
+### T19 / RQ31 / RQ37 / RQ38 / RQ39 — measured performance and module scale
+
+- Accepted sources `6fd4901` and `d9cd85a`; module-scale workload runs 10/100/1000 declarations with five active surfaces and five repetitions of 100 real interactions per tier. Runtime, browser and heap lifecycle checks retain bounded resources.
+- Evidence: `artifacts/performance-workloads/vnext-module-scale-1789878161655.json` qualification pass with p95 8.08/7.38/10.45ms; `artifacts/performance-bundles/run-P37FRY/report.json` bundle 6/6 pass, including region-table 163837/163840 gzip; no cap, workload or forbidden-module rule was changed.
+
+### T20 / RQ36 / RQ40 / RQ42 / RQ44 / RQ45 / RQ46 — support, compatibility and release evidence
+
+- Accepted source `2f483c3` with qualification source `d9cd85a`; stable package/site artifacts remain 0.4.2 while candidate metadata names unreleased breaking 0.5.0. Migration, release notes, ship/support pages, and machine-readable support matrix explicitly distinguish qualified from unverified framework/browser/provider/runtime claims.
+- Evidence: `artifacts/t20-qualification/run-eHzzDF/report.json`, release tooling 31/31, packed five-package legacy and vNext consumers, positive no-agent graph, negative forbidden-module fixture, docs inventory 71/71, docs artifact 10/10, and fresh vNext browser 22/22. No npm publish, image publication, deployment, merge, push, or stable-line mutation occurred.
+
+### T21 — final independent review and release readiness
+
+- Review was dispatched to an independent Luna-max worker against source `d9cd85a`; it is bounded to read-only inspection and focused checks. The final candidate remains local-only until the review reports no blocking findings and the clean source-bound `pnpm check` completes.
 
 ## Resuming existing work
 
