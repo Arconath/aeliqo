@@ -233,6 +233,7 @@ function bundleModules(result, consumer) {
           : normalized,
       );
     }
+    for (const imported of [...(output.imports ?? []), ...(output.dynamicImports ?? [])]) modules.add(imported);
   }
   return [...modules].sort();
 }
@@ -264,12 +265,16 @@ function forbiddenPackageNames(lock) {
 
 function forbiddenModules(modules, lock) {
   const providerNames = forbiddenPackageNames(lock);
-  return modules.filter(
-    (moduleId) =>
-      moduleId.startsWith('node:') ||
-      moduleId.includes('/node_modules/@aeliqo/agent/') ||
-      providerNames.some((name) => moduleId.includes(`/node_modules/${name}/`)),
-  );
+  return modules.filter((moduleId) => {
+    const normalized = moduleId.replaceAll('\\', '/');
+    return (
+      normalized.startsWith('node:') ||
+      normalized === '@aeliqo/agent' ||
+      normalized.startsWith('@aeliqo/agent/') ||
+      normalized.includes('/node_modules/@aeliqo/agent/') ||
+      providerNames.some((name) => normalized.includes(`/node_modules/${name}/`))
+    );
+  });
 }
 
 function assertNoForbiddenModules(modules, lock) {

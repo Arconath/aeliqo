@@ -59,7 +59,11 @@ test('concurrent principals receive isolated markup and public snapshots', async
 test('slow hydration preserves the server DOM and reports no browser errors', async ({ page }) => {
   const errors = captureBrowserErrors(page);
   await page.setExtraHTTPHeaders({ 'x-aeliqo-principal': 'alpha' });
-  await page.goto('/vnext/ssr/people?hydrationDelay=150');
+  // Keep a deterministic window in which the browser can observe the
+  // server-rendered status before the intentionally delayed hydration runs.
+  // The fixture caps this delay at 1s; the shorter delay raced on slower CI
+  // runners after navigation had already yielded to the hydration timer.
+  await page.goto('/vnext/ssr/people?hydrationDelay=1000');
   await expect(page.getByRole('cell', { name: 'Ada Chen', exact: true })).toBeVisible();
   await expect(page.locator('#ssr-status')).toHaveText('Server-rendered people table');
   await expect(page.locator('#ssr-status')).toHaveText('Hydrated people table');
