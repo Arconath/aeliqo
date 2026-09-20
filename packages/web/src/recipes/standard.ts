@@ -1,4 +1,4 @@
-import type { Diagnostic, Outcome, PresentationPlan, ReadonlyJsonValue, VersionRef } from '@aeliqo/core';
+import type { Diagnostic, Outcome, PresentationPlan, VersionRef } from '@aeliqo/core';
 import type {
   PresentationClarification,
   PresentationResolverCandidate,
@@ -6,7 +6,11 @@ import type {
 } from '@aeliqo/core/presentation';
 import { AELIQO_CONFIG_SCHEMAS, AELIQO_OPERATION_REFS, AELIQO_PRESENTATION_REFS } from '../region/registry.js';
 import { AELIQO_DATA_CONFIG_SCHEMAS, AELIQO_DATA_REFS } from '../region/data-registry.js';
+import { AELIQO_VISUALIZATION_CONFIG_SCHEMAS, AELIQO_VISUALIZATION_REFS } from '../region/visualization-registry.js';
 import { defineRecipe } from './define.js';
+import { comparisonSplitPlan } from './standard-comparison.js';
+import { barConfig, dataColumns, requestedFields } from './standard-data.js';
+import { trendConfig } from './standard-trend.js';
 import type { RecipeContext, RecipeDefinition } from './types.js';
 import { standardFormRecipe } from './standard-form.js';
 import { standardStateMapping } from './standard-state.js';
@@ -52,6 +56,12 @@ const aliases: Readonly<Record<string, ViewChoice>> = Object.freeze({
     schema: AELIQO_CONFIG_SCHEMAS.trend,
     role: 'trend',
     operations: [AELIQO_OPERATION_REFS.read, AELIQO_OPERATION_REFS.compare, AELIQO_OPERATION_REFS.analyze],
+  },
+  bar: {
+    ref: AELIQO_VISUALIZATION_REFS.bar,
+    schema: AELIQO_VISUALIZATION_CONFIG_SCHEMAS.bar,
+    role: 'visualization',
+    operations: [AELIQO_OPERATION_REFS.analyze],
   },
 });
 
@@ -108,86 +118,13 @@ function custom(
   };
 }
 
-type TrendConfig =
-  | { readonly kind: 'available'; readonly values: PresentationValues }
-  | { readonly kind: 'unavailable' }
-  | { readonly kind: 'needs-input'; readonly diagnostic: Diagnostic };
-
-function requestedFields(context: RecipeContext): ReadonlySet<string> {
-  return new Set(context.task.needs.flatMap((need) => need.fields));
-}
-
-function trendConfig(context: RecipeContext): TrendConfig {
-  const result = context.result;
-  if (result === undefined) return { kind: 'unavailable' };
-  const requested = requestedFields(context);
-  const fields = result.fields.filter((field) => requested.has(field.id));
-  const temporal = fields.filter((field) => field.type.value === 'date' || field.type.value === 'instant');
-  const semanticTime = temporal.filter((field) => field.role === 'time');
-  const timeCandidates = semanticTime.length > 0 ? semanticTime : temporal;
-  if (timeCandidates.length === 0)
-    return {
-      kind: 'needs-input',
-      diagnostic: {
-        code: 'web.recipe.needs-input.time',
-        message: 'Choose one requested date or time field before rendering a trend.',
-        retryable: false,
-      },
-    };
-  if (timeCandidates.length > 1)
-    return {
-      kind: 'needs-input',
-      diagnostic: {
-        code: 'web.recipe.needs-input.time',
-        message: 'Choose one requested time field before rendering a trend.',
-        retryable: false,
-      },
-    };
-  const measures = fields.filter(
-    (field) => field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value),
-  );
-  if (measures.length === 0)
-    return {
-      kind: 'needs-input',
-      diagnostic: {
-        code: 'web.recipe.needs-input.measure',
-        message: 'Choose one requested numeric measure before rendering a trend.',
-        retryable: false,
-      },
-    };
-  if (measures.length > 1)
-    return {
-      kind: 'needs-input',
-      diagnostic: {
-        code: 'web.recipe.needs-input.measure',
-        message: `Choose one requested measure before rendering a trend: ${measures.map((field) => field.label).join(', ')}.`,
-        retryable: false,
-      },
-    };
-  const temporalField = timeCandidates[0]!;
-  const measure = measures[0]!;
-  const seriesBy = fields
-    .filter((field) => field.role === 'dimension' && field.id !== temporalField.id && field.id !== measure.id)
-    .map((field) => field.id);
-  return {
-    kind: 'available',
-    values: { labelField: temporalField.id, series: [{ field: measure.id }], seriesBy },
-  };
-}
-function dataColumns(context: RecipeContext, typed: boolean): readonly Readonly<Record<string, ReadonlyJsonValue>>[] {
-  if (context.result === undefined) return [];
-  const requested = requestedFields(context);
-  return context.result.fields
-    .filter((field) => requested.has(field.id))
-    .map((field) => ({
-      key: field.id,
-      label: field.label,
-      ...(typed ? { type: field.type.value } : {}),
-    }));
-}
 function valuesFor(view: ViewChoice, context: RecipeContext): PresentationValues | undefined {
   if (context.result === undefined) return undefined;
   if (sameRef(view.ref, aliases.table!.ref)) return { columns: dataColumns(context, false), selection: 'none' };
+  if (sameRef(view.ref, aliases.bar!.ref)) {
+    const config = barConfig(context);
+    return config.kind === 'available' ? config.values : undefined;
+  }
   const columns = dataColumns(context, true);
   if (sameRef(view.ref, aliases.detail!.ref)) return { fields: columns.map((column) => String(column.key)), columns };
   if (sameRef(view.ref, aliases.cards!.ref)) {
@@ -217,6 +154,10 @@ export interface StandardRecipeCandidates {
 function preferredView(context: RecipeContext, preferred: string): SelectedView | undefined {
   const known = aliasedView(preferred);
   const operation = context.task.needs[0]?.operation;
+  if (known !== undefined && sameRef(known.ref, aliases.bar!.ref)) {
+    const choice = barView(context);
+    return choice?.ok === true ? choice.value : undefined;
+  }
   if (
     known !== undefined &&
     operation !== undefined &&
@@ -243,12 +184,23 @@ function trendView(context: RecipeContext): Outcome<SelectedView> | undefined {
   return { ok: true, value: { ...trend, values: config.values } };
 }
 
+function barView(context: RecipeContext): Outcome<SelectedView> | undefined {
+  const bar = aliases.bar!;
+  const operation = context.task.needs[0]?.operation;
+  if (operation === undefined || !allowed(context, bar.ref) || !supportsOperation(bar.operations, operation))
+    return undefined;
+  const config = barConfig(context);
+  if (config.kind === 'unavailable') return undefined;
+  return { ok: true, value: { ...bar, values: config.values } };
+}
+
 function knownView(context: RecipeContext, name: keyof typeof aliases): Outcome<SelectedView> | undefined {
   const view = aliases[name]!;
   const operation = context.task.needs[0]?.operation;
   if (operation === undefined || !allowed(context, view.ref) || !supportsOperation(view.operations, operation))
     return undefined;
   if (name === 'trend') return trendView(context);
+  if (name === 'bar') return barView(context);
   return { ok: true, value: viewWithValues(view, context) };
 }
 
@@ -269,7 +221,7 @@ function viewForIntent(context: RecipeContext): Outcome<SelectedView> {
     case 'compare':
       return firstAvailable(context, ['table']);
     case 'analyze':
-      return firstAvailable(context, ['trend', 'table']);
+      return firstAvailable(context, ['bar', 'trend', 'table']);
     default:
       return firstAvailable(
         context,
@@ -340,6 +292,8 @@ function planForView(context: RecipeContext, view: SelectedView): Outcome<Presen
 function build(context: RecipeContext): Outcome<PresentationPlan> {
   if (context.task.kind !== 'data' || context.result === undefined)
     return failure('web.recipe.unsupported', 'Standard data recipes require a materialized data Task.');
+  const split = comparisonSplitPlan(context);
+  if (split !== undefined) return split;
   const view = selectedView(context);
   if (!view.ok) return view;
   return planForView(context, view.value);
@@ -358,7 +312,7 @@ function authorableNames(kind: RecipeContext['intent']['kind']): readonly (keyof
     case 'compare':
       return ['table'];
     case 'analyze':
-      return ['trend', 'table'];
+      return ['bar', 'trend', 'table'];
     default:
       return ['table', 'cards', 'list'];
   }
@@ -401,6 +355,10 @@ function authorable(context: RecipeContext, name: keyof typeof aliases): boolean
   return operation !== undefined && allowed(context, view.ref) && supportsOperation(view.operations, operation);
 }
 function authorKnownView(context: RecipeContext, name: keyof typeof aliases): Outcome<SelectedView> {
+  if (name === 'bar') {
+    const choice = barView(context);
+    return choice ?? failure('web.recipe.bar', 'No registered categorical bar view can present this task.');
+  }
   if (name !== 'trend') return { ok: true, value: viewWithValues(aliases[name]!, context) };
   const config = trendConfig(context);
   if (config.kind === 'needs-input') return { ok: false, diagnostics: [config.diagnostic] };
@@ -455,14 +413,18 @@ export function standardRecipeCandidates(context: RecipeContext): Outcome<Standa
         clarification = trendClarification(context, diagnostic);
         continue;
       }
-      return view;
+      continue;
     }
     const authored = resolverCandidate(context, `standard.${name}`, view.value);
     if (!authored.ok) return authored;
     candidates.push(...authored.value);
   }
+  const split = comparisonSplitPlan(context);
+  if (split?.ok === true) candidates.push({ id: 'standard.comparison', source: 'explicit', plan: split.value });
   const custom = appendPreferredCustom(context, preferred, preferredAlias, candidates);
   if (!custom.ok) return custom;
+  if (clarification !== undefined && candidates.some((candidate) => candidate.id === 'standard.bar'))
+    clarification = undefined;
   return {
     ok: true,
     value: {
@@ -480,6 +442,7 @@ export const STANDARD_VIEW_REFS = Object.freeze({
   list: AELIQO_DATA_REFS.recordList,
   detail: AELIQO_DATA_REFS.detail,
   trend: AELIQO_PRESENTATION_REFS.trend,
+  bar: AELIQO_VISUALIZATION_REFS.bar,
 });
 
 /** Resolve a resource-facing standard alias to the canonical renderer representation ID. */

@@ -3,10 +3,18 @@ import type { BoundVisualization } from '@aeliqo/core/visualization';
 import type { Outcome, Result, Scalar } from '@aeliqo/core';
 import type { VisualizationDataset, VisualizationRow } from './types.js';
 
-const REFERENCE_FIELDS = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'] as const;
+const REQUIRED_REFERENCE_FIELDS = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'] as const;
+const REFERENCE_FIELDS = new Set([...REQUIRED_REFERENCE_FIELDS, 'sourceLineage']);
 
 const key = (result: Result['ref']): string =>
-  JSON.stringify([result.id, result.revision, result.outputId, result.queryDigest, result.scopeDigest]);
+  JSON.stringify([
+    result.id,
+    result.revision,
+    result.sourceLineage ?? null,
+    result.outputId,
+    result.queryDigest,
+    result.scopeDigest,
+  ]);
 
 const fail = (code: string, message: string): Outcome<never> => ({
   ok: false,
@@ -18,8 +26,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isExactReference(value: unknown): value is Result['ref'] {
-  if (!isRecord(value) || Object.keys(value).length !== REFERENCE_FIELDS.length) return false;
-  return REFERENCE_FIELDS.every((name) => Object.hasOwn(value, name) && typeof value[name] === 'string' && value[name]);
+  if (!isRecord(value)) return false;
+  const keys = Object.keys(value);
+  if (keys.length < 5 || keys.length > 6 || keys.some((name) => !REFERENCE_FIELDS.has(name))) return false;
+  if (
+    !REQUIRED_REFERENCE_FIELDS.every(
+      (name) => Object.hasOwn(value, name) && typeof value[name] === 'string' && value[name],
+    )
+  )
+    return false;
+  return (
+    !Object.hasOwn(value, 'sourceLineage') ||
+    (typeof value.sourceLineage === 'string' && value.sourceLineage.length > 0)
+  );
 }
 
 function findBoundResult(bound: BoundVisualization, resultRef: Result['ref']): Outcome<Result> {

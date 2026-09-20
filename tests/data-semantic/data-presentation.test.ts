@@ -96,7 +96,14 @@ const binding: AeliqoDataBinding = { result, rows };
 const entityOptions = { resolveEntity: () => 'person' } as const;
 
 function refKey(value: ResultRef): string {
-  return JSON.stringify([value.id, value.revision, value.outputId, value.queryDigest, value.scopeDigest]);
+  return JSON.stringify([
+    value.id,
+    value.revision,
+    value.sourceLineage ?? null,
+    value.outputId,
+    value.queryDigest,
+    value.scopeDigest,
+  ]);
 }
 
 function source(template: unknown): string {
@@ -418,5 +425,67 @@ describe('data presentation bridge', () => {
     const key = refKey(ref);
     const created = createAeliqoDataPresentationRegistry({ [key]: binding }, entityOptions);
     expect(created.ok).toBe(true);
+  });
+
+  it('keeps authorized materializations isolated by exact source lineage', () => {
+    const sourceA = { ...ref, sourceLineage: 'source-a' } as const satisfies ResultRef;
+    const sourceB = { ...ref, sourceLineage: 'source-b' } as const satisfies ResultRef;
+    const sourceABinding = { result: { ...result, ref: sourceA }, rows };
+    const sourceBBinding = {
+      result: { ...result, ref: sourceB },
+      rows: [{ ...rows[0], id: 'b', name: 'Bea' }],
+    };
+    const created = createAeliqoDataPresentationRegistry([sourceABinding, sourceBBinding], entityOptions);
+    if (!created.ok) throw new Error(JSON.stringify(created.diagnostics));
+
+    expect(created.value.bindingFor(sourceA)).toMatchObject({
+      ok: true,
+      value: { rows: [{ id: 'a', name: 'Ada' }] },
+    });
+    expect(created.value.bindingFor(sourceB)).toMatchObject({
+      ok: true,
+      value: { rows: [{ id: 'b', name: 'Bea' }] },
+    });
+  });
+
+  it('rejects a current materialization from a different source lineage', () => {
+    const sourceA = { ...ref, sourceLineage: 'source-a' } as const satisfies ResultRef;
+    const sourceB = { ...ref, sourceLineage: 'source-b' } as const satisfies ResultRef;
+    const sourceABinding = { result: { ...result, ref: sourceA }, rows };
+    const created = createAeliqoDataPresentationRegistry([sourceABinding], entityOptions);
+    if (!created.ok) throw new Error(JSON.stringify(created.diagnostics));
+    const manifest = created.value.manifests.find((candidate) => candidate.ref.id === AELIQO_DATA_REFS.metric.id)!;
+    const context = contextFor(manifest.ref, 'metric', manifest.configSchema);
+    const plan = planFor(manifest.ref, 'metric', manifest.configSchema, {
+      field: 'amount',
+      identityValues: { id: 'a' },
+    });
+    if (context.task.kind !== 'presentation') throw new Error('Expected a presentation task fixture.');
+    const checked = validatePresentationPlan(
+      {
+        ...plan,
+        preconditions: { ...plan.preconditions, results: [sourceA] },
+        nodes: plan.nodes.map((node) => ({ ...node, result: sourceA })),
+      },
+      {
+        ...context,
+        task: { ...context.task, inputs: [sourceA] },
+        current: { ...context.current, results: [sourceA] },
+        results: [sourceABinding.result],
+      },
+      { manifests: created.value.manifests, mappings: [] },
+    );
+    if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+
+    expect(
+      created.value.render(checked.value.nodes[0]!, {
+        result: { ...result, ref: sourceB },
+        rows,
+      }),
+    ).toBe(nothing);
+    expect(created.value.bindingFor(sourceB)).toMatchObject({
+      ok: false,
+      diagnostics: [{ code: 'web.data.presentation.stale' }],
+    });
   });
 });

@@ -7,7 +7,14 @@ import type { AeliqoInputChangeDetail } from '../input/events.js';
 import type { AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionDetail } from '../types.js';
 
 export function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
 
 export function record(value: unknown): Record<string, unknown> | undefined {

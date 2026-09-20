@@ -56,16 +56,15 @@ describe('canonical semantic visualization presentation', () => {
     ]);
   });
 
-  it('derives a read-only configuration with no selection port or operation', () => {
+  it('derives a no-selection configuration while retaining the registered bar analysis operation', () => {
     const presentation = checked(true);
     const visualizationNodes = presentation.nodes.filter((node) => node.node.id !== 'root');
     expect(visualizationNodes.every((node) => node.config.ports.length === 0)).toBe(true);
-    expect(visualizationNodes.every((node) => node.config.operations?.map((operation) => operation.id))).toBe(true);
-    expect(
-      visualizationNodes.every(
-        (node) => node.config.operations?.length === 1 && node.config.operations[0]?.id === 'data.read',
-      ),
-    ).toBe(true);
+    for (const node of visualizationNodes) {
+      expect(node.config.operations?.map((operation) => operation.id)).toEqual(
+        node.manifest.id === 'visualization.bar' ? ['data.read', 'data.analyze'] : ['data.read'],
+      );
+    }
   });
 });
 

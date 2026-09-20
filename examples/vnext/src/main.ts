@@ -12,12 +12,12 @@ const PEOPLE = Object.freeze([
 ]);
 
 const HEADCOUNT = Object.freeze([
-  { id: '2026-03', month: '2026-03-01', headcount: 118 },
-  { id: '2026-04', month: '2026-04-01', headcount: 121 },
-  { id: '2026-05', month: '2026-05-01', headcount: 124 },
-  { id: '2026-06', month: '2026-06-01', headcount: 127 },
-  { id: '2026-07', month: '2026-07-01', headcount: 126 },
-  { id: '2026-08', month: '2026-08-01', headcount: 130 },
+  { id: '2026-07-design', month: '2026-07-01', team: 'Design', headcount: 38 },
+  { id: '2026-07-engineering', month: '2026-07-01', team: 'Engineering', headcount: 61 },
+  { id: '2026-07-operations', month: '2026-07-01', team: 'Operations', headcount: 27 },
+  { id: '2026-08-design', month: '2026-08-01', team: 'Design', headcount: 39 },
+  { id: '2026-08-engineering', month: '2026-08-01', team: 'Engineering', headcount: 64 },
+  { id: '2026-08-operations', month: '2026-08-01', team: 'Operations', headcount: 27 },
 ]);
 
 const people = defineResource({
@@ -31,7 +31,7 @@ const people = defineResource({
     team: { label: 'Team', role: 'dimension' },
     location: { label: 'Location', role: 'attribute' },
   },
-  presentation: { allowedViews: ['table', 'cards'] },
+  presentation: { allowedViews: ['table', 'cards', 'detail'] },
 });
 
 const workforce = defineResource({
@@ -39,11 +39,12 @@ const workforce = defineResource({
   revision: 'vnext-workforce-1',
   label: 'Monthly workforce headcount',
   identity: ['id'],
-  rowGrain: ['month'],
-  schema: z.object({ id: z.string(), month: z.iso.date(), headcount: z.number().int() }),
+  rowGrain: ['month', 'team'],
+  schema: z.object({ id: z.string(), month: z.iso.date(), team: z.string(), headcount: z.number().int() }),
   fields: {
     id: { label: 'Snapshot ID', hidden: true },
     month: { label: 'Month', role: 'time' },
+    team: { label: 'Team', role: 'dimension' },
     headcount: { label: 'Headcount', role: 'measure' },
   },
   meanings: [
@@ -52,7 +53,7 @@ const workforce = defineResource({
       revision: '1',
       label: 'Month end headcount',
       explanation: 'Employees active at the end of each month.',
-      output: { value: 'integer', nullable: false, grain: ['month'] },
+      output: { value: 'integer', nullable: false, grain: ['month', 'team'] },
       implementation: {
         kind: 'expression',
         expression: {
@@ -68,7 +69,7 @@ const workforce = defineResource({
       scope: 'workspace',
       authority: 'approved',
       aggregation: 'semi-additive',
-      aggregationDimensions: ['month'],
+      aggregationDimensions: ['month', 'team'],
       missingPolicy: 'reject',
     },
   ],
@@ -172,17 +173,25 @@ const renderPeople = (preferredView?: string) =>
     ...(preferredView === undefined ? {} : { preferredView }),
   });
 
-const renderAnalysis = (preferredView: 'bar' | 'trend') =>
-  render('analysis', 'analysis', {
+const renderAnalysis = (preferredView: 'bar' | 'trend') => {
+  const grouping =
+    preferredView === 'bar'
+      ? {
+          dimensions: ['team'],
+          time: { field: 'month', grain: 'month' as const, calendar: 'gregorian', timezone: 'UTC' },
+          filter: { op: 'compare' as const, field: 'month', comparison: 'eq' as const, value: '2026-08-01' },
+        }
+      : { time: { field: 'month', grain: 'month' as const, calendar: 'gregorian', timezone: 'UTC' } };
+  return render('analysis', 'analysis', {
     version: '1',
     id: `analyze-workforce-${++sequence}`,
     kind: 'analyze',
     resource: 'workforce',
     measures: [{ id: 'month-headcount', revision: '1' }],
-    dimensions: ['month'],
-    time: { field: 'month', grain: 'month', calendar: 'gregorian', timezone: 'UTC' },
+    ...grouping,
     preferredView,
   });
+};
 
 const renderCompare = () =>
   render('compare', 'compare', {
@@ -194,6 +203,7 @@ const renderCompare = () =>
     fields: ['id', 'name', 'team', 'location'],
   });
 
+document.querySelector('[data-action="people-adaptive"]')!.addEventListener('click', () => void renderPeople());
 document.querySelector('[data-action="people-table"]')!.addEventListener('click', () => void renderPeople('table'));
 document.querySelector('[data-action="people-cards"]')!.addEventListener('click', () => void renderPeople('cards'));
 document.querySelector('[data-action="people-invalid"]')!.addEventListener('click', () => void renderPeople('trend'));

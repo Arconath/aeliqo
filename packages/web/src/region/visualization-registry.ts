@@ -60,7 +60,8 @@ export const AELIQO_VISUALIZATION_CONFIG_SCHEMAS = Object.freeze({
 export const AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS = Object.freeze({
   read: { id: 'data.read', revision: '1' },
   selection: { id: 'interaction.selection', revision: '1' },
-} satisfies Record<'read' | 'selection', VersionRef>);
+  analyze: { id: 'data.analyze', revision: '1' },
+} satisfies Record<'read' | 'selection' | 'analyze', VersionRef>);
 
 export type AeliqoAuthorizedVisualizationBindings =
   | readonly AeliqoVisualizationBinding[]
@@ -126,7 +127,14 @@ const fail = <T>(code: string, message: string): Outcome<T> => ({
 });
 
 function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
 
 function canonical(value: unknown): string {
@@ -174,7 +182,17 @@ function datasetResultRef(value: unknown): Outcome<ResultRef> {
     return fail('dataset', 'A visualization dataset result reference is malformed.');
   const ref = parsed.value as ResultRef;
   const values = [ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest];
-  if (Object.keys(ref).length !== 5 || values.some((item) => typeof item !== 'string' || item.length === 0))
+  const keys = Object.keys(ref);
+  const allowed = new Set(['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest', 'sourceLineage']);
+  const invalidLineage =
+    Object.hasOwn(ref, 'sourceLineage') && (typeof ref.sourceLineage !== 'string' || ref.sourceLineage.length === 0);
+  if (
+    keys.length < 5 ||
+    keys.length > 6 ||
+    keys.some((key) => !allowed.has(key)) ||
+    values.some((item) => typeof item !== 'string' || item.length === 0) ||
+    invalidLineage
+  )
     return fail('dataset', 'A visualization dataset result reference is malformed.');
   return { ok: true, value: ref };
 }
@@ -388,6 +406,7 @@ function resolvedConfig(
         ];
   const operations = [AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.read];
   if (owner !== undefined) operations.push(AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.selection);
+  if (spec.view === 'bar') operations.push(AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.analyze);
   const fields = spec.view === 'matrix' ? [...spec.columns] : result.fields.map((field) => field.id);
   return freeze({ values: { visualization: spec }, fields, ports, operations });
 }
@@ -423,6 +442,7 @@ function buildManifest(
     operations: [
       AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.read,
       AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.selection,
+      ...(view === 'bar' ? [AELIQO_VISUALIZATION_PRESENTATION_OPERATIONS.analyze] : []),
     ],
     result: 'required',
     children: { min: 0, max: 0 },

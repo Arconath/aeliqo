@@ -10,7 +10,14 @@ import type { CartesianRenderContext } from './types.js';
 const PAGE_SIZE = 25;
 
 function resultKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
 
 function diagnosticMessage(diagnostics: readonly { readonly message: string }[]): string {

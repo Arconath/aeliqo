@@ -233,7 +233,14 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
   }
 
   private refKey(ref: ResultRef): string {
-    return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+    return JSON.stringify([
+      ref.id,
+      ref.revision,
+      ref.sourceLineage ?? null,
+      ref.outputId,
+      ref.queryDigest,
+      ref.scopeDigest,
+    ]);
   }
   private select(identity: string, result: Result): void {
     this.dispatchEvent(

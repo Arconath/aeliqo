@@ -73,9 +73,10 @@ can ask for a choice instead of plotting an arbitrary numeric field.
 Analyze requests can also select the registered `bar` representation when a
 categorical dimension and one numeric measure are available. Compare requests
 with two identities use the bounded split-pane composition when the container is
-wide enough; its child tables retain the same authorized result and selection
-contract. The split is not an implicit permission grant: the resource's allowed
-views, renderer registry, operation and result bindings must all permit it.
+wide enough; each child detail is pinned to one requested identity from the same
+authorized result. Narrow layouts retain the simultaneous table comparison. The
+split is not an implicit permission grant: the resource's allowed views, renderer
+registry, operation and result bindings must all permit it.
 
 An explicit view pin is a hard gate and never falls through to another recipe
 candidate. A preferred view remains a ranking input and may fall back only to a

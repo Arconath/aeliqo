@@ -11,7 +11,7 @@ import type {
   RuntimeUnsubscribe,
 } from '@aeliqo/runtime/app';
 import type { AeliqoRegionElement } from '../region/aeliqo-region.js';
-import { createAeliqoPresentationRegistry } from '../region/registry.js';
+import { createAeliqoPresentationRegistry, createSelectionIdentityMapping } from '../region/registry.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
 import type { AeliqoRegionResult, AeliqoViewDefinition } from '../region/types.js';
 import type { RecipeDefinition, RecipePresentationPolicy } from '../recipes/types.js';
@@ -89,7 +89,14 @@ export function withoutDataRevision(
 }
 
 function refKey(ref: Result['ref']): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
 
 export function materialize(
@@ -189,6 +196,17 @@ export function registryFor(
   inputs?: AeliqoInputBindings,
 ): PresentationRegistry | undefined {
   const byRef = new Map(descriptors.map((descriptor) => [refKey(descriptor.ref), descriptor]));
+  const visualizations = results.flatMap((binding) => {
+    const descriptor = byRef.get(refKey(binding.ref));
+    if (descriptor === undefined) return [];
+    return [
+      {
+        result: descriptor,
+        context: binding.visualizationContext ?? { results: [descriptor] },
+        datasets: [{ result: binding.ref, rows: binding.rows }],
+      },
+    ];
+  });
   const base = createAeliqoPresentationRegistry({
     ...(inputs === undefined ? {} : { inputs }),
     data: results.flatMap((binding) => {
@@ -197,12 +215,16 @@ export function registryFor(
         ? []
         : [{ result, rows: binding.rows, ...(binding.columns === undefined ? {} : { columns: binding.columns }) }];
     }),
+    visualizations,
     resolveEntity: () => resourceId,
   });
   if (!base.ok) return undefined;
+  const mappings = [...base.value.mappings];
+  if (mappings.length === 0 && descriptors.length === 1 && descriptors[0]!.identity.length > 0)
+    mappings.push(createSelectionIdentityMapping(resourceId, descriptors[0]!.identity, descriptors[0]!.rowGrain));
   const combined = createPresentationRegistry(
     [...base.value.manifests, ...views.map((view) => view.manifest)],
-    base.value.mappings,
+    mappings,
     base.value.patterns,
     [...(base.value.stateMappings ?? []), ...STANDARD_STATE_MAPPINGS],
   );
@@ -221,6 +243,9 @@ export function experience(
   policy?: RecipePresentationPolicy,
 ): Experience {
   const permitted = new Set(policy?.allowedRepresentations ?? registry.manifests.map((manifest) => manifest.ref.id));
+  const permittedByResourceOrStructure = (manifest: PresentationRegistry['manifests'][number]): boolean =>
+    permitted.has(manifest.ref.id) ||
+    (manifest.result === 'none' && manifest.operations.length === 0 && manifest.roles.includes('structure'));
   return {
     version: '1',
     id: 'aeliqo.web.app',
@@ -228,8 +253,8 @@ export function experience(
     mode: 'adaptive',
     agentAllowed: true,
     allowedRepresentations: registry.manifests
-      .map((manifest) => manifest.ref.id)
-      .filter((representation) => permitted.has(representation)),
+      .filter(permittedByResourceOrStructure)
+      .map((manifest) => manifest.ref.id),
     allowedPatterns: [],
     composition: { allowWithoutPreset: true, maxNodes: 32, maxExpansions: 64 },
     requiredOperations: [],

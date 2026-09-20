@@ -3,6 +3,7 @@ import { defineResource, type Intent, type Result, type Task } from '../../packa
 import {
   resolvePresentation,
   validatePresentationPlan,
+  type PresentationContext,
   type PresentationEnvironment,
   type ValidatedPresentation,
 } from '../../packages/core/src/presentation/index.js';
@@ -20,6 +21,7 @@ import { standardRecipeCandidates } from '../../packages/web/src/recipes/standar
 import {
   experience,
   presentationPolicy,
+  registryFor,
   type WebAppContext,
   type WebRegion,
 } from '../../packages/web/src/app/context.js';
@@ -91,7 +93,7 @@ function input(kind: 'browse' | 'compare', width: number, preferredView?: string
           identities: [{ id: 'p-1' }, { id: 'p-2' }],
           ...(preferredView === undefined ? {} : { preferredView }),
         };
-  const task: Task = {
+  const task = {
     version: '1',
     id: 'browse-1',
     revision: '1',
@@ -130,7 +132,7 @@ function input(kind: 'browse' | 'compare', width: number, preferredView?: string
     ...(preferredView === undefined
       ? {}
       : { viewPreference: { representation: preferredView, strength: 'preferred' } }),
-  };
+  } satisfies Task;
   return {
     intent,
     task,
@@ -216,12 +218,89 @@ function trendInput(requestedMeasures: readonly [string, ...string[]]) {
   };
 }
 
-function resolveStandard(
-  context: (ReturnType<typeof input> | ReturnType<typeof trendInput>) & {
-    readonly presentationPolicy?: { readonly allowedRepresentations: readonly string[] };
-    readonly incumbent?: ValidatedPresentation['plan'];
-  },
-) {
+function barInput(width = 800, preferredView = 'bar') {
+  const intent: Intent = {
+    version: '1',
+    id: 'category-analysis',
+    kind: 'analyze',
+    resource: 'people',
+    dimensions: ['category'],
+    measures: [{ id: 'amount', revision: '1' }],
+    ...(preferredView === undefined ? {} : { preferredView }),
+  };
+  const task = {
+    version: '1',
+    id: intent.id,
+    revision: '1',
+    catalogRevision: 'catalog-1',
+    functionRegistryDigest: 'core-query-2',
+    regionId: 'main',
+    kind: 'data',
+    goal: 'Show amounts by category',
+    assumptions: [],
+    outputs: [
+      {
+        id: 'primary',
+        kind: 'query',
+        query: {
+          entity: 'people',
+          fields: ['category'],
+          measures: [{ id: 'amount', revision: '1' }],
+          relations: [],
+          groupBy: ['category'],
+          population: { kind: 'all-authorized' },
+          order: [],
+        },
+        dependsOn: [],
+        delivery: 'eager',
+      },
+    ],
+    needs: [
+      {
+        id: 'analyze',
+        operation: { id: 'data.analyze', revision: '1' },
+        outputId: 'primary',
+        fields: ['category', 'amount'],
+        required: true,
+      },
+    ],
+    ...(preferredView === undefined
+      ? {}
+      : {
+          viewPreference: {
+            representation: preferredView === 'bar' ? 'visualization.bar' : preferredView,
+            strength: 'preferred' as const,
+          },
+        }),
+  } satisfies Task;
+  const barResult: Result = {
+    ...result,
+    ref: { ...result.ref, id: 'bar-result' },
+    taskId: task.id,
+    fields: [
+      { id: 'category', label: 'Category', type: { value: 'text', nullable: false }, role: 'dimension' },
+      { id: 'amount', label: 'Amount', type: { value: 'integer', nullable: false }, role: 'measure' },
+    ],
+    identity: ['category'],
+    rowGrain: ['category'],
+  };
+  return {
+    intent,
+    task,
+    result: barResult,
+    current: { ...current, results: [barResult.ref] },
+    environment: environment(width),
+    availableViews: [],
+  };
+}
+
+type StandardTestContext = Pick<PresentationContext, 'task' | 'current' | 'environment' | 'incumbent'> & {
+  readonly intent: Intent;
+  readonly result: Result;
+  readonly presentationPolicy?: Parameters<typeof experience>[2];
+};
+
+function resolveStandard(context: StandardTestContext) {
   if (context.result === undefined) throw new Error('Expected a materialized standard result.');
   const row = Object.fromEntries(
     context.result.fields.map((field) => [
@@ -235,13 +314,26 @@ function resolveStandard(
             : field.id,
     ]),
   );
-  const registry = createAeliqoPresentationRegistry({
-    data: [{ result: context.result, rows: [row] }],
-    resolveEntity: () => 'people',
-  });
-  expect(registry.ok).toBe(true);
-  if (!registry.ok) throw new Error('Expected the standard presentation registry.');
-  const authored = standardRecipeCandidates(context as unknown as Parameters<typeof standardRecipeCandidates>[0]);
+  const identities = context.intent.kind === 'compare' ? context.intent.identities : [];
+  const rows = identities.length === 0 ? [row] : identities.map((identity) => ({ ...row, ...identity }));
+  const materializedResult =
+    rows.length === context.result.counts.loaded
+      ? context.result
+      : {
+          ...context.result,
+          counts: {
+            loaded: rows.length,
+            population: { kind: 'exact' as const, value: rows.length, populationDigest: 'population-1' },
+          },
+          coverage: { kind: 'complete' as const, populationDigest: 'population-1' },
+        };
+  const registry = registryFor([{ ref: materializedResult.ref, rows }], [materializedResult], [], 'people');
+  expect(registry).toBeDefined();
+  if (registry === undefined) throw new Error('Expected the standard presentation registry.');
+  const authored = standardRecipeCandidates({
+    ...context,
+    result: materializedResult,
+  } as unknown as Parameters<typeof standardRecipeCandidates>[0]);
   expect(authored.ok).toBe(true);
   if (!authored.ok) throw new Error('Expected standard candidates.');
   return resolvePresentation({
@@ -250,15 +342,15 @@ function resolveStandard(
     preconditions: context.current,
     context: {
       task: context.task,
-      experience: experience(registry.value, context.current.experienceRevision, context.presentationPolicy),
-      results: [context.result],
+      experience: experience(registry, context.current.experienceRevision, context.presentationPolicy),
+      results: [materializedResult],
       current: context.current,
       environment: context.environment,
-      rendererCapabilities: registry.value.manifests.map((manifest) => manifest.ref),
-      stateMappingCapabilities: registry.value.stateMappings?.map((mapping) => mapping.ref) ?? [],
+      rendererCapabilities: registry.manifests.map((manifest) => manifest.ref),
+      stateMappingCapabilities: registry.stateMappings?.map((mapping) => mapping.ref) ?? [],
       ...(context.incumbent === undefined ? {} : { incumbent: context.incumbent }),
     },
-    registry: registry.value,
+    registry,
     target: {
       address: {
         runtimeId: 'runtime-1',
@@ -353,6 +445,113 @@ describe('0.3 standard recipes', () => {
   it('keeps compare in a simultaneous column-preserving table on narrow containers', () => {
     const narrow = standardDataRecipe.build(input('compare', 320));
     expect(narrow.ok && narrow.value.nodes[0]?.representation.id).toBe('data.table');
+  });
+
+  it('authors and resolves a bounded comparison split while preserving narrow and pinned fallbacks', () => {
+    const wideContext = {
+      ...input('compare', 800),
+      presentationPolicy: { allowedRepresentations: ['data.table', 'data.detail'] },
+    };
+    const authored = standardRecipeCandidates(wideContext);
+    expect(authored.ok).toBe(true);
+    if (!authored.ok) return;
+    expect(authored.value.candidates.map((candidate) => candidate.id)).toEqual([
+      'standard.comparison',
+      'standard.table',
+    ]);
+
+    const wide = resolveStandard(wideContext);
+    expect(wide.status).toBe('ready');
+    if (wide.status === 'ready') {
+      expect(wide.receipt.selectedCandidate).toBe('standard.comparison');
+      expect(wide.plan.plan.rootId).toBe('comparison');
+      expect(wide.plan.plan.nodes.map((node) => node.id)).toEqual([
+        'comparison',
+        'comparison.left',
+        'comparison.right',
+      ]);
+      expect(wide.plan.graph.links).toHaveLength(0);
+      expect(wide.plan.plan.nodes.slice(1).map((node) => node.representation.id)).toEqual([
+        'data.detail',
+        'data.detail',
+      ]);
+      expect(wide.plan.plan.nodes.slice(1).map((node) => node.config.values.identityValues)).toEqual([
+        { id: 'p-1' },
+        { id: 'p-2' },
+      ]);
+      expect(wide.plan.plan.coverage).toEqual([
+        {
+          needId: 'compare',
+          nodeIds: ['comparison.left', 'comparison.right'],
+          operations: [{ id: 'data.compare', revision: '1' }],
+        },
+      ]);
+    }
+
+    const narrow = resolveStandard(input('compare', 320));
+    expect(narrow.status).toBe('ready');
+    if (narrow.status === 'ready') expect(narrow.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+
+    if (wide.status === 'ready') {
+      const retained = resolveStandard({ ...input('compare', 320), incumbent: wide.plan.plan });
+      expect(retained.status).toBe('ready');
+      if (retained.status === 'ready') expect(retained.plan.plan.rootId).toBe('comparison');
+    }
+
+    const pinned = resolveStandard({
+      ...wideContext,
+      task: { ...wideContext.task, viewPreference: { representation: 'data.table', strength: 'explicit' } },
+    });
+    expect(pinned.status).toBe('ready');
+    if (pinned.status === 'ready') {
+      expect(pinned.receipt.selectedCandidate).toBe('standard.table');
+      expect(pinned.plan.plan.rootId).toBe('primary');
+      expect(pinned.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+    }
+  });
+
+  it('reaches a registered categorical bar and preserves trend clarification when bar is unavailable', () => {
+    const barContext = barInput();
+    const registry = registryFor(
+      [{ ref: barContext.result.ref, rows: [{ category: 'A', amount: 1 }] }],
+      [barContext.result],
+      [],
+      'people',
+    );
+    expect(registry?.manifests.find((manifest) => manifest.ref.id === 'visualization.bar')?.operations).toContainEqual({
+      id: 'data.analyze',
+      revision: '1',
+    });
+
+    const ready = resolveStandard(barContext);
+    expect(ready.status).toBe('ready');
+    if (ready.status === 'ready') {
+      expect(ready.plan.plan.nodes[0]?.representation.id).toBe('visualization.bar');
+      expect(ready.plan.plan.nodes[0]?.config.values.visualization).toMatchObject({ view: 'bar' });
+    }
+
+    const unavailableResult: Result = {
+      ...barContext.result,
+      fields: [
+        { id: 'week', label: 'Week', type: { value: 'date', nullable: false }, role: 'time' },
+        ...barContext.result.fields,
+        { id: 'other', label: 'Other', type: { value: 'integer', nullable: false }, role: 'measure' },
+      ],
+    };
+    const unavailableTask = {
+      ...barContext.task,
+      needs: [{ ...barContext.task.needs[0]!, fields: ['week', 'category', 'amount', 'other'] }],
+    } satisfies Task;
+    const unavailable = resolveStandard({
+      ...barContext,
+      task: unavailableTask,
+      result: unavailableResult,
+      current: { ...current, results: [unavailableResult.ref] },
+    });
+    expect(unavailable).toMatchObject({
+      status: 'needs-input',
+      diagnostic: { code: 'web.recipe.needs-input.measure' },
+    });
   });
 
   it('keeps a narrow browse in the only representation permitted by resource policy', () => {

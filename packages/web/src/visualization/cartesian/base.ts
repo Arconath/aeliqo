@@ -21,7 +21,7 @@ const fail = (code: string, message: string): Outcome<never> => ({
 });
 
 const resultKey = (ref: ResultRef): string =>
-  JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  JSON.stringify([ref.id, ref.revision, ref.sourceLineage ?? null, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 const inputChanged = (changed: Map<string, unknown>): boolean =>
   ['visualization', 'context', 'datasets', 'label', 'width', 'height', 'maxMarks'].some((key) => changed.has(key));
 

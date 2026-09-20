@@ -24,7 +24,14 @@ export const fail = (code: string, message: string): Outcome<never> => ({
 });
 
 function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
 
 function saneDimension(value: number | undefined, fallback: number): number {
