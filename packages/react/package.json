@@ -24,6 +24,10 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
+    "./surface": {
+      "types": "./dist/surface/index.d.ts",
+      "import": "./dist/surface/index.js"
+    },
     "./foundation": {
       "types": "./dist/foundation.d.ts",
       "import": "./dist/foundation.js"
@@ -79,6 +83,7 @@
     "@aeliqo/runtime": "workspace:*"
   },
   "dependencies": {
+    "@aeliqo/core": "workspace:*",
     "@aeliqo/web": "workspace:*",
     "@lit-labs/ssr-react": "0.3.4",
     "@lit/react": "1.0.8"

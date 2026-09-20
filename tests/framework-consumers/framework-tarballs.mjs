@@ -158,6 +158,7 @@ for (const artifact of artifacts) {
 }
 assert.equal(lock.packages['node_modules/@aeliqo/runtime']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/web']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
+assert.equal(lock.packages['node_modules/@aeliqo/react']?.dependencies?.['@aeliqo/core'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react']?.dependencies?.['@aeliqo/web'], RELEASE_VERSION);
 assert.equal(lock.packages['node_modules/@aeliqo/react']?.peerDependencies?.['@aeliqo/runtime'], RELEASE_VERSION);
 assert.deepEqual(
@@ -261,6 +262,7 @@ import type {AeliqoTableColumn, AeliqoTableRow} from "@aeliqo/web/data";
 import type {AeliqoInputChangeDetail as InputChangeDetail} from "@aeliqo/web/inputs";
 import {AeliqoTextField} from "@aeliqo/react/inputs";
 import {AeliqoTable} from "@aeliqo/react/data";
+import {defineReactViews} from "@aeliqo/react/surface";
 
 const wrapperNames = ${JSON.stringify(wrappers)};
 const groups: readonly Record<string, unknown>[] = [${wrapperGroups}];
@@ -272,7 +274,10 @@ const rows: readonly AeliqoTableRow[] = [{name: "Ada"}];
 const detail: InputChangeDetail<string> = {value: "Ada", source: "user"};
 const input = <AeliqoTextField label="Person" value={detail.value} onValueChange={(event) => { const value: string = event.detail.value; void value; }} />;
 const table = <AeliqoTable caption="People" columns={columns} rows={rows} />;
-void [input, table];
+const nativeViews = defineReactViews<{readonly kind: "browse"}, {readonly rows: readonly string[]}>([
+  {id: "people.native", revision: "1", render: ({snapshot}) => <p>{snapshot.state.rows.length}</p>},
+]);
+void [input, table, nativeViews];
 `,
 );
 
@@ -428,11 +433,15 @@ import {createElement} from "react";
 import {renderToString} from "react-dom/server";
 import {AeliqoTextField} from "@aeliqo/react/inputs";
 import {AeliqoTable} from "@aeliqo/react/data";
+import {defineReactViews} from "@aeliqo/react/surface";
 assert.equal(typeof globalThis.window, "undefined");
 const input = renderToString(createElement(AeliqoTextField, {label: "SSR person", value: "Ada"}));
 const table = renderToString(createElement(AeliqoTable, {caption: "SSR people", columns: [{key: "name", label: "Name"}], rows: [{name: "Ada"}]}));
 assert.match(input, /aeliqo-text-field/); assert.match(input, /SSR person/); assert.match(input, /shadowrootmode="open"/);
 assert.match(table, /aeliqo-table/); assert.match(table, /SSR people/); assert.match(table, /Ada/);
+const nativeViews = defineReactViews([{id: "people.native", revision: "1", render: () => null}]);
+assert.equal(nativeViews.resolve({id: "people.native", revision: "1"})?.ref.id, "people.native");
+assert.throws(() => defineReactViews([{id: "people.native", revision: "1", render: () => null}, {id: "people.native", revision: "1", render: () => null}]));
 console.log(JSON.stringify({input: input.length, table: table.length, hasDeclarativeShadow: input.includes("shadowrootmode=\\\"open\\\"")}));
 `,
 );
