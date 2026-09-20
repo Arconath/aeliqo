@@ -1,7 +1,7 @@
 import { validateTaskStructure } from '@aeliqo/core';
 import type { Outcome, QuerySpec, ResultRef, Task } from '@aeliqo/core';
 import type { AcceptedQuery, PlanAcceptance, PlanRequest, ReadContext } from '../data/types.js';
-import { readSourceRevisionPin } from '../data/local.js';
+import { readSourceRevisionPin } from '../data/local/source-pin.js';
 import type { ResultHandle, ResultLease } from '../results/types.js';
 import { createResultCohortResolver } from './cohort.js';
 import type {
