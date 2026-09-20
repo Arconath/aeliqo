@@ -154,6 +154,7 @@ function matchesReferenceScope(
   const ref = {
     id: object.id,
     revision: object.revision,
+    ...(object.sourceLineage === undefined ? {} : { sourceLineage: object.sourceLineage }),
     outputId: object.outputId,
     queryDigest: object.queryDigest,
     scopeDigest: object.scopeDigest,
