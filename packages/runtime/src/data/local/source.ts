@@ -243,7 +243,7 @@ function normalizeRow(
   const identityKey = canonical(
     entity.identity.map((identity) => identityPart(captured[identity]!, fields.get(identity)!.type.value)),
   );
-  if (identityKeys.has(identityKey)) throw new TypeError('Duplicate identity.');
+  if (identityKeys.has(identityKey)) throw new TypeError('duplicate identity.');
   identityKeys.add(identityKey);
   return deepFreezeRecord(captured);
 }
