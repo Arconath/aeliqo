@@ -263,15 +263,22 @@ function forbiddenPackageNames(lock) {
     .filter((name) => name === 'openai' || name === 'server-only' || name.startsWith('@modelcontextprotocol/'));
 }
 
+function isAgentModule(moduleId) {
+  const normalized = moduleId.replaceAll('\\', '/');
+  return (
+    normalized === '@aeliqo/agent' ||
+    normalized.startsWith('@aeliqo/agent/') ||
+    normalized.includes('/node_modules/@aeliqo/agent/')
+  );
+}
+
 function forbiddenModules(modules, lock) {
   const providerNames = forbiddenPackageNames(lock);
   return modules.filter((moduleId) => {
     const normalized = moduleId.replaceAll('\\', '/');
     return (
       normalized.startsWith('node:') ||
-      normalized === '@aeliqo/agent' ||
-      normalized.startsWith('@aeliqo/agent/') ||
-      normalized.includes('/node_modules/@aeliqo/agent/') ||
+      isAgentModule(normalized) ||
       providerNames.some((name) => normalized.includes(`/node_modules/${name}/`))
     );
   });
@@ -293,7 +300,7 @@ async function assertNoAgentGraph(consumer, lock) {
 
   const negative = await bundleEntry(consumer, 'no-agent-forbidden.mjs');
   const detected = forbiddenModules(negative, lock);
-  assert(detected.some((moduleId) => moduleId.includes('/node_modules/@aeliqo/agent/')));
+  assert(detected.some(isAgentModule));
   assert.throws(() => assertNoForbiddenModules(negative, lock), /No-agent graph contains forbidden modules/);
   return { positive, negative: detected };
 }
