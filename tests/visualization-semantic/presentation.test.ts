@@ -46,6 +46,7 @@ describe('canonical semantic visualization presentation', () => {
     expect(matrix?.node.result).toEqual({
       id: 'semantic-temporal',
       revision: '1',
+      sourceLineage: 'fixture-source',
       outputId: 'rows',
       queryDigest: 'query',
       scopeDigest: 'scope',
