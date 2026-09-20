@@ -6,6 +6,10 @@ import { pathParts, type WirePath } from './ingress-walk-types.js';
 export type WireContainer = { readonly isArray: boolean; readonly keys: PropertyKey[] };
 export type WireProperty = { readonly key: string; readonly value: unknown };
 
+function arrayLength(current: object): number {
+  return (Object.getOwnPropertyDescriptor(current, 'length')?.value as number | undefined) ?? -1;
+}
+
 export function inspectContainer(current: object, path: WirePath | undefined): Outcome<WireContainer> {
   const isArray = Array.isArray(current);
   const prototype = Object.getPrototypeOf(current) as unknown;
@@ -13,17 +17,16 @@ export function inspectContainer(current: object, path: WirePath | undefined): O
     return wireFailure('wire.object', 'Only plain JSON objects and arrays are accepted.', pathParts(path));
 
   const keys = Reflect.ownKeys(current);
-  if (isArray && current.length > L.array)
-    return wireFailure('wire.array', 'A wire array exceeds its item limit.', pathParts(path));
+  const length = arrayLength(current);
+  if (isArray && (length > L.array || keys.length !== length + 1))
+    return wireFailure('wire.array', 'Invalid array.', pathParts(path));
   if (!isArray && keys.length > L.properties)
     return wireFailure('wire.properties', 'A wire object exceeds its property limit.', pathParts(path));
-  if (isArray && keys.length !== current.length + 1)
-    return wireFailure('wire.array', 'Sparse arrays and extra array properties are not accepted.', pathParts(path));
   return { ok: true, value: { isArray, keys } };
 }
 
 function isArrayIndex(key: string, length: number): boolean {
-  return /^(?:0|[1-9][0-9]*)$/.test(key) && Number(key) < length;
+  return /^(?:0|[1-9][0-9]*)$/.test(key) && +key < length;
 }
 
 export function inspectProperty(
@@ -36,7 +39,7 @@ export function inspectProperty(
   if (isArray && key === 'length') return { ok: true, value: undefined };
   if (key.length > L.id || key === '__proto__')
     return wireFailure('wire.key', 'A wire property name is not supported.', pathParts(path));
-  if (isArray && !isArrayIndex(key, (current as unknown[]).length))
+  if (isArray && !isArrayIndex(key, arrayLength(current)))
     return wireFailure('wire.array', 'Extra array properties are not accepted.', pathParts(path));
 
   const descriptor = Object.getOwnPropertyDescriptor(current, key);

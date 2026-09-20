@@ -316,6 +316,9 @@ describe('0.3 standard recipes', () => {
 
     expect(decision).toMatchObject({ status: 'ready' });
     if (decision.status === 'ready') expect(decision.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+
+    const direct = standardDataRecipe.build(input('browse', 800, '__proto__'));
+    expect(direct.ok && direct.value.nodes[0]?.representation.id).toBe('data.table');
   });
 
   it('adapts browse from a table to cards using container width without a model call', () => {

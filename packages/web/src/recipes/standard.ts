@@ -54,6 +54,12 @@ const aliases: Readonly<Record<string, ViewChoice>> = Object.freeze({
   },
 });
 
+function aliasedView(value: string): ViewChoice | undefined {
+  return Object.hasOwn(aliases, value)
+    ? aliases[value]
+    : Object.values(aliases).find((candidate) => candidate.ref.id === value);
+}
+
 function failure(code: string, message: string): Outcome<never> {
   const item: Diagnostic = { code, message, retryable: false };
   return { ok: false, diagnostics: [item] };
@@ -208,7 +214,7 @@ export interface StandardRecipeCandidates {
 }
 
 function preferredView(context: RecipeContext, preferred: string): SelectedView | undefined {
-  const known = aliases[preferred] ?? Object.values(aliases).find((candidate) => candidate.ref.id === preferred);
+  const known = aliasedView(preferred);
   const operation = context.task.needs[0]?.operation;
   if (
     known !== undefined &&
@@ -275,7 +281,7 @@ function selectedView(context: RecipeContext): Outcome<SelectedView> {
   if (context.result === undefined) throw new TypeError('A standard data recipe requires one Result descriptor.');
   const preferred = context.task.viewPreference?.representation;
   if (preferred !== undefined) {
-    const known = aliases[preferred] ?? Object.values(aliases).find((candidate) => candidate.ref.id === preferred);
+    const known = aliasedView(preferred);
     if (known !== undefined && sameRef(known.ref, aliases.trend!.ref)) {
       const choice = trendView(context);
       if (choice !== undefined) return choice;

@@ -105,6 +105,10 @@ describe('resolvePresentation', () => {
       fixture({
         context: {
           ...ordinary,
+          task: {
+            ...ordinary.task,
+            needs: ordinary.task.needs.map((need) => ({ ...need, fields: [...need.fields, 'profit', 'revenue'] })),
+          },
           results: [
             {
               ...authorizedResult,
@@ -180,6 +184,112 @@ describe('resolvePresentation', () => {
       diagnostic: { code: 'presentation.input' },
     });
     expect(reads).toBe(0);
+  });
+
+  it('rejects proxied target, candidates, and clarification without invoking value traps', () => {
+    const validClarification: NonNullable<PresentationResolverInput['clarification']> = {
+      kind: 'measure',
+      representation: tableRef,
+      diagnostic: { code: 'presentation.ambiguous-measure', message: 'Choose.', retryable: false },
+      choices: [{ id: 'employee.salary', label: 'Salary' }],
+    };
+    for (const [field, value, code] of [
+      ['target', fixture().target, 'presentation.target'],
+      ['candidates', fixture().candidates, 'presentation.candidates'],
+      ['clarification', validClarification, 'presentation.clarification'],
+    ] as const) {
+      let reads = 0;
+      const proxied = new Proxy(value, {
+        get(target, property, receiver) {
+          reads++;
+          return Reflect.get(target, property, receiver);
+        },
+      });
+      const input = { ...fixture(), [field]: proxied } as PresentationResolverInput;
+
+      expect(resolvePresentation(input)).toMatchObject({ status: 'unsupported', diagnostic: { code } });
+      expect(reads).toBe(0);
+    }
+  });
+
+  it('does not return clarification when every authored candidate is invalid', () => {
+    const ordinary = context();
+    const salaryResult = ordinary.results[0]!;
+    const decision = resolvePresentation(
+      fixture({
+        context: {
+          ...ordinary,
+          task: {
+            ...ordinary.task,
+            needs: ordinary.task.needs.map((need) => ({ ...need, fields: [...need.fields, 'employee.salary'] })),
+          },
+          results: [
+            {
+              ...salaryResult,
+              fields: [
+                ...salaryResult.fields,
+                {
+                  id: 'employee.salary',
+                  label: 'Salary',
+                  type: { value: 'decimal', nullable: false },
+                  role: 'measure',
+                },
+              ],
+            },
+          ],
+        },
+        candidates: [candidate('unknown', { id: 'unknown.view', revision: '1' })],
+        clarification: {
+          kind: 'measure',
+          representation: tableRef,
+          diagnostic: { code: 'presentation.ambiguous-measure', message: 'Choose.', retryable: false },
+          choices: [{ id: 'employee.salary', label: 'Salary' }],
+        },
+      }),
+    );
+
+    expect(decision).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.renderer' },
+      rejections: [{ candidate: 'unknown', codes: ['presentation.renderer'] }],
+    });
+  });
+
+  it('rejects clarification choices that are authorized results but not requested task fields', () => {
+    const ordinary = context();
+    const salaryResult = ordinary.results[0]!;
+    const decision = resolvePresentation(
+      fixture({
+        context: {
+          ...ordinary,
+          results: [
+            {
+              ...salaryResult,
+              fields: [
+                ...salaryResult.fields,
+                {
+                  id: 'employee.salary',
+                  label: 'Salary',
+                  type: { value: 'decimal', nullable: false },
+                  role: 'measure',
+                },
+              ],
+            },
+          ],
+        },
+        clarification: {
+          kind: 'measure',
+          representation: tableRef,
+          diagnostic: { code: 'presentation.ambiguous-measure', message: 'Choose.', retryable: false },
+          choices: [{ id: 'employee.salary', label: 'Salary' }],
+        },
+      }),
+    );
+
+    expect(decision).toMatchObject({
+      status: 'unsupported',
+      diagnostic: { code: 'presentation.clarification' },
+    });
   });
 
   it('rejects a nested accessor before presentation context evaluation', () => {

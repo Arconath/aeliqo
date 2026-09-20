@@ -2,7 +2,7 @@ import * as z from 'zod/mini';
 import { inspectWire } from '../contracts/ingress.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
 import { diagnosticSchema, idSchema, versionRefSchema } from '../contracts/schemas.js';
-import { compareText, stableJson, versionRefKey } from '../contracts/stable.js';
+import { compareText, sameVersionRef, versionRefKey } from '../contracts/stable.js';
 import type { Diagnostic, Outcome } from '../contracts/types.js';
 import { composePresentation } from './compose.js';
 import { prepareComposition, type CompositionState } from './compose-session.js';
@@ -19,7 +19,6 @@ import type {
 } from './types.js';
 
 const resolverRef = { id: 'aeliqo.presentation.resolver', revision: '1' } as const;
-const choiceLimit = 16;
 const resolverIdSchema = z
   .string()
   .check(z.minLength(1), z.maxLength(WIRE_LIMITS.id), z.regex(/^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/u));
@@ -39,6 +38,7 @@ const candidateSchema = z.strictObject({
   pattern: z.optional(versionRefSchema),
   plan: z.unknown(),
 });
+const candidatesSchema = z.array(candidateSchema).check(z.maxLength(64));
 const choiceSchema = z.strictObject({
   id: resolverIdSchema,
   label: z.string().check(z.minLength(1), z.maxLength(WIRE_LIMITS.label)),
@@ -47,7 +47,7 @@ const clarificationSchema = z.strictObject({
   kind: z.enum(['measure', 'time']),
   representation: versionRefSchema,
   diagnostic: diagnosticSchema,
-  choices: z.array(choiceSchema).check(z.minLength(1), z.maxLength(choiceLimit)),
+  choices: z.array(choiceSchema).check(z.minLength(1), z.maxLength(16)),
 });
 
 type OwnedCandidate = PresentationResolverCandidate;
@@ -65,48 +65,31 @@ function unsupported(
   return freezePresentation({ status: 'unsupported', diagnostic: diagnostic(code), rejections, reasons });
 }
 
+function ownWire(input: unknown): unknown | undefined {
+  try {
+    return inspectWire(input).ok ? structuredClone(input) : undefined;
+  } catch {}
+}
+
 function parseWire<S extends z.ZodMiniType>(input: unknown, schema: S): z.infer<S> | undefined {
-  const wire = inspectWire(input);
-  if (!wire.ok) return undefined;
-  const parsed = z.safeParse(schema, wire.value);
+  const owned = ownWire(input);
+  if (owned === undefined) return undefined;
+  const parsed = z.safeParse(schema, owned);
   return parsed.success ? parsed.data : undefined;
 }
 
-function parseTarget(input: unknown): PresentationTargetEvidence | undefined {
-  return parseWire(input, targetSchema) as PresentationTargetEvidence | undefined;
-}
-
-function candidateKey(candidate: OwnedCandidate): string {
-  return [
-    candidate.id,
-    candidate.source,
-    candidate.pattern === undefined ? '' : versionRefKey(candidate.pattern),
-    stableJson(candidate.plan),
-  ].join('\u0000');
-}
-
 function parseCandidates(input: unknown): readonly OwnedCandidate[] | undefined {
-  const wire = inspectWire(input);
-  if (!wire.ok || !Array.isArray(wire.value) || wire.value.length > 64) return undefined;
-  const candidates: OwnedCandidate[] = [];
-  const ids = new Set<string>();
-  for (const item of wire.value) {
-    const parsed = z.safeParse(candidateSchema, item);
-    if (!parsed.success) return undefined;
-    const candidate = parsed.data as OwnedCandidate;
-    if (ids.has(candidate.id)) return undefined;
-    ids.add(candidate.id);
-    candidates.push(candidate);
-  }
-  return candidates.sort((left, right) => compareText(candidateKey(left), candidateKey(right)));
+  const candidates = parseWire(input, candidatesSchema) as OwnedCandidate[] | undefined;
+  if (candidates === undefined) return undefined;
+  if (new Set(candidates.map((candidate) => candidate.id)).size !== candidates.length) return undefined;
+  return candidates.sort((left, right) => compareText(left.id, right.id));
 }
 
 function parseClarification(input: unknown): PresentationClarification | undefined {
   if (input === undefined) return undefined;
   const clarification = parseWire(input, clarificationSchema) as PresentationClarification | undefined;
   if (clarification === undefined) return undefined;
-  const ids = new Set<string>();
-  if (clarification.choices.some((choice) => ids.has(choice.id) || (ids.add(choice.id), false))) return undefined;
+  if (new Set(clarification.choices.map((choice) => choice.id)).size !== clarification.choices.length) return undefined;
   const choices = clarification.choices
     .map((choice) => ({ id: choice.id, label: choice.id }))
     .sort((left, right) => compareText(left.id, right.id));
@@ -129,20 +112,19 @@ function clarificationRepresentationEligible(
   const key = versionRefKey(clarification.representation);
   const manifest = prepared.manifests.get(key);
   const constraints = prepared.prepared.constraints;
+  const cache = prepared.validationCache;
   if (
     manifest === undefined ||
-    !prepared.prepared.rendererCapabilities.some((ref) => versionRefKey(ref) === key) ||
-    !constraints.allowedRepresentations.includes(manifest.ref.id) ||
-    (manifest.extension && !constraints.extensionAllowlist.some((ref) => versionRefKey(ref) === key))
+    !cache.renderer.has(key) ||
+    !cache.allowedRepresentations.has(manifest.ref.id) ||
+    (manifest.extension && !cache.extensions.has(key))
   )
     return false;
   const pin = constraints.task.viewPreference;
   if (pin?.strength === 'explicit' && pin.representation !== manifest.ref.id) return false;
-  return constraints.taskNeeds
-    .filter((need) => need.required)
-    .every((need) =>
-      manifest.operations.some((operation) => versionRefKey(operation) === versionRefKey(need.operation)),
-    );
+  return constraints.taskNeeds.every(
+    (need) => !need.required || manifest.operations.some((operation) => sameVersionRef(operation, need.operation)),
+  );
 }
 
 function authorizedClarification(
@@ -157,13 +139,16 @@ function authorizedClarification(
     !clarificationRepresentationEligible(clarification, prepared)
   )
     return undefined;
+  const needs = prepared.prepared.constraints.taskNeeds;
   const allowed = new Set(
     prepared.prepared.results.flatMap((result) =>
       result.fields
-        .filter((field) =>
-          kind === 'time'
-            ? field.type.value === 'date' || field.type.value === 'instant'
-            : field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value),
+        .filter(
+          (field) =>
+            needs.some((need) => need.required && need.fields.includes(field.id)) &&
+            (kind === 'time'
+              ? field.type.value === 'date' || field.type.value === 'instant'
+              : field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value)),
         )
         .map((field) => field.id),
     ),
@@ -291,27 +276,17 @@ function resolverFields(input: unknown): ResolverFields | undefined {
   return values as unknown as ResolverFields;
 }
 
-function ownedResolverRequest(fields: ResolverFields): OwnedResolverRequest | undefined {
-  const inspected = inspectWire({
+function resolverIngress(input: PresentationResolverInput): ResolverIngress {
+  const fields = resolverFields(input);
+  if (fields === undefined) return { ok: false, decision: unsupported('presentation.input') };
+  const ownedRequest = ownWire({
     id: fields.id,
     revision: fields.revision,
     preconditions: fields.preconditions,
     context: fields.context,
-  });
-  if (!inspected.ok) return undefined;
-  try {
-    return structuredClone(inspected.value) as OwnedResolverRequest;
-  } catch {
-    return undefined;
-  }
-}
-
-function resolverIngress(input: PresentationResolverInput): ResolverIngress {
-  const fields = resolverFields(input);
-  if (fields === undefined) return { ok: false, decision: unsupported('presentation.input') };
-  const ownedRequest = ownedResolverRequest(fields);
+  }) as OwnedResolverRequest | undefined;
   if (ownedRequest === undefined) return { ok: false, decision: unsupported('presentation.input') };
-  const target = parseTarget(fields.target);
+  const target = parseWire(fields.target, targetSchema) as PresentationTargetEvidence | undefined;
   if (target === undefined) return { ok: false, decision: unsupported('presentation.target') };
   if (target.state !== 'active') return { ok: false, decision: unsupported('presentation.target-inactive') };
   const candidates = parseCandidates(fields.candidates);
@@ -350,9 +325,6 @@ export function resolvePresentation(input: PresentationResolverInput): Presentat
     );
   if (prepared.value.prepared.constraints.task.regionId !== ingress.surfaceId)
     return unsupported('presentation.target-mismatch');
-  const clarification = clarificationDecision(ingress.clarification, prepared.value);
-  if (clarification !== undefined) return clarification;
-
   const composition = composePresentation(ingress.request, ingress.registry);
   if (!composition.ok) return compositionFailure(composition);
   const rejections = rejectionsFor(composition.value.rejected);
@@ -369,6 +341,8 @@ export function resolvePresentation(input: PresentationResolverInput): Presentat
         prepared.value.prepared.constraints.task.viewPreference?.strength === 'explicit',
       ),
     });
+  const clarification = clarificationDecision(ingress.clarification, prepared.value);
+  if (clarification !== undefined) return clarification;
   const pins = prepared.value.requestPins;
   return freezePresentation({
     status: 'ready',

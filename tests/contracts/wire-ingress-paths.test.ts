@@ -26,6 +26,17 @@ test('wire paths distinguish shared references from ancestor cycles', () => {
   cyclic.child = [cyclic];
   expect(inspectWire(cyclic)).toMatchObject({ ok: false, diagnostics: [{ code: 'wire.cycle', path: ['child', 0] }] });
 });
+test('wire inspection does not invoke array value traps', () => {
+  let reads = 0;
+  const input = new Proxy([{ value: 1 }], {
+    get(target, property, receiver) {
+      reads++;
+      return Reflect.get(target, property, receiver);
+    },
+  });
+  expect(inspectWire(input).ok).toBe(true);
+  expect(reads).toBe(0);
+});
 test('reused summaries still enforce the depth limit at every occurrence', () => {
   let shared: unknown = { leaf: true };
   for (let index = 0; index < 63; index++) shared = { child: shared };
