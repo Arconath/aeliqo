@@ -394,13 +394,11 @@ function trendClarification(context: RecipeContext, diagnostic: Diagnostic): Pre
   const kind = diagnostic.code.endsWith('.time') ? 'time' : 'measure';
   return { kind, representation: aliases.trend!.ref, diagnostic, choices: clarificationChoices(context, kind) };
 }
-
 function authorable(context: RecipeContext, name: keyof typeof aliases): boolean {
   const operation = context.task.needs[0]?.operation;
   const view = aliases[name]!;
   return operation !== undefined && allowed(context, view.ref) && supportsOperation(view.operations, operation);
 }
-
 function authorKnownView(context: RecipeContext, name: keyof typeof aliases): Outcome<SelectedView> {
   if (name !== 'trend') return { ok: true, value: viewWithValues(aliases[name]!, context) };
   const config = trendConfig(context);
@@ -409,15 +407,15 @@ function authorKnownView(context: RecipeContext, name: keyof typeof aliases): Ou
     return failure('web.recipe.needs-input.time', 'Choose a requested time field before rendering a trend.');
   return { ok: true, value: { ...aliases.trend!, values: config.values } };
 }
-
 function resolverCandidate(
   context: RecipeContext,
   id: string,
   view: SelectedView,
-): Outcome<PresentationResolverCandidate> {
+): Outcome<readonly PresentationResolverCandidate[]> {
   const plan = planForView(context, view);
-  if (!plan.ok) return plan;
-  return { ok: true, value: { id, source: 'explicit', plan: plan.value } };
+  if (!plan.ok)
+    return plan.diagnostics.every((item) => item.code === 'web.recipe.transition') ? { ok: true, value: [] } : plan;
+  return { ok: true, value: [{ id, source: 'explicit', plan: plan.value }] };
 }
 
 function appendPreferredCustom(
@@ -431,7 +429,7 @@ function appendPreferredCustom(
   if (customView === undefined) return { ok: true, value: undefined };
   const customCandidate = resolverCandidate(context, `custom.${preferred}`, customView);
   if (!customCandidate.ok) return customCandidate;
-  candidates.push(customCandidate.value);
+  candidates.push(...customCandidate.value);
   return { ok: true, value: undefined };
 }
 
@@ -460,7 +458,7 @@ export function standardRecipeCandidates(context: RecipeContext): Outcome<Standa
     }
     const authored = resolverCandidate(context, `standard.${name}`, view.value);
     if (!authored.ok) return authored;
-    candidates.push(authored.value);
+    candidates.push(...authored.value);
   }
   const custom = appendPreferredCustom(context, preferred, preferredAlias, candidates);
   if (!custom.ok) return custom;

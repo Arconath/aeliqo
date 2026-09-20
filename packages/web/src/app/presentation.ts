@@ -292,6 +292,14 @@ function restoreElement(
   region.element.interaction = previous.interaction;
 }
 
+function restoreIfStillApplied(
+  region: WebRegion,
+  applied: ValidatedPresentation,
+  previous: Parameters<typeof restoreElement>[1],
+): void {
+  if (region.element.presentation === applied) restoreElement(region, previous);
+}
+
 function resetInteraction(region: WebRegion): void {
   region.values.clear();
   region.drafts.clear();
@@ -377,12 +385,15 @@ async function applyCommittedPresentation(
     region.element.presentation = committed.presentation;
     await region.element.updateComplete;
   } catch {
-    if (presentationCurrent(region, expectedSequence, operation)) restoreElement(region, previous);
+    restoreIfStillApplied(region, committed.presentation, previous);
     return failedAfterRuntime('failed', receipt, requestId, [
       diagnostic('web.app.renderer', 'The renderer failed; the previous UI was restored.'),
     ]);
   }
-  if (!presentationCurrent(region, expectedSequence, operation)) return cancelledPresentation(receipt, requestId);
+  if (!presentationCurrent(region, expectedSequence, operation)) {
+    restoreIfStillApplied(region, committed.presentation, previous);
+    return cancelledPresentation(receipt, requestId);
+  }
   if (changesTask) resetInteraction(region);
   return {
     status: 'renderer-ready',

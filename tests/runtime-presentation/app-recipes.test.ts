@@ -213,6 +213,7 @@ function trendInput(requestedMeasures: readonly [string, ...string[]]) {
 function resolveStandard(
   context: (ReturnType<typeof input> | ReturnType<typeof trendInput>) & {
     readonly presentationPolicy?: { readonly allowedRepresentations: readonly string[] };
+    readonly incumbent?: ValidatedPresentation['plan'];
   },
 ) {
   if (context.result === undefined) throw new Error('Expected a materialized standard result.');
@@ -249,6 +250,7 @@ function resolveStandard(
       environment: context.environment,
       rendererCapabilities: registry.value.manifests.map((manifest) => manifest.ref),
       stateMappingCapabilities: registry.value.stateMappings?.map((mapping) => mapping.ref) ?? [],
+      ...(context.incumbent === undefined ? {} : { incumbent: context.incumbent }),
     },
     registry: registry.value,
     target: {
@@ -272,6 +274,20 @@ describe('0.3 standard recipes', () => {
 
     expect(wide.status === 'ready' && wide.plan.plan.nodes[0]?.representation.id).toBe('data.table');
     expect(narrow.status === 'ready' && narrow.plan.plan.nodes[0]?.representation.id).toBe('data.card-collection');
+  });
+
+  it('keeps valid adaptive candidates when an incumbent cannot transfer to every authored view', () => {
+    const wide = resolveStandard(input('browse', 1_280));
+    expect(wide.status).toBe('ready');
+    if (wide.status !== 'ready') return;
+
+    const context = { ...input('browse', 360), incumbent: wide.plan.plan };
+    const authored = standardRecipeCandidates(context);
+    expect(authored.ok && authored.value.candidates.map((candidate) => candidate.id)).toEqual([
+      'standard.cards',
+      'standard.table',
+    ]);
+    expect(resolveStandard(context).status).toBe('ready');
   });
 
   it('does not fall back when an explicit view pin is operation-incompatible', () => {
@@ -641,6 +657,110 @@ describe('0.3 standard recipes', () => {
     expect(elementState.presentation).toBe(
       currentRender.status === 'renderer-ready' ? currentRender.presentation : undefined,
     );
+  });
+
+  it('restores the previous UI when cancellation arrives during the renderer update', async () => {
+    const fixture = input('browse', 800);
+    if (fixture.result === undefined) throw new Error('The browse fixture must materialize a Result.');
+    const initial = resolveStandard(fixture);
+    expect(initial.status).toBe('ready');
+    if (initial.status !== 'ready') return;
+
+    const resource = defineResource({
+      id: 'people',
+      revision: 'catalog-1',
+      label: 'person',
+      schema: z.object({ id: z.string(), name: z.string() }),
+      identity: ['id'],
+      presentation: { allowedViews: ['table', 'cards'] },
+      fields: { id: { label: 'ID' }, name: { label: 'Name' } },
+    });
+    const priorBindings = [{ ref: fixture.result.ref, rows: [{ id: 'prior', name: 'Prior' }] }];
+    const bindings = [{ ref: fixture.result.ref, rows: [{ id: 'next', name: 'Next' }] }];
+    let finishUpdate!: () => void;
+    const updateComplete = new Promise<void>((resolve) => (finishUpdate = resolve));
+    let applied!: () => void;
+    const presentationApplied = new Promise<void>((resolve) => (applied = resolve));
+    let activePresentation: ValidatedPresentation | undefined = initial.plan;
+    const elementState = {
+      get presentation() {
+        return activePresentation;
+      },
+      set presentation(value: ValidatedPresentation | undefined) {
+        activePresentation = value;
+        if (value !== initial.plan) applied();
+      },
+      results: priorBindings as readonly (typeof bindings)[number][],
+      interaction: undefined,
+      updateComplete,
+    };
+    const target = {
+      lang: '',
+      ownerDocument: { documentElement: { lang: 'en-US' }, defaultView: null },
+      getBoundingClientRect: () => ({ width: 800, height: 600 }),
+    } as unknown as HTMLElement;
+    const region = {
+      id: 'main',
+      resourceId: 'people',
+      target,
+      element: elementState,
+      sequence: 1,
+      category: 'wide',
+      composing: false,
+      pendingAdapt: false,
+      actionPending: false,
+      actionSequence: 0,
+      values: new Map(),
+      drafts: new Map(),
+    } as unknown as WebRegion;
+    const runtime = {
+      snapshot: () => ({ region: { readSet: { ...current, dataRevision: 1 } } }),
+      commitPresentation: async (request: { readonly task: Task; readonly presentation: unknown }) => ({
+        ok: true as const,
+        value: { state: { task: request.task, presentation: request.presentation } },
+      }),
+    } as unknown as AeliqoRuntime;
+    const context = {
+      options: {},
+      runtime,
+      resources: new Map([[resource.id, resource]]),
+      recipes: [standardDataRecipe],
+      views: [],
+      regions: new Map(),
+      stateListeners: new Map(),
+      disposed: false,
+    } as unknown as WebAppContext;
+    const receipt = {
+      status: 'committed',
+      requestId: 'runtime-request',
+      regionId: 'main',
+      intent: fixture.intent,
+      task: fixture.task,
+      outputs: [],
+      region: { id: 'main', readSet: { ...current, dataRevision: 1 } },
+      diagnostics: [],
+    } as unknown as RuntimeCommittedReceipt;
+    const controller = new AbortController();
+
+    const pending = present(
+      context,
+      region,
+      receipt,
+      bindings,
+      [fixture.result],
+      'cancel-after-apply',
+      1,
+      undefined,
+      controller.signal,
+    );
+    await presentationApplied;
+    controller.abort();
+    finishUpdate();
+    const outcome = await pending;
+
+    expect(outcome).toMatchObject({ status: 'cancelled', requestId: 'cancel-after-apply' });
+    expect(elementState.presentation).toBe(initial.plan);
+    expect(elementState.results).toBe(priorBindings);
   });
 
   it('treats an incompatible preferred view as a preference and falls back safely', () => {
