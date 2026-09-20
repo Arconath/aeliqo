@@ -41,7 +41,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T16  | implemented-and-verified | Source `b79ab59`; real security and trust-boundary fixtures for cross-tenant requests/cursors, ResultStore principal cache/revoke/TTL, origin/CSRF/redirect/SSR escaping, forged target/getter payloads, stale action confirmation, bounded agent quotas, and endpoint expiry; security 14/14, focused vNext security/local-data 45/45, boundaries 4/4, auth-retention 1000/1000, strict vNext TypeScript. |
 | T17  | implemented-and-verified | Sources `b64e043` and `733ed14`; source-driven 71-ID page/example/export inventory, public-doc wording checks, and docs artifact verification; inventory 71/71 and docs artifact 10/10; not published. |
 | T18  | implemented-and-verified | Sources `52b2bfe` and `adef0f3`; public island, consumer manual/agent parity through real scoped bridge, enterprise independent remote transport/approval/revocation, and non-data job flows; Vitest remote 1/1 and Chromium/Firefox/WebKit 4/4 each; not published. |
-| T19  | implemented-and-verified | Sources `6fd4901`/`d9cd85a` plus the final-v3 rerun; module-scale 10/100/1000 with five active surfaces and 5×100 interactions/tier; latest workload p95 is 8.54/7.32/9.53ms, bundle gate 6/6 remains within the 163840-byte region-table cap, and runtime/browser/heap checks are green. |
+| T19  | implemented-and-verified | Sources `6fd4901`/`d9cd85a` plus the final source-bound run; module-scale 10/100/1000 with five active surfaces and 5×100 interactions/tier; latest workload p95 is 8.32/7.78/35.14ms, each below the 100ms budget, bundle gate 6/6 remains within the 163840-byte region-table cap, and runtime/browser/heap checks are green. |
 | T20  | implemented-and-verified | Candidate line is explicitly unreleased breaking 0.5.0 based on stable 0.4.2; latest packed five-package report under `artifacts/t20-qualification/` proves legacy/vNext/no-agent consumers and release tooling 31/31. Published/deployed remain false. |
 | T21  | final-review-gated        | Independent review and the final 87-gate source-bound matrix are recorded before handoff; release readiness remains local-only and publication/deployment gates remain closed. |
 
@@ -232,7 +232,7 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 ### T19 / RQ31 / RQ37 / RQ38 / RQ39 — measured performance and module scale
 
 - Accepted sources `6fd4901` and `d9cd85a`; module-scale workload runs 10/100/1000 declarations with five active surfaces and five repetitions of 100 real interactions per tier. Runtime, browser and heap lifecycle checks retain bounded resources.
-- Evidence: latest `artifacts/performance-workloads/vnext-module-scale-*.json` qualification pass with p95 8.54/7.32/9.53ms; latest `artifacts/performance-bundles/run-*/report.json` bundle 6/6 pass, including the region-table cap; no cap, workload, or forbidden-module rule was changed.
+- Evidence: final source-bound `artifacts/performance-workloads/vnext-module-scale-1789890243703.json` qualification pass with p95 8.32/7.78/35.14ms against the 100ms budget; latest `artifacts/performance-bundles/run-*/report.json` bundle 6/6 pass, including the region-table cap; no cap, workload, or forbidden-module rule was changed.
 
 ### T20 / RQ36 / RQ40 / RQ42 / RQ44 / RQ45 / RQ46 — support, compatibility and release evidence
 
