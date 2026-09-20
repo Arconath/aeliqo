@@ -68,6 +68,51 @@ const state: InteractionState = {
     { domain: 'profile', entity: 'employees', key: 'e-1', field: 'name', value: 'Unfinished', entityRevision: '1' },
   ],
 };
+
+function tableToCardsProjection() {
+  const cards: PresentationManifest = {
+    ...manifest,
+    ref: { id: 'data.cards', revision: '1' },
+    configSchema: { id: 'data.cards.config', revision: '1' },
+    roles: ['cardCollection'],
+  };
+  const mapping = {
+    ref: { id: 'state.table-cards', revision: '1' },
+    from: manifest.ref,
+    to: cards.ref,
+    fromRole: 'table',
+    toRole: 'cardCollection',
+    kind: 'archive' as const,
+  };
+  const installed = createPresentationRegistry([manifest, cards], [], [], [mapping]);
+  if (!installed.ok) throw Error('table-to-cards registry');
+  const previousPlan = presentationPlan;
+  const nextPlan = {
+    ...presentationPlan,
+    rootId: 'cards-1',
+    nodes: [
+      {
+        ...presentationPlan.nodes[0]!,
+        id: 'cards-1',
+        role: 'cardCollection',
+        representation: cards.ref,
+        config: { schema: cards.configSchema, values: {} },
+      },
+    ],
+    stateTransfer: [{ fromNode: 'table-1', toNode: 'cards-1', mapping: mapping.ref }],
+  };
+  const transitionContext = {
+    ...context,
+    experience: { ...experience, mode: 'composable' as const, allowedRepresentations: [manifest.ref.id, cards.ref.id] },
+    rendererCapabilities: [manifest.ref, cards.ref],
+    stateMappingCapabilities: [mapping.ref],
+  };
+  const previous = validatePresentationPlan(previousPlan, transitionContext, installed.value);
+  const next = validatePresentationPlan(nextPlan, { ...transitionContext, incumbent: previousPlan }, installed.value);
+  if (!previous.ok || !next.ok) throw Error('table-to-cards plan');
+  return { installed: installed.value, mapping, previous, next, nextPlan, transitionContext };
+}
+
 describe('adaptation state projection', () => {
   it('preserves exact selection scope and domain drafts while transferring a compatible port', () => {
     const projected = projectInteractionState(previous.value, next.value, state);
@@ -97,5 +142,75 @@ describe('adaptation state projection', () => {
         { route: { id: 'employee', revision: '1' }, params: {}, nodeId: 'table-1' },
       ).ok,
     ).toBe(false);
+  });
+  it('preserves selection, focus ownership, and domain drafts across a registered table-to-cards transfer', () => {
+    const transition = tableToCardsProjection();
+    const projected = projectInteractionState(transition.previous.value, transition.next.value, state);
+    const focused = projectNavigationState(transition.previous.value, transition.next.value, {
+      route: { id: 'employee', revision: '1' },
+      params: { id: 'e-1' },
+      nodeId: 'table-1',
+    });
+
+    expect(projected).toEqual({ ok: true, value: { ...state, values: [{ ...state.values[0]!, nodeId: 'cards-1' }] } });
+    expect(focused).toEqual({
+      ok: true,
+      value: { route: { id: 'employee', revision: '1' }, params: { id: 'e-1' }, nodeId: 'cards-1' },
+    });
+    expect(
+      validatePresentationPlan(
+        transition.nextPlan,
+        { ...transition.transitionContext, incumbent: presentationPlan, stateMappingCapabilities: [] },
+        transition.installed,
+      ).ok,
+    ).toBe(false);
+  });
+  it('rejects missing, incompatible, and ambiguous target ports without changing retained state', () => {
+    const transition = tableToCardsProjection();
+    const missing = { ...transition.next.value, plan: { ...transition.next.value.plan, stateTransfer: [] } };
+    const incompatible = {
+      ...transition.next.value,
+      nodes: transition.next.value.nodes.map((node) => ({
+        ...node,
+        config: { ...node.config, ports: node.config.ports.map((port) => ({ ...port, entity: 'other' })) },
+      })),
+    };
+    const ambiguous = {
+      ...transition.next.value,
+      nodes: transition.next.value.nodes.map((node) => ({
+        ...node,
+        config: {
+          ...node.config,
+          ports: node.config.ports.flatMap((port) => [
+            { ...port, id: 'cards-first' },
+            { ...port, id: 'cards-second' },
+          ]),
+        },
+      })),
+    };
+
+    for (const candidate of [missing, incompatible, ambiguous]) {
+      expect(projectInteractionState(transition.previous.value, candidate, state).ok).toBe(false);
+      expect(state).toEqual({
+        version: '1',
+        values: [
+          {
+            nodeId: 'table-1',
+            portId: 'selection',
+            payload: { kind: 'selection', selection: { mode: 'ids', entity: 'employees', keys: ['e-1'], result: ref } },
+          },
+        ],
+        drafts: [
+          {
+            domain: 'profile',
+            entity: 'employees',
+            key: 'e-1',
+            field: 'name',
+            value: 'Unfinished',
+            entityRevision: '1',
+          },
+        ],
+      });
+    }
   });
 });
