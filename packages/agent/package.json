@@ -27,6 +27,10 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js"
+    },
     "./capabilities": {
       "types": "./dist/capabilities/index.d.ts",
       "import": "./dist/capabilities/index.js"
