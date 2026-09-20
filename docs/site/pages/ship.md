@@ -20,7 +20,7 @@ checks below against the same source revision.
 
 ## Site and components
 
-- Generate exactly 71 component pages, live examples, and component routes.
+- Generate one page, live example, and component route for every active catalog ID; the inventory gate enforces exact set equality.
 - Mount every example and verify search, links, and route fallback behavior.
 - Test 360, 768, and 1440 pixel layouts; keyboard, focus, reduced motion,
   forced colors, 200% text, 400% reflow, long labels, and right-to-left text.

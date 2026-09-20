@@ -13,14 +13,18 @@ const root = resolve(import.meta.dirname, '../..');
 const manifestPath = resolve(root, `artifacts/public-docs/${RELEASE_VERSION}/manifest.json`);
 const rcVersion = `${RELEASE_VERSION}-rc.2`;
 const execFileAsync = promisify(execFile);
+const activeCatalogIds = JSON.parse(await readFile(resolve(root, 'catalog/components.json'), 'utf8')).components.map(
+  ({ id }) => id,
+);
+const activeCatalogCount = activeCatalogIds.length;
 
 test('public docs artifact binds exact source, packages, API metadata, and runnable examples', async () => {
   const { artifact, manifest } = await readVerifiedPublicDocs(manifestPath);
   assert.equal(artifact.docsVersion, RELEASE_VERSION);
   assert.match(artifact.source.revision, /^[a-f0-9]{40}$/u);
-  assert.equal(artifact.pages.length, DOC_ROUTES.length + 71);
+  assert.equal(artifact.pages.length, DOC_ROUTES.length + activeCatalogCount);
   assert.equal(new Set(artifact.pages.map((page) => page.id)).size, artifact.pages.length);
-  assert.equal(artifact.pages.filter((page) => page.component !== undefined).length, 71);
+  assert.equal(artifact.pages.filter((page) => page.component !== undefined).length, activeCatalogCount);
   assert.ok(artifact.pages.every((page) => page.body.length > 0));
   const componentPages = artifact.pages.filter((page) => page.component !== undefined);
   assert.equal(componentPages.filter((page) => page.body.includes('component-minimal-example')).length, 0);
@@ -64,7 +68,7 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
   const componentSources = (await readdir(resolve(root, 'docs/site/components')))
     .filter((file) => file.endsWith('.md'))
     .sort();
-  assert.equal(componentSources.length, 71);
+  assert.equal(componentSources.length, activeCatalogCount);
   const componentInputPaths = manifest.inputs
     .map((input) => input.path)
     .filter((path) => path.startsWith('docs/site/components/'))
@@ -83,7 +87,7 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
 
 test('an external consumer can accept the verified public artifact without private site source', async () => {
   const { artifact, manifest } = await readVerifiedPublicDocs(manifestPath);
-  assert.equal(artifact.pages.length, DOC_ROUTES.length + 71);
+  assert.equal(artifact.pages.length, DOC_ROUTES.length + activeCatalogCount);
   assert.equal(manifest.packageVersions['@aeliqo/web'], RELEASE_VERSION);
   assert.equal(JSON.stringify(manifest).includes('packages/web/src'), true);
 });

@@ -140,7 +140,7 @@ export function catalogExample(id: CatalogExampleId, container: HTMLElement): Re
   return getCatalogExample(id).mount(container);
 }
 
-/** Mount all 71 examples; useful for the catalog gallery and browser smoke test. */
+/** Mount every active catalog example; useful for the catalog gallery and browser smoke test. */
 export function mountCatalogExamples(container: HTMLElement): () => void {
   const cleanups = CATALOG_EXAMPLE_IDS.map((id) => catalogExample(id, container));
   return () => {

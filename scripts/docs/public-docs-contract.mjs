@@ -120,9 +120,11 @@ export function assertPublicDocsArtifact(value) {
   if (new Set(paths).size !== paths.length) throw new Error('artifact.pages contains duplicate routes');
   const ids = artifact.pages.map((page) => page.id);
   if (new Set(ids).size !== ids.length) throw new Error('artifact.pages contains duplicate IDs');
-  if (artifact.pages.filter((page) => page.component !== undefined).length !== 71) {
-    throw new Error('artifact must contain exactly 71 component documentation routes');
-  }
+  const componentPages = artifact.pages.filter((page) => page.component !== undefined);
+  if (componentPages.length === 0) throw new Error('artifact must contain component documentation routes');
+  const componentIds = componentPages.map((page) => page.component);
+  if (new Set(componentIds).size !== componentIds.length)
+    throw new Error('artifact contains duplicate component documentation IDs');
   for (const path of ['/docs/', '/docs/components/', '/docs/search/']) {
     if (!paths.includes(path)) throw new Error(`artifact is missing required route ${path}`);
   }
