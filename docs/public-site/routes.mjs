@@ -46,6 +46,8 @@ export const DOC_ROUTES = Object.freeze([
   route('ssr', '/ship/ssr/', 'Ship'),
   route('browser-support', '/ship/browser-support/', 'Ship'),
   route('migration', '/ship/migration-0.3/', 'Ship'),
+  route('migration-0-4', '/ship/migration-0.4/', 'Ship'),
+  route('support-matrix', '/ship/support-matrix/', 'Ship'),
   route('release-notes', '/ship/release-notes/', 'Ship'),
 
   route('examples', '/examples/', 'Examples'),
@@ -136,7 +138,7 @@ const navigation = [
   ['Understand', ['concepts', 'intent', 'semantics', 'state-ownership', 'safety']],
   ['Components & recipes', ['components']],
   ['Reference', ['reference', 'packages', 'app-api', 'intent-schema', 'diagnostics', 'search']],
-  ['Ship', ['ship', 'ssr', 'browser-support', 'migration', 'release-notes']],
+  ['Ship', ['ship', 'ssr', 'browser-support', 'migration', 'migration-0-4', 'support-matrix', 'release-notes']],
   ['Examples', ['examples', 'people-example', 'products-example', 'support-example', 'knowledge-example']],
 ];
 

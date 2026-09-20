@@ -6,7 +6,11 @@ title: 'Aeliqo 0.4 release notes'
 description: 'The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages.'
 ---
 
-## vNext candidate (unreleased)
+## vNext candidate (0.5.0, unreleased)
+
+The live stable line remains `0.4.2`. The vNext candidate is a breaking
+successor and is not published or deployed; keep its packages and support
+claims separate from the current release.
 
 - `@aeliqo/core/features` introduces immutable data and non-data feature
   definitions. Data features lower through the existing resource/catalog path;

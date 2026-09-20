@@ -36,5 +36,8 @@ code never imports the site.
   renderer.
 
 Install all five packages on the same exact release when an application uses
-them together. Wire contract version `"1"` is independent of npm version
-`0.4.2`. See the [migration guide](/ship/migration-0.3/) when moving from 0.3.
+them together. The live stable npm line is `0.4.2`; the unreleased vNext
+candidate is the breaking `0.5.0` line and must not be mixed with `0.4.2`.
+Wire contract version `"1"` is independent of either npm version. See the
+[0.3 to 0.4 migration guide](/ship/migration-0.3/) for the stable line and the
+[vNext migration guide](/ship/migration-0.4/) for the candidate.
