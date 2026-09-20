@@ -182,47 +182,33 @@ function createByteBudget(limits: SourceLimits): ByteBudget {
   return budget;
 }
 
-function snapshotRowsLength(value: readonly unknown[], entityId: string): number {
+function captureSnapshotRows(value: unknown, entityId: string, maxRows: number): readonly DataRecord[] {
+  if (!Array.isArray(value)) throw new TypeError(`Rows for ${entityId} must be an array.`);
+  let length: number;
   try {
     const descriptor = Object.getOwnPropertyDescriptor(value, 'length');
     if (descriptor === undefined || !('value' in descriptor)) throw new TypeError('array length is not readable');
-    const length = descriptor.value;
+    length = descriptor.value;
     if (!Number.isSafeInteger(length) || length < 0) throw new TypeError('array length is invalid');
-    return length;
   } catch {
     throw new TypeError(`Rows for ${entityId} could not be safely inspected.`);
   }
-}
-
-function validateSnapshotRowKeys(value: readonly unknown[], entityId: string, length: number): void {
-  const ownKeys = Reflect.ownKeys(value);
-  for (const key of ownKeys) {
+  if (length > maxRows) throw new SourceCapacityError('Local data snapshot exceeds the bounded source row limit.');
+  const captured: DataRecord[] = [];
+  for (const key of Reflect.ownKeys(value)) {
     if (key === 'length') continue;
     if (typeof key !== 'string' || !/^(?:0|[1-9][0-9]*)$/u.test(key) || Number(key) >= length)
       throw new TypeError(`Rows for ${entityId} must be a dense array without extra fields.`);
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     if (descriptor === undefined || !('value' in descriptor))
       throw new TypeError(`Rows for ${entityId} contain an accessor item.`);
+    captured[Number(key)] = descriptor.value as DataRecord;
   }
-}
-
-function captureSnapshotRowItems(value: readonly unknown[], entityId: string, length: number): readonly DataRecord[] {
-  const captured: DataRecord[] = [];
   for (let index = 0; index < length; index += 1) {
-    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
-    if (descriptor === undefined || !('value' in descriptor))
+    if (!Object.prototype.hasOwnProperty.call(captured, index))
       throw new TypeError(`Rows for ${entityId} must contain plain object records in a dense array.`);
-    captured.push(descriptor.value as DataRecord);
   }
   return Object.freeze(captured);
-}
-
-function captureSnapshotRows(value: unknown, entityId: string, maxRows: number): readonly DataRecord[] {
-  if (!Array.isArray(value)) throw new TypeError(`Rows for ${entityId} must be an array.`);
-  const length = snapshotRowsLength(value, entityId);
-  if (length > maxRows) throw new SourceCapacityError('Local data snapshot exceeds the bounded source row limit.');
-  validateSnapshotRowKeys(value, entityId, length);
-  return captureSnapshotRowItems(value, entityId, length);
 }
 
 function captureSnapshotRecords(
@@ -306,24 +292,16 @@ function normalizeRow(
 
 function captureSourceValue(value: unknown, entityId: string, fieldId: string): unknown {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
-  let prototype: object | null;
   let keys: (string | symbol)[];
   try {
-    prototype = Object.getPrototypeOf(value);
     keys = Reflect.ownKeys(value);
   } catch {
     throw new TypeError(`Row for ${entityId} has an unreadable value for ${fieldId}.`);
   }
-  if (prototype !== Object.prototype && prototype !== null) return value;
-  const copy: Record<string, unknown> = Object.create(null) as Record<string, unknown>;
-  for (const key of keys) {
-    if (typeof key !== 'string') throw new TypeError(`Row for ${entityId} contains a symbol field.`);
-    const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    if (descriptor === undefined || !('value' in descriptor))
-      throw new TypeError(`Row for ${entityId} contains an accessor field.`);
-    copy[key] = descriptor.value;
-  }
-  return Object.freeze(copy);
+  if (keys.length !== 1 || keys[0] !== 'decimal') return value;
+  const descriptor = Object.getOwnPropertyDescriptor(value, 'decimal');
+  if (descriptor === undefined || !('value' in descriptor) || typeof descriptor.value !== 'string') return value;
+  return { decimal: descriptor.value };
 }
 
 function skipExecutableToJSON(key: string, value: unknown, reject: boolean): boolean {
