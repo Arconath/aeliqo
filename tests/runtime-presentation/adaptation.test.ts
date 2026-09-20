@@ -403,6 +403,67 @@ describe('presentation adaptation runtime', () => {
     expect(first.every((candidate) => candidate.id.startsWith('legacy.'))).toBe(true);
   });
 
+  it('rejects proxied legacy candidates without invoking value traps', () => {
+    let reads = 0;
+    const hostile = new Proxy(
+      { source: 'explicit', plan: {} },
+      {
+        get(target, property, receiver) {
+          reads++;
+          return Reflect.get(target, property, receiver);
+        },
+      },
+    ) as unknown as NonNullable<PresentationAdaptationContext['candidates']>[number];
+
+    expect(() => resolverCandidates([hostile])).not.toThrow();
+    expect(resolverCandidates([hostile])).toEqual([{ id: 'legacy.invalid', source: 'explicit', plan: {} }]);
+    expect(reads).toBe(0);
+  });
+
+  it('rejects accessor-bearing legacy candidates without invoking getters', () => {
+    let reads = 0;
+    const hostile = { plan: {} } as { source?: string; plan: object };
+    Object.defineProperty(hostile, 'source', {
+      enumerable: true,
+      get() {
+        reads++;
+        throw new Error('host getter executed');
+      },
+    });
+    const candidate = hostile as unknown as NonNullable<PresentationAdaptationContext['candidates']>[number];
+
+    expect(() => resolverCandidates([candidate])).not.toThrow();
+    expect(resolverCandidates([candidate])).toEqual([{ id: 'legacy.invalid', source: 'explicit', plan: {} }]);
+    expect(reads).toBe(0);
+  });
+
+  it('turns a hostile legacy candidate into a controlled adaptation failure', async () => {
+    const { region, registry } = setup();
+    let reads = 0;
+    const hostile = new Proxy(
+      { source: 'explicit', plan: {} },
+      {
+        get(target, property, receiver) {
+          reads++;
+          return Reflect.get(target, property, receiver);
+        },
+      },
+    ) as unknown as NonNullable<PresentationAdaptationContext['candidates']>[number];
+    const controller = createPresentationAdaptationController({
+      region,
+      registry,
+      baseContext: { ...baseContext(), candidates: [hostile] },
+      renderer: createCallbackPresentationRenderer({ apply: () => {} }),
+      dwellMs: 0,
+    });
+
+    const outcome = await controller.request(environment(800));
+
+    expect(outcome).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.input' }] });
+    expect(reads).toBe(0);
+    controller.dispose();
+  });
+
   it('treats text scale as an accessibility change even with a fixed container', async () => {
     const { region, registry } = setup();
     let reads = 0;

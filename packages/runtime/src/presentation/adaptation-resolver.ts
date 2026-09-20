@@ -50,10 +50,10 @@ export function resolverTarget(
 export function resolverCandidates(
   candidates: PresentationAdaptationContext['candidates'],
 ): readonly PresentationResolverCandidate[] {
-  const parsed = parseWireValue(candidates ?? []);
-  if (!parsed.ok || !Array.isArray(parsed.value)) return [invalidCandidate()];
-  const safe = parsed.value.filter(isLegacyCandidate);
-  if (safe.length !== parsed.value.length) return [invalidCandidate()];
+  const owned = ownWire(candidates ?? []);
+  if (!Array.isArray(owned)) return [invalidCandidate()];
+  const safe = owned.filter(isLegacyCandidate);
+  if (safe.length !== owned.length) return [invalidCandidate()];
   const entries = safe
     .map((candidate) => ({ candidate, key: canonicalCandidate(candidate) }))
     .sort((left, right) => compareCanonicalKey(left.key, right.key));
@@ -70,6 +70,16 @@ export function resolverCandidates(
       plan: candidate.plan,
     };
   });
+}
+
+function ownWire(input: unknown): unknown | undefined {
+  const inspected = parseWireValue(input);
+  if (!inspected.ok) return undefined;
+  try {
+    return structuredClone(input);
+  } catch {
+    return undefined;
+  }
 }
 
 function compareCanonicalKey(left: string, right: string): number {
