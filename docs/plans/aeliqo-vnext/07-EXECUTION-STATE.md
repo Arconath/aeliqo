@@ -104,6 +104,7 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 - `pnpm test:vnext` first observed a strict type error for an incorrect fixture type name, then passed after using the existing `LocalSnapshot` export: 1 test, 1 file, plus strict typecheck.
 - `pnpm check` exit 1 before the checkpoint commit with `Quality requires a clean source checkout.` This is retained as evidence that the quality driver enforces unchanged source; it must be rerun from the committed checkpoint.
 - The committed `dedc15e` rerun passed all 83 commands. `artifacts/product-ci/ci.json` binds the exact source revision, reports `status: passed`, and records `sourceChangedDuringRun: false`; Chromium, Firefox, and WebKit visual gates all exited 0.
+- A later source-bound rerun at `40754de` reached the visual Chromium gate after 79/87 earlier gates passed, but the catalog run hit an intermittent Vite/dist context-navigation failure after 212/213 cases. Targeted grid retries did not reproduce a product assertion failure; this retained failure is why the final source-bound matrix is rerun rather than inferred from the earlier pass.
 - No model call, package publication, image publication, deployment, or production operation occurred.
 
 ### T01 / RQ03 / RQ45 — declaration-only API design contract
