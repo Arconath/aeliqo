@@ -12,6 +12,11 @@ import {
   docsArtifactPath,
 } from '../../docs/public-site/routes.mjs';
 import { componentPage, parseAuthoredPage, parseComponentDocument } from './component-documents.mjs';
+import {
+  auditCatalogInventory,
+  formatCatalogInventoryReport,
+  readCatalogInventoryInputs,
+} from './catalog-inventory.mjs';
 import { componentApi, loadComponentSources } from './component-api.mjs';
 import {
   PUBLIC_DOCS_MANIFEST_SCHEMA,
@@ -187,29 +192,9 @@ function assertAuthoredPageParity(authoredPages) {
 
 async function loadPublicComponents() {
   const components = JSON.parse(await readFile(resolve(root, 'catalog/components.json'), 'utf8')).components;
-  if (!Array.isArray(components) || components.length !== 71)
-    throw new Error('The public catalog must contain exactly 71 components.');
+  if (!Array.isArray(components) || components.length === 0)
+    throw new Error('The public catalog must contain at least one component.');
   return components;
-}
-
-async function assertComponentExports(components) {
-  const webManifest = JSON.parse(await readFile(resolve(root, 'packages/web/package.json'), 'utf8'));
-  const missingComponentExports = components.filter((component) => {
-    const subpath = component.id.slice(component.id.indexOf('.') + 1);
-    return !Object.hasOwn(webManifest.exports, `./${subpath}`);
-  });
-  if (missingComponentExports.length)
-    throw new Error(
-      `Component documentation references missing public imports: ${missingComponentExports.map(({ id }) => id).join(', ')}`,
-    );
-}
-
-async function assertComponentDocumentParity(components) {
-  const componentDocuments = await filesAt(resolve(root, 'docs/site/components'), (path) => path.endsWith('.md'));
-  const expectedComponentDocuments = components.map((component) => `${component.id}.md`).sort();
-  const actualComponentDocuments = componentDocuments.map((path) => basename(path)).sort();
-  if (JSON.stringify(actualComponentDocuments) !== JSON.stringify(expectedComponentDocuments))
-    throw new Error('Each catalog component must have exactly one authored Markdown page.');
 }
 
 async function loadComponentGenerationData() {
@@ -222,10 +207,8 @@ async function loadComponentGenerationData() {
   const componentSources = await loadComponentSources(resolve(root, 'packages/web/src'));
   const canonicalExamples = await loadCanonicalExamples();
   const canonicalById = new Map(canonicalExamples.map((example) => [`${example.family}.${example.id}`, example]));
-  if (canonicalById.size !== 71)
-    throw new Error('The runnable example catalog must contain exactly 71 unique entries.');
   const projectTemplates = await loadProjectTemplates();
-  return { declarations, componentSources, canonicalById, projectTemplates };
+  return { declarations, componentSources, canonicalById, canonicalExamples, projectTemplates };
 }
 
 async function buildAuthoredPageEntries(authoredPages, projectTemplates) {
@@ -249,7 +232,7 @@ function componentCatalogPage(components) {
     path: '/components/',
     title: 'Component catalog',
     section: 'Components',
-    description: '71 owned components, grouped by purpose.',
+    description: `${components.length} owned components, grouped by purpose.`,
     body: `<p class="lead">Start with the component that serves the task. Each entry links to the actual generated public declaration.</p>${[
       ...new Set(components.map((component) => component.family)),
     ]
@@ -296,9 +279,15 @@ export async function buildPublicPages() {
   const authoredPages = await loadAuthoredPages();
   assertAuthoredPageParity(authoredPages);
   const components = await loadPublicComponents();
-  await assertComponentExports(components);
-  await assertComponentDocumentParity(components);
   const generationData = await loadComponentGenerationData();
+  const inventoryInputs = await readCatalogInventoryInputs(root);
+  const inventory = auditCatalogInventory({
+    ...inventoryInputs,
+    components,
+    examples: generationData.canonicalExamples,
+    declarations: generationData.declarations,
+  });
+  if (!inventory.ok) throw new Error(formatCatalogInventoryReport(inventory));
   const pages = await buildAuthoredPageEntries(authoredPages, generationData.projectTemplates);
   pages.push(componentCatalogPage(components));
   pages.push(...(await buildComponentPages(components, generationData)));
@@ -311,6 +300,9 @@ async function sourceInputs() {
     'docs/public-site/routes.mjs',
     'catalog/components.json',
     'scripts/docs/build-public-docs.mjs',
+    'scripts/docs/catalog-inventory.mjs',
+    'scripts/docs/check-catalog-inventory.mjs',
+    'scripts/docs/component-documents.mjs',
     'scripts/docs/component-api.mjs',
     'scripts/docs/public-docs-contract.mjs',
     'scripts/release/source-state.mjs',

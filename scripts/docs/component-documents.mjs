@@ -18,7 +18,7 @@ const escapeMarkdown = (value) =>
     .replaceAll('|', '\\|')
     .replaceAll('`', '\\`');
 
-const COMPONENT_HEADINGS = [
+export const COMPONENT_HEADINGS = [
   'Purpose',
   'When to use it',
   'When to use a different component',
@@ -34,7 +34,7 @@ const COMPONENT_HEADINGS = [
   'Generated TypeScript declaration',
 ];
 
-const COMPONENT_DIRECTIVES = [
+export const COMPONENT_DIRECTIVES = [
   'fixture',
   'example',
   'properties',

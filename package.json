@@ -97,6 +97,7 @@
     "test:framework:consumers": "node tests/framework-consumers/framework-tarballs.mjs",
     "test:export:consumers": "node tests/export-consumers/export-tarballs.mjs",
     "test:catalog-examples": "pnpm build:platform && vitest run --config tests/catalog-examples/vitest.config.mjs",
+    "test:docs-inventory": "pnpm build:platform && node scripts/docs/check-catalog-inventory.mjs",
     "build:docs-artifact": "pnpm build:platform && node scripts/docs/build-public-docs.mjs",
     "test:docs-artifact": "pnpm build:docs-artifact && node scripts/docs/verify-public-docs.mjs && node --test tests/docs-artifact/*.test.mjs && vitest run --config tests/docs-artifact/vitest.config.mjs && tsc -p tests/docs-artifact/tsconfig.json",
     "test:agent-evaluation:host": "pnpm build:agent && vitest run --config tests/agent-evaluation/vitest.config.mjs && tsc -p tests/agent-evaluation/tsconfig.json",
