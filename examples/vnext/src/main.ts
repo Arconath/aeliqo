@@ -1,6 +1,7 @@
 import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import { defineResource, type Intent } from '@aeliqo/core';
-import { createLocalDataService } from '@aeliqo/runtime/data';
+import { createLocalDataService, type AuthorizeRead } from '@aeliqo/runtime/data';
+import type { AeliqoAuthority } from '@aeliqo/runtime/app';
 import { createAeliqoApp, type WebRenderReceipt } from '@aeliqo/web/app';
 import { z } from 'zod';
 
@@ -114,11 +115,11 @@ let accessGranted = true;
 let holdNextPeopleRead = false;
 let releaseHeldPeopleRead: (() => void) | undefined;
 
-function authority() {
+const authority: AeliqoAuthority['read'] = () => {
   if (!accessGranted)
     return {
       ok: false as const,
-      diagnostics: [{ code: 'vnext.denied', message: 'Browser fixture access was revoked.', retryable: false }],
+      diagnostics: [{ code: 'vnext.denied', message: 'Browser fixture access was revoked.', retryable: false }] as const,
     };
   return {
     ok: true as const,
@@ -131,13 +132,13 @@ function authority() {
       readContext: { principal: 'vnext-browser' },
     },
   };
-}
+};
 
-const authorize = async ({ context }: { readonly context: { readonly principal?: string; readonly signal?: AbortSignal } }) => {
+const authorize: AuthorizeRead = async ({ context }) => {
   if (context.principal !== 'vnext-browser')
     return {
       ok: false as const,
-      diagnostics: [{ code: 'vnext.denied', message: 'Browser fixture access denied.', retryable: false }],
+      diagnostics: [{ code: 'vnext.denied', message: 'Browser fixture access denied.', retryable: false }] as const,
     };
   if (holdNextPeopleRead) {
     holdNextPeopleRead = false;
@@ -247,7 +248,10 @@ const renderPeople = (preferredView?: string, page?: { readonly size: number }, 
 
 const renderAnalysis = (
   preferredView: 'bar' | 'trend',
-  measures: readonly { readonly id: 'month-headcount' | 'planned-headcount'; readonly revision: '1' }[] = [
+  measures: readonly [
+    { readonly id: 'month-headcount' | 'planned-headcount'; readonly revision: '1' },
+    ...{ readonly id: 'month-headcount' | 'planned-headcount'; readonly revision: '1' }[],
+  ] = [
     { id: 'month-headcount', revision: '1' },
   ],
 ) => {
