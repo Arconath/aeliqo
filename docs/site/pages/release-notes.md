@@ -30,8 +30,10 @@ claims separate from the current release.
   fenced.
   Existing app/Region APIs remain the compatibility path; React lifecycle
   adapters are not part of this candidate step.
-- This candidate has not been published or deployed. Its runtime, React,
-  migration, and compatibility gates remain in progress.
+- Local implementation and acceptance evidence cover runtime, React, migration,
+  compatibility, browser, documentation, performance, and packed-consumer
+  gates. This candidate has not been published or deployed, and production
+  runtime remains unverified.
 - The unreleased runtime candidate now exposes one canonical
   `createLocalDataBinding` adapter under `@aeliqo/runtime/surfaces`. It lowers
   through the existing `LocalDataService`, ResultStore, and Region paths,

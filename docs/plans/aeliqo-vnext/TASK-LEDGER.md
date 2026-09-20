@@ -4,7 +4,7 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 
 | Task | State                    | Current evidence or next gate                                                                                                                                                                                                                                                                                                      |
 | ---- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| T00  | verified                 | Baseline/harness complete. Full clean-source matrix passed 83/83 at `dedc15e`; `artifacts/product-ci/ci.json` records `sourceChangedDuringRun: false`.                                                                                                                                                                             |
+| T00  | verified                 | Baseline/harness complete. Final clean-source matrix passed 87/87; `artifacts/product-ci/ci.json` records the exact source revision and `sourceChangedDuringRun: false`.                                                                                                                                 |
 | T01  | design-contract-verified | ADR 012 and complete positive/negative declaration-only consumers pass strict TypeScript. This is not installed-package or runtime acceptance.                                                                                                                                                                                     |
 | T02  | implemented-and-verified | Immutable data/non-data definitions, compatibility lowering, package export/docs and clean tarball consumer pass; collision and nested-mutation regressions added after independent review; full matrix passed at `dedc15e`.                                                                                                       |
 | T03  | implemented-and-verified | Accepted `4422b0d`: authority-fenced proposals, typed safe denial and capability intent, exception-isolated observers, failed-proposal retirement, bounded generations, exactly-once internal/external denial publication, 34/34 vNext, installed evidence at `artifacts/runtime-consumers/run-edxqqJ/report.json`; not published. |
@@ -23,25 +23,24 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 | T16  | implemented-and-verified | Accepted `b79ab59`; trust-boundary/security fixtures, 14/14 security, 45/45 focused vNext security/local-data, 4/4 boundaries, 1000/1000 auth-retention, strict typecheck. |
 | T17  | implemented-and-verified | Accepted `b64e043`/`733ed14`; source-driven active catalog inventory, public export/page/example parity, authored wording checks, inventory 71/71 and docs artifact 10/10. |
 | T18  | implemented-and-verified | Accepted `52b2bfe`/`adef0f3`; four synthetic reference journeys, real scoped agent parity, remote transport fixture, host approval/revocation, and job progress/cancel/output refs; remote 1/1 and browser 4/4 in Chromium/Firefox/WebKit. |
-| T19  | implemented-and-verified | Accepted `6fd4901`/`d9cd85a`; two-surface isolation, module tiers 10/100/1000, 5×100 samples/tier, p95 8.08/7.38/10.45ms, bundle 6/6 at 163837/163840 gzip, runtime/browser/heap gates green. |
-| T20  | implemented-and-verified | Accepted `2f483c3` with qualification at `d9cd85a`; candidate 0.5.0 is unreleased/breaking from stable 0.4.2; packed five-package consumers, no-agent graph, support/migration/release docs, and release tooling 31/31 pass. |
-| T21  | in-review                | Independent final review dispatched against `d9cd85a`; requires clean full matrix before final handoff. |
+| T19  | implemented-and-verified | Accepted final-v3 performance evidence; two-surface isolation, module tiers 10/100/1000, 5×100 samples/tier, p95 8.54/7.32/9.53ms, bundle 6/6 within the 163840-byte cap, and runtime/browser/heap gates green. |
+| T20  | implemented-and-verified | Candidate 0.5.0 is unreleased/breaking from stable 0.4.2; latest packed five-package report under `artifacts/t20-qualification/` proves legacy/vNext/no-agent support and release tooling 31/31. |
+| T21  | final-review-gated        | Independent final review and the clean 87-gate matrix are the handoff evidence; publication and deployment remain separately unauthorized. |
 
 RQ45 remains owned by T01, but its evidence is deliberately split: T01 freezes
-and typechecks the non-vacuous contract; T10/T12 must execute the installed
-React and visible SSR DOM consumers, and T20 must rerun them from packed
-artifacts. T01 is therefore `design-contract-verified`, not fully implemented
-or runtime-verified, until those downstream gates close the same requirement.
+and typechecks the non-vacuous contract; T10/T12 execute the installed React
+and visible SSR DOM consumers, and T20 reruns them from packed artifacts. The
+requirement is runtime-verified locally; production runtime remains unverified.
 
 ## Release state
 
 - Candidate built: locally qualified packed artifacts only; no registry/image publication.
-- Independently reviewed: T02–T06 task candidates and T21 final review in progress.
+- Independently reviewed: T02–T06 task candidates plus the final read-only T21 review.
 - RC published: no.
 - Stable published: no.
 - Image published: no.
 - Deployed: no.
-- Runtime verified: focused T02 core behavior, T03 scoped surfaces, T04 guarded scope transitions, T05 bounded local binding, T06 remote/semantic execution, T16 security boundaries, T18 reference journeys, T19 performance, and T20 clean packed consumers. Production runtime remains unverified.
+- Runtime verified: focused T02 core behavior, T03 scoped surfaces, T04 guarded scope transitions, T05 bounded local binding, T06 remote/semantic execution, T16 security boundaries, T18 reference journeys, T19 performance, T20 clean packed consumers, and the final source-bound matrix. Production runtime remains unverified.
 
 ## Component documentation inventory
 

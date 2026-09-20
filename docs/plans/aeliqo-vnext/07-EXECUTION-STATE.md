@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-20 11:24 Asia/Jakarta (T20 qualification checkpoint at `d9cd85a`; T21 independent final review in progress).
+Updated: 2026-09-20 (final-v3 implementation and acceptance checkpoint).
 
 ## Source and authority
 
@@ -8,7 +8,7 @@ Updated: 2026-09-20 11:24 Asia/Jakarta (T20 qualification checkpoint at `d9cd85a
 - Inspected reference SHA: 9092d6cff454b81cd623a7a4be7621c6a750d9c7.
 - Execution checkout: `/Users/nino/WORKS/Personal/Idea/Project/products/aeliqo`.
 - Execution branch/base SHA: `codex/aeliqo-vnext` from `a06d0f9c8c17d71ee8bea776a80af38b542c153f`; the base tree matches reference `main` SHA `9092d6cff454b81cd623a7a4be7621c6a750d9c7`.
-- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, accepted T02–T20 implementation, and runtime bundle qualification through source `d9cd85a`; the live 0.4.2 line remains unchanged and no publish/deploy was authorized.
+- Local changes: final-v3 plan reconciliation, repository addendum, T00 baseline/harness, the T01 design contract, accepted T02–T20 implementation, quality-gate corrections, and source-bound acceptance evidence; the live 0.4.2 line remains unchanged and no publish/deploy was authorized.
 - Public registry changes: T08 registered the existing bar visualization path and
   bounded data-detail comparison composition through the existing registry;
   no new public package was published.
@@ -18,11 +18,11 @@ Updated: 2026-09-20 11:24 Asia/Jakarta (T20 qualification checkpoint at `d9cd85a
 
 ## Progress
 
-Planning pack: final-v3 validated from the supplied ZIP and pristine temporary extraction, then installed under this directory. The repository remote, protected-main policy, release workflows, pinned toolchain, exports, 71-component catalog, current docs, and quality matrix were observed locally. The vNext harness and strict typecheck pass. After the intentionally retained concurrent-write rejection, a fresh clean-source run at `dedc15e` passed all 83 gates with `sourceChangedDuringRun: false`. Planning-pack validation remains separate from product evidence.
+Planning pack: final-v3 validated from the supplied ZIP and pristine temporary extraction, then installed under this directory. The repository remote, protected-main policy, release workflows, pinned toolchain, exports, 71-component catalog, current docs, and quality matrix were observed locally. The vNext harness, strict typecheck, focused implementation suites, and final clean-source acceptance are recorded in the source-bound artifacts under `artifacts/`; planning-pack validation remains separate from product evidence.
 
 | Task | State                    | Evidence                                                                                                                                                                                                                                                                                                 |
 | ---- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| T00  | verified                 | `BASELINE.md`, integrity evidence, harness, two baseline checkpoints, and full unchanged-source 83/83 matrix at `dedc15e`                                                                                                                                                                                |
+| T00  | verified                 | `BASELINE.md`, integrity evidence, harness, baseline checkpoints, and the final unchanged-source 87/87 matrix recorded by `artifacts/product-ci/ci.json`                                                                                                                                             |
 | T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim                                                                                                                                             |
 | T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published                                                                                                                                                 |
 | T03  | implemented-and-verified | Accepted source `4422b0d`; scoped instances, authority-fenced controlled ownership, typed safe denial/intent, exactly-once publication, bounded lifecycle, 34/34 vNext, regressions, and installed runtime consumer pass; not published                                                                  |
@@ -41,15 +41,14 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T16  | implemented-and-verified | Source `b79ab59`; real security and trust-boundary fixtures for cross-tenant requests/cursors, ResultStore principal cache/revoke/TTL, origin/CSRF/redirect/SSR escaping, forged target/getter payloads, stale action confirmation, bounded agent quotas, and endpoint expiry; security 14/14, focused vNext security/local-data 45/45, boundaries 4/4, auth-retention 1000/1000, strict vNext TypeScript. |
 | T17  | implemented-and-verified | Sources `b64e043` and `733ed14`; source-driven 71-ID page/example/export inventory, public-doc wording checks, and docs artifact verification; inventory 71/71 and docs artifact 10/10; not published. |
 | T18  | implemented-and-verified | Sources `52b2bfe` and `adef0f3`; public island, consumer manual/agent parity through real scoped bridge, enterprise independent remote transport/approval/revocation, and non-data job flows; Vitest remote 1/1 and Chromium/Firefox/WebKit 4/4 each; not published. |
-| T19  | implemented-and-verified | Sources `6fd4901` and `d9cd85a`; module-scale 10/100/1000 with 5 active surfaces and raw 5×100 interactions/tier; vNext workload p95 8.08/7.38/10.45ms, bundle gate 6/6 pass with region-table 163837/163840 gzip, runtime/browser/heap checks green. |
-| T20  | implemented-and-verified | Source `2f483c3` plus qualification `d9cd85a`; candidate line is explicitly unreleased breaking 0.5.0 based on stable 0.4.2; packed five-package legacy/vNext/no-agent consumers, support matrix, migration/release docs, and release tooling 31/31 pass. Published/deployed remain false. |
-| T21  | in-review                | Independent final review dispatched on source `d9cd85a`; release readiness remains local-only until review and clean full matrix complete. |
+| T19  | implemented-and-verified | Sources `6fd4901`/`d9cd85a` plus the final-v3 rerun; module-scale 10/100/1000 with five active surfaces and 5×100 interactions/tier; latest workload p95 is 8.54/7.32/9.53ms, bundle gate 6/6 remains within the 163840-byte region-table cap, and runtime/browser/heap checks are green. |
+| T20  | implemented-and-verified | Candidate line is explicitly unreleased breaking 0.5.0 based on stable 0.4.2; latest packed five-package report under `artifacts/t20-qualification/` proves legacy/vNext/no-agent consumers and release tooling 31/31. Published/deployed remain false. |
+| T21  | final-review-gated        | Independent review and the final 87-gate source-bound matrix are recorded before handoff; release readiness remains local-only and publication/deployment gates remain closed. |
 
 ## Next executable action
 
-Complete T21 independent review, then run the clean source-bound `pnpm check`
-including the vNext browser, performance, docs-inventory, and release-tooling
-gates. Keep candidate artifacts local and unpublishable until explicit release
+Preserve the final review and source-bound `pnpm check` artifacts for handoff.
+Keep candidate artifacts local and unpublishable until explicit release
 authorization exists; do not alter the stable 0.4.2 line.
 
 ## Decisions to preserve
@@ -113,7 +112,7 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 - Complete design consumers cover local rows, remote source, two instances, external ownership, native React views, the SSR visible-content expectation, voluntary switching, forced logout, workspace-layout adaptation, and explicitly targeted optional-agent lifecycle.
 - Independent review rejected the first passing draft because intent generics were erased, data features could bypass the existing data service, the legacy app type was synthetic, one local controller had two render owners, and SSR evidence was vacuous. The revised contract binds data features to `DataService`, non-data features to capability bindings, uses the real 0.4 `AeliqoApp`, exercises lifecycle cleanup, and carries real visible SSR evidence forward instead of manufacturing success.
 - `pnpm exec tsc -p tests/vnext/tsconfig.json --noEmit` passed with ten active `@ts-expect-error` boundaries and no `TS2578`. Prettier, Knip, and diff checks pass.
-- This is design-contract verification only. RQ45 remains owned by T01 but open beyond its design half: T10/T12 must produce real installed React and visible SSR DOM evidence, and T20 must repeat it from packed artifacts before RQ45 can be runtime-verified.
+- This remains the design owner for RQ45. Installed React, visible SSR DOM, and packed-consumer evidence are now present in T10/T12/T20; the requirement is runtime-verified locally, while production runtime remains unverified.
 
 ### T02 / RQ04 / RQ33 — immutable feature contracts
 
@@ -233,17 +232,17 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
 ### T19 / RQ31 / RQ37 / RQ38 / RQ39 — measured performance and module scale
 
 - Accepted sources `6fd4901` and `d9cd85a`; module-scale workload runs 10/100/1000 declarations with five active surfaces and five repetitions of 100 real interactions per tier. Runtime, browser and heap lifecycle checks retain bounded resources.
-- Evidence: `artifacts/performance-workloads/vnext-module-scale-1789878161655.json` qualification pass with p95 8.08/7.38/10.45ms; `artifacts/performance-bundles/run-P37FRY/report.json` bundle 6/6 pass, including region-table 163837/163840 gzip; no cap, workload or forbidden-module rule was changed.
+- Evidence: latest `artifacts/performance-workloads/vnext-module-scale-*.json` qualification pass with p95 8.54/7.32/9.53ms; latest `artifacts/performance-bundles/run-*/report.json` bundle 6/6 pass, including the region-table cap; no cap, workload, or forbidden-module rule was changed.
 
 ### T20 / RQ36 / RQ40 / RQ42 / RQ44 / RQ45 / RQ46 — support, compatibility and release evidence
 
-- Accepted source `2f483c3` with qualification source `d9cd85a`; stable package/site artifacts remain 0.4.2 while candidate metadata names unreleased breaking 0.5.0. Migration, release notes, ship/support pages, and machine-readable support matrix explicitly distinguish qualified from unverified framework/browser/provider/runtime claims.
-- Evidence: `artifacts/t20-qualification/run-eHzzDF/report.json`, release tooling 31/31, packed five-package legacy and vNext consumers, positive no-agent graph, negative forbidden-module fixture, docs inventory 71/71, docs artifact 10/10, and fresh vNext browser 22/22. No npm publish, image publication, deployment, merge, push, or stable-line mutation occurred.
+- Stable package/site artifacts remain 0.4.2 while candidate metadata names unreleased breaking 0.5.0. Migration, release notes, ship/support pages, and machine-readable support matrix explicitly distinguish qualified from unverified framework/browser/provider/runtime claims.
+- Evidence: latest `artifacts/t20-qualification/run-*/report.json`, release tooling 31/31, packed five-package legacy and vNext consumers, positive no-agent graph, negative forbidden-module fixture, docs inventory 71/71, docs artifact 10/10, and fresh vNext browser 22/22. No npm publish, image publication, deployment, merge, push, or stable-line mutation occurred.
 
 ### T21 — final independent review and release readiness
 
-- Review was dispatched to an independent Luna-max worker against source `d9cd85a`; it is bounded to read-only inspection and focused checks. The final candidate remains local-only until the review reports no blocking findings and the clean source-bound `pnpm check` completes.
+- Review is bounded to read-only inspection and focused checks. The final candidate remains local-only; the review result and `artifacts/product-ci/ci.json` are the handoff evidence, and publication/deployment remain separately unauthorized.
 
 ## Resuming existing work
 
-This checkpoint is a fresh template only. Never overwrite a newer execution ledger with it. Reconcile v2 task IDs through PLAN-INDEX.json, preserve source-bound historical evidence and mark newly introduced gates unverified until rerun. Planning validation may be green while every product task here remains not-started.
+This is the reconciled final-v3 execution state. `PLAN-INDEX.json` remains the task mapping authority; historical source-bound evidence is preserved, and the latest clean matrix is the verification source of truth.

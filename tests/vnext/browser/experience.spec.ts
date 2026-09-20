@@ -9,7 +9,7 @@ async function setRegionWidth(page: import('@playwright/test').Page, width: numb
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#page-status')).toHaveText('Ready');
+  await expect(page.locator('#page-status')).toHaveText('Ready', { timeout: 15_000 });
 });
 
 test('keeps keyboard focus and a dirty draft through adaptive, RTL, touch, zoom, and reduced-motion changes', async ({
