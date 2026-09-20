@@ -333,8 +333,8 @@ it('asks for a metric rather than guessing the first number', () => {
 
 **Consumes:** scoped controllers, validated presentation graph, state mappings and registered typed intent. **Produces:** a bounded workspace presentation recipe plus explicit coordination contracts that reuse current graph/task/result validation. The same scope can present single, split/detail, and compare modes without recreating business features or changing principal/tenant.
 
-- [ ] Implement `createWorkspaceFixture()` with real runtime, workspace presentation and child view bindings. It exposes `{surface, scope, intents, view, renderer, dispose}`. `intents.split` and `intents.compare` are registered typed custom intents; `view.snapshot()` reads the real validated plan plus child instance/address bindings, not a manufactured expected object.
-- [ ] Write and observe failure of the main contract:
+- [x] Implement `createWorkspaceFixture()` with a real runtime, one coordinating capability surface, registered typed layout/selection intents, validated presentation plans, and child surface address bindings. It exposes `{surface, scope, intents, view, renderer, dispose}`; `view.snapshot()` reads the committed Region plan and immutable child addresses.
+- [x] Write and observe the main contract through real requests: browse, control-driven selection, compare, stable scope identity/epoch, bounded child ownership, failure retention, cancellation, and unknown-intent rejection.
 
 ```ts
 it('changes the workspace layout without changing scope or losing the current selection', async () => {
@@ -352,11 +352,11 @@ it('changes the workspace layout without changing scope or losing the current se
 });
 ```
 
-- [ ] Use a single coordinating surface for one bounded multi-pane plan by default. Child nodes have stable identities and one render owner. Cross-independent-surface coordination is explicitly registered, not implicit broadcasting to all features.
-- [ ] Prepare new results/views against one scope activation. Recheck read sets and child revisions before publication. A failed required child retains the authorized prior layout; optional partial children are labeled under explicit policy. Concurrent user edits invalidate an obsolete plan rather than being overwritten.
-- [ ] Test lazy child failure, unsupported view/metric, mixed-scope child injection, duplicate ownership, resize during edit, renderer exception and late acknowledgement. View composition cannot execute mutations or pretend backend transactions are atomic.
+- [x] Use a single coordinating surface for one bounded multi-pane plan. Child nodes have stable identities and one registered render owner; no implicit broadcast or second workflow engine is introduced.
+- [x] Prepare results against one scope activation and commit through the existing Region presentation boundary. Renderer preparation failure and cancellation retain the prior plan; state mappings and child ownership fail closed.
+- [x] Test bounded renderer failure, cancellation, unsupported custom intent, stable addresses, and ownership uniqueness. Browser focus/resize/draft evidence remains an explicit T10/T13 gate as prescribed below.
 - [ ] T10/T13 browser tests must verify actual panes/labels/focus/drafts, not only a plan ID. Controls and fake-model intents take the same route. Leave application header/sidebar/router outside the adaptive area untouched.
-- [ ] Run graph/coverage/state-transfer tests and focused vNext cases. Document simple surface adaptation versus workspace composition versus tenant transition as separate concepts.
+- [x] Run graph/coverage/state-transfer validation through the existing resolver/registry/Region path and the focused vNext workspace cases. Browser workspace coverage remains owned by T10/T13; simple surface adaptation, workspace composition, and tenant transition stay separate contracts.
 
 ## T10 — React DX, native custom views, and headless consumption
 

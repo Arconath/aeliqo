@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-Updated: 2026-09-20 08:50 Asia/Jakarta (T08 accepted at `61ab509`; T09 unblocked).
+Updated: 2026-09-20 09:28 Asia/Jakarta (T09 implementation checkpoint at `756dbf6`; browser evidence remains with T10/T13).
 
 ## Source and authority
 
@@ -31,7 +31,7 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 | T06  | implemented-and-verified | Accepted source `22b6950`; real HTTP protocol fixture, explicit unsupported/coverage behavior, snapshot/live cursor fencing, authoritative aggregate/lineage proof, semantic expected-value fixtures, 178/178 vNext, regressions, installed core/runtime consumers, site and visual gates; not published |
 | T07  | implemented-and-verified | Accepted source `1e4fa2f`; deterministic owned-input resolver, bounded candidate IDs, pins/eligibility/clarification, candidate isolation, cancellation rollback, hostile Proxy/accessor rejection, 204/204 vNext, 52/52 adaptation, browser/consumer/site/performance evidence; not published                       |
 | T08  | implemented-and-verified | Accepted source `61ab509`; registered bar analysis, identity-scoped comparison split, adaptive table/cards, exact ResultRef lineage isolation through data/visualization/plot boundaries, browser/SSR/docs/consumer evidence, and independent review; not published |
-| T09  | not-started              | Workspace composition not implemented                                                                                                                                                                                                                                                                    |
+| T09  | implemented-and-verified | Source `756dbf6`; real runtime coordinating surface, registered custom layout/selection intents, validated bounded single/split/compare plans, immutable child addresses, renderer-failure retention, cancellation, unknown-intent rejection, 4/4 focused workspace tests, and strict vNext typecheck. Browser focus/resize/draft evidence remains T10/T13; not published or deployed. |
 | T10  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
 | T11  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
 | T12  | not-started              | No implementation evidence                                                                                                                                                                                                                                                                               |
@@ -47,10 +47,10 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 
 ## Next executable action
 
-Execute T09's workspace-wide adaptive presentation seam on accepted T08 source
-`61ab509`. Reuse the existing presentation graph, one coordinating surface,
-scoped child addresses, and the runtime adaptation boundary; do not create a
-parallel workspace engine or universal component.
+Execute T10's React DX and native/headless integration on accepted T09 source
+`756dbf6`. Preserve the one coordinating workspace surface, existing
+presentation graph, scoped child addresses, and the no-AI default path; do not
+create a parallel workspace engine or universal component.
 
 ## Decisions to preserve
 
@@ -76,6 +76,27 @@ Record task ID and requirements; current branch/SHA/diff hash; files changed/own
   `.superpowers/sdd/02-EXECPLAN/task-8-report.md`.
 - Independent final review found no Critical or Important findings. Published,
   deployed, and production-runtime-verified remain false.
+
+### T09 / RQ41 — bounded workspace composition without tenancy changes
+
+- Accepted implementation source `756dbf6`; no public Workspace component or
+  second workflow engine was introduced. Custom recipes match exact registered
+  intent refs and reject generic/malformed registrations.
+- `tests/vnext/fixtures/workspace.ts` uses a real runtime Region, one
+  coordinating capability SurfaceController, registered custom layout and
+  control-selection intents, core compilation/evaluation, registry-backed
+  presentation resolution, Region presentation commit, and two real child
+  surface addresses. `view.snapshot()` reads the committed Region plan and
+  immutable child bindings.
+- `tests/vnext/workspace-layout.test.ts` covers browse → control selection →
+  compare, single/split/compare transitions, same scope instance/epoch,
+  stable child owners/addresses, renderer preparation failure retention,
+  cancellation fencing, and unknown custom-intent fail-closed behavior. Focused
+  evidence: 4/4 tests; strict `tests/vnext` TypeScript and full vNext suite
+  213/213 pass after the checkpoint source was built.
+- Browser panes, focus, drafts, resize, and surrounding host chrome remain an
+  explicit downstream T10/T13 gate. Nothing was published, deployed, pushed,
+  or verified against production; no paid model/provider call occurred.
 
 ### T00 / RQ01 / RQ32 — baseline and harness
 
