@@ -17,7 +17,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: `./node_modules/.bin/vite examples/vnext --host 127.0.0.1 --port ${port} --strictPort`,
+    command: `node tests/vnext/server.mjs ${port}`,
     cwd: repositoryRoot,
     url: origin,
     reuseExistingServer: false,

@@ -86,6 +86,23 @@ The production-shaped App Router recipe is in
 `@lit-labs/ssr-client/lit-element-hydrate-support.js` before registering the
 elements and retains the host-owned event/property boundary.
 
+For request-specific pages, create the runtime, bindings, and public initial
+snapshot inside the server request boundary. Do not keep principal-specific
+records, credentials, or mutable result caches at module scope, and mark such
+responses `private, no-store` unless the host has established a safe cache
+policy. The client should reuse only a validated public snapshot and preserve
+the server's initial direction/theme until hydration completes.
+
+### Static/island embedding
+
+[`examples/vnext/islands`](../examples/vnext/islands) is a framework-free
+recipe: ordinary page content remains useful without JavaScript, while one
+custom-element island registers on the client. It is a small embedding option,
+not a new Aeliqo framework package or a claim that every framework is
+qualified. Vanilla, React, Vue, and the Next App Router fixture are exercised
+by the maintained framework checks; other adapters remain host-owned and
+unqualified until they have their own runnable consumer evidence.
+
 ## Vue
 
 Vue embeds the same registered custom element. Keep data in Vue state and pass
