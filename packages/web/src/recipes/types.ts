@@ -21,9 +21,14 @@ export interface RecipeContext {
   readonly incumbent?: PresentationPlan;
 }
 
+/** Built-in intent kinds remain separate from host-registered custom intent identities. */
+export type StandardRecipeIntent = Exclude<Intent, { readonly kind: 'custom' }>['kind'];
+export type RecipeIntent = StandardRecipeIntent | VersionRef;
+
 export interface RecipeDefinition {
   readonly ref: VersionRef;
-  readonly intents: readonly Intent['kind'][];
+  /** Standard intent aliases or exact, trusted custom-intent identities. */
+  readonly intents: readonly RecipeIntent[];
   build(context: RecipeContext): Outcome<PresentationPlan>;
 }
 

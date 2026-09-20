@@ -1,4 +1,4 @@
-import type { Diagnostic, Outcome, PresentationPlan, VersionRef } from '@aeliqo/core';
+import type { Diagnostic, Intent, Outcome, PresentationPlan, VersionRef } from '@aeliqo/core';
 import type {
   PresentationClarification,
   PresentationResolverCandidate,
@@ -11,7 +11,7 @@ import { defineRecipe } from './define.js';
 import { comparisonSplitPlan } from './standard-comparison.js';
 import { barConfig, dataColumns, requestedFields } from './standard-data.js';
 import { trendConfig } from './standard-trend.js';
-import type { RecipeContext, RecipeDefinition } from './types.js';
+import type { RecipeContext, RecipeDefinition, StandardRecipeIntent } from './types.js';
 import { standardFormRecipe } from './standard-form.js';
 import { standardStateMapping } from './standard-state.js';
 import { resolverCandidateId } from './candidate-id.js';
@@ -451,8 +451,18 @@ export function canonicalViewId(view: string): string {
   return (alias ?? Object.values(aliases).find((candidate) => candidate.ref.id === view))?.ref.id ?? view;
 }
 
-export function recipeSupports(recipe: RecipeDefinition, kind: RecipeContext['intent']['kind']): boolean {
-  return recipe.intents.includes(kind);
+export function recipeSupports(recipe: RecipeDefinition, kind: StandardRecipeIntent): boolean;
+export function recipeSupports(recipe: RecipeDefinition, intent: Intent): boolean;
+export function recipeSupports(recipe: RecipeDefinition, input: StandardRecipeIntent | Intent): boolean {
+  if (typeof input === 'string') return recipe.intents.some((intent) => intent === input);
+  if (input.kind === 'custom')
+    return recipe.intents.some(
+      (registered) =>
+        typeof registered !== 'string' &&
+        registered.id === input.intent.id &&
+        registered.revision === input.intent.revision,
+    );
+  return recipe.intents.some((registered) => registered === input.kind);
 }
 
 export function standardOperationFor(kind: RecipeContext['intent']['kind']): VersionRef {

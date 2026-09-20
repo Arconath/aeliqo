@@ -13,6 +13,7 @@ import * as z from 'zod';
 import {
   defineRecipe,
   defineView,
+  recipeSupports,
   standardDataRecipe,
   standardFormRecipe,
 } from '../../packages/web/src/recipes/index.js';
@@ -1016,6 +1017,53 @@ describe('0.3 standard recipes', () => {
     expect(id).toMatch(/^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/u);
     expect(id.length).toBeLessThanOrEqual(160);
     expect(id).toBe(resolverCandidateId('recipe', `${recipe.ref.id}.${recipe.ref.revision}`));
+  });
+
+  it('matches a recipe to its exact registered custom intent ref without adding a standard alias', () => {
+    const recipe = defineRecipe({
+      ref: { id: 'orders.workspace-recipe', revision: '1' },
+      intents: [{ id: 'orders.workspace-layout', revision: '1' }],
+      build: standardDataRecipe.build,
+    });
+    const matching: Intent = {
+      version: '1',
+      id: 'workspace-layout',
+      resource: 'people',
+      kind: 'custom',
+      intent: { id: 'orders.workspace-layout', revision: '1' },
+      input: { mode: 'compare' },
+    };
+    const differentRevision: Intent = {
+      ...matching,
+      intent: { id: 'orders.workspace-layout', revision: '2' },
+    };
+
+    expect(recipeSupports(recipe, matching)).toBe(true);
+    expect(recipeSupports(recipe, differentRevision)).toBe(false);
+    expect(recipeSupports(recipe, 'browse')).toBe(false);
+    expect(recipeSupports(standardDataRecipe, matching)).toBe(false);
+  });
+
+  it('fails closed for duplicate or malformed custom recipe intent refs', () => {
+    const base = {
+      ref: { id: 'orders.workspace-recipe', revision: '1' },
+      build: standardDataRecipe.build,
+    };
+
+    expect(() =>
+      defineRecipe({
+        ...base,
+        intents: [
+          { id: 'orders.workspace-layout', revision: '1' },
+          { id: 'orders.workspace-layout', revision: '1' },
+        ],
+      }),
+    ).toThrow(TypeError);
+    expect(() => defineRecipe({ ...base, intents: [{ id: 'workspace-layout', revision: '1' }] })).toThrow(TypeError);
+    expect(() => defineRecipe({ ...base, intents: ['custom' as never] })).toThrow(TypeError);
+    expect(() => defineRecipe({ ...base, ref: { id: 'orders.workspace-recipe', revision: 'bad revision' } })).toThrow(
+      TypeError,
+    );
   });
 
   it('builds a queryless create form entirely from host-owned resource bindings', () => {

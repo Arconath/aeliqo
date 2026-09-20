@@ -1,21 +1,66 @@
 import { createPresentationRegistry } from '@aeliqo/core/presentation';
-import type { RecipeDefinition, RecipeInput, ViewInput } from './types.js';
+import type { RecipeDefinition, RecipeInput, RecipeIntent, ViewInput } from './types.js';
 import type { AeliqoViewDefinition } from '../region/types.js';
 
 function validNamespacedId(id: string): boolean {
   return id.includes('.') && id.length <= 160 && !/[\s\u0000-\u001f\u007f]/u.test(id);
 }
 
+function validRevision(revision: string): boolean {
+  return revision.length > 0 && revision.length <= 160 && !/[\s\u0000-\u001f\u007f]/u.test(revision);
+}
+
+function validRecipeRevision(revision: string): boolean {
+  return revision.length > 0 && !/[\s\u0000-\u001f\u007f]/u.test(revision);
+}
+
+function validCustomIntent(ref: unknown): ref is Extract<RecipeIntent, object> {
+  if (ref === null || typeof ref !== 'object' || Array.isArray(ref)) return false;
+  const candidate = ref as Record<string, unknown>;
+  return (
+    Object.keys(candidate).length === 2 &&
+    typeof candidate.id === 'string' &&
+    typeof candidate.revision === 'string' &&
+    validNamespacedId(candidate.id) &&
+    validRevision(candidate.revision)
+  );
+}
+
+function validIntent(intent: unknown): intent is RecipeIntent {
+  return (
+    intent === 'browse' ||
+    intent === 'detail' ||
+    intent === 'create' ||
+    intent === 'edit' ||
+    intent === 'compare' ||
+    intent === 'analyze' ||
+    validCustomIntent(intent)
+  );
+}
+
+function intentKey(intent: RecipeIntent): string {
+  return typeof intent === 'string' ? `standard:${intent}` : `custom:${intent.id}@${intent.revision}`;
+}
+
 export function defineRecipe(input: RecipeInput): RecipeDefinition {
+  const intents = input.intents;
   if (
     !validNamespacedId(input.ref.id) ||
-    input.ref.revision.length === 0 ||
-    input.intents.length === 0 ||
-    new Set(input.intents).size !== input.intents.length
+    !validRecipeRevision(input.ref.revision) ||
+    !Array.isArray(intents) ||
+    intents.length === 0 ||
+    intents.some((intent) => !validIntent(intent)) ||
+    new Set(intents.map(intentKey)).size !== intents.length
   )
-    throw new TypeError('A recipe needs a namespaced versioned ID and unique supported intents.');
+    throw new TypeError('A recipe needs a namespaced versioned ID and unique supported intents or custom intent refs.');
   if (typeof input.build !== 'function') throw new TypeError('A recipe needs a synchronous trusted build callback.');
-  return Object.freeze({ ...input, ref: Object.freeze({ ...input.ref }), intents: Object.freeze([...input.intents]) });
+  return Object.freeze({
+    ...input,
+    ref: Object.freeze({ ...input.ref }),
+    intents: Object.freeze(
+      intents.map((intent) => (typeof intent === 'string' ? intent : Object.freeze({ ...intent }))),
+    ),
+  });
 }
 
 export function defineView(input: ViewInput): AeliqoViewDefinition {

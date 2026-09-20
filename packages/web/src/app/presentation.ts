@@ -69,7 +69,7 @@ function currentReadSet(
 }
 
 function selectedRecipe(context: WebAppContext, intent: Intent): RecipeDefinition | undefined {
-  return context.recipes.find((candidate) => recipeSupports(candidate, intent.kind));
+  return context.recipes.find((candidate) => recipeSupports(candidate, intent));
 }
 
 function policyForTask(context: WebAppContext, region: WebRegion, task: Task): PolicyResult {
