@@ -1047,6 +1047,7 @@ describe('0.3 standard recipes', () => {
   it('fails closed for duplicate or malformed custom recipe intent refs', () => {
     const base = {
       ref: { id: 'orders.workspace-recipe', revision: '1' },
+      intents: [{ id: 'orders.workspace-layout', revision: '1' }],
       build: standardDataRecipe.build,
     };
 
