@@ -191,6 +191,16 @@ function invalidStateMapping(
   );
 }
 
+function stateMappingEdgeKey(mapping: z.infer<typeof stateMappingSchema>): string {
+  return JSON.stringify([
+    mapping.kind,
+    versionKey(mapping.from),
+    mapping.fromRole,
+    versionKey(mapping.to),
+    mapping.toRole,
+  ]);
+}
+
 function registerStateMappings(
   stateMappings: readonly PresentationStateMappingManifest[],
   seen: ReadonlySet<string>,
@@ -202,9 +212,13 @@ function registerStateMappings(
   if (!parsed.success)
     return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
   const uniqueRefs = new Set(parsed.data.map((mapping) => versionKey(mapping.ref)));
+  const uniqueEdges = new Set(parsed.data.map(stateMappingEdgeKey));
   const byVersion = new Map(manifests.map((manifest) => [versionKey(manifest.ref), manifest]));
   const invalid = parsed.data.some(
-    (mapping) => uniqueRefs.size !== parsed.data.length || invalidStateMapping(mapping, seen, byVersion),
+    (mapping) =>
+      uniqueRefs.size !== parsed.data.length ||
+      uniqueEdges.size !== parsed.data.length ||
+      invalidStateMapping(mapping, seen, byVersion),
   );
   if (invalid)
     return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');

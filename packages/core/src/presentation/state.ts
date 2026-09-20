@@ -13,7 +13,7 @@ export function stateMappingFor(
   context: PresentationContext,
   kind: 'transfer' | 'archive',
 ): PresentationStateMappingManifest | undefined {
-  return registry.stateMappings?.find(
+  const matches = registry.stateMappings?.filter(
     (mapping) =>
       mapping.kind === kind &&
       mapping.fromRole === from.role &&
@@ -22,4 +22,5 @@ export function stateMappingFor(
       versionKey(mapping.to) === versionKey(to.representation) &&
       context.stateMappingCapabilities?.some((ref) => versionKey(ref) === versionKey(mapping.ref)),
   );
+  return matches?.length === 1 ? matches[0] : undefined;
 }
