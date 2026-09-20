@@ -26,6 +26,7 @@ import {
   type WebRegion,
 } from './context.js';
 import type { AeliqoViewDefinition } from '../region/types.js';
+import { resolverCandidateId } from '../recipes/candidate-id.js';
 
 interface PreparedDependencies {
   readonly current: NonNullable<RuntimeCommittedReceipt['region']['readSet']>;
@@ -176,7 +177,13 @@ function authoredCandidates(
   }
   return {
     ok: true,
-    candidates: [{ id: `recipe.${recipe.ref.id}.${recipe.ref.revision}`, source: 'explicit', plan: plan.value }],
+    candidates: [
+      {
+        id: resolverCandidateId('recipe', `${recipe.ref.id}.${recipe.ref.revision}`),
+        source: 'explicit',
+        plan: plan.value,
+      },
+    ],
   };
 }
 

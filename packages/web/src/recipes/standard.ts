@@ -10,6 +10,7 @@ import { defineRecipe } from './define.js';
 import type { RecipeContext, RecipeDefinition } from './types.js';
 import { standardFormRecipe } from './standard-form.js';
 import { standardStateMapping } from './standard-state.js';
+import { resolverCandidateId } from './candidate-id.js';
 
 export { standardFormRecipe } from './standard-form.js';
 export { STANDARD_STATE_MAPPINGS } from './standard-state.js';
@@ -427,7 +428,7 @@ function appendPreferredCustom(
   if (preferred === undefined || preferredAlias !== undefined) return { ok: true, value: undefined };
   const customView = unfilteredCustom(context, preferred);
   if (customView === undefined) return { ok: true, value: undefined };
-  const customCandidate = resolverCandidate(context, `custom.${preferred}`, customView);
+  const customCandidate = resolverCandidate(context, resolverCandidateId('custom', preferred), customView);
   if (!customCandidate.ok) return customCandidate;
   candidates.push(...customCandidate.value);
   return { ok: true, value: undefined };

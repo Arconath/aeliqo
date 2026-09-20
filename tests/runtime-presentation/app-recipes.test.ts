@@ -9,7 +9,13 @@ import {
 import type { AeliqoRuntime, RuntimeCommittedReceipt } from '../../packages/runtime/src/app/index.js';
 import { html } from 'lit';
 import * as z from 'zod';
-import { defineView, standardDataRecipe, standardFormRecipe } from '../../packages/web/src/recipes/index.js';
+import {
+  defineRecipe,
+  defineView,
+  standardDataRecipe,
+  standardFormRecipe,
+} from '../../packages/web/src/recipes/index.js';
+import { resolverCandidateId } from '../../packages/web/src/recipes/candidate-id.js';
 import { standardRecipeCandidates } from '../../packages/web/src/recipes/standard.js';
 import {
   experience,
@@ -768,11 +774,12 @@ describe('0.3 standard recipes', () => {
     expect(outcome.ok && outcome.value.nodes[0]?.representation.id).toBe('data.table');
   });
 
-  it('accepts a consumer-owned custom view without changing the framework registry', () => {
+  it('accepts a maximum-length consumer view with a bounded resolver candidate ID', () => {
+    const viewId = `example.${'x'.repeat(152)}`;
     const custom = defineView({
-      ref: { id: 'example.people-grid', revision: '1' },
+      ref: { id: viewId, revision: '1' },
       manifest: {
-        ref: { id: 'example.people-grid', revision: '1' },
+        ref: { id: viewId, revision: '1' },
         configSchema: { id: 'example.people-grid.config', revision: '1' },
         roles: ['grid'],
         operations: [{ id: 'data.read', revision: '1' }],
@@ -789,7 +796,27 @@ describe('0.3 standard recipes', () => {
     });
     const context = { ...input('browse', 800, custom.ref.id), availableViews: [custom] };
     const outcome = standardDataRecipe.build(context);
-    expect(outcome.ok && outcome.value.nodes[0]?.representation.id).toBe('example.people-grid');
+    expect(outcome.ok && outcome.value.nodes[0]?.representation.id).toBe(viewId);
+    const authored = standardRecipeCandidates(context);
+    expect(authored.ok).toBe(true);
+    if (authored.ok) {
+      const id = authored.value.candidates.find((candidate) => candidate.id.startsWith('custom.'))?.id;
+      expect(id).toMatch(/^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/u);
+      expect(id?.length).toBeLessThanOrEqual(160);
+    }
+  });
+
+  it('bounds and normalizes the candidate provenance for a maximum-length custom recipe', () => {
+    const recipe = defineRecipe({
+      ref: { id: `example.${'r'.repeat(152)}`, revision: `revision:${'x'.repeat(160)}` },
+      intents: ['browse'],
+      build: standardDataRecipe.build,
+    });
+    const id = resolverCandidateId('recipe', `${recipe.ref.id}.${recipe.ref.revision}`);
+
+    expect(id).toMatch(/^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/u);
+    expect(id.length).toBeLessThanOrEqual(160);
+    expect(id).toBe(resolverCandidateId('recipe', `${recipe.ref.id}.${recipe.ref.revision}`));
   });
 
   it('builds a queryless create form entirely from host-owned resource bindings', () => {
