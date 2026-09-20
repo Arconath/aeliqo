@@ -164,8 +164,14 @@ function makePairing(
   }
   return {
     pairing: { endpoint: endpoint.value, sessionId, goalEpoch, scope: current, handle },
-    status: !current.active ? 'stale' : resolved.complete ? 'connected' : 'denied',
+    status: pairingStatus(current, resolved.complete),
   };
+}
+
+function pairingStatus(scope: ScopeSnapshot, targetsComplete: boolean): AgentConnectionSnapshot['status'] {
+  if (!scope.active) return 'stale';
+  if (targetsComplete) return 'connected';
+  return 'denied';
 }
 
 function runModel(
@@ -212,12 +218,20 @@ function runModel(
   });
 }
 
-/** Pairs an application-owned client to an explicit scope and target allowlist. */
-export function connectAgent(input: {
+interface AgentConnectionState {
+  status: AgentConnectionSnapshot['status'];
+  current: PairingState | undefined;
+  requestSequence: number;
+  closed: boolean;
+}
+
+interface ConnectAgentInput {
   readonly scope: ScopeController;
   readonly client: AgentClient;
   readonly targets: readonly string[];
-}): AgentConnection {
+}
+
+function validateConnectionInput(input: ConnectAgentInput): void {
   if (
     input === null ||
     typeof input !== 'object' ||
@@ -227,46 +241,76 @@ export function connectAgent(input: {
     input.client?.kind !== 'host-agent-client'
   )
     throw new TypeError('connectAgent requires a ScopeController and host-owned agent client.');
-  const targetIds = Object.freeze([...(input.targets ?? [])]);
+}
+
+function createConnectionState(
+  input: ConnectAgentInput,
+  targetIds: readonly string[],
+  transport: AgentToolTransport,
+): AgentConnectionState {
   const initialStatus = validTargets(targetIds) ? undefined : ('denied' as const);
-  const transport = input.client.transport ?? 'byok';
-  let status: AgentConnectionSnapshot['status'] = initialStatus ?? 'connected';
-  let current: PairingState | undefined;
-  let requestSequence = 0;
-  let closed = false;
+  const state: AgentConnectionState = {
+    status: initialStatus ?? 'connected',
+    current: undefined,
+    requestSequence: 0,
+    closed: false,
+  };
   if (initialStatus === undefined) {
     const created = makePairing(input.scope, input.client, targetIds, transport);
-    current = created.pairing;
-    status = created.status;
+    state.current = created.pairing;
+    state.status = created.status;
   }
-  const stopScope = input.scope.subscribe(() => {
-    if (closed || current === undefined) return;
+  return state;
+}
+
+function subscribeScope(
+  input: ConnectAgentInput,
+  targetIds: readonly string[],
+  transport: AgentToolTransport,
+  state: AgentConnectionState,
+): () => void {
+  return input.scope.subscribe(() => {
+    if (state.closed || state.current === undefined) return;
     const next = input.scope.getSnapshot();
-    if (sameActivation(current.scope, next)) return;
-    closePairing(current);
-    current = undefined;
-    status = 'stale';
+    if (sameActivation(state.current.scope, next)) return;
+    closePairing(state.current);
+    state.current = undefined;
+    state.status = 'stale';
     if (!next.active) return;
     const rebound = makePairing(input.scope, input.client, targetIds, transport);
-    current = rebound.pairing;
-    status = rebound.status;
+    state.current = rebound.pairing;
+    state.status = rebound.status;
   });
+}
+
+function activeEndpoint(state: AgentConnectionState): AgentModelToolEndpoint | undefined {
+  if (state.closed || state.status !== 'connected') return undefined;
+  return state.current?.endpoint;
+}
+
+function createAgentConnection(
+  input: ConnectAgentInput,
+  targetIds: readonly string[],
+  state: AgentConnectionState,
+  stopScope: () => void,
+): AgentConnection {
   const inspect = (): AgentConnectionSnapshot => {
     const scope = input.scope.getSnapshot();
     return Object.freeze({
-      status: closed ? 'disconnected' : status,
-      ...(current === undefined ? {} : { sessionId: current.sessionId, goalEpoch: current.goalEpoch }),
+      status: state.closed ? 'disconnected' : state.status,
+      ...(state.current === undefined
+        ? {}
+        : { sessionId: state.current.sessionId, goalEpoch: state.current.goalEpoch }),
       scopeInstanceId: scope.scopeInstanceId,
       activationEpoch: scope.activationEpoch,
       targets: targetIds,
     });
   };
-  const endpoint = (): AgentModelToolEndpoint | undefined =>
-    closed || status !== 'connected' ? undefined : current?.endpoint;
+  const endpoint = (): AgentModelToolEndpoint | undefined => activeEndpoint(state);
   const discover = (options: { readonly signal?: AbortSignal } = {}) => {
     const value = endpoint();
     return value === undefined
-      ? Promise.resolve(noEndpoint<readonly AgentToolDefinition[]>(status))
+      ? Promise.resolve(noEndpoint<readonly AgentToolDefinition[]>(state.status))
       : value.discover(options);
   };
   const invoke = (
@@ -275,9 +319,9 @@ export function connectAgent(input: {
     options: { readonly requestId?: string; readonly signal?: AbortSignal } = {},
   ) => {
     const valueEndpoint = endpoint();
-    if (valueEndpoint === undefined) return Promise.resolve(noEndpoint<AgentCapabilityReceipt>(status));
+    if (valueEndpoint === undefined) return Promise.resolve(noEndpoint<AgentCapabilityReceipt>(state.status));
     return valueEndpoint.invoke(name, value, {
-      requestId: options.requestId ?? freshId(`request-${++requestSequence}`),
+      requestId: options.requestId ?? freshId(`request-${++state.requestSequence}`),
       ...(options.signal === undefined ? {} : { signal: options.signal }),
     });
   };
@@ -295,16 +339,16 @@ export function connectAgent(input: {
     } = {},
   ) => {
     const valueEndpoint = endpoint();
-    if (valueEndpoint === undefined) return Promise.resolve(noLoopOutcome(status));
-    return runModel(valueEndpoint, input.client, prompt, options, freshId(`experience-${++requestSequence}`));
+    if (valueEndpoint === undefined) return Promise.resolve(noLoopOutcome(state.status));
+    return runModel(valueEndpoint, input.client, prompt, options, freshId(`experience-${++state.requestSequence}`));
   };
   const disconnect = (): void => {
-    if (closed) return;
-    closed = true;
+    if (state.closed) return;
+    state.closed = true;
     stopScope();
-    closePairing(current);
-    current = undefined;
-    status = 'disconnected';
+    closePairing(state.current);
+    state.current = undefined;
+    state.status = 'disconnected';
   };
   return Object.freeze({
     disconnect,
@@ -317,4 +361,14 @@ export function connectAgent(input: {
     render,
     runExperience,
   });
+}
+
+/** Pairs an application-owned client to an explicit scope and target allowlist. */
+export function connectAgent(input: ConnectAgentInput): AgentConnection {
+  validateConnectionInput(input);
+  const targetIds = Object.freeze([...(input.targets ?? [])]);
+  const transport = input.client.transport ?? 'byok';
+  const state = createConnectionState(input, targetIds, transport);
+  const stopScope = subscribeScope(input, targetIds, transport, state);
+  return createAgentConnection(input, targetIds, state, stopScope);
 }

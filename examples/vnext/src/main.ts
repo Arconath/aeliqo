@@ -119,7 +119,9 @@ const authority: AeliqoAuthority['read'] = () => {
   if (!accessGranted)
     return {
       ok: false as const,
-      diagnostics: [{ code: 'vnext.denied', message: 'Browser fixture access was revoked.', retryable: false }] as const,
+      diagnostics: [
+        { code: 'vnext.denied', message: 'Browser fixture access was revoked.', retryable: false },
+      ] as const,
     };
   return {
     ok: true as const,
@@ -236,24 +238,27 @@ async function render(
 
 let sequence = 0;
 const renderPeople = (preferredView?: string, page?: { readonly size: number }, signal?: AbortSignal) =>
-  render('people', 'people', {
-    version: '1',
-    id: `browse-people-${++sequence}`,
-    kind: 'browse',
-    resource: 'people',
-    fields: ['id', 'name', 'team', 'location'],
-    ...(preferredView === undefined ? {} : { preferredView }),
-    ...(page === undefined ? {} : { page }),
-  }, signal);
+  render(
+    'people',
+    'people',
+    {
+      version: '1',
+      id: `browse-people-${++sequence}`,
+      kind: 'browse',
+      resource: 'people',
+      fields: ['id', 'name', 'team', 'location'],
+      ...(preferredView === undefined ? {} : { preferredView }),
+      ...(page === undefined ? {} : { page }),
+    },
+    signal,
+  );
 
 const renderAnalysis = (
   preferredView: 'bar' | 'trend',
   measures: readonly [
     { readonly id: 'month-headcount' | 'planned-headcount'; readonly revision: '1' },
     ...{ readonly id: 'month-headcount' | 'planned-headcount'; readonly revision: '1' }[],
-  ] = [
-    { id: 'month-headcount', revision: '1' },
-  ],
+  ] = [{ id: 'month-headcount', revision: '1' }],
 ) => {
   const grouping =
     preferredView === 'bar'
@@ -290,9 +295,9 @@ const renderCompare = () =>
 document.querySelector('[data-action="people-adaptive"]')!.addEventListener('click', () => void renderPeople());
 document.querySelector('[data-action="people-table"]')!.addEventListener('click', () => void renderPeople('table'));
 document.querySelector('[data-action="people-cards"]')!.addEventListener('click', () => void renderPeople('cards'));
-document.querySelector('[data-action="people-partial"]')!.addEventListener('click', () =>
-  void renderPeople('table', { size: 2 }),
-);
+document
+  .querySelector('[data-action="people-partial"]')!
+  .addEventListener('click', () => void renderPeople('table', { size: 2 }));
 const startCancellable = document.querySelector<HTMLButtonElement>('[data-action="people-start-cancellable"]')!;
 const cancelCancellable = document.querySelector<HTMLButtonElement>('[data-action="people-cancel"]')!;
 let cancellableRender: AbortController | undefined;
@@ -325,11 +330,13 @@ document.querySelector('[data-action="people-denied"]')!.addEventListener('click
 });
 document.querySelector('[data-action="analysis-bar"]')!.addEventListener('click', () => void renderAnalysis('bar'));
 document.querySelector('[data-action="analysis-trend"]')!.addEventListener('click', () => void renderAnalysis('trend'));
-document.querySelector('[data-action="analysis-clarify"]')!.addEventListener('click', () =>
-  void renderAnalysis('trend', [
-    { id: 'month-headcount', revision: '1' },
-    { id: 'planned-headcount', revision: '1' },
-  ]),
+document.querySelector('[data-action="analysis-clarify"]')!.addEventListener(
+  'click',
+  () =>
+    void renderAnalysis('trend', [
+      { id: 'month-headcount', revision: '1' },
+      { id: 'planned-headcount', revision: '1' },
+    ]),
 );
 document.querySelector('[data-action="analysis-apply-clarification"]')!.addEventListener('click', () => {
   const measure = document.querySelector<HTMLSelectElement>('#analysis-measure')!.value;

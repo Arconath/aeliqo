@@ -45,9 +45,7 @@ test('keeps keyboard focus and a dirty draft through adaptive, RTL, touch, zoom,
   await expect
     .poll(() => action.evaluate((element) => getComputedStyle(element).transitionDuration))
     .toMatch(/^(0\.01ms|1e-05s)$/u);
-  expect(
-    await page.locator('html').evaluate((element) => element.scrollWidth <= element.clientWidth),
-  ).toBe(true);
+  expect(await page.locator('html').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
 });
 
 test('announces a resolver clarification and lets a keyboard user complete it through the same presentation path', async ({

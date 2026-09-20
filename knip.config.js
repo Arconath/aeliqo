@@ -44,7 +44,15 @@ const packageWorkspaces = Object.fromEntries(
 export default {
   treatConfigHintsAsErrors: true,
   ignoreBinaries: ['go', 'build'],
-  ignoreFiles: ['**/*.fixture.*'],
+  // These files are copied into isolated tarball consumers by executable tests;
+  // they are intentionally not imported by the workspace source graph.
+  ignoreFiles: [
+    '**/*.fixture.*',
+    'tests/release/fixtures/legacy-usage.ts',
+    'tests/release/fixtures/no-agent-forbidden.mjs',
+    'tests/release/fixtures/vnext-entries.ts',
+    'tests/consumers/adaptation-registered-bar.mjs',
+  ],
   ignoreIssues: {
     // T01 intentionally freezes a declaration-only public surface and complete
     // consumer probes before the matching production modules land.

@@ -162,7 +162,7 @@ function createByteBudget(limits: SourceLimits): ByteBudget {
   return budget;
 }
 
-function captureSnapshotRows(value: unknown, entityId: string, maxRows: number): readonly DataRecord[] {
+function captureSnapshotRows(value: unknown, maxRows: number): readonly DataRecord[] {
   if (!Array.isArray(value)) throw new TypeError('Rows must be an array.');
   const length = ownDataValue(value, 'length', 'Rows could not be safely inspected.') as number;
   if (!Number.isSafeInteger(length) || length < 0) throw new TypeError('Rows could not be safely inspected.');
@@ -191,7 +191,7 @@ function captureSnapshotRecords(
   const captured: Record<string, readonly DataRecord[]> = Object.create(null) as Record<string, readonly DataRecord[]>;
   for (const key of keys) {
     if (typeof key !== 'string') throw new TypeError('Snapshot records contain a symbol entity.');
-    captured[key] = captureSnapshotRows(ownDataValue(records, key, 'Snapshot records contain accessor.'), key, maxRows);
+    captured[key] = captureSnapshotRows(ownDataValue(records, key, 'Snapshot records contain accessor.'), maxRows);
   }
   return captured;
 }
@@ -206,7 +206,6 @@ function captureSnapshotInput(snapshot: LocalSnapshot): LocalSnapshot {
 }
 
 function normalizeEntityRows(
-  entityId: string,
   rows: readonly DataRecord[],
   entity: CatalogEntity,
   budget: ByteBudget,
@@ -238,7 +237,7 @@ function normalizeRow(
   const keys = Object.keys(captured);
   if (keys.length > WIRE_LIMITS.properties) throw new TypeError(`Row for ${entity.id} exceeds the field limit.`);
   addCount(budget, 2 + (rowIndex > 0 ? 1 : 0));
-  writeValidatedFields(captured, keys, fields, entity.id, budget);
+  writeValidatedFields(captured, keys, fields, budget);
   validateRequiredFields(captured, entity);
   validateIdentityFields(captured, entity);
   const identityKey = canonical(
@@ -249,7 +248,7 @@ function normalizeRow(
   return deepFreezeRecord(captured);
 }
 
-function captureSourceValue(value: unknown, entityId: string): unknown {
+function captureSourceValue(value: unknown): unknown {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return value;
   let prototype: object | null;
   try {
@@ -287,7 +286,7 @@ function capturePlainRecord(row: unknown, entityId: string, rejectExecutableToJS
     if (typeof key !== 'string') throw new TypeError(`Row for ${entityId} contains a symbol field.`);
     const value = ownDataValue(row, key, `Row for ${entityId} contains an accessor field.`);
     if (skipExecutableToJSON(key, value, rejectExecutableToJSON)) continue;
-    captured[key] = captureSourceValue(value, entityId) as DataValue;
+    captured[key] = captureSourceValue(value) as DataValue;
   }
   return captured;
 }
@@ -296,7 +295,6 @@ function writeValidatedFields(
   row: DataRecord,
   keys: readonly string[],
   fields: ReadonlyMap<string, CatalogEntity['fields'][number]>,
-  entityId: string,
   budget: ByteBudget,
 ): void {
   for (const [index, key] of keys.entries()) {
@@ -367,7 +365,7 @@ export function normalizeSnapshot(
     if (entity === undefined) throw new TypeError(`Rows reference unknown entity ${entityId}.`);
     if (Object.keys(records).length > 0) addCount(budget, 1);
     addCount(budget, sourceJsonBytes(entityId));
-    records[entityId] = normalizeEntityRows(entityId, rows, entity, budget, options.rejectExecutableToJSON === true);
+    records[entityId] = normalizeEntityRows(rows, entity, budget, options.rejectExecutableToJSON === true);
   }
   return Object.freeze({
     catalog: freezeCatalog(catalog),

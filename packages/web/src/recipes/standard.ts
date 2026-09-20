@@ -392,36 +392,56 @@ function appendPreferredCustom(
   return { ok: true, value: undefined };
 }
 
-/** Author deterministic standard candidates; core remains the sole eligibility and ranking authority. */
-export function standardRecipeCandidates(context: RecipeContext): Outcome<StandardRecipeCandidates> {
-  if (context.task.kind !== 'data' || context.result === undefined)
-    return failure('web.recipe.unsupported', 'Standard data recipes require a materialized data Task.');
+type AuthoredCandidates = {
+  readonly candidates: PresentationResolverCandidate[];
+  readonly clarification?: PresentationClarification;
+};
+
+function preferredAlias(preferred: string | undefined): keyof typeof aliases | undefined {
+  if (preferred === undefined) return undefined;
+  return Object.entries(aliases).find(([name, view]) => name === preferred || view.ref.id === preferred)?.[0] as
+    keyof typeof aliases | undefined;
+}
+
+function authoredCandidates(
+  context: RecipeContext,
+  preferred: keyof typeof aliases | undefined,
+): Outcome<AuthoredCandidates> {
   const candidates: PresentationResolverCandidate[] = [];
   const names = new Set(authorableNames(context.intent.kind));
-  const preferred = context.task.viewPreference?.representation;
-  const preferredAlias = Object.entries(aliases).find(
-    ([name, view]) => name === preferred || view.ref.id === preferred,
-  )?.[0] as keyof typeof aliases | undefined;
-  if (preferredAlias !== undefined) names.add(preferredAlias);
+  if (preferred !== undefined) names.add(preferred);
   let clarification: PresentationClarification | undefined;
   const eligibleNames = [...names].filter((name) => authorable(context, name)).sort();
   for (const name of eligibleNames) {
     const view = authorKnownView(context, name);
     if (!view.ok) {
       const diagnostic = view.diagnostics[0]!;
-      if (name === 'trend') {
-        clarification = trendClarification(context, diagnostic);
-        continue;
-      }
+      if (name === 'trend') clarification = trendClarification(context, diagnostic);
       continue;
     }
     const authored = resolverCandidate(context, `standard.${name}`, view.value);
     if (!authored.ok) return authored;
     candidates.push(...authored.value);
   }
+  return {
+    ok: true,
+    value: { candidates, ...(clarification === undefined ? {} : { clarification }) },
+  };
+}
+
+/** Author deterministic standard candidates; core remains the sole eligibility and ranking authority. */
+export function standardRecipeCandidates(context: RecipeContext): Outcome<StandardRecipeCandidates> {
+  if (context.task.kind !== 'data' || context.result === undefined)
+    return failure('web.recipe.unsupported', 'Standard data recipes require a materialized data Task.');
+  const preferred = context.task.viewPreference?.representation;
+  const preferredAliasValue = preferredAlias(preferred);
+  const authored = authoredCandidates(context, preferredAliasValue);
+  if (!authored.ok) return authored;
+  const candidates = authored.value.candidates;
+  let clarification = authored.value.clarification;
   const split = comparisonSplitPlan(context);
   if (split?.ok === true) candidates.push({ id: 'standard.comparison', source: 'explicit', plan: split.value });
-  const custom = appendPreferredCustom(context, preferred, preferredAlias, candidates);
+  const custom = appendPreferredCustom(context, preferred, preferredAliasValue, candidates);
   if (!custom.ok) return custom;
   if (clarification !== undefined && candidates.some((candidate) => candidate.id === 'standard.bar'))
     clarification = undefined;

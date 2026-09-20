@@ -28,63 +28,111 @@ function headingSet(source) {
   return new Set([...source.matchAll(/^## (.+)$/gmu)].map((match) => match[1]));
 }
 
+function auditComponentPage(source, component) {
+  const missingSections = [];
+  const missingDirectives = [];
+  if (source === undefined) {
+    return { missingSections, missingDirectives, documentError: undefined, issues: ['missing authored page'] };
+  }
+
+  const headings = headingSet(source);
+  for (const heading of COMPONENT_HEADINGS) {
+    if (!headings.has(heading)) missingSections.push(heading);
+  }
+  for (const directive of COMPONENT_DIRECTIVES) {
+    if (!source.includes(`{{aeliqo:${directive}}}`)) missingDirectives.push(directive);
+  }
+  let documentError;
+  try {
+    parseComponentDocument(source, component);
+  } catch (error) {
+    documentError = error instanceof Error ? error.message : String(error);
+  }
+  const issues = [];
+  if (documentError !== undefined) issues.push(`documentation parser error: ${documentError}`);
+  if (missingSections.length > 0) issues.push(`missing sections: ${missingSections.join(', ')}`);
+  if (missingDirectives.length > 0) issues.push(`missing directives: ${missingDirectives.join(', ')}`);
+  return { missingSections, missingDirectives, documentError, issues };
+}
+
+function auditComponentExample(example, component) {
+  if (example === undefined) return { example: undefined, issues: ['missing runnable example'] };
+  const issues = [];
+  if (example.family !== component.family)
+    issues.push(`example family is ${example.family}, expected ${component.family}`);
+  if (typeof example.source !== 'string' || example.source.trim() === '') issues.push('example source is empty');
+  return { example: `${example.family}.${example.id}`, issues };
+}
+
+function hasPublicExport(exports, id) {
+  if (exports === undefined) return false;
+  const subpath = id.slice(id.indexOf('.') + 1);
+  return Object.hasOwn(exports, `./${subpath}`);
+}
+
 function issuesForComponent({ component, pageContents, exampleById, declarations, exports }) {
   const id = component.id;
   const pageName = `${id}.md`;
-  const source = pageContents.get(pageName);
-  const example = exampleById.get(id);
-  const issues = [];
-  const missingSections = [];
-  const missingDirectives = [];
-  let documentError;
-
-  if (source === undefined) {
-    issues.push('missing authored page');
-  } else {
-    const headings = headingSet(source);
-    for (const heading of COMPONENT_HEADINGS) {
-      if (!headings.has(heading)) missingSections.push(heading);
-    }
-    for (const directive of COMPONENT_DIRECTIVES) {
-      if (!source.includes(`{{aeliqo:${directive}}}`)) missingDirectives.push(directive);
-    }
-    try {
-      parseComponentDocument(source, component);
-    } catch (error) {
-      documentError = error instanceof Error ? error.message : String(error);
-      issues.push(`documentation parser error: ${documentError}`);
-    }
-    if (missingSections.length > 0) issues.push(`missing sections: ${missingSections.join(', ')}`);
-    if (missingDirectives.length > 0) issues.push(`missing directives: ${missingDirectives.join(', ')}`);
-  }
-
-  if (example === undefined) {
-    issues.push('missing runnable example');
-  } else {
-    if (example.family !== component.family)
-      issues.push(`example family is ${example.family}, expected ${component.family}`);
-    if (typeof example.source !== 'string' || example.source.trim() === '') issues.push('example source is empty');
-  }
-
-  if (!declarationMatches(declarations, componentClass(component))) {
-    issues.push(`missing generated declaration ${componentClass(component)}`);
-  }
-
-  const subpath = id.slice(id.indexOf('.') + 1);
-  const publicExport = exports !== undefined && Object.hasOwn(exports, `./${subpath}`);
-  if (exports !== undefined && !publicExport) issues.push(`missing public export ./${subpath}`);
+  const page = auditComponentPage(pageContents.get(pageName), component);
+  const example = auditComponentExample(exampleById.get(id), component);
+  const issues = [...page.issues, ...example.issues];
+  const api = declarationMatches(declarations, componentClass(component));
+  if (!api) issues.push(`missing generated declaration ${componentClass(component)}`);
+  const publicExport = hasPublicExport(exports, id);
+  if (exports !== undefined && !publicExport) issues.push(`missing public export ./${id.slice(id.indexOf('.') + 1)}`);
 
   return {
     id,
     page: pageName,
-    example: example === undefined ? undefined : `${example.family}.${example.id}`,
-    api: declarationMatches(declarations, componentClass(component)),
+    example: example.example,
+    api,
     publicExport,
-    missingSections,
-    missingDirectives,
-    documentError,
+    missingSections: page.missingSections,
+    missingDirectives: page.missingDirectives,
+    documentError: page.documentError,
     issues,
   };
+}
+
+function indexExamples(examples) {
+  const exampleEntries = Array.isArray(examples) ? examples : [];
+  const exampleIds = exampleEntries
+    .map((example) => `${example?.family ?? ''}.${example?.id ?? ''}`)
+    .filter((id) => !id.endsWith('.'));
+  const exampleById = new Map();
+  for (const example of exampleEntries) {
+    if (typeof example?.family !== 'string' || typeof example?.id !== 'string') continue;
+    exampleById.set(`${example.family}.${example.id}`, example);
+  }
+  return { exampleIds, exampleById };
+}
+
+function inventoryRows(catalogComponents, pageContents, exampleById, declarations, exports) {
+  return catalogComponents
+    .filter((component) => component !== null && typeof component === 'object' && typeof component.id === 'string')
+    .map((component) => issuesForComponent({ component, pageContents, exampleById, declarations, exports }));
+}
+
+function globalInventoryIssues({
+  components,
+  catalogIds,
+  duplicateCatalogIds,
+  missingPages,
+  extraPages,
+  duplicateExampleIds,
+  missingExamples,
+  extraExamples,
+}) {
+  const issues = [];
+  if (!Array.isArray(components)) issues.push('catalog components must be an array');
+  if (catalogIds.length === 0) issues.push('catalog contains no active component IDs');
+  if (duplicateCatalogIds.length > 0) issues.push(`duplicate catalog IDs: ${duplicateCatalogIds.join(', ')}`);
+  if (missingPages.length > 0) issues.push(`missing authored pages: ${missingPages.join(', ')}`);
+  if (extraPages.length > 0) issues.push(`stale authored pages: ${extraPages.join(', ')}`);
+  if (duplicateExampleIds.length > 0) issues.push(`duplicate runnable examples: ${duplicateExampleIds.join(', ')}`);
+  if (missingExamples.length > 0) issues.push(`missing runnable examples: ${missingExamples.join(', ')}`);
+  if (extraExamples.length > 0) issues.push(`stale runnable examples: ${extraExamples.join(', ')}`);
+  return issues;
 }
 
 /**
@@ -98,16 +146,8 @@ export function auditCatalogInventory({ components, pageFiles, pageContents, exa
   const expectedPageFiles = catalogIds.map((id) => `${id}.md`).sort();
   const actualPageFiles = [...pageFiles].filter((file) => file.endsWith('.md')).sort();
   const expectedExampleIds = catalogIds.slice().sort();
-  const exampleEntries = Array.isArray(examples) ? examples : [];
-  const exampleIds = exampleEntries
-    .map((example) => `${example?.family ?? ''}.${example?.id ?? ''}`)
-    .filter((id) => !id.endsWith('.'));
+  const { exampleIds, exampleById } = indexExamples(examples);
   const pageSet = new Set(actualPageFiles);
-  const exampleById = new Map();
-  for (const example of exampleEntries) {
-    if (typeof example?.family !== 'string' || typeof example?.id !== 'string') continue;
-    exampleById.set(`${example.family}.${example.id}`, example);
-  }
   const safeContents = pageContents instanceof Map ? pageContents : new Map();
   const safeDeclarations = Array.isArray(declarations) ? declarations : [];
   const duplicateCatalogIds = duplicateValues(catalogIds);
@@ -116,27 +156,17 @@ export function auditCatalogInventory({ components, pageFiles, pageContents, exa
   const extraPages = actualPageFiles.filter((file) => !expectedPageFiles.includes(file));
   const missingExamples = expectedExampleIds.filter((id) => !exampleById.has(id));
   const extraExamples = exampleIds.filter((id) => !expectedExampleIds.includes(id));
-  const rows = catalogComponents
-    .filter((component) => component !== null && typeof component === 'object' && typeof component.id === 'string')
-    .map((component) =>
-      issuesForComponent({
-        component,
-        pageContents: safeContents,
-        exampleById,
-        declarations: safeDeclarations,
-        exports,
-      }),
-    );
-  const globalIssues = [];
-  if (!Array.isArray(components)) globalIssues.push('catalog components must be an array');
-  if (catalogIds.length === 0) globalIssues.push('catalog contains no active component IDs');
-  if (duplicateCatalogIds.length > 0) globalIssues.push(`duplicate catalog IDs: ${duplicateCatalogIds.join(', ')}`);
-  if (missingPages.length > 0) globalIssues.push(`missing authored pages: ${missingPages.join(', ')}`);
-  if (extraPages.length > 0) globalIssues.push(`stale authored pages: ${extraPages.join(', ')}`);
-  if (duplicateExampleIds.length > 0)
-    globalIssues.push(`duplicate runnable examples: ${duplicateExampleIds.join(', ')}`);
-  if (missingExamples.length > 0) globalIssues.push(`missing runnable examples: ${missingExamples.join(', ')}`);
-  if (extraExamples.length > 0) globalIssues.push(`stale runnable examples: ${extraExamples.join(', ')}`);
+  const rows = inventoryRows(catalogComponents, safeContents, exampleById, safeDeclarations, exports);
+  const globalIssues = globalInventoryIssues({
+    components,
+    catalogIds,
+    duplicateCatalogIds,
+    missingPages,
+    extraPages,
+    duplicateExampleIds,
+    missingExamples,
+    extraExamples,
+  });
   const rowIssues = rows.flatMap((row) => row.issues.map((issue) => `${row.id}: ${issue}`));
   return {
     ok: globalIssues.length === 0 && rowIssues.length === 0,

@@ -382,16 +382,20 @@ function targetMap(targets: readonly AgentSurfaceTarget[]): Outcome<ReadonlyMap<
   return { ok: true, value: output };
 }
 
+function validEndpointOptions(options: ScopedSurfaceEndpointOptions): boolean {
+  return (
+    options !== null &&
+    typeof options === 'object' &&
+    validId(options.sessionId) &&
+    validId(options.goalEpoch) &&
+    Number.isFinite(options.expiresAt) &&
+    options.expiresAt > (options.now?.() ?? Date.now())
+  );
+}
+
 /** Builds one scope/session-bound endpoint around the existing capability dispatcher. */
 export function createScopedSurfaceEndpoint(options: ScopedSurfaceEndpointOptions): Outcome<AgentModelToolEndpoint> {
-  if (
-    options === null ||
-    typeof options !== 'object' ||
-    !validId(options.sessionId) ||
-    !validId(options.goalEpoch) ||
-    !Number.isFinite(options.expiresAt) ||
-    options.expiresAt <= (options.now?.() ?? Date.now())
-  )
+  if (!validEndpointOptions(options))
     return failure('agent.bridge.invalid', 'A scoped agent endpoint requires a bounded expiring pairing.');
   const mapped = targetMap(options.targets);
   if (!mapped.ok) return mapped;
