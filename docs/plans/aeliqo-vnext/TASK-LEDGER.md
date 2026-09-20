@@ -23,7 +23,7 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 | T16  | implemented-and-verified | Accepted `b79ab59`; trust-boundary/security fixtures, 14/14 security, 45/45 focused vNext security/local-data, 4/4 boundaries, 1000/1000 auth-retention, strict typecheck. |
 | T17  | implemented-and-verified | Accepted `b64e043`/`733ed14`; source-driven active catalog inventory, public export/page/example parity, authored wording checks, inventory 71/71 and docs artifact 10/10. |
 | T18  | implemented-and-verified | Accepted `52b2bfe`/`adef0f3`; four synthetic reference journeys, real scoped agent parity, remote transport fixture, host approval/revocation, and job progress/cancel/output refs; remote 1/1 and browser 4/4 in Chromium/Firefox/WebKit. |
-| T19  | implemented-and-verified | Accepted final source-bound performance evidence; two-surface isolation, module tiers 10/100/1000, 5×100 samples/tier, p95 8.32/7.78/35.14ms under the 100ms budget, bundle 6/6 within the 163840-byte cap, and runtime/browser/heap gates green. |
+| T19  | implemented-and-verified | Accepted final source-bound performance evidence; two-surface isolation, module tiers 10/100/1000, 5×100 samples/tier, every tier under the 100ms p95 budget, bundle 6/6 within the 163840-byte cap, and runtime/browser/heap gates green. |
 | T20  | implemented-and-verified | Candidate 0.5.0 is unreleased/breaking from stable 0.4.2; latest packed five-package report under `artifacts/t20-qualification/` proves legacy/vNext/no-agent support and release tooling 31/31. |
 | T21  | final-review-gated        | Independent final review and the clean 87-gate matrix are the handoff evidence; publication and deployment remain separately unauthorized. |
 
