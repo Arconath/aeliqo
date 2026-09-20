@@ -51,16 +51,17 @@ function archiveFile(archive, path) {
   return Buffer.from(run('tar', ['-xOf', archive, path], root, 30_000));
 }
 
-async function stagePackage(name, runDirectory) {
+async function stagePackage(name, runDirectory, version) {
   const directory = join(root, 'packages', name);
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   const stage = join(runDirectory, 'staged', name);
   await mkdir(stage, { recursive: true });
   const stagedManifest = structuredClone(manifest);
+  stagedManifest.version = version;
   delete stagedManifest.devDependencies;
   for (const field of ['dependencies', 'optionalDependencies', 'peerDependencies']) {
     for (const dependency of Object.keys(stagedManifest[field] ?? {})) {
-      if (PUBLIC_PACKAGE_NAMES.includes(dependency)) stagedManifest[field][dependency] = RELEASE_VERSION;
+      if (PUBLIC_PACKAGE_NAMES.includes(dependency)) stagedManifest[field][dependency] = version;
     }
   }
   await writeFile(join(stage, 'package.json'), `${JSON.stringify(stagedManifest, null, 2)}\n`);
@@ -68,21 +69,21 @@ async function stagePackage(name, runDirectory) {
     const source = file === 'README.md' ? join(root, 'docs/packages', `${name}.md`) : join(directory, file);
     await cp(source, join(stage, file), { recursive: true });
   }
-  const archive = join(runDirectory, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
+  const archive = join(runDirectory, `aeliqo-${name}-${version}.tgz`);
   run('pnpm', ['pack', '--out', archive], stage);
   return { archive, directory, manifest, paths: archiveEntries(archive) };
 }
 
-async function packPublicPackages(runDirectory) {
+async function packPublicPackages(runDirectory, version) {
   const artifacts = [];
-  for (const name of publicPackageNames) artifacts.push(await stagePackage(name, runDirectory));
+  for (const name of publicPackageNames) artifacts.push(await stagePackage(name, runDirectory, version));
   return artifacts;
 }
 
-function assertPackedArtifacts(artifacts, canonicalNotice, canonicalLicense, packageGuides) {
+function assertPackedArtifacts(artifacts, version, canonicalNotice, canonicalLicense, packageGuides) {
   for (const artifact of artifacts) {
     const packed = JSON.parse(archiveFile(artifact.archive, 'package/package.json').toString('utf8'));
-    assertPublicManifest(packed, artifact.manifest.name);
+    assertPublicManifest(packed, artifact.manifest.name, version);
     assertTarballPaths(artifact.paths, artifact.manifest.name);
     assertExportTargets(packed, artifact.paths, artifact.manifest.name);
     assert.deepEqual(
@@ -90,7 +91,7 @@ function assertPackedArtifacts(artifacts, canonicalNotice, canonicalLicense, pac
       artifact.manifest.exports,
       `${artifact.manifest.name} export map changed while packing`,
     );
-    assert.equal(packed.version, RELEASE_VERSION);
+    assert.equal(packed.version, version);
     assert.deepEqual(archiveFile(artifact.archive, 'package/LICENSE'), canonicalLicense);
     assert.deepEqual(archiveFile(artifact.archive, 'package/NOTICE'), canonicalNotice);
     assert.deepEqual(archiveFile(artifact.archive, 'package/README.md'), packageGuides[artifact.manifest.name]);
@@ -109,7 +110,7 @@ function assertPackedArtifacts(artifacts, canonicalNotice, canonicalLicense, pac
   }
 }
 
-async function installConsumer(consumer, artifacts) {
+async function installConsumer(consumer, artifacts, version) {
   const dependencies = Object.fromEntries(
     artifacts.map((artifact) => [artifact.manifest.name, `file:${artifact.archive}`]),
   );
@@ -144,8 +145,8 @@ async function installConsumer(consumer, artifacts) {
     const installed = lock.packages[`node_modules/${artifact.manifest.name}`];
     assert.equal(
       installed?.version,
-      RELEASE_VERSION,
-      `${artifact.manifest.name} was not installed at the stable source version`,
+      version,
+      `${artifact.manifest.name} was not installed at the candidate source version`,
     );
     assert.deepEqual(
       Object.keys(lock.packages).filter((path) => path.endsWith(`node_modules/${artifact.manifest.name}`)),
@@ -326,6 +327,7 @@ async function readQualificationInputs() {
 
 test('T20 packages, migrates, and qualifies support from packed artifacts', async () => {
   const { metadata, matrix } = await readQualificationInputs();
+  const candidateVersion = metadata.next.version;
   const evidenceRoot = join(root, 'artifacts/t20-qualification');
   await mkdir(evidenceRoot, { recursive: true });
   const runDirectory = await mkdtemp(join(evidenceRoot, 'run-'));
@@ -343,16 +345,16 @@ test('T20 packages, migrates, and qualifies support from packed artifacts', asyn
         ]),
       ),
     );
-    const artifacts = await packPublicPackages(runDirectory);
-    assertPackedArtifacts(artifacts, canonicalNotice, canonicalLicense, packageGuides);
-    const lock = await installConsumer(consumer, artifacts);
+    const artifacts = await packPublicPackages(runDirectory, candidateVersion);
+    assertPackedArtifacts(artifacts, candidateVersion, canonicalNotice, canonicalLicense, packageGuides);
+    const lock = await installConsumer(consumer, artifacts, candidateVersion);
     await writeConsumerSources(consumer, join(root, 'tests/release/fixtures'));
     await typecheckConsumer(consumer);
     const graph = await assertNoAgentGraph(consumer, lock);
     const packageReports = await Promise.all(
       artifacts.map(async (artifact) => ({
         name: artifact.manifest.name,
-        version: artifact.manifest.version,
+        version: candidateVersion,
         tarball: artifact.archive,
         sha256: digest(await readFile(artifact.archive)),
         exports: exportSpecifiers(artifact.manifest, artifact.paths),
@@ -365,8 +367,8 @@ test('T20 packages, migrates, and qualifies support from packed artifacts', asyn
       stableVersion: metadata.version,
       candidate: matrix.candidate,
       packageArtifacts: {
-        version: RELEASE_VERSION,
-        role: 'stable-compatibility-consumer',
+        version: candidateVersion,
+        role: 'vnext-candidate-consumer',
         candidatePublished: false,
       },
       environment: { node: process.version, os: platform(), release: release(), arch: arch() },
