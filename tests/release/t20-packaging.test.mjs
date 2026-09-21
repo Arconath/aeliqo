@@ -272,7 +272,7 @@ function isAgentModule(moduleId) {
   return (
     normalized === '@aeliqo/agent' ||
     normalized.startsWith('@aeliqo/agent/') ||
-    normalized.includes('/node_modules/@aeliqo/agent/') ||
+    normalized.includes('node_modules/@aeliqo/agent/') ||
     normalized.includes('/@aeliqo+agent@')
   );
 }
