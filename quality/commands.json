@@ -7,6 +7,11 @@
       "timeoutSeconds": 120
     },
     {
+      "kind": "unit",
+      "argv": ["pnpm", "test:vnext"],
+      "timeoutSeconds": 180
+    },
+    {
       "kind": "packages",
       "argv": ["pnpm", "test:package-notices"],
       "timeoutSeconds": 600
@@ -410,6 +415,26 @@
       "kind": "browser",
       "argv": ["pnpm", "test:agent-evaluation:ui"],
       "timeoutSeconds": 300
+    },
+    {
+      "kind": "browser",
+      "argv": ["pnpm", "test:vnext:browser"],
+      "timeoutSeconds": 600
+    },
+    {
+      "kind": "performance",
+      "argv": ["pnpm", "test:performance:vnext"],
+      "timeoutSeconds": 300
+    },
+    {
+      "kind": "unit",
+      "argv": ["pnpm", "test:docs-inventory"],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "packages",
+      "argv": ["pnpm", "test:release-tooling"],
+      "timeoutSeconds": 600
     }
   ]
 }

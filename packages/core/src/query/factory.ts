@@ -4,6 +4,7 @@ import type { Catalog, MeaningDefinition } from '../contracts/types.js';
 import { createFunctionRegistry } from '../expressions/registry.js';
 import type { FunctionRegistry } from '../expressions/types.js';
 import { createCatalogIndex } from '../semantics/catalog.js';
+import { validateMeaning } from '../semantics/meaning.js';
 import { evaluateLogicalPlan } from './evaluator.js';
 import { DEFAULT_LIMITS, buildPlan, lowerQuerySpec } from './planner.js';
 import { immutableSnapshot } from './planner/shared.js';
@@ -156,7 +157,7 @@ function createPlanner(
     limits,
     plan: (input) => planInput(input, catalog, registry, definitions, limits),
     evaluate: (plan, source: QuerySource, context?: QueryExecutionContext) =>
-      evaluateLogicalPlan(plan, source, catalog, registry, context, limits),
+      evaluateLogicalPlan(plan, source, catalog, registry, context, limits, definitions),
   };
   return Object.freeze(planner);
 }
@@ -166,9 +167,14 @@ export function createQueryPlanner(options: QueryPlannerOptions): QueryOutcome<Q
   if (!catalog.ok) return catalog;
   const registry = prepareRegistry(options.registry, catalog.value);
   if (!registry.ok) return registry;
-  const limits = effectiveLimits(options.limits);
-  if (!limits.ok) return limits;
   const definitions = prepareDefinitions(options.definitions);
   if (!definitions.ok) return definitions;
+  const meaningContext = { catalog: catalog.value, registry: registry.value, definitions: definitions.value };
+  for (const meaning of catalog.value.meanings.concat(definitions.value)) {
+    const validated = validateMeaning(meaning, meaningContext);
+    if (!validated.ok) return validated;
+  }
+  const limits = effectiveLimits(options.limits);
+  if (!limits.ok) return limits;
   return { ok: true, value: createPlanner(catalog.value, registry.value, definitions.value, limits.value) };
 }

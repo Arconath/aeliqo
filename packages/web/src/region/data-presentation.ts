@@ -7,7 +7,9 @@ import {
   type VersionRef,
 } from '@aeliqo/core';
 import type {
+  PresentationEnvironment,
   PresentationManifest,
+  PresentationQuality,
   PresentationValues,
   ResolvedPresentationConfig,
   ValidatedPresentation,
@@ -79,7 +81,14 @@ const fail = <T>(code: string, message: string): Outcome<T> => ({
 });
 
 function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
 
 function versionKey(ref: VersionRef): string {
@@ -189,7 +198,8 @@ function operationsFor(
     if (!operations.some((candidate) => versionKey(candidate) === versionKey(operation))) operations.push(operation);
   };
   if (shouldRead(component, config)) add(AELIQO_DATA_PRESENTATION_OPERATIONS.read);
-  if (component === 'table' || component === 'delta') add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
+  if (component === 'table' || component === 'delta' || component === 'detail')
+    add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
   if (component === 'filterBuilder') add(AELIQO_DATA_PRESENTATION_OPERATIONS.filter);
   if (supportsSelection(component) && config.ports.some((port) => port.payload === 'selection'))
     add(AELIQO_DATA_PRESENTATION_OPERATIONS.selection);
@@ -199,6 +209,7 @@ function operationsFor(
 function manifestOperations(component: DataManifestComponent): readonly VersionRef[] {
   switch (component) {
     case 'delta':
+    case 'detail':
       return [AELIQO_DATA_PRESENTATION_OPERATIONS.read, AELIQO_DATA_PRESENTATION_OPERATIONS.compare];
     case 'filterBuilder':
       return [AELIQO_DATA_PRESENTATION_OPERATIONS.filter];
@@ -255,6 +266,7 @@ function buildManifest(
   options: AeliqoDataRegistryOptions,
 ): PresentationManifest {
   const helper = createAeliqoDataRegistry(options);
+  const assess = adaptiveQuality(component);
   return freeze({
     ref: AELIQO_DATA_REFS[component],
     configSchema: AELIQO_DATA_CONFIG_SCHEMAS[component],
@@ -265,7 +277,37 @@ function buildManifest(
     visibility: 'leaf',
     extension: false,
     resolveConfig: (values, result) => configFor(component, values, result, bindings, helper),
+    ...(assess === undefined ? {} : { assess: (_config, _result, environment) => assess(environment) }),
   });
+}
+
+function adaptiveQuality(
+  component: DataManifestComponent,
+): ((environment: PresentationEnvironment) => Outcome<PresentationQuality>) | undefined {
+  if (component === 'cardCollection')
+    return (environment) => {
+      const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 640;
+      return {
+        ok: true,
+        value: {
+          taskFit: narrow ? 90 : 75,
+          informationDensity: narrow ? 70 : 60,
+          interactionEffort: narrow ? 5 : 10,
+          legibilityPenalty: 0,
+        },
+      };
+    };
+  if (component === 'recordList')
+    return () => ({
+      ok: true,
+      value: { taskFit: 80, informationDensity: 55, interactionEffort: 5, legibilityPenalty: 0 },
+    });
+  if (component === 'detail')
+    return () => ({
+      ok: true,
+      value: { taskFit: 95, informationDensity: 70, interactionEffort: 5, legibilityPenalty: 0 },
+    });
+  return undefined;
 }
 
 /** Build the eight canonical data manifests that complement the existing data.table@1 manifest. */

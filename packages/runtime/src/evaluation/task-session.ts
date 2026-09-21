@@ -1,6 +1,7 @@
 import { validateTaskStructure } from '@aeliqo/core';
 import type { Outcome, QuerySpec, ResultRef, Task } from '@aeliqo/core';
 import type { AcceptedQuery, PlanAcceptance, PlanRequest, ReadContext } from '../data/types.js';
+import { readSourceRevisionPin } from '../data/local/source-pin.js';
 import type { ResultHandle, ResultLease } from '../results/types.js';
 import { createResultCohortResolver } from './cohort.js';
 import type {
@@ -328,6 +329,10 @@ export class TaskEvaluationSession {
         catalogRevision: accepted.catalogRevision,
         functionRegistryDigest: accepted.functionRegistryDigest,
         sourceRevision: accepted.sourceRevision,
+        sourceLineage: accepted.sourceLineage,
+        planDigest: accepted.planDigest,
+        resultShape: accepted.resultShape,
+        lineageDigest: accepted.lineageDigest,
         outputId: accepted.target.outputId,
         taskId: accepted.target.taskId,
         requestId,
@@ -375,6 +380,14 @@ export class TaskEvaluationSession {
       (this.selection!.requiresInspect && !finalHost.value.grants.includes('result.inspect'))
     )
       return failure('runtime.evaluation-stale', 'Task authority changed before the evaluation could be published.');
+    const sourceRevision = readSourceRevisionPin(finalHost.value.data);
+    if (sourceRevision.kind === 'invalid')
+      return failure('runtime.evaluation-stale', 'The local source revision could not be verified before publication.');
+    if (
+      sourceRevision.kind === 'current' &&
+      [...this.materialized.values()].some((output) => output.handle.key.sourceRevision !== sourceRevision.value)
+    )
+      return failure('runtime.evaluation-stale', 'A local source changed before task publication.');
     return { ok: true, value: undefined };
   }
 

@@ -44,6 +44,9 @@ importers:
       '@types/react':
         specifier: 19.2.18
         version: 19.2.18
+      '@types/react-dom':
+        specifier: 19.2.7
+        version: 19.2.7(@types/react@19.2.18)
       ajv:
         specifier: 8.20.0
         version: 8.20.0
@@ -68,6 +71,12 @@ importers:
       prettier:
         specifier: 3.9.6
         version: 3.9.6
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -289,6 +298,9 @@ importers:
 
   packages/react:
     dependencies:
+      '@aeliqo/core':
+        specifier: workspace:*
+        version: link:../core
       '@aeliqo/web':
         specifier: workspace:*
         version: link:../web

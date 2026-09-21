@@ -4,7 +4,7 @@ import type { AeliqoDataStatus } from '../data/types.js';
 import type { AeliqoDataResolvedNode } from './data-registry.js';
 import type { AeliqoDataHostRequestHandler, AeliqoDataRenderContext } from './data-renderer-types.js';
 
-const RESULT_REF_KEYS = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'] as const;
+const RESULT_REF_KEYS = ['id', 'revision', 'sourceLineage', 'outputId', 'queryDigest', 'scopeDigest'] as const;
 
 /**
  * Read only plain data records at the event boundary.  Event details come
@@ -46,15 +46,19 @@ export function exactRecord(
 }
 
 export function resultRef(value: unknown): ResultRef | undefined {
-  const candidate = exactRecord(value, RESULT_REF_KEYS);
+  const required = RESULT_REF_KEYS.filter((key) => key !== 'sourceLineage');
+  const candidate = exactRecord(value, RESULT_REF_KEYS, required);
   if (
     candidate === undefined ||
-    RESULT_REF_KEYS.some((key) => typeof candidate[key] !== 'string' || !validId(candidate[key]))
+    required.some((key) => typeof candidate[key] !== 'string' || !validId(candidate[key])) ||
+    (candidate.sourceLineage !== undefined &&
+      (typeof candidate.sourceLineage !== 'string' || !validId(candidate.sourceLineage)))
   )
     return undefined;
   return {
     id: candidate.id as string,
     revision: candidate.revision as string,
+    ...(candidate.sourceLineage === undefined ? {} : { sourceLineage: candidate.sourceLineage as string }),
     outputId: candidate.outputId as string,
     queryDigest: candidate.queryDigest as string,
     scopeDigest: candidate.scopeDigest as string,
@@ -78,7 +82,14 @@ export function eventType(event: Event): string | undefined {
 export const text = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
 
 function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
 
 export function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {

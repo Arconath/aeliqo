@@ -2,7 +2,7 @@ import type { Catalog } from '@aeliqo/core';
 import type { CatalogEntity } from '@aeliqo/core/semantics';
 import type { CatalogTarget, ReadGrant } from '../types.js';
 import { canonical } from './shared.js';
-import { encodeCursor } from './cursor.js';
+import { issueCursor, type CursorStore, type CursorValue } from './cursor.js';
 
 export function getEntity(catalog: Catalog, entityId: string): CatalogEntity | undefined {
   return catalog.entities.find((entity) => entity.id === entityId);
@@ -36,6 +36,11 @@ export function mergeCatalogPage(
   pageSize: number,
   sourceRevision: string,
   scopeDigest: string,
+  expiresAt: number,
+  cursorPartition: string,
+  cursorStore: CursorStore,
+  cursorNow: number,
+  maxCursorEntries: number,
 ): { catalog: Catalog; nextCursor?: string } {
   let visibleEntities = catalog.entities.filter((entity) => isEntityVisible(entity, grant));
   if (target.kind === 'entity') visibleEntities = visibleEntities.filter((entity) => entity.id === target.entity);
@@ -52,6 +57,19 @@ export function mergeCatalogPage(
   );
   const entities = page.map((entity) => visibleEntityFields(entity, grant));
   const nextOffset = offset + page.length;
+  const cursorValue: CursorValue = {
+    version: 1,
+    mode: 'snapshot',
+    kind: 'catalog',
+    catalogRevision: catalog.revision,
+    target: canonical(target),
+    sourceRevision,
+    snapshotId: sourceRevision,
+    scopeDigest,
+    offset: nextOffset,
+    ...(grant.policyRevision === undefined ? {} : { policyRevision: grant.policyRevision }),
+    expiresAt,
+  };
   return {
     catalog: {
       ...catalog,
@@ -62,15 +80,7 @@ export function mergeCatalogPage(
     },
     ...(nextOffset < visibleEntities.length
       ? {
-          nextCursor: encodeCursor({
-            kind: 'catalog',
-            catalogRevision: catalog.revision,
-            target: canonical(target),
-            sourceRevision,
-            scopeDigest,
-            ...(grant.policyRevision === undefined ? {} : { policyRevision: grant.policyRevision }),
-            offset: nextOffset,
-          }),
+          nextCursor: issueCursor(cursorValue, cursorPartition, cursorStore, cursorNow, maxCursorEntries),
         }
       : {}),
   };

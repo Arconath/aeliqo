@@ -386,7 +386,8 @@ export function aggregateSchema(
         ['aggregates'],
       );
     const field = outputField(item.id, checked.value, item.label, 'measure');
-    fields.push({ ...field, type: { ...field.type, grain: groupOutput.grain } });
+    const meaningType = item.semantics?.output ?? field.type;
+    fields.push({ ...field, type: { ...meaningType, grain: groupOutput.grain } });
     ids.add(item.id);
   }
   return { ok: true, value: { fields, identity: groupOutput.identity, grain: groupOutput.grain } };

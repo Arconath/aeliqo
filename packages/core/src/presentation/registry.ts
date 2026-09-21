@@ -3,7 +3,7 @@ import { inspectWire } from '../contracts/ingress.js';
 import { idSchema, versionRefSchema } from '../contracts/schemas.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
 import type { Outcome } from '../contracts/types.js';
-import { versionRefKey as versionKey } from '../contracts/stable.js';
+import { stableJson, versionRefKey as versionKey } from '../contracts/stable.js';
 export { versionRefKey as versionKey } from '../contracts/stable.js';
 import { validateInteractionGraph, interactionMappingManifestSchema } from '../interaction/graph.js';
 import type { InteractionMappingManifest } from '../interaction/graph.js';
@@ -21,7 +21,7 @@ export const presentationFailure = (code: string, message: string): Outcome<neve
 /** Pattern IDs are allowlisted by ID in Experience, so revisions cannot be ambiguous. */
 const PRESENTATION_PATTERN_LIMIT = 64;
 export const isThenable = (value: unknown): value is { then: (...args: readonly unknown[]) => unknown } => {
-  if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return false;
+  if (!value || (typeof value !== 'object' && typeof value !== 'function')) return false;
   try {
     return typeof (value as { then?: unknown }).then === 'function';
   } catch {
@@ -176,18 +176,20 @@ function registerPatterns(patterns: readonly PresentationPatternManifest[]): Out
 function invalidStateMapping(
   mapping: z.infer<typeof stateMappingSchema>,
   seen: ReadonlySet<string>,
-  manifests: ReadonlyMap<string, PresentationManifest>,
+  manifests: readonly PresentationManifest[],
 ): boolean {
-  if (mapping.ref.id === 'aeliqo.state.identity') return true;
-  const from = manifests.get(versionKey(mapping.from));
-  const to = manifests.get(versionKey(mapping.to));
+  const fromKey = versionKey(mapping.from);
+  const toKey = versionKey(mapping.to);
+  const from = manifests.find((manifest) => versionKey(manifest.ref) === fromKey);
+  const to = manifests.find((manifest) => versionKey(manifest.ref) === toKey);
   return (
-    !seen.has(versionKey(mapping.from)) ||
-    !seen.has(versionKey(mapping.to)) ||
-    from === undefined ||
-    to === undefined ||
-    !from.roles.includes(mapping.fromRole) ||
-    !to.roles.includes(mapping.toRole)
+    mapping.ref.id === 'aeliqo.state.identity' ||
+    !(
+      seen.has(fromKey) &&
+      seen.has(toKey) &&
+      from?.roles.includes(mapping.fromRole) &&
+      to?.roles.includes(mapping.toRole)
+    )
   );
 }
 
@@ -201,11 +203,10 @@ function registerStateMappings(
   const parsed = z.safeParse(z.array(stateMappingSchema).check(z.maxLength(128)), wire.value);
   if (!parsed.success)
     return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
-  const uniqueRefs = new Set(parsed.data.map((mapping) => versionKey(mapping.ref)));
-  const byVersion = new Map(manifests.map((manifest) => [versionKey(manifest.ref), manifest]));
-  const invalid = parsed.data.some(
-    (mapping) => uniqueRefs.size !== parsed.data.length || invalidStateMapping(mapping, seen, byVersion),
-  );
+  const invalid =
+    new Set(parsed.data.map((mapping) => versionKey(mapping.ref))).size !== parsed.data.length ||
+    new Set(parsed.data.map((mapping) => stableJson({ ...mapping, ref: undefined }))).size !== parsed.data.length ||
+    parsed.data.some((mapping) => invalidStateMapping(mapping, seen, manifests));
   if (invalid)
     return presentationFailure('registry', 'State mappings must be unique registered representation/role pairs.');
   return { ok: true, value: parsed.data };

@@ -63,6 +63,8 @@ function validateMeaningMetadata(meaning: MeaningDefinition, context: MeaningVal
     ]);
   const outputType = validateSemanticType(meaning.output, ['output']);
   if (!outputType.ok) return outputType;
+  if (meaning.aggregation !== 'none' && meaning.missingPolicy === 'propagate' && !meaning.output.nullable)
+    return semanticFailure('semantic.missing-policy', 'Nullable.', ['output', 'nullable']);
   const policyResult = validatePolicy(meaning, context.policy);
   if (policyResult !== undefined) return policyResult;
   if (new Set(meaning.dependencies.map(versionKey)).size !== meaning.dependencies.length)
@@ -174,13 +176,22 @@ function validateExpressionImplementation(
   const expression = meaning.implementation.kind === 'expression' ? meaning.implementation.expression : undefined;
   if (expression === undefined) return undefined;
   const expressionDependencies = collectDefinitionRefs(expression);
+  const expectedType =
+    meaning.aggregation === 'none'
+      ? meaning.output
+      : {
+          ...meaning.output,
+          grain: [],
+          nullable: true,
+        };
   const checked = checkExpression(expression, {
     catalog: context.catalog,
     index,
     registry: context.registry,
     definitions: expressionDependencies.length === 0 ? [] : definitions,
     ...(context.entityId === undefined ? {} : { entityId: context.entityId }),
-    expectedType: meaning.output,
+    ...(meaning.aggregation === 'none' ? {} : { evaluationContext: 'group' as const }),
+    expectedType,
   });
   if (!checked.ok) return checked;
   for (const dependency of expressionDependencies) {

@@ -344,7 +344,7 @@ describe('in-process ADC data service', () => {
     });
     expect(service.replaceSnapshot(snapshot(rows.slice(0, 2), 'source-2'))).toMatchObject({
       ok: false,
-      diagnostics: [{ code: 'data.source-shape' }],
+      diagnostics: [{ code: 'data.source-capacity' }],
     });
     expect(service.sourceRevision).toBe('source-1');
     expect(() =>
@@ -417,7 +417,7 @@ describe('in-process ADC data service', () => {
       version: '1',
       requestId: 'plan-page-2',
       catalogRevision: 'catalog-1',
-      target: { taskId: 'plan-page-2', outputId: 'employees-output' },
+      target: { taskId: 'plan-page-1', outputId: 'employees-output' },
       query: query({ page: { size: 1, cursor: complete.cursor } }),
       budget,
     });

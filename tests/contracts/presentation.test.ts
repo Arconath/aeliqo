@@ -4,6 +4,7 @@ import {
   createPresentationRegistry,
   validatePresentationPlan,
 } from '../../packages/core/src/presentation/index.js';
+import { stateMappingFor } from '../../packages/core/src/presentation/state.js';
 import type {
   PresentationContext,
   PresentationManifest,
@@ -825,6 +826,54 @@ it('allows an explicit renderer mapping to preserve state across different adapt
   expect(
     checked(candidate, { ...adaptive, experience: { ...adaptive.experience, mode: 'fixed' } }, installed.value),
   ).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.transition' }] });
+});
+it('rejects ambiguous semantic state-mapping edges and does not infer unsupported mappings', () => {
+  const cards: PresentationManifest = { ...table, ref: { id: 'data.cards', revision: '1' }, roles: ['cardCollection'] };
+  const mapping = {
+    ref: { id: 'state.table-cards', revision: '1' },
+    from: table.ref,
+    to: cards.ref,
+    fromRole: 'table',
+    toRole: 'cardCollection',
+    kind: 'transfer' as const,
+  };
+  const duplicate = { ...mapping, ref: { id: 'state.table-cards-alternate', revision: '1' } };
+
+  expect(createPresentationRegistry([table, cards, stack], [], [], [mapping, duplicate])).toMatchObject({
+    ok: false,
+    diagnostics: [{ code: 'presentation.registry' }],
+  });
+
+  const installed = createPresentationRegistry([table, cards, stack], [], [], [mapping]);
+  expect(installed.ok).toBe(true);
+  if (!installed.ok) return;
+  const from = plan().nodes[0]!;
+  const to = { ...from, role: 'cardCollection', representation: cards.ref };
+  const supported = stateMappingFor(
+    from,
+    to,
+    installed.value,
+    { ...context(), stateMappingCapabilities: [mapping.ref] },
+    'transfer',
+  );
+  const unsupported = stateMappingFor(
+    from,
+    to,
+    installed.value,
+    { ...context(), stateMappingCapabilities: [] },
+    'transfer',
+  );
+  const ambiguous = stateMappingFor(
+    from,
+    to,
+    { ...installed.value, stateMappings: [mapping, duplicate] },
+    { ...context(), stateMappingCapabilities: [mapping.ref, duplicate.ref] },
+    'transfer',
+  );
+
+  expect(supported).toEqual(mapping);
+  expect(unsupported).toBeUndefined();
+  expect(ambiguous).toBeUndefined();
 });
 it('requires a registered archival owner before removing a composable view', () => {
   const archive = {

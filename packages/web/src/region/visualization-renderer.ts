@@ -6,11 +6,11 @@ import {
   type InteractionState,
   type Result,
   type ResultRef,
+  type VisualizationSpec,
 } from '@aeliqo/core';
 import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { html, nothing, type TemplateResult } from 'lit';
 import { materializeVisualizationRows } from '../visualization/materialization.js';
-import type { VisualizationSpec } from '@aeliqo/core';
 import type {
   AeliqoVisualizationBinding,
   AeliqoVisualizationPresentationRenderContext,
@@ -19,7 +19,6 @@ import type {
 
 type CoreNode = ValidatedPresentation['nodes'][number];
 type VisualizationView = VisualizationSpec['view'];
-
 interface VisualizationElementProps {
   readonly visualization: VisualizationSpec;
   readonly context: AeliqoVisualizationBinding['context'];
@@ -28,16 +27,21 @@ interface VisualizationElementProps {
   readonly selected: string | undefined;
   readonly selectionEnabled: boolean;
 }
-
 type VisualizationElementRenderer = (
   props: VisualizationElementProps,
   onSelect: (event: Event) => void,
 ) => TemplateResult;
 
 function refKey(ref: ResultRef): string {
-  return JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  return JSON.stringify([
+    ref.id,
+    ref.revision,
+    ref.sourceLineage ?? null,
+    ref.outputId,
+    ref.queryDigest,
+    ref.scopeDigest,
+  ]);
 }
-
 function canonical(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -47,7 +51,6 @@ function canonical(value: unknown): string {
     .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
     .join(',')}}`;
 }
-
 function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
   try {
     return left !== undefined && refKey(left) === refKey(right);
@@ -55,7 +58,6 @@ function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
     return false;
   }
 }
-
 function sameResult(left: Result | undefined, right: Result): boolean {
   return left !== undefined && sameRef(left.ref, right.ref) && canonical(left) === canonical(right);
 }
@@ -65,7 +67,7 @@ function resultRef(value: unknown): ResultRef | undefined {
   if (!parsed.ok || parsed.value === null || typeof parsed.value !== 'object' || Array.isArray(parsed.value))
     return undefined;
   const candidate = parsed.value as Record<string, unknown>;
-  const keys = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
+  const keys = ['id', 'revision', 'sourceLineage', 'outputId', 'queryDigest', 'scopeDigest'];
   if (
     Object.keys(candidate).length !== keys.length ||
     keys.some((key) => typeof candidate[key] !== 'string' || (candidate[key] as string).length === 0)
@@ -400,11 +402,11 @@ function expectedFields(spec: VisualizationSpec, result: Result): readonly strin
   return result.fields.map((field) => field.id);
 }
 
-function expectedOperations(owner: string | undefined): readonly unknown[] {
-  if (owner === undefined) return [{ id: 'data.read', revision: '1' }];
+function expectedOperations(owner: string | undefined, view: VisualizationView): readonly unknown[] {
   return [
     { id: 'data.read', revision: '1' },
-    { id: 'interaction.selection', revision: '1' },
+    ...(owner === undefined ? [] : [{ id: 'interaction.selection', revision: '1' }]),
+    ...(view === 'bar' ? [{ id: 'data.analyze', revision: '1' }] : []),
   ];
 }
 
@@ -413,7 +415,7 @@ function configMatches(node: CoreNode, spec: VisualizationSpec, result: Result, 
     canonical(node.config.values) === canonical({ visualization: spec }) &&
     canonical(node.config.fields) === canonical(expectedFields(spec, result)) &&
     canonical(node.config.ports) === canonical(expectedSelectionPort(result, owner)) &&
-    canonical(node.config.operations) === canonical(expectedOperations(owner))
+    canonical(node.config.operations) === canonical(expectedOperations(owner, spec.view))
   );
 }
 

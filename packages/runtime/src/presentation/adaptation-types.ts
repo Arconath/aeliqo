@@ -1,5 +1,11 @@
 import type { PresentationComposition, PresentationCompositionRequest } from '@aeliqo/core/presentation';
-import type { PresentationContext, PresentationEnvironment, PresentationRegistry } from '@aeliqo/core/presentation';
+import type {
+  PresentationContext,
+  PresentationEnvironment,
+  PresentationRegistry,
+  PresentationTargetEvidence,
+  PresentationTargetRef,
+} from '@aeliqo/core/presentation';
 import type { RegionHandle, RegionOutcome, RegionSnapshot } from '../regions/types.js';
 import type { PresentationNavigationState, PresentationRenderer } from './renderer.js';
 
@@ -10,6 +16,12 @@ export type PresentationAdaptationContext = AdaptationContextFields &
   Partial<Pick<PresentationContext, 'environment' | 'transitionBlocked' | 'explicitTransition'>> & {
     readonly candidates?: PresentationCompositionRequest['candidates'];
   };
+
+/** Trusted exact address plus a synchronous freshness read used again at commit. */
+export interface PresentationAdaptationTarget {
+  readonly address: PresentationTargetRef;
+  read(): PresentationTargetEvidence;
+}
 
 export interface PresentationAdaptationReadInput {
   readonly region: RegionHandle;
@@ -30,6 +42,8 @@ export type PresentationAdaptationContextSource =
 export interface PresentationAdaptationOptions {
   readonly region: RegionHandle;
   readonly registry: PresentationRegistry;
+  /** Optional surface fence. Omit only for the legacy Region-local path. */
+  readonly target?: PresentationAdaptationTarget;
   readonly baseContext: PresentationAdaptationContextSource;
   readonly readContext?: PresentationAdaptationContextSource;
   readonly renderer: PresentationRenderer;

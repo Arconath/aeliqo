@@ -32,6 +32,12 @@
                   "maxLength": 160,
                   "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
                 },
+                "sourceLineage": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160,
+                  "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+                },
                 "outputId": {
                   "type": "string",
                   "minLength": 1,
@@ -776,6 +782,12 @@
                       "const": "mixed",
                       "maxLength": 16384
                     },
+                    "sourceLineage": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160,
+                      "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+                    },
                     "sourceRevisions": {
                       "type": "object",
                       "propertyNames": {
@@ -810,6 +822,7 @@
                   },
                   "required": [
                     "kind",
+                    "sourceLineage",
                     "sourceRevisions",
                     "reason"
                   ],
@@ -1210,6 +1223,12 @@
                 }
               }
             },
+            "lineageDigest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+            },
             "lineage": {
               "maxItems": 10000,
               "type": "array",
@@ -1235,6 +1254,12 @@
                           "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
                         },
                         "revision": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160,
+                          "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+                        },
+                        "sourceLineage": {
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 160,
@@ -1349,6 +1374,12 @@
               "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
             },
             "revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+            },
+            "sourceLineage": {
               "type": "string",
               "minLength": 1,
               "maxLength": 160,
@@ -1495,6 +1526,12 @@
               "maxLength": 160,
               "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
             },
+            "sourceLineage": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+            },
             "outputId": {
               "type": "string",
               "minLength": 1,
@@ -1583,6 +1620,12 @@
               "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
             },
             "revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "pattern": "^[^\\s\\u0000-\\u001f\\u007f]+$"
+            },
+            "sourceLineage": {
               "type": "string",
               "minLength": 1,
               "maxLength": 160,

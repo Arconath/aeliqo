@@ -105,7 +105,7 @@ export class ResultSubscriptionImpl implements ResultSubscription {
     return this.terminalUpdate();
   }
 
-  private handleSourceResult(result: IteratorResult<unknown> | undefined): IteratorResult<ResultUpdate> {
+  private async handleSourceResult(result: IteratorResult<unknown> | undefined): Promise<IteratorResult<ResultUpdate>> {
     if (result === undefined) {
       this.controller.streamFailure();
       this.finish();
@@ -119,8 +119,8 @@ export class ResultSubscriptionImpl implements ResultSubscription {
     return this.commitEvent(result.value);
   }
 
-  private commitEvent(raw: unknown): IteratorResult<ResultUpdate> {
-    const event: Outcome<ResultEvent> = this.controller.ingest(raw);
+  private async commitEvent(raw: unknown): Promise<IteratorResult<ResultUpdate>> {
+    const event: Outcome<ResultEvent> = await this.controller.ingest(raw);
     if (!event.ok) {
       this.finish();
       return this.terminalUpdate();

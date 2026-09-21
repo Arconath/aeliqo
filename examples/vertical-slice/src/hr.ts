@@ -62,19 +62,19 @@ const labels: Readonly<Record<string, string>> = {
 const entity = (
   id: string,
   identity: readonly [string, ...string[]],
-  fields: readonly [string, SemanticType['value'], FieldDefinition['role']][],
+  fields: readonly [string, SemanticType['value'], FieldDefinition['role'], boolean?][],
 ): Catalog['entities'][number] => ({
   id,
   label: id,
   identity,
   rowGrain: identity,
-  fields: fields.map(([id, value, role]) => ({
+  fields: fields.map(([id, value, role, nullable = false]) => ({
     id,
     label: labels[id] ?? id,
     role,
     type: {
       value,
-      nullable: false,
+      nullable,
       ...(value === 'date'
         ? { temporal: { calendar: raw.policy.period.calendar, timezone: raw.policy.period.timezone, grain: 'day' } }
         : {}),
@@ -104,11 +104,11 @@ function meaning(
     scope: 'organization',
     authority: 'approved',
     aggregation: additive ? 'additive' : 'non-additive',
-    aggregationDimensions: additive ? ['employee_id', 'date'] : [],
+    aggregationDimensions: [],
     missingPolicy: 'propagate',
   };
 }
-const status = field('observations', 'status');
+const status = field('schedules', 'status');
 const isUnknown = call('core.is-null', status);
 const absent = sum(choose(isUnknown, zero, choose(equal(status, literal('absent', 'text')), one, zero)));
 const unknown = sum(choose(isUnknown, one, zero));
@@ -116,7 +116,7 @@ const expected = call('core.aggregate.count', field('schedules', 'date'));
 const rate = choose(equal(unknown, zero), call('core.divide.null', absent, expected), literal(null, 'float'));
 const meanings = [
   meaning('absence.absent', 'Absent days', absent, 'integer', true),
-  meaning('absence.expected', 'Expected days', expected, 'integer', true, false),
+  meaning('absence.expected', 'Expected days', expected, 'integer', true),
   meaning('absence.unknown', 'Unknown days', unknown, 'integer', true),
   meaning('absence.rate', 'Absence rate', rate, 'float', false),
 ];
@@ -159,6 +159,7 @@ export const catalog: Catalog = {
       [
         ['employee_id', 'text', 'identity'],
         ['date', 'date', 'time'],
+        ['status', 'text', 'attribute', true],
       ],
     ),
     entity(
@@ -195,11 +196,17 @@ export const catalog: Catalog = {
   capabilities: [],
 };
 export function snapshot(revision = 'hr-source-1', observations = raw.observations): LocalSnapshot {
+  const statusByDate = new Map(
+    observations.map((observation) => [`${observation.employee_id}:${observation.date}`, observation.status]),
+  );
   return {
     catalog,
     sourceRevision: revision,
     records: {
-      schedules: raw.schedules,
+      schedules: raw.schedules.map((schedule) => ({
+        ...schedule,
+        status: statusByDate.get(`${schedule.employee_id}:${schedule.date}`) ?? null,
+      })),
       observations,
       leave: raw.leave,
       employees: raw.employees.map((employee) => ({
@@ -297,6 +304,7 @@ export const initialTask = (): Extract<Task, { kind: 'data' }> => ({
     { id: 'trend', kind: 'query', query: trendQuery(), dependsOn: ['ranking'], delivery: 'eager' },
     { id: 'detail', kind: 'query', query: detailQuery(), dependsOn: ['ranking'], delivery: 'on-demand' },
   ],
+  viewPreference: { representation: 'data.trend', strength: 'preferred' },
   needs: [
     {
       id: 'ranking',

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { buildPublicPages } from '../../scripts/docs/build-public-docs.mjs';
@@ -6,6 +7,7 @@ import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 
 const root = dirname(new URL(import.meta.url).pathname);
 const siteRoot = root;
+const releaseStatus = JSON.parse(readFileSync(resolve(root, '../../release-metadata.json'), 'utf8')).status ?? 'stable';
 export const generatedRoot = resolve(root, 'artifacts/site-source');
 export const generatedPublic = resolve(root, 'artifacts/site-public');
 
@@ -57,7 +59,8 @@ function docsSidebar(groups, docsPages, currentPath) {
           .join('')}</div>`,
     )
     .join('');
-  return `<aside class="docs-sidebar" aria-label="Documentation navigation"><input class="docs-nav-toggle visually-hidden" id="docs-nav-toggle" type="checkbox"><label class="docs-nav-summary" for="docs-nav-toggle">Browse documentation <span aria-hidden="true">⌄</span></label><div class="docs-sidebar-content"><a class="docs-sidebar-brand" href="/"><span>Aeliqo</span><strong>Documentation</strong></a><div class="docs-search-tools"><form class="docs-search-fallback" role="search" aria-label="Search documentation" action="/search/" method="get"><label class="visually-hidden" for="docs-sidebar-search">Search documentation</label><input id="docs-sidebar-search" name="q" type="text" inputmode="search" placeholder="Search docs"><button type="submit">Search</button></form><button class="search-trigger" type="button" disabled aria-keyshortcuts="Control+K Meta+K"><span>Search docs</span><kbd>⌘ K</kbd></button></div><div class="docs-version"><span>Current release</span><strong>${RELEASE_VERSION}</strong></div><nav aria-label="Documentation">${links}</nav><a class="docs-sidebar-github" href="https://github.com/Arconath/aeliqo">View source on GitHub <span aria-hidden="true">↗</span></a></div></aside>`;
+  const versionLabel = releaseStatus === 'candidate' ? 'Release candidate' : 'Current release';
+  return `<aside class="docs-sidebar" aria-label="Documentation navigation"><input class="docs-nav-toggle visually-hidden" id="docs-nav-toggle" type="checkbox"><label class="docs-nav-summary" for="docs-nav-toggle">Browse documentation <span aria-hidden="true">⌄</span></label><div class="docs-sidebar-content"><a class="docs-sidebar-brand" href="/"><span>Aeliqo</span><strong>Documentation</strong></a><div class="docs-search-tools"><form class="docs-search-fallback" role="search" aria-label="Search documentation" action="/search/" method="get"><label class="visually-hidden" for="docs-sidebar-search">Search documentation</label><input id="docs-sidebar-search" name="q" type="text" inputmode="search" placeholder="Search docs"><button type="submit">Search</button></form><button class="search-trigger" type="button" disabled aria-keyshortcuts="Control+K Meta+K"><span>Search docs</span><kbd>⌘ K</kbd></button></div><div class="docs-version"><span>${versionLabel}</span><strong>${RELEASE_VERSION}</strong></div><nav aria-label="Documentation">${links}</nav><a class="docs-sidebar-github" href="https://github.com/Arconath/aeliqo">View source on GitHub <span aria-hidden="true">↗</span></a></div></aside>`;
 }
 
 function docsToc(headings) {

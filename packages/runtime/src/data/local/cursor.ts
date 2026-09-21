@@ -1,6 +1,8 @@
 import { canonical } from './shared.js';
 
 export interface CursorValue {
+  readonly version: 1;
+  readonly mode: 'snapshot' | 'keyset';
   readonly kind: 'catalog' | 'data';
   readonly catalogRevision?: string;
   readonly target?: string;
@@ -8,67 +10,89 @@ export interface CursorValue {
   readonly scopeDigest?: string;
   readonly policyRevision?: string;
   readonly sourceRevision?: string;
+  readonly sourceLineage?: string;
+  readonly snapshotId?: string;
+  readonly orderDigest?: string;
+  readonly expiresAt?: number;
+  readonly anchor?: readonly (null | boolean | number | string | { readonly decimal: string })[];
   readonly offset: number;
 }
 
-function encodeBase64(text: string): string {
-  const bytes = new TextEncoder().encode(text);
+interface StoredCursor {
+  readonly value: CursorValue;
+  readonly partition: string;
+}
+
+export type CursorStore = Map<string, StoredCursor>;
+
+export function issueCursor(
+  value: CursorValue,
+  partition: string,
+  store: CursorStore,
+  now: number,
+  maxEntries: number,
+): string {
+  reapCursors(store, now);
+  const existing = existingCursor(value, partition, store);
+  if (existing !== undefined) return existing;
+  while (store.size >= maxEntries) {
+    const oldest = store.keys().next().value as string | undefined;
+    if (oldest === undefined) break;
+    store.delete(oldest);
+  }
+  let token = opaqueToken();
+  while (store.has(token)) token = opaqueToken();
+  store.set(token, { value: Object.freeze({ ...value }), partition });
+  return token;
+}
+
+function existingCursor(value: CursorValue, partition: string, store: CursorStore): string | undefined {
+  const serialized = canonical(value);
+  for (const [token, cursor] of store) {
+    if (cursor.partition === partition && canonical(cursor.value) === serialized) return token;
+  }
+  return undefined;
+}
+
+export function resolveCursor(
+  token: string | undefined,
+  partition: string,
+  store: CursorStore,
+  now: number,
+): CursorValue | undefined {
+  if (token === undefined) return undefined;
+  const stored = store.get(token);
+  if (stored === undefined) return undefined;
+  if (stored.value.expiresAt !== undefined && stored.value.expiresAt <= now) {
+    store.delete(token);
+    return undefined;
+  }
+  return stored.partition === partition ? stored.value : undefined;
+}
+
+export function isSnapshotCursor(cursor: CursorValue | undefined, kind: CursorValue['kind']): cursor is CursorValue {
+  if (cursor === undefined) return false;
+  if (cursor.kind !== kind) return false;
+  return cursor.mode === 'snapshot';
+}
+
+function reapCursors(store: CursorStore, now: number): void {
+  for (const [token, cursor] of store) {
+    if (cursor.value.expiresAt !== undefined && cursor.value.expiresAt <= now) store.delete(token);
+  }
+}
+
+function opaqueToken(): string {
+  const crypto = globalThis.crypto;
+  if (typeof crypto?.randomUUID === 'function') return `cursor-${crypto.randomUUID()}`;
+  if (typeof crypto?.getRandomValues !== 'function')
+    throw new TypeError('A cryptographically random cursor token is required.');
+  const bytes = crypto.getRandomValues(new Uint8Array(18));
+  return `cursor-${base64Url(bytes)}`;
+}
+
+function base64Url(bytes: Uint8Array): string {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return globalThis.btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/u, '');
-}
-
-function decodeBase64(value: string): string | undefined {
-  try {
-    const padding = '='.repeat((4 - (value.length % 4)) % 4);
-    const padded = value.replaceAll('-', '+').replaceAll('_', '/') + padding;
-    const bytes = binaryBytes(globalThis.atob(padded));
-    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-  } catch {
-    return undefined;
-  }
-}
-
-function binaryBytes(binary: string): Uint8Array {
-  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
-}
-
-export function encodeCursor(value: CursorValue): string {
-  return encodeBase64(canonical(value));
-}
-
-export function decodeCursor(value: string): CursorValue | undefined {
-  const text = decodeBase64(value);
-  if (text === undefined) return undefined;
-  try {
-    return cursorFromJson(JSON.parse(text) as unknown);
-  } catch {
-    return undefined;
-  }
-}
-
-function cursorFromJson(value: unknown): CursorValue | undefined {
-  if (!isRecord(value)) return undefined;
-  if (value.kind !== 'catalog' && value.kind !== 'data') return undefined;
-  if (!Number.isSafeInteger(value.offset) || (value.offset as number) < 0) return undefined;
-  return {
-    kind: value.kind,
-    offset: value.offset as number,
-    ...optionalText(value, 'catalogRevision'),
-    ...optionalText(value, 'target'),
-    ...optionalText(value, 'queryDigest'),
-    ...optionalText(value, 'scopeDigest'),
-    ...optionalText(value, 'policyRevision'),
-    ...optionalText(value, 'sourceRevision'),
-  };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-function optionalText(record: Record<string, unknown>, field: keyof CursorValue): Partial<CursorValue> {
-  const value = record[field];
-  if (typeof value !== 'string') return {};
-  return { [field]: value };
 }

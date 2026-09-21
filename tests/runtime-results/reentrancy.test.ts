@@ -15,7 +15,14 @@ const key = (requestId: string) => ({
   populationDigest: 'population-1',
 });
 
-const ref = { id: 'result', revision: 'result-1', outputId: 'rows', queryDigest: 'query-1', scopeDigest: 'scope-1' };
+const ref = {
+  id: 'result',
+  revision: 'result-1',
+  sourceLineage: 'source-1',
+  outputId: 'rows',
+  queryDigest: 'query-1',
+  scopeDigest: 'scope-1',
+};
 const loaded: readonly ResultEvent[] = [
   {
     kind: 'descriptor',

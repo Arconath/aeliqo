@@ -20,6 +20,8 @@ function validateReadGrant(grant: ReadGrant): Outcome<ReadGrant> {
   if (!isRecord(grant)) return authorizationFailure('The ADC authorization returned an invalid outcome.');
   if (!validIdentifier(grant.scopeDigest, 'scopeDigest'))
     return authorizationFailure('The ADC authorization returned an invalid scope digest.');
+  if (grant.cursorPartition !== undefined && !validIdentifier(grant.cursorPartition, 'cursorPartition'))
+    return authorizationFailure('The ADC authorization returned an invalid cursor partition.');
   if (grant.policyRevision !== undefined && !validIdentifier(grant.policyRevision, 'policyRevision'))
     return authorizationFailure('The ADC authorization returned an invalid policy revision.');
   const entityError = validateEntityScope(grant.entities);
@@ -199,7 +201,7 @@ async function authorizeResult(
 
 function defaultGrant(context: ReadContext): Promise<Outcome<ReadGrant>> {
   if (context.signal?.aborted) return Promise.resolve(failure('data.aborted', 'The ADC authorization was cancelled.'));
-  return Promise.resolve({ ok: true, value: { scopeDigest: DEFAULT_SCOPE } });
+  return Promise.resolve({ ok: true, value: { scopeDigest: DEFAULT_SCOPE, cursorPartition: DEFAULT_SCOPE } });
 }
 
 function startAuthorization(

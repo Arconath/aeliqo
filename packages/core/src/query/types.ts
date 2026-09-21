@@ -90,11 +90,29 @@ export interface GroupKeySpec {
   readonly label?: string;
 }
 
+/**
+ * Validated semantic binding emitted for a QuerySpec meaning.
+ *
+ * This is part of the canonical logical-plan data, rather than hidden
+ * evaluator metadata. Plan validation re-resolves the meaning and checks
+ * every binding member before execution.
+ */
+export interface AggregateSemanticBinding {
+  readonly meaning: VersionRef;
+  readonly aggregation: MeaningDefinition['aggregation'];
+  /** Declared dimensions that must be represented by the trusted group keys. */
+  readonly aggregationDimensions: readonly string[];
+  readonly missingPolicy: MeaningDefinition['missingPolicy'];
+  readonly output: SemanticType;
+  readonly timeExpression?: Expression;
+}
+
 export interface AggregateSpec {
   readonly id: string;
   readonly function: VersionRef;
   readonly arguments: readonly Expression[];
   readonly label?: string;
+  readonly semantics?: AggregateSemanticBinding;
 }
 
 export type PredicateSpec =

@@ -102,3 +102,42 @@ remain untrusted and must pass `runToolModel` plus the same capability/egress
 boundary as every other BYOK port. This local protocol compatibility is not proof
 that a provider has been evaluated for task quality or that every
 OpenAI-compatible endpoint implements the same optional features.
+
+## Generic Chat Completions profiles
+
+`@aeliqo/agent/model` also exports the provider-neutral
+`createOpenAICompatibleToolModel` connection. Supply the endpoint, model,
+authentication scheme, capability list, and egress policy independently:
+
+```ts
+const model = createOpenAICompatibleToolModel({
+  baseURL: 'http://127.0.0.1:8787/v1',
+  model: 'local-tool-model',
+  auth: { scheme: 'none' },
+  capabilities: ['tool-calls', 'input-token-estimate', 'request-cancellation'],
+  policy: {
+    allowExternalEgress: true,
+    allowInsecureHttp: true,
+    allowedOrigins: ['http://127.0.0.1:8787'],
+  },
+});
+```
+
+The no-auth scheme is an explicit allowlisted local/self-hosted profile. It is
+not selected when a hosted credential is missing; bearer and custom-header
+profiles require a server-owned opaque secret. HTTPS is required unless the
+host explicitly enables insecure HTTP, and the connection refuses URL
+credentials, redirects, arbitrary header overrides, and an unallowlisted
+origin. The adapter sends `max_tokens` and `stream: false` for Chat
+Completions. Endpoints without usage reporting use bounded host estimates, and
+input-token counting is optional; a missing counting endpoint is not silently
+invented.
+
+The source-tested profiles are synthetic localhost Chat Completions exchanges
+for no-auth, custom-header, tool-call correlation, malformed/oversized
+responses, timeout and bounded retry behavior, plus the separate non-streaming
+Responses adapter. These fixtures establish protocol compatibility only. No
+provider quality, latency, or live model support is implied. Live qualification
+requires an approved endpoint/model, synthetic corpus, credential access, and
+an explicit request/spend ceiling; without those permissions it remains an
+unqualified blocker rather than a skipped success.

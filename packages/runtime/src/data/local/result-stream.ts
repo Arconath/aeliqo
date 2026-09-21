@@ -1,8 +1,8 @@
 import type { Outcome, QuerySpec, ResultRef } from '@aeliqo/core';
 import type { QueryResult } from '@aeliqo/core/query';
-import type { AcceptedQuery, DataRecord, QueryBudget, ReadContext } from '../types.js';
+import type { AcceptedQuery, DataRecord, QueryBudget, ReadContext, ReadGrant } from '../types.js';
 import type { ResultEvent as DataResultEvent } from '../types.js';
-import { decodeCursor } from './cursor.js';
+import { resolveCursor, type CursorStore } from './cursor.js';
 import type { StoredPlan } from './service-state.js';
 import { eventBytes, pageCursor, resultEvidence, resultPrecision, resultWarnings } from './result.js';
 import { failure } from './shared.js';
@@ -19,6 +19,12 @@ interface ResultResponseInput {
   readonly budget: QueryBudget;
   readonly startedAt: number;
   readonly context: ReadContext;
+  readonly grant: ReadGrant;
+  readonly cursorExpiresAt: number;
+  readonly now: () => number;
+  readonly cursorNow: number;
+  readonly cursorStore: CursorStore;
+  readonly maxCursorEntries: number;
 }
 
 interface BoundedRows {
@@ -27,19 +33,48 @@ interface BoundedRows {
 }
 
 export function buildResultEvents(input: ResultResponseInput): Outcome<readonly DataResultEvent[]> {
-  const offset = requestedOffset(input.accepted.query);
+  const offsetOutcome = requestedOffset(
+    input.accepted.query,
+    input.stored.cursorOffset,
+    input.grant.cursorPartition ?? input.grant.scopeDigest,
+    input.cursorStore,
+    input.cursorNow,
+  );
+  if (!offsetOutcome.ok) return offsetOutcome;
+  const offset = offsetOutcome.value;
   const pageLimit = input.accepted.query.page?.size ?? Number.MAX_SAFE_INTEGER;
   const rows = selectRows(input.result, offset, pageLimit, input.budget);
-  const partialReason = determinePartialReason(input.result, rows, offset, pageLimit, input.budget, input.startedAt);
+  const partialReason = determinePartialReason(
+    input.result,
+    rows,
+    offset,
+    pageLimit,
+    input.budget,
+    input.startedAt,
+    input.now,
+  );
   const bounded = fitResponse(input, rows, offset, partialReason);
   if (!bounded.ok) return bounded;
   return { ok: true, value: bounded.value.events };
 }
 
-function requestedOffset(query: QuerySpec): number {
+function requestedOffset(
+  query: QuerySpec,
+  storedOffset: number | undefined,
+  partition: string,
+  cursorStore: CursorStore,
+  cursorNow: number,
+): Outcome<number> {
   const token = query.page?.cursor;
-  if (token === undefined) return 0;
-  return decodeCursor(token)?.offset ?? 0;
+  if (token === undefined) return { ok: true, value: 0 };
+  if (storedOffset !== undefined) return { ok: true, value: storedOffset };
+  const cursor = resolveCursor(token, partition, cursorStore, cursorNow);
+  if (cursor !== undefined) return { ok: true, value: cursor.offset };
+  return failure('data.stale-cursor', 'The query cursor is no longer available on this host.', [
+    'query',
+    'page',
+    'cursor',
+  ]);
 }
 
 function selectRows(
@@ -58,6 +93,7 @@ function determinePartialReason(
   pageLimit: number,
   budget: QueryBudget,
   startedAt: number,
+  now: () => number,
 ): PartialReason | undefined {
   let reason: PartialReason | undefined;
   const hasMoreRows = offset + rows.length < result.rows.length;
@@ -65,7 +101,7 @@ function determinePartialReason(
     reason = rows.length >= budget.maxRows && budget.maxRows <= pageLimit ? 'row budget' : 'page';
   }
   if (!result.complete && reason === undefined) reason = 'incomplete source';
-  if (Date.now() - startedAt > budget.maxMilliseconds) reason = 'time budget';
+  if (now() - startedAt > budget.maxMilliseconds) reason = 'time budget';
   return reason;
 }
 
@@ -78,7 +114,7 @@ function fitResponse(
   let rows = initialRows;
   let reason = initialReason;
   let events = createResponseEvents(input, rows, offset, reason);
-  const initialStatus = responseStatus(input.context, input.startedAt, input.budget);
+  const initialStatus = responseStatus(input.context, input.startedAt, input.budget, input.now);
   if (initialStatus !== undefined) return initialStatus;
   if (responseBytes(events) <= input.budget.maxBytes) return { ok: true, value: { rows, events } };
   if (rows.length === 0) return responseTooLarge();
@@ -87,7 +123,7 @@ function fitResponse(
   rows = trimmed.value.rows;
   reason = 'byte budget';
   events = createResponseEvents(input, rows, offset, reason);
-  const finalStatus = responseStatus(input.context, input.startedAt, input.budget);
+  const finalStatus = responseStatus(input.context, input.startedAt, input.budget, input.now);
   if (finalStatus !== undefined) return finalStatus;
   if (responseBytes(events) > input.budget.maxBytes) return responseTooLarge();
   return { ok: true, value: { rows, events } };
@@ -102,7 +138,7 @@ function trimRowsToByteBudget(
   let high = rows.length;
   let best = -1;
   while (low <= high) {
-    const status = responseStatus(input.context, input.startedAt, input.budget);
+    const status = responseStatus(input.context, input.startedAt, input.budget, input.now);
     if (status !== undefined) return status;
     const middle = Math.ceil((low + high) / 2);
     const candidate = rows.slice(0, middle);
@@ -122,9 +158,14 @@ function trimRowsToByteBudget(
   };
 }
 
-function responseStatus(context: ReadContext, startedAt: number, budget: QueryBudget): Outcome<never> | undefined {
+function responseStatus(
+  context: ReadContext,
+  startedAt: number,
+  budget: QueryBudget,
+  now: () => number,
+): Outcome<never> | undefined {
   if (context.signal?.aborted) return failure('data.aborted', 'The result execution was cancelled.');
-  if (Date.now() - startedAt > budget.maxMilliseconds)
+  if (now() - startedAt > budget.maxMilliseconds)
     return failure('data.budget', 'Execution exceeded the effective time budget while bounding the response.');
   return undefined;
 }
@@ -163,6 +204,7 @@ function createResponseEvents(
       filters: filters(accepted.query),
       ...(accepted.query.period === undefined ? {} : { period: accepted.query.period }),
       warnings: resultWarnings(result),
+      lineageDigest: accepted.lineageDigest,
       lineage: stored.lineage,
       counts: { loaded: rows.length, population: resultPopulation(result, accepted.populationDigest) },
       coverage: coverage(reason, accepted.populationDigest),
@@ -171,7 +213,21 @@ function createResponseEvents(
   const events: DataResultEvent[] = [descriptor];
   if (rows.length > 0) events.push({ kind: 'batch', result: ref, sequence: 0, rows });
   if (input.budget.maxMessages >= 4) events.push(progressEvent(result, ref, rows.length));
-  events.push(completeEvent(result, accepted, ref, rows.length, offset, reason));
+  events.push(
+    completeEvent(
+      result,
+      accepted,
+      ref,
+      rows.length,
+      offset,
+      reason,
+      input.grant,
+      input.cursorExpiresAt,
+      input.cursorStore,
+      input.cursorNow,
+      input.maxCursorEntries,
+    ),
+  );
   return events;
 }
 
@@ -201,6 +257,11 @@ function completeEvent(
   rowCount: number,
   offset: number,
   reason: PartialReason | undefined,
+  grant: ReadGrant,
+  cursorExpiresAt: number,
+  cursorStore: CursorStore,
+  cursorNow: number,
+  maxCursorEntries: number,
 ): DataResultEvent {
   const nextOffset = offset + rowCount;
   const canContinue = reason !== undefined && nextOffset < result.rows.length;
@@ -208,6 +269,8 @@ function completeEvent(
     kind: 'complete',
     result: ref,
     finalCoverage: coverage(reason, accepted.populationDigest),
-    ...(canContinue ? { cursor: pageCursor(accepted, nextOffset) } : {}),
+    ...(canContinue
+      ? { cursor: pageCursor(accepted, nextOffset, grant, cursorExpiresAt, cursorStore, cursorNow, maxCursorEntries) }
+      : {}),
   };
 }

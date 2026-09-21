@@ -31,7 +31,7 @@ export function newRegionRevision(): string {
 }
 
 export const refKey = (ref: ResultRef): string =>
-  JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  JSON.stringify([ref.id, ref.revision, ref.sourceLineage, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 export const logicalRefKey = (ref: ResultRef): string =>
   JSON.stringify([ref.outputId, ref.queryDigest, ref.scopeDigest]);
 export const failure = <T>(code: RegionFailure['code'], message: string): RegionOutcome<T> => ({
@@ -179,8 +179,14 @@ export function validateResultRef(value: unknown): value is ResultRef {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
   if (!parseWireValue(value).ok) return false;
   const record = value as Record<string, unknown>;
-  const names = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
-  return Object.keys(record).length === names.length && names.every((name) => validId(record[name]));
+  const required = ['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest'];
+  const names = Object.keys(record);
+  return (
+    names.length === required.length + (record.sourceLineage === undefined ? 0 : 1) &&
+    names.every((name) => name === 'sourceLineage' || required.includes(name)) &&
+    required.every((name) => validId(record[name])) &&
+    (record.sourceLineage === undefined || validId(record.sourceLineage))
+  );
 }
 
 export function normalizeRefs(value: readonly ResultRef[], scopeDigest: string): RegionOutcome<readonly ResultRef[]> {

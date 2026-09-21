@@ -70,5 +70,5 @@ export interface ResultSubscriptionController {
   cancel(): void;
   truncated(): void;
   streamFailure(): void;
-  ingest(raw: unknown): Outcome<ResultEvent>;
+  ingest(raw: unknown): Promise<Outcome<ResultEvent>>;
 }

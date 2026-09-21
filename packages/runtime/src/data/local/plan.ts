@@ -8,7 +8,8 @@ import { resolvePopulation } from './cohort.js';
 import type { ResolvedPopulation } from './cohort.js';
 import { authorizeWithDeadline, digestWithDeadline } from './authorization.js';
 import { DEFAULT_BUDGET, minBudget } from './budget.js';
-import { decodeCursor } from './cursor.js';
+import { isSnapshotCursor, resolveCursor } from './cursor.js';
+import type { CursorValue } from './cursor.js';
 import type { LocalDataServiceState, StoredPlan } from './service-state.js';
 import { reapExpiredPlans } from './service-state.js';
 import {
@@ -29,6 +30,7 @@ interface PreparedPlan {
   readonly grant: ReadGrant;
   readonly budget: QueryBudget;
   readonly startedAt: number;
+  readonly workNow: () => number;
   readonly initialCatalog: LocalDataServiceState['currentCatalog'];
   readonly initialSnapshot: LocalDataServiceState['snapshot'];
 }
@@ -43,6 +45,8 @@ interface CompiledPlan {
 interface PlanDigests {
   readonly queryDigest: string;
   readonly populationDigest: string;
+  readonly lineageDigest: string;
+  readonly cursorOffset?: number;
 }
 
 export async function planLocalData(
@@ -50,7 +54,7 @@ export async function planLocalData(
   request: unknown,
   context: ReadContext = {},
 ): Promise<Outcome<PlanAcceptance>> {
-  const prepared = await preparePlan(state, request, context, Date.now());
+  const prepared = await preparePlan(state, request, context, state.workNow());
   if (!prepared.ok) return prepared;
   const compiled = await compilePlan(state, prepared.value, context);
   if (!compiled.ok) return compiled;
@@ -96,11 +100,20 @@ async function preparePlan(
   const budget = boundedPlanBudget(input.budget, state, input.query, grant.value);
   if (budget.maxMessages < 3 || budget.maxRows < 1)
     return failure('data.budget', 'The effective budget cannot carry a bounded result.', ['budget']);
-  if (exceededTimeBudget(startedAt, budget))
+  if (exceededTimeBudget(startedAt, budget, state.workNow))
     return failure('data.budget', 'Planning exceeded the effective time budget.', ['budget']);
   return {
     ok: true,
-    value: { input, context, grant: grant.value, budget, startedAt, initialCatalog, initialSnapshot },
+    value: {
+      input,
+      context,
+      grant: grant.value,
+      budget,
+      startedAt,
+      workNow: state.workNow,
+      initialCatalog,
+      initialSnapshot,
+    },
   };
 }
 
@@ -139,8 +152,8 @@ function boundedPlanBudget(
   return Object.freeze({ ...effective, maxRows: Math.min(effective.maxRows, capability.maxOutputRows) });
 }
 
-function exceededTimeBudget(startedAt: number, budget: QueryBudget): boolean {
-  return Date.now() - startedAt > budget.maxMilliseconds;
+function exceededTimeBudget(startedAt: number, budget: QueryBudget, now: () => number): boolean {
+  return now() - startedAt > budget.maxMilliseconds;
 }
 
 function isCurrentPlan(
@@ -229,7 +242,22 @@ async function computePlanDigests(
   if (!cursorCheck.ok) return cursorCheck;
   const populationDigest = await computePopulationDigest(state, prepared, compiled, queryDigest.value);
   if (!populationDigest.ok) return populationDigest;
-  return { ok: true, value: { queryDigest: queryDigest.value, populationDigest: populationDigest.value } };
+  const lineageDigest = await digestWithDeadline(
+    { output: prepared.input.target.outputId, inputs: compiled.population.lineage },
+    'lineage',
+    preparedContext(prepared),
+    remainingBudget(prepared),
+  );
+  if (!lineageDigest.ok) return lineageDigest;
+  return {
+    ok: true,
+    value: {
+      queryDigest: queryDigest.value,
+      populationDigest: populationDigest.value,
+      lineageDigest: lineageDigest.value,
+      ...(cursorCheck.value === undefined ? {} : { cursorOffset: cursorCheck.value }),
+    },
+  };
 }
 
 function preparedContext(prepared: PreparedPlan): ReadContext {
@@ -237,28 +265,56 @@ function preparedContext(prepared: PreparedPlan): ReadContext {
 }
 
 function remainingBudget(prepared: PreparedPlan): number {
-  return prepared.budget.maxMilliseconds - (Date.now() - prepared.startedAt);
+  return prepared.budget.maxMilliseconds - (prepared.workNow() - prepared.startedAt);
 }
 
-function validateQueryCursor(state: LocalDataServiceState, prepared: PreparedPlan, queryDigest: string): Outcome<void> {
+function validateQueryCursor(
+  state: LocalDataServiceState,
+  prepared: PreparedPlan,
+  queryDigest: string,
+): Outcome<number | undefined> {
   const cursorValue = prepared.input.query.page?.cursor;
   if (cursorValue === undefined) return { ok: true, value: undefined };
-  const cursor = decodeCursor(cursorValue);
-  if (
-    cursor?.kind === 'data' &&
-    cursor.queryDigest === queryDigest &&
-    cursor.scopeDigest === prepared.grant.scopeDigest &&
-    cursor.policyRevision === prepared.grant.policyRevision &&
-    cursor.sourceRevision === state.snapshot.sourceRevision &&
-    cursor.catalogRevision === state.currentCatalog.revision &&
-    cursor.target === prepared.input.target.outputId
-  )
-    return { ok: true, value: undefined };
+  const partition = prepared.grant.cursorPartition ?? prepared.grant.scopeDigest;
+  const cursor = resolveCursor(cursorValue, partition, state.cursorStore, state.now());
+  if (queryCursorPinsMatch(state, prepared, queryDigest, cursor)) return { ok: true, value: cursor.offset };
   return failure(
     'data.stale-cursor',
     'The query cursor does not belong to this query, scope, target or source revision.',
     ['query', 'page', 'cursor'],
   );
+}
+
+function queryCursorPinsMatch(
+  state: LocalDataServiceState,
+  prepared: PreparedPlan,
+  queryDigest: string,
+  cursor: CursorValue | undefined,
+): cursor is CursorValue {
+  if (!isSnapshotCursor(cursor, 'data')) return false;
+  if (cursor.queryDigest !== queryDigest) return false;
+  if (!queryCursorScopeSourceMatch(cursor, prepared, state)) return false;
+  if (cursor.orderDigest !== canonical(prepared.input.query.order)) return false;
+  if (!queryCursorTargetMatch(cursor, prepared, state)) return false;
+  if (cursor.expiresAt === undefined || cursor.expiresAt <= state.now()) return false;
+  return true;
+}
+
+function queryCursorScopeSourceMatch(
+  cursor: CursorValue,
+  prepared: PreparedPlan,
+  state: LocalDataServiceState,
+): boolean {
+  if (cursor.scopeDigest !== prepared.grant.scopeDigest) return false;
+  if (cursor.policyRevision !== prepared.grant.policyRevision) return false;
+  if (cursor.sourceRevision !== state.snapshot.sourceRevision) return false;
+  if (cursor.sourceLineage !== state.snapshot.sourceRevision) return false;
+  return cursor.snapshotId === state.snapshot.sourceRevision;
+}
+
+function queryCursorTargetMatch(cursor: CursorValue, prepared: PreparedPlan, state: LocalDataServiceState): boolean {
+  if (cursor.catalogRevision !== state.currentCatalog.revision) return false;
+  return cursor.target === canonical(prepared.input.target);
 }
 
 async function computePopulationDigest(
@@ -290,10 +346,14 @@ async function storeAcceptedPlan(
   compiled: CompiledPlan,
   digests: PlanDigests,
 ): Promise<Outcome<PlanAcceptance>> {
-  const expiresAt = Date.now() + state.planTtlMs;
+  const expiresAt = state.now() + state.planTtlMs;
   const acceptedBase = acceptedPlanBase(state, prepared, compiled, digests, expiresAt);
   const planDigest = await digestWithDeadline(
-    { accepted: acceptedBase, planKey: compiled.logical.planKey },
+    {
+      accepted: acceptedBase,
+      planKey: compiled.logical.planKey,
+      cursorPartition: prepared.grant.cursorPartition ?? prepared.grant.scopeDigest,
+    },
     'plan',
     prepared.context,
     remainingBudget(prepared),
@@ -308,8 +368,11 @@ async function storeAcceptedPlan(
     supported: supportedOperations(compiled.logical, prepared.input.query),
   };
   const frozen = freezeDeep(accepted);
-  reapExpiredPlans(state, Date.now());
-  state.plans.set(planDigest.value, storedPlan(prepared, compiled, frozen));
+  reapExpiredPlans(state, state.now());
+  state.plans.set(
+    planDigest.value,
+    storedPlan(prepared, compiled, frozen, state.now() + state.cursorTtlMs, digests.cursorOffset),
+  );
   return { ok: true, value: frozen };
 }
 
@@ -326,9 +389,12 @@ function acceptedPlanBase(
     target: prepared.input.target,
     catalogRevision: state.currentCatalog.revision,
     sourceRevision: state.snapshot.sourceRevision,
+    sourceLineage: state.snapshot.sourceRevision,
     scopeDigest: prepared.grant.scopeDigest,
     queryDigest: digests.queryDigest,
     populationDigest: digests.populationDigest,
+    lineageDigest: digests.lineageDigest,
+    resultShape: resultShape(compiled.logical),
     planDigest: '',
     expiresAt,
     functionRegistryDigest: compiled.planner.registry.digest,
@@ -338,9 +404,28 @@ function acceptedPlanBase(
   };
 }
 
-function storedPlan(prepared: PreparedPlan, compiled: CompiledPlan, accepted: PlanAcceptance): StoredPlan {
+function resultShape(logical: LogicalPlan): 'rows' | 'global-aggregate' {
+  if (
+    logical.nodes.some((node) => node.op === 'aggregate') &&
+    logical.output.identity.length === 0 &&
+    logical.output.grain.length === 0
+  )
+    return 'global-aggregate';
+  return 'rows';
+}
+
+function storedPlan(
+  prepared: PreparedPlan,
+  compiled: CompiledPlan,
+  accepted: PlanAcceptance,
+  cursorExpiresAt: number,
+  cursorOffset: number | undefined,
+): StoredPlan {
   return {
     accepted,
+    cursorExpiresAt,
+    cursorPartition: prepared.grant.cursorPartition ?? prepared.grant.scopeDigest,
+    ...(cursorOffset === undefined ? {} : { cursorOffset }),
     logical: compiled.logical,
     dependencies: compiled.dependencies,
     scanEntities: scanEntityIds(compiled.logical),

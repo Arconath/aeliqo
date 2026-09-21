@@ -1,10 +1,10 @@
 import { WIRE_LIMITS } from '@aeliqo/core';
 import type { Diagnostic, QuerySpec, ResultRef } from '@aeliqo/core';
 import type { LogicalPlan, QueryResult } from '@aeliqo/core/query';
-import type { AcceptedQuery, PlanAcceptance } from '../types.js';
+import type { AcceptedQuery, PlanAcceptance, ReadGrant } from '../types.js';
 import type { ResultEvent as DataResultEvent } from '../types.js';
 import { canonical, diagnostic } from './shared.js';
-import { encodeCursor } from './cursor.js';
+import { issueCursor, type CursorStore, type CursorValue } from './cursor.js';
 
 export type ResultEvidence =
   | { readonly kind: 'observed'; readonly source: { readonly id: string; readonly revision: string } }
@@ -22,6 +22,7 @@ export function resultReference(accepted: AcceptedQuery, resultId: string): Resu
   return {
     id: resultId,
     revision: accepted.sourceRevision,
+    sourceLineage: accepted.sourceLineage,
     outputId: accepted.target.outputId,
     queryDigest: accepted.queryDigest,
     scopeDigest: accepted.scopeDigest,
@@ -32,17 +33,33 @@ export function eventBytes(event: DataResultEvent): number {
   return new TextEncoder().encode(`${JSON.stringify(event)}\n`).byteLength;
 }
 
-export function pageCursor(accepted: AcceptedQuery, offset: number): string {
-  return encodeCursor({
+export function pageCursor(
+  accepted: AcceptedQuery,
+  offset: number,
+  grant: ReadGrant,
+  expiresAt: number,
+  cursorStore: CursorStore,
+  cursorNow: number,
+  maxCursorEntries: number,
+): string {
+  const partition = grant.cursorPartition ?? grant.scopeDigest;
+  const value: CursorValue = {
+    version: 1,
+    mode: 'snapshot',
     kind: 'data',
     queryDigest: accepted.queryDigest,
     scopeDigest: accepted.scopeDigest,
     sourceRevision: accepted.sourceRevision,
+    sourceLineage: accepted.sourceLineage,
+    snapshotId: accepted.sourceRevision,
+    orderDigest: canonical(accepted.query.order),
     catalogRevision: accepted.catalogRevision,
-    target: accepted.target.outputId,
+    target: canonical(accepted.target),
     ...(accepted.policyRevision === undefined ? {} : { policyRevision: accepted.policyRevision }),
     offset,
-  });
+    expiresAt,
+  };
+  return issueCursor(value, partition, cursorStore, cursorNow, maxCursorEntries);
 }
 
 export function sameAccepted(left: AcceptedQuery | PlanAcceptance, right: AcceptedQuery): boolean {

@@ -33,6 +33,7 @@ function normalizeResultRef(value: unknown): Outcome<ResultRef> {
     return failure('agent.mcp.receipt', 'The MCP server returned a malformed result reference.');
   if (
     !validId(checked.value.revision) ||
+    (checked.value.sourceLineage !== undefined && !validId(checked.value.sourceLineage)) ||
     !validId(checked.value.outputId) ||
     !validId(checked.value.queryDigest) ||
     !validId(checked.value.scopeDigest)
@@ -43,6 +44,7 @@ function normalizeResultRef(value: unknown): Outcome<ResultRef> {
     value: Object.freeze({
       id: checked.value.id,
       revision: checked.value.revision,
+      ...(checked.value.sourceLineage === undefined ? {} : { sourceLineage: checked.value.sourceLineage }),
       outputId: checked.value.outputId,
       queryDigest: checked.value.queryDigest,
       scopeDigest: checked.value.scopeDigest,

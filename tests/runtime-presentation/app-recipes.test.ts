@@ -1,17 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import { defineResource, type Intent, type Result, type Task } from '../../packages/core/src/index.js';
 import {
+  resolvePresentation,
   validatePresentationPlan,
+  type PresentationContext,
   type PresentationEnvironment,
   type ValidatedPresentation,
 } from '../../packages/core/src/presentation/index.js';
 import type { AeliqoRuntime, RuntimeCommittedReceipt } from '../../packages/runtime/src/app/index.js';
 import { html } from 'lit';
 import * as z from 'zod';
-import { defineView, standardDataRecipe, standardFormRecipe } from '../../packages/web/src/recipes/index.js';
+import {
+  defineRecipe,
+  defineView,
+  recipeSupports,
+  standardDataRecipe,
+  standardFormRecipe,
+} from '../../packages/web/src/recipes/index.js';
+import { resolverCandidateId } from '../../packages/web/src/recipes/candidate-id.js';
+import { standardRecipeCandidates } from '../../packages/web/src/recipes/standard.js';
 import {
   experience,
   presentationPolicy,
+  registryFor,
   type WebAppContext,
   type WebRegion,
 } from '../../packages/web/src/app/context.js';
@@ -83,7 +94,7 @@ function input(kind: 'browse' | 'compare', width: number, preferredView?: string
           identities: [{ id: 'p-1' }, { id: 'p-2' }],
           ...(preferredView === undefined ? {} : { preferredView }),
         };
-  const task: Task = {
+  const task = {
     version: '1',
     id: 'browse-1',
     revision: '1',
@@ -122,7 +133,7 @@ function input(kind: 'browse' | 'compare', width: number, preferredView?: string
     ...(preferredView === undefined
       ? {}
       : { viewPreference: { representation: preferredView, strength: 'preferred' } }),
-  };
+  } satisfies Task;
   return {
     intent,
     task,
@@ -202,13 +213,229 @@ function trendInput(requestedMeasures: readonly [string, ...string[]]) {
     intent,
     task,
     result: trendResult,
-    current,
+    current: { ...current, results: [trendResult.ref] },
     environment: environment(800),
     availableViews: [],
   };
 }
 
+function barInput(width = 800, preferredView = 'bar') {
+  const intent: Intent = {
+    version: '1',
+    id: 'category-analysis',
+    kind: 'analyze',
+    resource: 'people',
+    dimensions: ['category'],
+    measures: [{ id: 'amount', revision: '1' }],
+    ...(preferredView === undefined ? {} : { preferredView }),
+  };
+  const task = {
+    version: '1',
+    id: intent.id,
+    revision: '1',
+    catalogRevision: 'catalog-1',
+    functionRegistryDigest: 'core-query-2',
+    regionId: 'main',
+    kind: 'data',
+    goal: 'Show amounts by category',
+    assumptions: [],
+    outputs: [
+      {
+        id: 'primary',
+        kind: 'query',
+        query: {
+          entity: 'people',
+          fields: ['category'],
+          measures: [{ id: 'amount', revision: '1' }],
+          relations: [],
+          groupBy: ['category'],
+          population: { kind: 'all-authorized' },
+          order: [],
+        },
+        dependsOn: [],
+        delivery: 'eager',
+      },
+    ],
+    needs: [
+      {
+        id: 'analyze',
+        operation: { id: 'data.analyze', revision: '1' },
+        outputId: 'primary',
+        fields: ['category', 'amount'],
+        required: true,
+      },
+    ],
+    ...(preferredView === undefined
+      ? {}
+      : {
+          viewPreference: {
+            representation: preferredView === 'bar' ? 'visualization.bar' : preferredView,
+            strength: 'preferred' as const,
+          },
+        }),
+  } satisfies Task;
+  const barResult: Result = {
+    ...result,
+    ref: { ...result.ref, id: 'bar-result' },
+    taskId: task.id,
+    fields: [
+      { id: 'category', label: 'Category', type: { value: 'text', nullable: false }, role: 'dimension' },
+      { id: 'amount', label: 'Amount', type: { value: 'integer', nullable: false }, role: 'measure' },
+    ],
+    identity: ['category'],
+    rowGrain: ['category'],
+  };
+  return {
+    intent,
+    task,
+    result: barResult,
+    current: { ...current, results: [barResult.ref] },
+    environment: environment(width),
+    availableViews: [],
+  };
+}
+
+type StandardTestContext = Pick<PresentationContext, 'task' | 'current' | 'environment' | 'incumbent'> & {
+  readonly intent: Intent;
+  readonly result: Result;
+  readonly presentationPolicy?: Parameters<typeof experience>[2];
+};
+
+function resolveStandard(context: StandardTestContext) {
+  if (context.result === undefined) throw new Error('Expected a materialized standard result.');
+  const row = Object.fromEntries(
+    context.result.fields.map((field) => [
+      field.id,
+      field.type.value === 'date'
+        ? '2026-01-01'
+        : field.type.value === 'decimal'
+          ? { decimal: '1' }
+          : ['integer', 'float'].includes(field.type.value)
+            ? 1
+            : field.id,
+    ]),
+  );
+  const identities = context.intent.kind === 'compare' ? context.intent.identities : [];
+  const rows = identities.length === 0 ? [row] : identities.map((identity) => ({ ...row, ...identity }));
+  const materializedResult =
+    rows.length === context.result.counts.loaded
+      ? context.result
+      : {
+          ...context.result,
+          counts: {
+            loaded: rows.length,
+            population: { kind: 'exact' as const, value: rows.length, populationDigest: 'population-1' },
+          },
+          coverage: { kind: 'complete' as const, populationDigest: 'population-1' },
+        };
+  const registry = registryFor([{ ref: materializedResult.ref, rows }], [materializedResult], [], 'people');
+  expect(registry).toBeDefined();
+  if (registry === undefined) throw new Error('Expected the standard presentation registry.');
+  const authored = standardRecipeCandidates({
+    ...context,
+    result: materializedResult,
+  } as unknown as Parameters<typeof standardRecipeCandidates>[0]);
+  expect(authored.ok).toBe(true);
+  if (!authored.ok) throw new Error('Expected standard candidates.');
+  return resolvePresentation({
+    id: 'web-test',
+    revision: context.task.revision,
+    preconditions: context.current,
+    context: {
+      task: context.task,
+      experience: experience(registry, context.current.experienceRevision, context.presentationPolicy),
+      results: [materializedResult],
+      current: context.current,
+      environment: context.environment,
+      rendererCapabilities: registry.manifests.map((manifest) => manifest.ref),
+      stateMappingCapabilities: registry.stateMappings?.map((mapping) => mapping.ref) ?? [],
+      ...(context.incumbent === undefined ? {} : { incumbent: context.incumbent }),
+    },
+    registry,
+    target: {
+      address: {
+        runtimeId: 'runtime-1',
+        scopeInstanceId: 'scope-1',
+        activationEpoch: 1,
+        surfaceId: 'main',
+        surfaceGeneration: 1,
+      },
+      state: 'active',
+    },
+    ...authored.value,
+  });
+}
+
 describe('0.3 standard recipes', () => {
+  it('authors candidates and lets the core resolver adapt wide and narrow browse views', () => {
+    const wide = resolveStandard(input('browse', 1_280));
+    const narrow = resolveStandard(input('browse', 360));
+
+    expect(wide.status === 'ready' && wide.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+    expect(narrow.status === 'ready' && narrow.plan.plan.nodes[0]?.representation.id).toBe('data.card-collection');
+  });
+
+  it('keeps valid adaptive candidates when an incumbent cannot transfer to every authored view', () => {
+    const wide = resolveStandard(input('browse', 1_280));
+    expect(wide.status).toBe('ready');
+    if (wide.status !== 'ready') return;
+
+    const context = { ...input('browse', 360), incumbent: wide.plan.plan };
+    const authored = standardRecipeCandidates(context);
+    expect(authored.ok && authored.value.candidates.map((candidate) => candidate.id)).toEqual([
+      'standard.cards',
+      'standard.table',
+    ]);
+    expect(resolveStandard(context).status).toBe('ready');
+  });
+
+  it('does not fall back when an explicit view pin is operation-incompatible', () => {
+    const context = input('compare', 320);
+    const task: Task = {
+      ...context.task,
+      viewPreference: { representation: 'data.card-collection', strength: 'explicit' },
+    };
+
+    const decision = resolveStandard({ ...context, task });
+
+    expect(decision.status).toBe('unsupported');
+    if (decision.status === 'unsupported')
+      expect(decision.reasons.map((reason) => reason.code)).toContain('presentation.pin-incompatible');
+  });
+
+  it('returns a stable authorized measure clarification through the resolver seam', () => {
+    const decision = resolveStandard(trendInput(['headcount', 'capacity']));
+
+    expect(decision).toMatchObject({
+      status: 'needs-input',
+      diagnostic: { code: 'web.recipe.needs-input.measure' },
+      choices: [
+        { id: 'capacity', label: 'capacity' },
+        { id: 'headcount', label: 'headcount' },
+      ],
+    });
+  });
+
+  it('does not prompt for a disallowed trend when an eligible table can present the task', () => {
+    const decision = resolveStandard({
+      ...trendInput(['headcount', 'capacity']),
+      presentationPolicy: { allowedRepresentations: ['data.table'] },
+    });
+
+    expect(decision).toMatchObject({ status: 'ready' });
+    if (decision.status === 'ready') expect(decision.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+  });
+
+  it('treats inherited object keys as unknown view preferences instead of executing alias lookups', () => {
+    const decision = resolveStandard(input('browse', 800, '__proto__'));
+
+    expect(decision).toMatchObject({ status: 'ready' });
+    if (decision.status === 'ready') expect(decision.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+
+    const direct = standardDataRecipe.build(input('browse', 800, '__proto__'));
+    expect(direct.ok && direct.value.nodes[0]?.representation.id).toBe('data.table');
+  });
+
   it('adapts browse from a table to cards using container width without a model call', () => {
     const wide = standardDataRecipe.build(input('browse', 1_280));
     const narrow = standardDataRecipe.build(input('browse', 360));
@@ -219,6 +446,113 @@ describe('0.3 standard recipes', () => {
   it('keeps compare in a simultaneous column-preserving table on narrow containers', () => {
     const narrow = standardDataRecipe.build(input('compare', 320));
     expect(narrow.ok && narrow.value.nodes[0]?.representation.id).toBe('data.table');
+  });
+
+  it('authors and resolves a bounded comparison split while preserving narrow and pinned fallbacks', () => {
+    const wideContext = {
+      ...input('compare', 800),
+      presentationPolicy: { allowedRepresentations: ['data.table', 'data.detail'] },
+    };
+    const authored = standardRecipeCandidates(wideContext);
+    expect(authored.ok).toBe(true);
+    if (!authored.ok) return;
+    expect(authored.value.candidates.map((candidate) => candidate.id)).toEqual([
+      'standard.comparison',
+      'standard.table',
+    ]);
+
+    const wide = resolveStandard(wideContext);
+    expect(wide.status).toBe('ready');
+    if (wide.status === 'ready') {
+      expect(wide.receipt.selectedCandidate).toBe('standard.comparison');
+      expect(wide.plan.plan.rootId).toBe('comparison');
+      expect(wide.plan.plan.nodes.map((node) => node.id)).toEqual([
+        'comparison',
+        'comparison.left',
+        'comparison.right',
+      ]);
+      expect(wide.plan.graph.links).toHaveLength(0);
+      expect(wide.plan.plan.nodes.slice(1).map((node) => node.representation.id)).toEqual([
+        'data.detail',
+        'data.detail',
+      ]);
+      expect(wide.plan.plan.nodes.slice(1).map((node) => node.config.values.identityValues)).toEqual([
+        { id: 'p-1' },
+        { id: 'p-2' },
+      ]);
+      expect(wide.plan.plan.coverage).toEqual([
+        {
+          needId: 'compare',
+          nodeIds: ['comparison.left', 'comparison.right'],
+          operations: [{ id: 'data.compare', revision: '1' }],
+        },
+      ]);
+    }
+
+    const narrow = resolveStandard(input('compare', 320));
+    expect(narrow.status).toBe('ready');
+    if (narrow.status === 'ready') expect(narrow.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+
+    if (wide.status === 'ready') {
+      const retained = resolveStandard({ ...input('compare', 320), incumbent: wide.plan.plan });
+      expect(retained.status).toBe('ready');
+      if (retained.status === 'ready') expect(retained.plan.plan.rootId).toBe('comparison');
+    }
+
+    const pinned = resolveStandard({
+      ...wideContext,
+      task: { ...wideContext.task, viewPreference: { representation: 'data.table', strength: 'explicit' } },
+    });
+    expect(pinned.status).toBe('ready');
+    if (pinned.status === 'ready') {
+      expect(pinned.receipt.selectedCandidate).toBe('standard.table');
+      expect(pinned.plan.plan.rootId).toBe('primary');
+      expect(pinned.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+    }
+  });
+
+  it('reaches a registered categorical bar and preserves trend clarification when bar is unavailable', () => {
+    const barContext = barInput();
+    const registry = registryFor(
+      [{ ref: barContext.result.ref, rows: [{ category: 'A', amount: 1 }] }],
+      [barContext.result],
+      [],
+      'people',
+    );
+    expect(registry?.manifests.find((manifest) => manifest.ref.id === 'visualization.bar')?.operations).toContainEqual({
+      id: 'data.analyze',
+      revision: '1',
+    });
+
+    const ready = resolveStandard(barContext);
+    expect(ready.status).toBe('ready');
+    if (ready.status === 'ready') {
+      expect(ready.plan.plan.nodes[0]?.representation.id).toBe('visualization.bar');
+      expect(ready.plan.plan.nodes[0]?.config.values.visualization).toMatchObject({ view: 'bar' });
+    }
+
+    const unavailableResult: Result = {
+      ...barContext.result,
+      fields: [
+        { id: 'week', label: 'Week', type: { value: 'date', nullable: false }, role: 'time' },
+        ...barContext.result.fields,
+        { id: 'other', label: 'Other', type: { value: 'integer', nullable: false }, role: 'measure' },
+      ],
+    };
+    const unavailableTask = {
+      ...barContext.task,
+      needs: [{ ...barContext.task.needs[0]!, fields: ['week', 'category', 'amount', 'other'] }],
+    } satisfies Task;
+    const unavailable = resolveStandard({
+      ...barContext,
+      task: unavailableTask,
+      result: unavailableResult,
+      current: { ...current, results: [unavailableResult.ref] },
+    });
+    expect(unavailable).toMatchObject({
+      status: 'needs-input',
+      diagnostic: { code: 'web.recipe.needs-input.measure' },
+    });
   });
 
   it('keeps a narrow browse in the only representation permitted by resource policy', () => {
@@ -422,16 +756,230 @@ describe('0.3 standard recipes', () => {
     expect(elementState.results).toBe(bindings);
   });
 
+  it('cancels a delayed stale presentation before it can publish over a newer renderer-ready Region', async () => {
+    const fixture = input('browse', 800);
+    if (fixture.result === undefined) throw new Error('The browse fixture must materialize a Result.');
+    const resource = defineResource({
+      id: 'people',
+      revision: 'catalog-1',
+      label: 'person',
+      schema: z.object({ id: z.string(), name: z.string() }),
+      identity: ['id'],
+      presentation: { allowedViews: ['table', 'cards'] },
+      fields: { id: { label: 'ID' }, name: { label: 'Name' } },
+    });
+    const bindings = [{ ref: fixture.result.ref, rows: [{ id: 'p-1', name: 'Ada' }] }];
+    const elementState = {
+      presentation: undefined as ValidatedPresentation | undefined,
+      results: [] as readonly (typeof bindings)[number][],
+      interaction: undefined,
+      updateComplete: Promise.resolve(),
+    };
+    const target = {
+      lang: '',
+      ownerDocument: { documentElement: { lang: 'en-US' }, defaultView: null },
+      getBoundingClientRect: () => ({ width: 800, height: 600 }),
+    } as unknown as HTMLElement;
+    const region = {
+      id: 'main',
+      resourceId: 'people',
+      target,
+      element: elementState,
+      sequence: 1,
+      category: 'wide',
+      composing: false,
+      pendingAdapt: false,
+      actionPending: false,
+      actionSequence: 0,
+      values: new Map(),
+      drafts: new Map(),
+    } as unknown as WebRegion;
+    let delayedStarted!: () => void;
+    const delayed = new Promise<void>((resolve) => (delayedStarted = resolve));
+    const published: string[] = [];
+    const runtime = {
+      snapshot: () => ({ region: { readSet: { ...current, dataRevision: 1 } } }),
+      commitPresentation: async (request: {
+        readonly requestId: string;
+        readonly signal?: AbortSignal;
+        readonly task: Task;
+        readonly presentation: unknown;
+      }) => {
+        if (request.requestId === 'stale') {
+          delayedStarted();
+          await new Promise<void>((resolve) => {
+            if (request.signal?.aborted) resolve();
+            else request.signal?.addEventListener('abort', () => resolve(), { once: true });
+          });
+          return {
+            ok: false as const,
+            diagnostics: [
+              { code: 'runtime.region-cancelled', message: 'The stale commit was cancelled.', retryable: false },
+            ],
+          };
+        }
+        published.push(request.requestId);
+        return {
+          ok: true as const,
+          value: { state: { task: request.task, presentation: request.presentation } },
+        };
+      },
+    } as unknown as AeliqoRuntime;
+    const context = {
+      options: {},
+      runtime,
+      resources: new Map([[resource.id, resource]]),
+      recipes: [standardDataRecipe],
+      views: [],
+      regions: new Map(),
+      stateListeners: new Map(),
+      disposed: false,
+    } as unknown as WebAppContext;
+    const receipt = {
+      status: 'committed',
+      requestId: 'runtime-request',
+      regionId: 'main',
+      intent: fixture.intent,
+      task: fixture.task,
+      outputs: [],
+      region: { id: 'main', readSet: { ...current, dataRevision: 1 } },
+      diagnostics: [],
+    } as unknown as RuntimeCommittedReceipt;
+
+    const stale = present(context, region, receipt, bindings, [fixture.result], 'stale', 1);
+    const reachedCommit = await Promise.race([
+      delayed.then(() => true),
+      stale.then(() => false),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 100)),
+    ]);
+    expect(reachedCommit).toBe(true);
+    region.sequence = 2;
+    const currentRender = await present(context, region, receipt, bindings, [fixture.result], 'current', 2);
+    const staleRender = await stale;
+
+    expect(staleRender).toMatchObject({ status: 'cancelled', requestId: 'stale' });
+    expect(currentRender).toMatchObject({ status: 'renderer-ready', requestId: 'current' });
+    expect(published).toEqual(['current']);
+    expect(elementState.presentation).toBe(
+      currentRender.status === 'renderer-ready' ? currentRender.presentation : undefined,
+    );
+  });
+
+  it('restores the previous UI when cancellation arrives during the renderer update', async () => {
+    const fixture = input('browse', 800);
+    if (fixture.result === undefined) throw new Error('The browse fixture must materialize a Result.');
+    const initial = resolveStandard(fixture);
+    expect(initial.status).toBe('ready');
+    if (initial.status !== 'ready') return;
+
+    const resource = defineResource({
+      id: 'people',
+      revision: 'catalog-1',
+      label: 'person',
+      schema: z.object({ id: z.string(), name: z.string() }),
+      identity: ['id'],
+      presentation: { allowedViews: ['table', 'cards'] },
+      fields: { id: { label: 'ID' }, name: { label: 'Name' } },
+    });
+    const priorBindings = [{ ref: fixture.result.ref, rows: [{ id: 'prior', name: 'Prior' }] }];
+    const bindings = [{ ref: fixture.result.ref, rows: [{ id: 'next', name: 'Next' }] }];
+    let finishUpdate!: () => void;
+    const updateComplete = new Promise<void>((resolve) => (finishUpdate = resolve));
+    let applied!: () => void;
+    const presentationApplied = new Promise<void>((resolve) => (applied = resolve));
+    let activePresentation: ValidatedPresentation | undefined = initial.plan;
+    const elementState = {
+      get presentation() {
+        return activePresentation;
+      },
+      set presentation(value: ValidatedPresentation | undefined) {
+        activePresentation = value;
+        if (value !== initial.plan) applied();
+      },
+      results: priorBindings as readonly (typeof bindings)[number][],
+      interaction: undefined,
+      updateComplete,
+    };
+    const target = {
+      lang: '',
+      ownerDocument: { documentElement: { lang: 'en-US' }, defaultView: null },
+      getBoundingClientRect: () => ({ width: 800, height: 600 }),
+    } as unknown as HTMLElement;
+    const region = {
+      id: 'main',
+      resourceId: 'people',
+      target,
+      element: elementState,
+      sequence: 1,
+      category: 'wide',
+      composing: false,
+      pendingAdapt: false,
+      actionPending: false,
+      actionSequence: 0,
+      values: new Map(),
+      drafts: new Map(),
+    } as unknown as WebRegion;
+    const runtime = {
+      snapshot: () => ({ region: { readSet: { ...current, dataRevision: 1 } } }),
+      commitPresentation: async (request: { readonly task: Task; readonly presentation: unknown }) => ({
+        ok: true as const,
+        value: { state: { task: request.task, presentation: request.presentation } },
+      }),
+    } as unknown as AeliqoRuntime;
+    const context = {
+      options: {},
+      runtime,
+      resources: new Map([[resource.id, resource]]),
+      recipes: [standardDataRecipe],
+      views: [],
+      regions: new Map(),
+      stateListeners: new Map(),
+      disposed: false,
+    } as unknown as WebAppContext;
+    const receipt = {
+      status: 'committed',
+      requestId: 'runtime-request',
+      regionId: 'main',
+      intent: fixture.intent,
+      task: fixture.task,
+      outputs: [],
+      region: { id: 'main', readSet: { ...current, dataRevision: 1 } },
+      diagnostics: [],
+    } as unknown as RuntimeCommittedReceipt;
+    const controller = new AbortController();
+
+    const pending = present(
+      context,
+      region,
+      receipt,
+      bindings,
+      [fixture.result],
+      'cancel-after-apply',
+      1,
+      undefined,
+      controller.signal,
+    );
+    await presentationApplied;
+    controller.abort();
+    finishUpdate();
+    const outcome = await pending;
+
+    expect(outcome).toMatchObject({ status: 'cancelled', requestId: 'cancel-after-apply' });
+    expect(elementState.presentation).toBe(initial.plan);
+    expect(elementState.results).toBe(priorBindings);
+  });
+
   it('treats an incompatible preferred view as a preference and falls back safely', () => {
     const outcome = standardDataRecipe.build(input('compare', 320, 'cards'));
     expect(outcome.ok && outcome.value.nodes[0]?.representation.id).toBe('data.table');
   });
 
-  it('accepts a consumer-owned custom view without changing the framework registry', () => {
+  it('accepts a maximum-length consumer view with a bounded resolver candidate ID', () => {
+    const viewId = `example.${'x'.repeat(152)}`;
     const custom = defineView({
-      ref: { id: 'example.people-grid', revision: '1' },
+      ref: { id: viewId, revision: '1' },
       manifest: {
-        ref: { id: 'example.people-grid', revision: '1' },
+        ref: { id: viewId, revision: '1' },
         configSchema: { id: 'example.people-grid.config', revision: '1' },
         roles: ['grid'],
         operations: [{ id: 'data.read', revision: '1' }],
@@ -448,7 +996,75 @@ describe('0.3 standard recipes', () => {
     });
     const context = { ...input('browse', 800, custom.ref.id), availableViews: [custom] };
     const outcome = standardDataRecipe.build(context);
-    expect(outcome.ok && outcome.value.nodes[0]?.representation.id).toBe('example.people-grid');
+    expect(outcome.ok && outcome.value.nodes[0]?.representation.id).toBe(viewId);
+    const authored = standardRecipeCandidates(context);
+    expect(authored.ok).toBe(true);
+    if (authored.ok) {
+      const id = authored.value.candidates.find((candidate) => candidate.id.startsWith('custom.'))?.id;
+      expect(id).toMatch(/^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/u);
+      expect(id?.length).toBeLessThanOrEqual(160);
+    }
+  });
+
+  it('bounds and normalizes the candidate provenance for a maximum-length custom recipe', () => {
+    const recipe = defineRecipe({
+      ref: { id: `example.${'r'.repeat(152)}`, revision: `revision:${'x'.repeat(160)}` },
+      intents: ['browse'],
+      build: standardDataRecipe.build,
+    });
+    const id = resolverCandidateId('recipe', `${recipe.ref.id}.${recipe.ref.revision}`);
+
+    expect(id).toMatch(/^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$/u);
+    expect(id.length).toBeLessThanOrEqual(160);
+    expect(id).toBe(resolverCandidateId('recipe', `${recipe.ref.id}.${recipe.ref.revision}`));
+  });
+
+  it('matches a recipe to its exact registered custom intent ref without adding a standard alias', () => {
+    const recipe = defineRecipe({
+      ref: { id: 'orders.workspace-recipe', revision: '1' },
+      intents: [{ id: 'orders.workspace-layout', revision: '1' }],
+      build: standardDataRecipe.build,
+    });
+    const matching: Intent = {
+      version: '1',
+      id: 'workspace-layout',
+      resource: 'people',
+      kind: 'custom',
+      intent: { id: 'orders.workspace-layout', revision: '1' },
+      input: { mode: 'compare' },
+    };
+    const differentRevision: Intent = {
+      ...matching,
+      intent: { id: 'orders.workspace-layout', revision: '2' },
+    };
+
+    expect(recipeSupports(recipe, matching)).toBe(true);
+    expect(recipeSupports(recipe, differentRevision)).toBe(false);
+    expect(recipeSupports(recipe, 'browse')).toBe(false);
+    expect(recipeSupports(standardDataRecipe, matching)).toBe(false);
+  });
+
+  it('fails closed for duplicate or malformed custom recipe intent refs', () => {
+    const base = {
+      ref: { id: 'orders.workspace-recipe', revision: '1' },
+      intents: [{ id: 'orders.workspace-layout', revision: '1' }],
+      build: standardDataRecipe.build,
+    };
+
+    expect(() =>
+      defineRecipe({
+        ...base,
+        intents: [
+          { id: 'orders.workspace-layout', revision: '1' },
+          { id: 'orders.workspace-layout', revision: '1' },
+        ],
+      }),
+    ).toThrow(TypeError);
+    expect(() => defineRecipe({ ...base, intents: [{ id: 'workspace-layout', revision: '1' }] })).toThrow(TypeError);
+    expect(() => defineRecipe({ ...base, intents: ['custom' as never] })).toThrow(TypeError);
+    expect(() => defineRecipe({ ...base, ref: { id: 'orders.workspace-recipe', revision: 'bad revision' } })).toThrow(
+      TypeError,
+    );
   });
 
   it('builds a queryless create form entirely from host-owned resource bindings', () => {

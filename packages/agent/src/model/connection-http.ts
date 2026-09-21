@@ -117,9 +117,10 @@ function requestHeaders(config: NormalizedToolModelConnection): Record<string, s
     accept: 'application/json',
     'content-type': 'application/json',
   };
+  if (config.auth.scheme === 'none') return result;
   const secret = readModelSecret(config.auth.secret);
   if (config.auth.scheme === 'bearer') result.authorization = `Bearer ${secret}`;
-  else result[config.auth.headerName!] = secret;
+  else result[config.auth.headerName] = secret;
   return result;
 }
 

@@ -59,6 +59,6 @@ export const PLAYGROUND_INTENTS = customIntent.value;
 
 export const customIntentRecipe = defineRecipe({
   ref: { id: 'demo.recipe.custom-data', revision: '1' },
-  intents: ['custom'],
+  intents: [{ id: 'demo.knowledge.by-topic', revision: '1' }],
   build: standardDataRecipe.build,
 });

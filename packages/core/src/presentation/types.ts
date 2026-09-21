@@ -154,18 +154,120 @@ export interface PresentationCompositionRequest {
   readonly preconditions: CommitPreconditions;
   readonly context: PresentationContext;
   readonly candidates?: readonly {
+    /** Optional stable provenance label used in composition receipts and rejections. */
+    readonly id?: string;
     readonly source: 'explicit' | 'pattern';
     readonly pattern?: VersionRef;
     readonly plan: PresentationPlan;
   }[];
+  /** Resolver callers with authored candidates can disable registry suggestion search. */
+  readonly searchRegistered?: boolean;
 }
 
 export interface PresentationComposition {
   readonly status: 'composed' | 'search-exhausted' | 'conflict';
   readonly presentation?: ValidatedPresentation;
+  /** Internal deterministic provenance label for the selected composition candidate. */
+  readonly selectedCandidate?: string;
   readonly expansions: number;
   readonly rejected: readonly {
     readonly candidate: string;
     readonly diagnostics: readonly import('../contracts/types.js').Diagnostic[];
   }[];
 }
+
+/** A structural runtime address used only to fence a presentation decision. */
+export interface PresentationTargetRef {
+  readonly runtimeId: string;
+  readonly scopeInstanceId: string;
+  readonly activationEpoch: number;
+  readonly surfaceId: string;
+  readonly surfaceGeneration: number;
+}
+
+/** Core never resolves a target or upgrades stale runtime evidence. */
+export interface PresentationTargetEvidence {
+  readonly address: PresentationTargetRef;
+  readonly state: 'active' | 'stale' | 'revoked';
+}
+
+/** Candidate identities are diagnostic labels, never authority or array indexes. */
+export interface PresentationResolverCandidate {
+  readonly id: string;
+  readonly source: 'explicit' | 'pattern';
+  readonly pattern?: VersionRef;
+  readonly plan: PresentationPlan;
+}
+
+export interface PresentationChoice {
+  readonly id: string;
+  readonly label: string;
+}
+
+/** Explicit missing semantics; resolver never infers a choice from descriptor order. */
+export interface PresentationClarification {
+  readonly kind: string;
+  /** Registered representation that is otherwise eligible but needs this semantic choice. */
+  readonly representation: VersionRef;
+  readonly diagnostic: import('../contracts/types.js').Diagnostic;
+  readonly choices: readonly PresentationChoice[];
+}
+
+export interface PresentationResolverInput {
+  readonly id: string;
+  readonly revision: string;
+  readonly preconditions: CommitPreconditions;
+  readonly context: PresentationContext;
+  readonly registry: PresentationRegistry;
+  readonly target: PresentationTargetEvidence;
+  readonly candidates: readonly PresentationResolverCandidate[];
+  readonly clarification?: PresentationClarification;
+}
+
+export interface PresentationReason {
+  readonly code: string;
+  readonly candidate?: string;
+  readonly ref?: VersionRef;
+  readonly rule?: string;
+}
+
+export interface PresentationRejection {
+  readonly candidate: string;
+  readonly codes: readonly string[];
+  readonly refs: readonly VersionRef[];
+}
+
+export interface PresentationDecisionReceipt {
+  readonly resolver: VersionRef;
+  readonly request: { readonly id: string; readonly revision: string };
+  readonly selectedCandidate: string;
+  readonly examinedCandidates: number;
+  readonly pins: {
+    readonly taskRevision: string;
+    readonly catalogRevision: string;
+    readonly experienceRevision: string;
+    readonly functionRegistryDigest: string;
+    readonly policyRevision: string;
+  };
+  readonly rules: readonly string[];
+}
+
+export type PresentationDecision =
+  | {
+      readonly status: 'ready';
+      readonly plan: ValidatedPresentation;
+      readonly reasons: readonly PresentationReason[];
+      readonly receipt: PresentationDecisionReceipt;
+    }
+  | {
+      readonly status: 'needs-input';
+      readonly diagnostic: import('../contracts/types.js').Diagnostic;
+      readonly choices: readonly PresentationChoice[];
+      readonly reasons: readonly PresentationReason[];
+    }
+  | {
+      readonly status: 'unsupported';
+      readonly diagnostic: import('../contracts/types.js').Diagnostic;
+      readonly rejections: readonly PresentationRejection[];
+      readonly reasons: readonly PresentationReason[];
+    };

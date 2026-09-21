@@ -13,13 +13,15 @@ export function stateMappingFor(
   context: PresentationContext,
   kind: 'transfer' | 'archive',
 ): PresentationStateMappingManifest | undefined {
-  return registry.stateMappings?.find(
-    (mapping) =>
-      mapping.kind === kind &&
-      mapping.fromRole === from.role &&
-      mapping.toRole === to.role &&
-      versionKey(mapping.from) === versionKey(from.representation) &&
-      versionKey(mapping.to) === versionKey(to.representation) &&
-      context.stateMappingCapabilities?.some((ref) => versionKey(ref) === versionKey(mapping.ref)),
-  );
+  const [match, duplicate] =
+    registry.stateMappings?.filter(
+      (mapping) =>
+        mapping.kind === kind &&
+        mapping.fromRole === from.role &&
+        mapping.toRole === to.role &&
+        versionKey(mapping.from) === versionKey(from.representation) &&
+        versionKey(mapping.to) === versionKey(to.representation) &&
+        context.stateMappingCapabilities?.some((ref) => versionKey(ref) === versionKey(mapping.ref)),
+    ) ?? [];
+  return duplicate === undefined ? match : undefined;
 }

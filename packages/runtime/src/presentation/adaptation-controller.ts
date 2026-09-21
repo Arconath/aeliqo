@@ -1,5 +1,5 @@
 import type { PresentationPlan } from '@aeliqo/core';
-import { composePresentation, validatePresentationPlan } from '@aeliqo/core/presentation';
+import { resolvePresentation, validatePresentationPlan } from '@aeliqo/core/presentation';
 import type {
   PresentationComposition,
   PresentationContext,
@@ -48,6 +48,7 @@ import type {
   PresentationAdaptationRequestOptions,
   PresentationAdaptationResult,
 } from './adaptation-types.js';
+import { compositionForDecision, resolverCandidates, resolverTarget } from './adaptation-resolver.js';
 
 interface ReadyContext {
   readonly context: PresentationContext;
@@ -225,20 +226,24 @@ class PresentationAdaptationControllerImpl implements PresentationAdaptationCont
 
   private compose(before: RegionSnapshot, stage: ReadyContext, signal: AbortSignal): ComposeStage {
     const requestIdentity = makeRequestId(++this.requestCounter);
-    const composed = composePresentation(
-      {
-        id: requestIdentity.id,
-        revision: requestIdentity.revision,
-        preconditions: semanticReadSet(stage.readSet),
-        context: stage.context,
-        ...(stage.refreshed.candidates === undefined ? {} : { candidates: stage.refreshed.candidates }),
-      },
-      this.options.registry,
-    );
-    if (!composed.ok) return composeDone(failureFromCore(composed));
+    const decision = resolvePresentation({
+      id: requestIdentity.id,
+      revision: requestIdentity.revision,
+      preconditions: semanticReadSet(stage.readSet),
+      context: stage.context,
+      registry: this.options.registry,
+      target: resolverTarget(before, this.options.target),
+      candidates: resolverCandidates(stage.refreshed.candidates),
+    });
+    if (decision.status !== 'ready') return composeDone({ ok: false, diagnostics: [decision.diagnostic] });
     if (signal.aborted)
       return composeDone(adaptationFailure('runtime.presentation-cancelled', 'The adaptation was cancelled.'));
-    return this.validateCandidate(before, stage, requestIdentity.id, composed.value);
+    return this.validateCandidate(
+      before,
+      stage,
+      requestIdentity.id,
+      compositionForDecision(decision.plan, decision.receipt.examinedCandidates),
+    );
   }
 
   private validateCandidate(
@@ -408,6 +413,8 @@ class PresentationAdaptationControllerImpl implements PresentationAdaptationCont
         'runtime.presentation-transition-blocked',
         'The presentation transition is blocked by an active interaction.',
       );
+    if (resolverTarget(before, this.options.target).state !== 'active')
+      return adaptationFailure('presentation.target-inactive', 'The presentation target is inactive.');
     if (!sameSnapshot(before, this.options.region.snapshot()))
       return adaptationFailure(
         'runtime.presentation-stale',

@@ -1,10 +1,71 @@
 ---
-id: "release-notes"
-path: "/ship/release-notes/"
-section: "Ship"
-title: "Aeliqo 0.4 release notes"
-description: "The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages."
+id: 'release-notes'
+path: '/ship/release-notes/'
+section: 'Ship'
+title: 'Aeliqo 0.4 release notes'
+description: 'The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages.'
 ---
+
+## vNext candidate (0.5.0, unreleased)
+
+The live stable line remains `0.4.2`. The vNext candidate is a breaking
+successor and is not published or deployed; keep its packages and support
+claims separate from the current release.
+
+- `@aeliqo/core/features` introduces immutable data and non-data feature
+  definitions. Data features lower through the existing resource/catalog path;
+  non-data features declare versioned intents, views, and bounded capability
+  schemas without fabricating relational data.
+- `@aeliqo/runtime` adds unreleased scoped surface controllers with immutable
+  instance addresses, per-runtime reference-counted registration, internal and
+  explicitly controlled host ownership, and real `DataService`/Region/Result
+  integration. Capability bindings carry an address-independent typed initial
+  intent, and permission changes fence pending host proposals. The new
+  host-resolved scope controller adds inert attachment, guarded Save/Discard/Stay
+  workspace transitions, forced revocation, monotonic activation epochs, and
+  child-surface fencing without treating a client workspace ID as authority.
+  Its required synchronous, side-effect-free preparation hook atomically
+  revalidates captured old-scope and target authority before fencing; a
+  separate commit hook starts target effects only after the old activation is
+  fenced.
+  Existing app/Region APIs remain the compatibility path; React lifecycle
+  adapters are not part of this candidate step.
+- Local implementation and acceptance evidence cover runtime, React, migration,
+  compatibility, browser, documentation, performance, and packed-consumer
+  gates. This candidate has not been published or deployed, and production
+  runtime remains unverified.
+- The unreleased runtime candidate now exposes one canonical
+  `createLocalDataBinding` adapter under `@aeliqo/runtime/surfaces`. It lowers
+  through the existing `LocalDataService`, ResultStore, and Region paths,
+  validates bounded local shape and identity diagnostics, preserves controller
+  addresses across explicit source revisions, and rejects same-revision or
+  catalog conflicts atomically. This candidate remains unpublished and
+  undeployed.
+- Remote data now uses the same validated `DataService`, ResultStore, and
+  Region path as local data. Catalog capabilities declare metrics and stable
+  snapshot or keyset pagination; cursors are partitioned by authority and pin
+  target, query, ordering, semantic revisions, consistency, and expiry.
+  Expiry uses a wall clock while request work retains a separate monotonic
+  budget clock. Local continuation metadata is kept in a bounded host registry;
+  an accepted continuation plan pins its validated offset so registry eviction
+  cannot restart the query from the first page.
+  Partial pages preserve unknown or estimated population metadata, and only a
+  server-proven aggregate may claim complete global coverage. The localhost
+  protocol fixtures remain synthetic; this candidate is still unpublished and
+  undeployed.
+- Semantic aggregate plans now retain and revalidate their registered meaning
+  binding. Semi-additive period-end selection is deterministic, ratios and
+  variadic means keep their registered behavior, and nested/count aggregates
+  apply the meaning's missing-value policy instead of silently weakening it.
+- `@aeliqo/core` now provides bounded `inferLocalDataShape` diagnostics for
+  declared or structurally inferred scalar fields; it does not infer authority,
+  coverage, relationships, or business identity. The two helpers remain part
+  of the unpublished vNext candidate.
+- `@aeliqo/core/presentation` now exposes the pure `resolvePresentation`
+  decision facade. It returns a validated `ready` plan, structured
+  `needs-input` choices, or bounded `unsupported` reasons from supplied
+  evidence only; target evidence is not authority, explicit view pins do not
+  silently fall back, and preferred pins only influence deterministic ranking.
 
 ## 0.4.2
 

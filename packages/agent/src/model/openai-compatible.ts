@@ -3,6 +3,7 @@ import type { AgentJsonValue } from '../capabilities/types.js';
 import {
   createToolModelConnection,
   type OpaqueModelSecret,
+  type ToolModelAuth,
   type ToolModelAuthScheme,
   type ToolModelConnectionBudget,
   type ToolModelConnectionPolicy,
@@ -285,11 +286,14 @@ export const openAICompatibleChatAdapter: ToolModelProtocolAdapter = Object.free
 export interface OpenAICompatibleToolModelOptions {
   readonly baseURL: string;
   readonly model: string;
-  readonly secret: OpaqueModelSecret;
-  readonly auth?: {
-    readonly scheme?: ToolModelAuthScheme;
-    readonly headerName?: string;
-  };
+  /** Required for bearer/header auth; omitted only for explicit `auth: { scheme: 'none' }`. */
+  readonly secret?: OpaqueModelSecret;
+  readonly auth?:
+    | {
+        readonly scheme?: Exclude<ToolModelAuthScheme, 'none'>;
+        readonly headerName?: string;
+      }
+    | { readonly scheme: 'none' };
   /** Required endpoint features, declared by the application configuration. */
   readonly capabilities: readonly ToolModelCapability[];
   readonly headers?: Readonly<Record<string, string>>;
@@ -302,6 +306,34 @@ export interface OpenAICompatibleToolModelOptions {
   readonly onResponse?: (observation: ToolModelProviderObservation) => void;
 }
 
+function modelAuth(options: OpenAICompatibleToolModelOptions): ToolModelAuth {
+  const scheme = options.auth?.scheme ?? 'bearer';
+  if (scheme === 'none') {
+    if (options.secret !== undefined) throw new Error('No-auth model connections cannot include a credential.');
+    return { scheme: 'none' };
+  }
+  if (options.secret === undefined)
+    throw new Error('Bearer/header model connections require an explicit server-owned credential.');
+  if (scheme === 'header') {
+    const headerName =
+      options.auth !== undefined && options.auth.scheme !== 'none' ? options.auth.headerName : undefined;
+    return { scheme: 'header', secret: options.secret, headerName: headerName ?? '' };
+  }
+  return { scheme: 'bearer', secret: options.secret };
+}
+
+function connectionExtras(options: OpenAICompatibleToolModelOptions): object {
+  return {
+    ...(options.headers === undefined ? {} : { headers: options.headers }),
+    ...(options.budget === undefined ? {} : { budget: options.budget }),
+    ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+    ...(options.retry === undefined ? {} : { retry: options.retry }),
+    ...(options.cost === undefined ? {} : { cost: options.cost }),
+    ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+    ...(options.onResponse === undefined ? {} : { onResponse: options.onResponse }),
+  };
+}
+
 /**
  * Generic OpenAI-compatible chat-completions connection. It intentionally does
  * not identify or branch on a vendor; compatible gateways use the same adapter.
@@ -311,19 +343,9 @@ export function createOpenAICompatibleToolModel(options: OpenAICompatibleToolMod
     adapter: openAICompatibleChatAdapter,
     baseURL: options.baseURL,
     model: options.model,
-    auth: {
-      scheme: options.auth?.scheme ?? 'bearer',
-      secret: options.secret,
-      ...(options.auth?.headerName === undefined ? {} : { headerName: options.auth.headerName }),
-    },
+    auth: modelAuth(options),
     capabilities: options.capabilities,
-    ...(options.headers === undefined ? {} : { headers: options.headers }),
     policy: options.policy,
-    ...(options.budget === undefined ? {} : { budget: options.budget }),
-    ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
-    ...(options.retry === undefined ? {} : { retry: options.retry }),
-    ...(options.cost === undefined ? {} : { cost: options.cost }),
-    ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
-    ...(options.onResponse === undefined ? {} : { onResponse: options.onResponse }),
+    ...connectionExtras(options),
   });
 }

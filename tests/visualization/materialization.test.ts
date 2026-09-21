@@ -33,6 +33,23 @@ it('preserves exact values, nulls and row identity across reordered materializat
   expect(a.value[0]?.identity).toBe(b.value[1]?.identity);
   expect(Object.isFrozen(a.value[0]?.values)).toBe(true);
 });
+
+it('accepts an exact source-lineage pin and rejects another lineage', () => {
+  const lineaged: Result = { ...result, ref: { ...result.ref, sourceLineage: 'source-a' } };
+  const checked = bindVisualizationSpec(
+    { version: '1', view: 'matrix', result: lineaged.ref, columns: ['employee.id', 'amount'] },
+    { results: [lineaged] },
+  );
+  expect(checked.ok).toBe(true);
+  if (!checked.ok) return;
+  expect(materializeVisualizationRows(checked.value, lineaged.ref, [{ result: lineaged.ref, rows }]).ok).toBe(true);
+  expect(
+    materializeVisualizationRows(checked.value, { ...lineaged.ref, sourceLineage: 'source-b' }, [
+      { result: lineaged.ref, rows },
+    ]).ok,
+  ).toBe(false);
+});
+
 it('rejects stale, duplicate, malformed, extra-field and accessor payloads', () => {
   const dataset = { result: result.ref, rows };
   expect(materializeVisualizationRows(bound, { ...result.ref, id: 1n } as unknown as Result['ref'], [dataset]).ok).toBe(

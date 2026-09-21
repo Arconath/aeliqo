@@ -46,7 +46,7 @@ export const coverageSchema = z.discriminatedUnion('kind', [
 ]);
 export const consistencySchema = z.discriminatedUnion('kind', [
   object({ kind: z.literal('snapshot'), snapshotId: idSchema, sourceRevisions: record(revisionSchema) }),
-  object({ kind: z.literal('mixed'), sourceRevisions: record(revisionSchema), reason: label }),
+  object({ kind: z.literal('mixed'), sourceLineage: idSchema, sourceRevisions: record(revisionSchema), reason: label }),
   object({ kind: z.literal('unknown'), reason: label }),
 ]);
 export const evidenceSchema = z.discriminatedUnion('kind', [
@@ -76,6 +76,8 @@ export const resultSchema = object({
   filters: array(predicateSchema),
   period: optional(periodSchema),
   warnings: array(diagnosticSchema, L.diagnostics),
+  /** Trusted plan lineage proof when the descriptor has result inputs. */
+  lineageDigest: optional(idSchema),
   lineage: array(object({ output: idSchema, inputs: array(resultRefSchema) })),
 });
 export const resultEventSchema = z.discriminatedUnion('kind', [

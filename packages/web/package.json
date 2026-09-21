@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/web",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arconath/aeliqo.git",
@@ -416,7 +416,7 @@
     "@aeliqo/runtime": "workspace:*"
   },
   "peerDependencies": {
-    "@aeliqo/runtime": "0.4.2"
+    "@aeliqo/runtime": "0.5.0"
   },
   "peerDependenciesMeta": {
     "@aeliqo/runtime": {

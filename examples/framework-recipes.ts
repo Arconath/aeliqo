@@ -6,7 +6,7 @@
  * second set of illustrative snippets.
  */
 export interface AeliqoFrameworkRecipe {
-  readonly id: 'vanilla' | 'react' | 'vue' | 'next-ssr';
+  readonly id: 'vanilla' | 'react' | 'vue' | 'next-ssr' | 'static-island';
   readonly title: string;
   readonly sourcePaths: readonly string[];
   readonly packages: readonly string[];
@@ -53,6 +53,15 @@ export const frameworkRecipes: readonly AeliqoFrameworkRecipe[] = [
     ],
     packages: ['@aeliqo/web', '@lit-labs/ssr-client'],
     proves: ['server rendering', 'declarative shadow DOM', 'client hydration'],
+    modelRequired: false,
+    studioRequired: false,
+  },
+  {
+    id: 'static-island',
+    title: 'Static page with an optional Aeliqo island',
+    sourcePaths: ['examples/vnext/islands/index.html', 'examples/vnext/islands/main.ts'],
+    packages: ['@aeliqo/web'],
+    proves: ['useful static HTML', 'optional custom-element hydration', 'no framework adapter'],
     modelRequired: false,
     studioRequired: false,
   },

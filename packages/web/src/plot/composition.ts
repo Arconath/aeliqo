@@ -57,7 +57,7 @@ interface CompileContext {
 }
 
 const refKey = (ref: ResultRef): string =>
-  JSON.stringify([ref.id, ref.revision, ref.outputId, ref.queryDigest, ref.scopeDigest]);
+  JSON.stringify([ref.id, ref.revision, ref.sourceLineage ?? null, ref.outputId, ref.queryDigest, ref.scopeDigest]);
 
 function fail(message: string): Outcome<never> {
   return {

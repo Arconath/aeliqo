@@ -12,6 +12,7 @@ const region = document.querySelector<AeliqoRegionElement>('#region')!;
 const ref: ResultRef = {
   id: 'rows-result',
   revision: '1',
+  sourceLineage: 'fixture-source',
   outputId: 'rows',
   queryDigest: 'query',
   scopeDigest: 'scope',

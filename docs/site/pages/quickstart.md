@@ -12,6 +12,8 @@ description: 'Install Aeliqo, define People data, render a table, filter it, sho
 
 <aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Use Node.js 24, React 19.2, TypeScript, and a client entry with one React root. Keep every Aeliqo package on the same exact version. The complete sources below are compiled by this repository.</p></aside>
 
+<aside class="doc-callout" data-tone="warning"><strong>Release line</strong><p>This tutorial targets the breaking <code>0.5.0</code> release line. It becomes installable when the approved release workflow publishes that version. Until then, keep existing applications on the published <code>0.4.2</code> line and do not mix package versions.</p></aside>
+
 ## 1. Install the packages
 
 Install the contract, runtime, renderer, React bindings, optional agent endpoint,
@@ -19,11 +21,11 @@ and Zod together:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.4.2 \
-  @aeliqo/runtime@0.4.2 \
-  @aeliqo/web@0.4.2 \
-  @aeliqo/react@0.4.2 \
-  @aeliqo/agent@0.4.2 \
+  @aeliqo/core@0.5.0 \
+  @aeliqo/runtime@0.5.0 \
+  @aeliqo/web@0.5.0 \
+  @aeliqo/react@0.5.0 \
+  @aeliqo/agent@0.5.0 \
   react@19.2.8 react-dom@19.2.8 zod@4.5.4
 ```
 

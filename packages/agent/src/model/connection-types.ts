@@ -11,13 +11,17 @@ export interface OpaqueModelSecret {
   readonly [opaqueSecretBrand]: true;
 }
 
-export type ToolModelAuthScheme = 'bearer' | 'header';
+export type ToolModelAuthScheme = 'none' | 'bearer' | 'header';
 
-export interface ToolModelAuth {
-  readonly scheme: ToolModelAuthScheme;
-  readonly secret: OpaqueModelSecret;
-  readonly headerName?: string;
-}
+/**
+ * Authentication is deliberately a discriminated union. `none` is an explicit
+ * local/self-hosted policy choice; it is never synthesized when a credential
+ * is absent.
+ */
+export type ToolModelAuth =
+  | { readonly scheme: 'none' }
+  | { readonly scheme: 'bearer'; readonly secret: OpaqueModelSecret }
+  | { readonly scheme: 'header'; readonly secret: OpaqueModelSecret; readonly headerName: string };
 
 export interface ToolModelConnectionPolicy {
   readonly allowExternalEgress: boolean;

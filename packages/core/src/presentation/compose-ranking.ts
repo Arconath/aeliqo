@@ -59,11 +59,13 @@ export function candidateScore(
     score -= quality.legibilityPenalty * 20;
     if (quality.cost !== undefined) score -= Math.min(100, Math.floor(quality.cost.microseconds / 1_000_000)) * 5;
   }
+  // Validated plans are capped at 512 nodes, so this keeps an eligible host
+  // preference ahead of bounded quality and continuity scores without infinity.
   if (
     prepared.constraints.preferredRepresentation !== undefined &&
     presentation.nodes.some((node) => node.manifest.id === prepared.constraints.preferredRepresentation)
   )
-    score += 150;
+    score += 10_000_000;
   const optionalCovered = prepared.constraints.taskNeeds.filter(
     (need) => !need.required && presentation.plan.coverage.some((entry) => entry.needId === need.id),
   ).length;

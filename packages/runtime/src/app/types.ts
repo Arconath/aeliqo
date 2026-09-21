@@ -15,6 +15,14 @@ import type { DataService, QueryBudget, ReadContext } from '../data/types.js';
 import type { MaterializedTaskOutput } from '../evaluation/types.js';
 import type { RegionSnapshot } from '../regions/types.js';
 import type { ResultStore, ResultStoreOptions } from '../results/types.js';
+import type {
+  CreateCapabilitySurfaceInput,
+  CreateDataSurfaceInput,
+  CreateLocalSurfaceScopeInput,
+  LocalSurfaceScope,
+  SurfaceController,
+} from '../surfaces/types.js';
+import type { CreateScopeInput, ScopeController } from '../scopes/types.js';
 
 export type RuntimeEffect = 'render' | 'commit' | 'action' | 'context';
 
@@ -51,6 +59,7 @@ export interface RuntimeResourceBinding {
 }
 
 export interface AeliqoRuntimeOptions {
+  readonly runtimeId?: string;
   readonly resources: readonly RuntimeResourceBinding[];
   readonly authority: AeliqoAuthority;
   readonly intents?: IntentCompilerRegistry;
@@ -151,6 +160,10 @@ export type RuntimeUnsubscribe = () => void;
 
 export interface AeliqoRuntime {
   readonly actionPort?: ActionPort;
+  createScope(input: CreateScopeInput): ScopeController;
+  createLocalSurfaceScope(input?: CreateLocalSurfaceScopeInput): LocalSurfaceScope;
+  createSurface<S>(input: CreateDataSurfaceInput<S>): SurfaceController<Intent, S>;
+  createSurface<I, S>(input: CreateCapabilitySurfaceInput<I, S>): SurfaceController<I, S>;
   mount(
     input: RuntimeMountInput,
   ):

@@ -20,7 +20,7 @@ checks below against the same source revision.
 
 ## Site and components
 
-- Generate exactly 71 component pages, live examples, and component routes.
+- Generate one page, live example, and component route for every active catalog ID; the inventory gate enforces exact set equality.
 - Mount every example and verify search, links, and route fallback behavior.
 - Test 360, 768, and 1440 pixel layouts; keyboard, focus, reduced motion,
   forced colors, 200% text, 400% reflow, long labels, and right-to-left text.
@@ -39,5 +39,7 @@ checks pass. Keep the previous site image available for rollback. If an npm
 package has already been published, correct it with a patch release.
 
 See [SSR and hydration](/ship/ssr/), [browser support](/ship/browser-support/),
-and the [0.3 to 0.4 migration guide](/ship/migration-0.3/) for the matching
-integration details.
+the [0.3 to 0.4 migration guide](/ship/migration-0.3/), and the
+[vNext migration guide](/ship/migration-0.4/) for the matching integration
+details. The [vNext support matrix](/ship/support-matrix/) records the exact
+qualified and unverified profiles.

@@ -8,7 +8,9 @@ import {
   type WebAppContext,
   type WebRegion,
 } from './context.js';
-import { present, resolveFormBindings } from './presentation.js';
+import { present } from './presentation.js';
+import { resolveFormBindings } from './form-state.js';
+import { cancelPendingPresentation } from './presentation-operation.js';
 import type { WebRenderInput, WebRenderReceipt } from './types.js';
 
 function cancelledRender(receipt: RuntimeCommittedReceipt, message: string): WebRenderReceipt {
@@ -71,6 +73,7 @@ export async function renderRequest(context: WebAppContext, input: WebRenderInpu
   const region = context.regions.get(input.regionId);
   if (region === undefined) return missingRegion(input);
   const sequence = ++region.sequence;
+  cancelPendingPresentation(region);
   const receipt = await context.runtime.render(input);
   if (receipt.status !== 'committed') {
     if (receipt.status === 'denied') region.element.revoke();
@@ -87,6 +90,7 @@ export async function adaptRegion(context: WebAppContext, region: WebRegion): Pr
   }
   region.pendingAdapt = false;
   const requestId = ('adapt-' + region.id + '-' + ++region.sequence).slice(0, 160);
+  cancelPendingPresentation(region);
   const result = await present(
     context,
     region,

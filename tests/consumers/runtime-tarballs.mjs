@@ -156,6 +156,14 @@ assert.deepEqual(runtimeManifest.exports?.['./audit'], {
   types: './dist/audit/index.d.ts',
   import: './dist/audit/index.js',
 });
+assert.deepEqual(runtimeManifest.exports?.['./surfaces'], {
+  types: './dist/surfaces/index.d.ts',
+  import: './dist/surfaces/index.js',
+});
+assert.deepEqual(runtimeManifest.exports?.['./scopes'], {
+  types: './dist/scopes/index.d.ts',
+  import: './dist/scopes/index.js',
+});
 assert.equal(runtimeManifest.exports?.['./data']?.types, './dist/data/index.d.ts');
 assert.equal(runtimeManifest.exports?.['./data']?.import, './dist/data/index.js');
 assert(await fileExists(join(runtimeDirectory, 'src', 'data')), 'Runtime data source is not ready');
@@ -236,6 +244,28 @@ assert(runtimeEntries.includes('package/dist/data/index.js'), 'Runtime data dist
 assert(runtimeEntries.includes('package/dist/data/index.d.ts'), 'Runtime data declarations are absent from tarball');
 assert(runtimeEntries.includes('package/dist/audit/index.js'), 'Runtime audit dist entry is absent from tarball');
 assert(runtimeEntries.includes('package/dist/audit/index.d.ts'), 'Runtime audit declarations are absent from tarball');
+assert(runtimeEntries.includes('package/dist/surfaces/index.js'), 'Runtime surfaces dist entry is absent from tarball');
+assert(
+  runtimeEntries.includes('package/dist/surfaces/local-data.js'),
+  'Runtime local binding dist entry is absent from tarball',
+);
+assert(
+  runtimeEntries.includes('package/dist/surfaces/index.d.ts'),
+  'Runtime surfaces declarations are absent from tarball',
+);
+assert(
+  runtimeEntries.includes('package/dist/surfaces/local-data.d.ts'),
+  'Runtime local binding declarations are absent from tarball',
+);
+assert(runtimeEntries.includes('package/dist/scopes/index.js'), 'Runtime scopes dist entry is absent from tarball');
+assert(
+  runtimeEntries.includes('package/dist/scopes/index.d.ts'),
+  'Runtime scopes declarations are absent from tarball',
+);
+const runtimeReadme = run(['tar', '-xOf', runtimeTarball, 'package/README.md'], root);
+assert.match(runtimeReadme, /createLocalDataBinding/u, 'Runtime README omits the canonical local binding helper');
+assert.match(runtimeReadme, /replaceSnapshot/u, 'Runtime README omits explicit source replacement');
+assert.match(runtimeReadme, /maxSourceRevisions/u, 'Runtime README omits bounded revision lifetime');
 
 await writeFile(join(consumerDirectory, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
 run(
@@ -968,8 +998,15 @@ import type {DataHttpHandler,
   ReadContext,
   ResultEvent} from '@aeliqo/runtime/data';
 import type {Catalog,
+  Intent,
   QuerySpec,
 } from '@aeliqo/core';
+import {defineDataFeature, defineFeature} from '@aeliqo/core/features';
+import {z} from 'zod';
+import {createAeliqoRuntime, createLocalDataBinding as createRootLocalDataBinding, type AeliqoRuntime} from '@aeliqo/runtime';
+import {createLocalDataBinding} from '@aeliqo/runtime/surfaces';
+import type {CapabilitySurfaceBindings, CreateLocalDataBindingInput, DataSurfaceBindings, ExternalSurfaceStore, LocalDataSurfaceBinding, SurfaceController} from '@aeliqo/runtime/surfaces';
+import type {ScopeBinding, ScopeController} from '@aeliqo/runtime/scopes';
 import {createResultStore, type ResultStore, type ResultCacheKey} from '@aeliqo/runtime/results';
 import {createRegionStore, type RegionHandle, type RegionStore} from '@aeliqo/runtime/regions';
 import {parseRegionDocument} from '@aeliqo/runtime/persistence';
@@ -1031,6 +1068,62 @@ const invalidBudget: QueryBudget = {...budget, maxRows: '10'};
 void [catalog, query, budget, snapshot, context, local, handler, http, parsedBudget, parsedEvent, record, invalidRecord, invalidBudget];
 const typedEvent: ResultEvent | undefined = undefined;
 void typedEvent;
+const peopleFeature = defineDataFeature({id: 'people', schema: z.object({id: z.string(), name: z.string()}), identity: ['id']});
+type PeopleState = {readonly rows: readonly {readonly id: string; readonly name: string}[]};
+const installedBinding = createLocalDataBinding({
+  feature: peopleFeature,
+  snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-1', records: {people: []}},
+  initialState: {rows: []},
+  coverage: {fields: ['id', 'name'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
+  normalize: async () => ({rows: []}),
+  serviceOptions: {maxSourceRevisions: 2, maxCursors: 4, now: () => 1_000, workNow: () => performance.now(), authorize: () => ({ok: true, value: {scopeDigest: 'local', cursorPartition: 'local-principal-v1', policyRevision: '1'}})},
+});
+const installedBindingInput: CreateLocalDataBindingInput<PeopleState> = {
+  feature: peopleFeature,
+  snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-input', records: {people: []}},
+  initialState: {rows: []},
+  coverage: installedBinding.source.coverage,
+  normalize: async () => ({rows: []}),
+};
+const typedInstalledBinding: LocalDataSurfaceBinding<PeopleState> = installedBinding;
+const rootBindingFactory: typeof createLocalDataBinding = createRootLocalDataBinding;
+const invalidBindingOptions = {...installedBindingInput, serviceOptions: {snapshot: installedBindingInput.snapshot}};
+// @ts-expect-error The binding snapshot is the sole trusted snapshot input.
+createLocalDataBinding(invalidBindingOptions);
+// @ts-expect-error The binding owns its snapshot; serviceOptions cannot replace it.
+createLocalDataBinding({feature: peopleFeature, snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'people-types-1', records: {people: []}}, initialState: {rows: []}, coverage: {fields: ['id', 'name'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async () => ({rows: []}), serviceOptions: {snapshot: {catalog: peopleFeature.catalog, sourceRevision: 'forged', records: {people: []}}}});
+declare const peopleData: DataService;
+const peopleBindings: DataSurfaceBindings<PeopleState> = {
+  initialState: {rows: []},
+  source: {
+    kind: 'data-service',
+    service: peopleData,
+    coverage: {fields: ['id', 'name'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']},
+    normalize: async () => ({rows: []}),
+  },
+};
+declare const surfaceRuntime: AeliqoRuntime;
+declare const scopeBinding: ScopeBinding;
+const appScope: ScopeController = surfaceRuntime.createScope({binding: scopeBinding, initial: {kind: 'workspace', id: 'acme'}});
+appScope.attach();
+appScope.requestChange({kind: 'workspace', id: 'globex'});
+appScope.invalidate('logout');
+appScope.dispose();
+declare const externalStore: ExternalSurfaceStore<Intent, PeopleState>;
+const surfaceScope = surfaceRuntime.createLocalSurfaceScope({id: 'local', allowedFeatures: ['people']});
+const typedSurface: SurfaceController<Intent, PeopleState> = surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-main', feature: peopleFeature, bindings: peopleBindings});
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'people-controlled', feature: peopleFeature, bindings: peopleBindings, ownership: {mode: 'external', store: externalStore, onProposal: proposal => void proposal}});
+const reportFeature = defineFeature({id: 'report', capabilities: [{ref: {id: 'report.read', revision: '1'}, kind: 'read', schema: z.object({})}], intents: [{ref: {id: 'report.open', revision: '1'}, schema: z.object({}), capabilities: [{id: 'report.read', revision: '1'}]}]});
+const reportBindings: CapabilitySurfaceBindings<{readonly intent: {readonly id: 'report.open'; readonly revision: '1'}; readonly input: object}, {readonly value: string}> = {initialIntent: {intent: {id: 'report.open', revision: '1'}, input: {}}, initialState: {value: 'initial'}, source: {kind: 'capability', read: async () => ({value: 'ready'})}};
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'report', feature: reportFeature, bindings: reportBindings});
+// @ts-expect-error Capability bindings require a typed initial intent.
+const invalidReportBindings: CapabilitySurfaceBindings<{readonly intent: {readonly id: 'report.open'; readonly revision: '1'}; readonly input: object}, {readonly value: string}> = {initialState: {value: 'initial'}, source: {kind: 'capability', read: async () => ({value: 'ready'})}};
+// @ts-expect-error Surface addresses are immutable targets.
+typedSurface.address.surfaceGeneration = 2;
+declare const bypassBinding: CapabilitySurfaceBindings<Intent, PeopleState>;
+// @ts-expect-error Data features must use DataService bindings.
+surfaceRuntime.createSurface({scope: surfaceScope, id: 'bypass', feature: peopleFeature, bindings: bypassBinding});
+void [createAeliqoRuntime, typedSurface, installedBinding, installedBindingInput, typedInstalledBinding, rootBindingFactory];
 `,
 );
 await writeFile(
@@ -1088,6 +1181,198 @@ assert.deepEqual(auditOfflineProof, {
   auditExecuted: true,
   auditIoAttempts: [],
   blockerProbeAttempts: ['fetch', 'node:http.get', 'node:fs.readFileSync'],
+});
+
+await writeFile(
+  join(consumerDirectory, 'surface-consumer.mjs'),
+  `
+import assert from 'node:assert/strict';
+import {z} from 'zod';
+import {defineDataFeature, defineFeature} from '@aeliqo/core/features';
+import {createQueryFunctionRegistry} from '@aeliqo/core/expressions';
+import {createAeliqoRuntime, createLocalDataBinding as createRootLocalDataBinding} from '@aeliqo/runtime';
+import {createLocalDataBinding} from '@aeliqo/runtime/surfaces';
+assert.equal(createRootLocalDataBinding, createLocalDataBinding);
+const diagnosticsCode = outcome => outcome.ok ? undefined : outcome.diagnostics[0]?.code;
+
+const scopeEntry = await import('@aeliqo/runtime/scopes');
+assert.deepEqual(Object.keys(scopeEntry), []);
+
+const feature = defineDataFeature({id: 'people', schema: z.object({id: z.string(), team: z.enum(['Design', 'Engineering'])}), identity: ['id'], fields: {team: {role: 'dimension'}}});
+const functions = createQueryFunctionRegistry({version: '2'});
+assert.equal(functions.ok, true);
+const snapshot = {catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}};
+const binding = createLocalDataBinding({feature, snapshot, initialState: {rows: []}, coverage: {fields: ['id', 'team'], relations: [], metrics: [], operators: ['eq'], pagination: 'snapshot', stableOrder: [{field: 'id', direction: 'asc', nulls: 'last'}], stableOrderIdentity: ['id'], sorting: 'stable-fields-only', aggregation: 'unsupported', streaming: 'finite', updates: 'snapshot-replace', unsupported: ['aggregation', 'streaming', 'live-updates']}, normalize: async events => {const rows = []; for await (const event of events) if (event.kind === 'batch') rows.push(...event.rows); return {rows};}, serviceOptions: {functionRegistry: functions.value, authorize: () => ({ok: true, value: {scopeDigest: 'local', cursorPartition: 'local-principal-v1', policyRevision: '1'}}), maxSourceRevisions: 3, maxCursors: 4, now: () => 1_000, workNow: () => performance.now()}});
+const data = binding.service;
+assert.equal(data, binding.source.service);
+assert.equal(binding.source.coverage.stableOrder[0].field, 'id');
+assert.equal(binding.source.coverage.stableOrder[0].direction, 'asc');
+assert.equal(binding.source.coverage.stableOrder[0].nulls, 'last');
+assert.deepEqual(binding.source.coverage.stableOrderIdentity, ['id']);
+assert(Object.isFrozen(binding.source.coverage));
+assert(Object.isFrozen(binding.source.coverage.stableOrder));
+const runtime = createAeliqoRuntime({runtimeId: 'installed-runtime', resources: [{resource: feature.resource, data}], authority: {read: () => ({ok: true, value: {principalKey: 'local', scopeDigest: 'local', policyRevision: '1', experienceRevision: '1', grants: ['catalog.read', 'task.evaluate', 'result.inspect'], readContext: {principal: 'local'}}})}});
+const scope = runtime.createLocalSurfaceScope({id: 'installed-scope', allowedFeatures: ['people', 'report']});
+const bindings = binding;
+const left = runtime.createSurface({scope, id: 'left', feature, bindings});
+const right = runtime.createSurface({scope, id: 'right', feature, bindings});
+const rightBefore = right.getSnapshot();
+assert.equal((await left.request({kind: 'browse', filter: {op: 'compare', field: 'team', comparison: 'eq', value: 'Engineering'}})).status, 'committed');
+assert.equal(right.getSnapshot(), rightBefore);
+assert.deepEqual(left.getSnapshot().state.rows, [{id: 'sam', team: 'Engineering'}]);
+assert.equal((await left.request({kind: 'browse'}, {expectedAddress: right.address})).status, 'stale');
+const leftAddress = left.address;
+const updatedSnapshot = {catalog: feature.catalog, sourceRevision: 'people-2', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Design'}]}};
+assert.deepEqual(data.replaceSnapshot(updatedSnapshot), {ok: true, value: undefined});
+assert.equal((await left.request({kind: 'browse'})).status, 'committed');
+assert.equal(left.address, leftAddress);
+assert.deepEqual(left.getSnapshot().state.rows, [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Design'}]);
+const partialPlan = await data.plan({version: '1', requestId: 'partial-page', catalogRevision: feature.catalog.revision, target: {taskId: 'partial-page-task', outputId: 'rows'}, query: {entity: 'people', fields: ['id', 'team'], measures: [], relations: [], groupBy: [], population: {kind: 'all-authorized'}, order: [], page: {size: 1}}, budget: {maxRows: 10, maxColumns: 4, maxBytes: 100_000, maxMessages: 8, maxMilliseconds: 10_000}}, {principal: 'local'});
+assert.equal(partialPlan.ok, true);
+if (partialPlan.ok) {
+  const partialEvents = [];
+  for await (const event of data.execute(partialPlan.value, {principal: 'local'})) partialEvents.push(event);
+  const partialDescriptor = partialEvents.find(event => event.kind === 'descriptor');
+  assert.deepEqual(partialDescriptor?.descriptor.counts.population.kind, 'exact');
+  assert.equal(partialDescriptor?.descriptor.counts.population.value, 2);
+  assert.deepEqual(partialDescriptor?.descriptor.coverage, {kind: 'partial', populationDigest: partialDescriptor.descriptor.coverage.populationDigest, reason: 'page'});
+  const partialComplete = partialEvents.find(event => event.kind === 'complete');
+  assert.deepEqual(partialComplete?.finalCoverage.reason, 'page');
+  assert.equal(typeof partialComplete?.cursor, 'string');
+}
+assert.deepEqual(data.replaceSnapshot(updatedSnapshot), {ok: true, value: undefined});
+const conflict = data.replaceSnapshot({catalog: feature.catalog, sourceRevision: 'people-2', records: {people: [{id: 'ada', team: 'Engineering'}, {id: 'sam', team: 'Design'}]}});
+assert.equal(conflict.ok, false);
+assert.equal(left.getSnapshot().state.rows[0].team, 'Design');
+const historicalReplay = data.replaceSnapshot({catalog: feature.catalog, sourceRevision: 'people-1', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}});
+assert.equal(historicalReplay.ok, false);
+assert.equal(diagnosticsCode(historicalReplay), 'data.source-revision-conflict');
+const rollbackSnapshot = {catalog: feature.catalog, sourceRevision: 'people-3', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}};
+assert.deepEqual(data.replaceSnapshot(rollbackSnapshot), {ok: true, value: undefined});
+const rollbackAccepted = await data.plan({version: '1', requestId: 'rollback-plan', catalogRevision: feature.catalog.revision, target: {taskId: 'rollback-task', outputId: 'rows'}, query: {entity: 'people', fields: ['id', 'team'], measures: [], relations: [], groupBy: [], population: {kind: 'all-authorized'}, order: []}, budget: {maxRows: 10, maxColumns: 4, maxBytes: 100_000, maxMessages: 8, maxMilliseconds: 10_000}}, {principal: 'local'});
+assert.equal(rollbackAccepted.ok, true);
+if (rollbackAccepted.ok) {
+  const rollbackEvents = [];
+  for await (const event of data.execute(rollbackAccepted.value, {principal: 'local'})) rollbackEvents.push(event);
+  assert.equal(rollbackEvents[0].descriptor.consistency.snapshotId, 'people-3');
+  assert.equal(rollbackEvents[1].rows[0].team, 'Design');
+}
+const capacity = data.replaceSnapshot({catalog: feature.catalog, sourceRevision: 'people-4', records: {people: [{id: 'ada', team: 'Design'}, {id: 'sam', team: 'Engineering'}]}});
+assert.equal(capacity.ok, false);
+assert.equal(diagnosticsCode(capacity), 'data.source-revision-capacity');
+assert.deepEqual(data.replaceSnapshot(rollbackSnapshot), {ok: true, value: undefined});
+assert.throws(() => createLocalDataBinding({feature, snapshot, initialState: {rows: []}, coverage: binding.source.coverage, normalize: binding.source.normalize, serviceOptions: {sourceLimits: {rows: 1, bytes: 100_000}}}), /data\.shape-capacity/u);
+
+let hostSnapshot;
+const listeners = new Set();
+const proposals = [];
+const store = {getSnapshot: () => {if (hostSnapshot === undefined) throw new Error('Host snapshot is not initialized.'); return hostSnapshot;}, subscribe: listener => (listeners.add(listener), () => listeners.delete(listener))};
+const controlled = runtime.createSurface({scope, id: 'controlled', feature, bindings, ownership: {mode: 'external', store, onProposal: proposal => proposals.push(proposal)}});
+const address = controlled.address;
+hostSnapshot = Object.freeze({id: 'controlled', address, revision: '0', phase: 'idle', intent: {version: '1', id: 'initial', resource: 'people', kind: 'browse'}, state: {rows: []}});
+const proposalResult = await controlled.request({kind: 'browse'});
+assert.equal(proposalResult.status, 'proposed');
+assert.equal(controlled.getSnapshot().revision, '0');
+const accepted = proposals[0];
+hostSnapshot = Object.freeze({...hostSnapshot, revision: '1', phase: 'ready', intent: accepted.intent, proposalDecision: {proposalId: accepted.proposalId, address: accepted.address, expectedRevision: accepted.expectedRevision, status: 'accepted'}});
+for (const listener of listeners) listener();
+assert.equal(controlled.getSnapshot().revision, '1');
+const rejectedResult = await controlled.request({kind: 'browse', filter: {op: 'compare', field: 'team', comparison: 'eq', value: 'Design'}});
+assert.equal(rejectedResult.status, 'proposed');
+const rejected = proposals[1];
+const beforeReject = controlled.getSnapshot();
+hostSnapshot = Object.freeze({...hostSnapshot, proposalDecision: {proposalId: rejected.proposalId, address: rejected.address, expectedRevision: rejected.expectedRevision, status: 'rejected'}});
+for (const listener of listeners) listener();
+assert.equal(controlled.getSnapshot(), beforeReject);
+
+const reportFeature = defineFeature({id: 'report', capabilities: [{ref: {id: 'report.read', revision: '1'}, kind: 'read', schema: z.object({})}], intents: [{ref: {id: 'report.open', revision: '1'}, schema: z.object({value: z.string()}), capabilities: [{id: 'report.read', revision: '1'}]}]});
+const reportInitialIntent = {intent: {id: 'report.open', revision: '1'}, input: {value: 'initial'}};
+let reportSnapshot;
+const reportListeners = new Set();
+const reportProposals = [];
+const reportStore = {getSnapshot: () => {if (reportSnapshot === undefined) throw new Error('Capability host snapshot is not initialized.'); return reportSnapshot;}, subscribe: listener => (reportListeners.add(listener), () => reportListeners.delete(listener))};
+const report = runtime.createSurface({scope, id: 'external-report', feature: reportFeature, bindings: {initialIntent: reportInitialIntent, initialState: {value: 'inert'}, source: {kind: 'capability', read: async () => ({value: 'must-not-run'})}}, ownership: {mode: 'external', store: reportStore, onProposal: proposal => reportProposals.push(proposal)}});
+reportSnapshot = Object.freeze({id: report.id, address: report.address, revision: '0', phase: 'idle', intent: reportInitialIntent, state: {value: 'inert'}});
+const reportRequest = await report.request({intent: {id: 'report.open', revision: '1'}, input: {value: 'accepted'}});
+assert.equal(reportRequest.status, 'proposed');
+const reportProposal = reportProposals[0];
+reportSnapshot = Object.freeze({...reportSnapshot, revision: '1', phase: 'ready', intent: reportProposal.intent, state: {value: 'accepted'}, proposalDecision: {proposalId: reportProposal.proposalId, address: reportProposal.address, expectedRevision: reportProposal.expectedRevision, status: 'accepted'}});
+for (const listener of reportListeners) listener();
+assert.equal(report.getSnapshot().state.value, 'accepted');
+
+const waitForScope = (controller, predicate) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => reject(new Error('Timed out waiting for installed scope state.')), 2_000);
+  let unsubscribe = () => {};
+  const check = () => {
+    const snapshot = controller.getSnapshot();
+    if (!predicate(snapshot)) return;
+    clearTimeout(timer);
+    unsubscribe();
+    resolve(snapshot);
+  };
+  unsubscribe = controller.subscribe(check);
+  check();
+});
+let scopeResolutions = 0;
+const appScope = runtime.createScope({
+  initial: {kind: 'workspace', id: 'acme'},
+  binding: {
+    resolve: async selector => {
+      scopeResolutions += 1;
+      return {ok: true, value: {selector, permissionRevision: scopeResolutions, policyRevision: 'policy-1', allowedFeatures: ['people']}};
+    },
+    authorize: () => ({ok: true, value: undefined}),
+    prepareActivation: () => ({ok: true, value: undefined}),
+    activate: () => ({ok: true, value: undefined}),
+    deactivate: () => {},
+    readLeaveState: () => ({dirty: false, revision: 'leave-1'}),
+  },
+});
+assert.equal(appScope.getSnapshot().status, 'idle');
+assert.equal(scopeResolutions, 0);
+const initialScope = waitForScope(appScope, snapshot => snapshot.status === 'active');
+const detachAppScope = appScope.attach();
+const activeA = await initialScope;
+assert.equal(activeA.selector.id, 'acme');
+const appA = runtime.createSurface({scope: appScope, id: 'people-app', feature, bindings});
+assert.equal((await appA.request({kind: 'browse'})).status, 'committed');
+const addressA = appA.address;
+const changed = await appScope.requestChange({kind: 'workspace', id: 'globex'});
+assert.equal(changed.status, 'active');
+assert.equal(changed.activationEpoch > addressA.activationEpoch, true);
+assert.equal(appA.getSnapshot().phase, 'disposed');
+const appB = runtime.createSurface({scope: appScope, id: 'people-app', feature, bindings});
+assert.notEqual(appB.address.activationEpoch, addressA.activationEpoch);
+appScope.invalidate('logout');
+assert.equal(appScope.getSnapshot().status, 'denied');
+assert.equal(appScope.getSnapshot().selector, null);
+assert.equal(appB.getSnapshot().phase, 'disposed');
+detachAppScope();
+detachAppScope();
+appScope.dispose();
+appScope.dispose();
+runtime.dispose();
+scope.dispose();
+assert.deepEqual(data.replaceSnapshot(rollbackSnapshot), {ok: true, value: undefined});
+assert.equal((await left.request({kind: 'browse'})).status, 'disposed');
+process.stdout.write(JSON.stringify({twoInstances: true, controlled: true, rejected: true, externalCapability: true, scopes: true, bindingExactService: true, updateStableAddress: true, historicalRevisionRejected: true, revisionCapacityRejected: true, rollbackExecuted: true, shapeCapacityRejected: true, partialCoverage: true, disposedUpdateSafe: true}));
+`,
+);
+const surfaceProof = JSON.parse(run([process.execPath, 'surface-consumer.mjs'], consumerDirectory));
+assert.deepEqual(surfaceProof, {
+  twoInstances: true,
+  controlled: true,
+  rejected: true,
+  externalCapability: true,
+  scopes: true,
+  bindingExactService: true,
+  updateStableAddress: true,
+  historicalRevisionRejected: true,
+  revisionCapacityRejected: true,
+  rollbackExecuted: true,
+  shapeCapacityRejected: true,
+  partialCoverage: true,
+  disposedUpdateSafe: true,
 });
 
 await writeFile(
@@ -1401,6 +1686,7 @@ globalThis.__aeliqoBrowserData = {local,network,transportFlows,regions,actions,i
     audit: auditProof,
     auditOffline: ${JSON.stringify(auditOfflineProof)},
     interaction: interactionProof,
+    surfaces: ${JSON.stringify({ installed: true, ...surfaceProof })},
   };
   await writeFile(${JSON.stringify(join(runDirectory, 'runtime-report.json'))}, JSON.stringify(report, null, 2) + '\\n');
   console.log('Installed runtime data, results, region transactions, restore, HTTP and Chromium pass.');

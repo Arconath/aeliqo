@@ -3,6 +3,7 @@ import {
   createPresentationRegistry,
   type PresentationManifest,
   type PresentationEnvironment,
+  type PresentationPatternManifest,
 } from '../../packages/core/src/presentation/index.js';
 import type { PresentationPlan } from '../../packages/core/src/contracts/types.js';
 import { createRegionStore } from '../../packages/runtime/src/regions/index.js';
@@ -13,6 +14,7 @@ import {
   type PresentationProjectionState,
 } from '../../packages/runtime/src/presentation/index.js';
 import type { RegionHandle } from '../../packages/runtime/src/regions/index.js';
+import { resolverCandidates } from '../../packages/runtime/src/presentation/adaptation-resolver.js';
 import { presentationTask, ref, result } from '../contracts/fixtures.js';
 
 const read = { id: 'data.read', revision: '1' } as const;
@@ -54,11 +56,37 @@ function manifest(id: string, taskFit: (env: PresentationEnvironment) => number)
   };
 }
 
-function setup(initialPresentation?: PresentationPlan): {
+function planFor(ref: PresentationManifest['ref'], preconditions: PresentationPlan['preconditions']): PresentationPlan {
+  return {
+    id: 'legacy-candidate',
+    revision: '1',
+    preconditions,
+    rootId: 'legacy-root',
+    nodes: [
+      {
+        id: 'legacy-root',
+        role: 'view',
+        representation: ref,
+        config: { schema: { id: ref.id + '.config', revision: '1' }, values: {} },
+        children: [],
+      },
+    ],
+    links: [],
+    coverage: [],
+    stateTransfer: [],
+    diagnostics: [],
+  };
+}
+
+function setup(
+  initialPresentation?: PresentationPlan,
+  withPattern = false,
+): {
   region: RegionHandle;
   registry: any;
   wide: PresentationManifest;
   narrow: PresentationManifest;
+  pattern?: PresentationPatternManifest;
 } {
   const wide = manifest('layout.wide', (env) =>
     env.inlineSize.state === 'known' && env.inlineSize.value >= 500 ? 100 : 10,
@@ -82,7 +110,17 @@ function setup(initialPresentation?: PresentationPlan): {
     toRole: 'view',
     kind: 'transfer' as const,
   };
-  const registryResult = createPresentationRegistry([wide, narrow], [], [], [mapping, reverse]);
+  const pattern: PresentationPatternManifest | undefined = withPattern
+    ? {
+        ref: { id: 'preset.legacy', revision: '1' },
+        expand: ({ preconditions }) => ({ ok: true, value: planFor(wide.ref, preconditions) }),
+        matches: (plan) => plan.nodes[0]?.representation.id === wide.ref.id,
+      }
+    : undefined;
+  const registryResult = createPresentationRegistry([wide, narrow], [], pattern === undefined ? [] : [pattern], [
+    mapping,
+    reverse,
+  ]);
   if (!registryResult.ok) throw new Error(registryResult.diagnostics[0]!.message);
   const authority = {
     principalKey: 'principal',
@@ -105,7 +143,13 @@ function setup(initialPresentation?: PresentationPlan): {
     },
   });
   if (!created.ok) throw new Error(created.diagnostics[0]!.message);
-  return { region: created.value, registry: registryResult.value, wide, narrow };
+  return {
+    region: created.value,
+    registry: registryResult.value,
+    wide,
+    narrow,
+    ...(pattern === undefined ? {} : { pattern }),
+  };
 }
 
 function baseContext(): PresentationAdaptationContext {
@@ -166,6 +210,257 @@ describe('presentation adaptation runtime', () => {
     const third = await controller.request(environment(800));
     expect(third).toMatchObject({ ok: true, value: { status: 'committed' } });
     expect(region.snapshot().state?.presentation?.nodes[0]?.representation.id).toBe('layout.wide');
+    controller.dispose();
+  });
+
+  it('does not stage or render when the core resolver rejects stale target evidence', async () => {
+    const { region, registry } = setup();
+    const applied: PresentationProjectionState[] = [];
+    const controller = createPresentationAdaptationController({
+      region,
+      registry,
+      target: {
+        address: {
+          runtimeId: 'runtime-1',
+          scopeInstanceId: 'scope-1',
+          activationEpoch: 1,
+          surfaceId: 'region-1',
+          surfaceGeneration: 1,
+        },
+        read: () => ({
+          address: {
+            runtimeId: 'runtime-1',
+            scopeInstanceId: 'scope-1',
+            activationEpoch: 1,
+            surfaceId: 'region-1',
+            surfaceGeneration: 1,
+          },
+          state: 'stale',
+        }),
+      },
+      baseContext: baseContext(),
+      renderer: createCallbackPresentationRenderer({
+        apply: (next) => {
+          applied.push(next);
+        },
+      }),
+      dwellMs: 0,
+    });
+
+    const outcome = await controller.request(environment(800));
+
+    expect(outcome).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.target-inactive' }] });
+    expect(region.snapshot().state?.presentation).toBeUndefined();
+    expect(applied).toEqual([]);
+    controller.dispose();
+  });
+
+  it('does not stage or render for an active target belonging to another Region address', async () => {
+    const { region, registry } = setup();
+    let stageCalls = 0;
+    const stagedRegion = Object.create(region) as RegionHandle;
+    stagedRegion.stage = async (input) => {
+      stageCalls++;
+      return region.stage(input);
+    };
+    const applied: PresentationProjectionState[] = [];
+    const controller = createPresentationAdaptationController({
+      region: stagedRegion,
+      registry,
+      target: {
+        address: {
+          runtimeId: 'runtime-local',
+          scopeInstanceId: 'scope-local',
+          activationEpoch: 1,
+          surfaceId: region.id,
+          surfaceGeneration: 1,
+        },
+        read: () => ({
+          address: {
+            runtimeId: 'runtime-foreign',
+            scopeInstanceId: 'scope-foreign',
+            activationEpoch: 7,
+            surfaceId: region.id,
+            surfaceGeneration: 7,
+          },
+          state: 'active',
+        }),
+      },
+      baseContext: baseContext(),
+      renderer: createCallbackPresentationRenderer({
+        apply: (next) => {
+          applied.push(next);
+        },
+      }),
+      dwellMs: 0,
+    });
+
+    const outcome = await controller.request(environment(800), { force: true });
+
+    expect(outcome).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.target-inactive' }] });
+    expect(stageCalls).toBe(0);
+    expect(applied).toEqual([]);
+    expect(region.snapshot().state?.presentation).toBeUndefined();
+    controller.dispose();
+  });
+
+  it('rechecks the exact target address at commit and rejects a late activation change', async () => {
+    const { region, registry } = setup();
+    const address = {
+      runtimeId: 'runtime-local',
+      scopeInstanceId: 'scope-local',
+      activationEpoch: 1,
+      surfaceId: region.id,
+      surfaceGeneration: 1,
+    } as const;
+    let reads = 0;
+    let applied = 0;
+    const controller = createPresentationAdaptationController({
+      region,
+      registry,
+      target: {
+        address,
+        read: () => ({
+          address: reads++ === 0 ? address : { ...address, activationEpoch: 2 },
+          state: 'active',
+        }),
+      },
+      baseContext: baseContext(),
+      renderer: createCallbackPresentationRenderer({
+        apply: () => {
+          applied++;
+        },
+      }),
+      dwellMs: 0,
+    });
+
+    const outcome = await controller.request(environment(800), { force: true });
+
+    expect(outcome).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.target-inactive' }] });
+    expect(reads).toBeGreaterThanOrEqual(2);
+    expect(applied).toBe(0);
+    expect(region.snapshot().state?.presentation).toBeUndefined();
+    controller.dispose();
+  });
+
+  it('accepts duplicate legacy candidates, including repeated placeholder pattern shapes', async () => {
+    const { region, registry, wide, pattern } = setup(undefined, true);
+    if (pattern === undefined) throw new Error('The duplicate-candidate fixture requires a registered pattern.');
+    const applied: PresentationProjectionState[] = [];
+    const controller = createPresentationAdaptationController({
+      region,
+      registry,
+      baseContext: ({ snapshot }) => {
+        if (snapshot.readSet === undefined) throw new Error('The duplicate-candidate fixture needs a read set.');
+        const { dataRevision: _dataRevision, ...preconditions } = snapshot.readSet;
+        const placeholder = planFor(wide.ref, preconditions);
+        return {
+          ...baseContext(),
+          experience: {
+            ...baseContext().experience,
+            allowedPatterns: [pattern.ref.id],
+          },
+          candidates: [
+            { source: 'explicit', plan: placeholder },
+            { source: 'explicit', plan: placeholder },
+            { source: 'pattern', pattern: pattern.ref, plan: placeholder },
+            { source: 'pattern', pattern: pattern.ref, plan: placeholder },
+          ],
+        };
+      },
+      renderer: createCallbackPresentationRenderer({
+        apply: (next) => {
+          applied.push(next);
+        },
+      }),
+      dwellMs: 0,
+    });
+
+    const outcome = await controller.request(environment(800), { force: true });
+
+    expect(outcome).toMatchObject({ ok: true, value: { status: 'committed' } });
+    expect(applied).toHaveLength(1);
+    expect(region.snapshot().state?.presentation?.nodes[0]?.representation.id).toBe(wide.ref.id);
+    controller.dispose();
+  });
+
+  it('derives order-independent IDs and removes exact duplicate legacy candidates', () => {
+    const readSet = setup().region.snapshot().readSet;
+    if (readSet === undefined) throw new Error('The deterministic candidate fixture needs a read set.');
+    const { dataRevision: _dataRevision, ...preconditions } = readSet;
+    const wide = { source: 'explicit' as const, plan: planFor({ id: 'layout.wide', revision: '1' }, preconditions) };
+    const narrow = {
+      source: 'explicit' as const,
+      plan: planFor({ id: 'layout.narrow', revision: '1' }, preconditions),
+    };
+
+    const first = resolverCandidates([wide, narrow, wide]);
+    const reversed = resolverCandidates([wide, narrow, wide].reverse());
+
+    expect(reversed).toEqual(first);
+    expect(first).toHaveLength(2);
+    expect(new Set(first.map((candidate) => candidate.id)).size).toBe(2);
+    expect(first.every((candidate) => candidate.id.startsWith('legacy.'))).toBe(true);
+  });
+
+  it('rejects proxied legacy candidates without invoking value traps', () => {
+    let reads = 0;
+    const hostile = new Proxy(
+      { source: 'explicit', plan: {} },
+      {
+        get(target, property, receiver) {
+          reads++;
+          return Reflect.get(target, property, receiver);
+        },
+      },
+    ) as unknown as NonNullable<PresentationAdaptationContext['candidates']>[number];
+
+    expect(() => resolverCandidates([hostile])).not.toThrow();
+    expect(resolverCandidates([hostile])).toEqual([{ id: 'legacy.invalid', source: 'explicit', plan: {} }]);
+    expect(reads).toBe(0);
+  });
+
+  it('rejects accessor-bearing legacy candidates without invoking getters', () => {
+    let reads = 0;
+    const hostile = { plan: {} } as { source?: string; plan: object };
+    Object.defineProperty(hostile, 'source', {
+      enumerable: true,
+      get() {
+        reads++;
+        throw new Error('host getter executed');
+      },
+    });
+    const candidate = hostile as unknown as NonNullable<PresentationAdaptationContext['candidates']>[number];
+
+    expect(() => resolverCandidates([candidate])).not.toThrow();
+    expect(resolverCandidates([candidate])).toEqual([{ id: 'legacy.invalid', source: 'explicit', plan: {} }]);
+    expect(reads).toBe(0);
+  });
+
+  it('turns a hostile legacy candidate into a controlled adaptation failure', async () => {
+    const { region, registry } = setup();
+    let reads = 0;
+    const hostile = new Proxy(
+      { source: 'explicit', plan: {} },
+      {
+        get(target, property, receiver) {
+          reads++;
+          return Reflect.get(target, property, receiver);
+        },
+      },
+    ) as unknown as NonNullable<PresentationAdaptationContext['candidates']>[number];
+    const controller = createPresentationAdaptationController({
+      region,
+      registry,
+      baseContext: { ...baseContext(), candidates: [hostile] },
+      renderer: createCallbackPresentationRenderer({ apply: () => {} }),
+      dwellMs: 0,
+    });
+
+    const outcome = await controller.request(environment(800));
+
+    expect(outcome).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.input' }] });
+    expect(reads).toBe(0);
     controller.dispose();
   });
 

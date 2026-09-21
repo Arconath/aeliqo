@@ -35,6 +35,7 @@ export function sameRef(left: ResultRef, right: ResultRef): boolean {
   return (
     left.id === right.id &&
     left.revision === right.revision &&
+    left.sourceLineage === right.sourceLineage &&
     left.outputId === right.outputId &&
     left.queryDigest === right.queryDigest &&
     left.scopeDigest === right.scopeDigest

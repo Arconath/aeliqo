@@ -71,3 +71,17 @@ Keep package guidance in `docs/packages/`. Release staging may generate the npm 
 - The 0.4 release is breaking. The public product has five packages and one site application. Remove obsolete aliases and archive routes after their active consumers and tests have been migrated; keep older npm artifacts and Git tags available.
 - Publish packages and deploy one immutable site image only from the same fully verified source revision. Cut over after all acceptance gates pass. Keep the prior production image available for rollback; repair an already published npm version with a patch release.
 - Release staging generates each package README from `docs/packages/`. Do not maintain a second package guide in a package directory.
+
+## Aeliqo vNext execution
+
+For the vNext surface/API work, read `docs/plans/aeliqo-vnext/01-SPEC.md`, `02-EXECPLAN.md`, and `03-ACCEPTANCE.md`; contract detail is in `08-CONTRACTS.md`, corrections are in `09-AUDIT.md`, and `PLAN-INDEX.json` is the final-v3 task graph. Research facts and their limits are in `04-RESEARCH.md`. These are a living execution plan; keep `07-EXECUTION-STATE.md` and the task ledger current.
+
+Keep feature definitions immutable and live surfaces scoped by explicit instance identity. Convenience and advanced paths must use the same runtime contracts. Preserve core/runtime/renderer/agent boundaries, existing authority/evaluation/action checks, no-AI operation, and real host state ownership. Do not implement a universal all-props component or a duplicate engine.
+
+Use test-first changes, focused verification, complete component docs/examples, clean installed consumers, independent review, and unchanged-source release evidence. Maintain every requirement RQ01–RQ46 with an owning task and verification artifact. Source existence, declaration-only compilation, mock-model success, or a dispatched workflow is not runtime/release evidence.
+
+Never overwrite others' work, weaken gates, invent supported frameworks/models/scale, leak secrets, or bypass authorization. Paid calls, merge, publication, and deployment retain their actual separate permission requirements.
+
+Before handoff or context compaction, record exact source state, current task, failing command, decisions, and next action. Resume by reading the files and reconciling the worktree, not from conversational memory.
+
+For scope work, a client workspace ID is a selector, not permission. Guard voluntary draft exits, fence forced revocation, keep immutable target epochs, and reject stale A-B-A work. Workspace layout adaptation stays in the same scope. The optional agent adapter targets an explicit scope/surface allowlist and must reset scoped conversation continuity. Old controllers never retarget a different tenant.

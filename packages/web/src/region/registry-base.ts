@@ -1,5 +1,10 @@
 import type { Outcome, Result, VersionRef } from '@aeliqo/core';
-import type { PresentationManifest, PresentationValues, ResolvedPresentationConfig } from '@aeliqo/core/presentation';
+import type {
+  PresentationEnvironment,
+  PresentationManifest,
+  PresentationValues,
+  ResolvedPresentationConfig,
+} from '@aeliqo/core/presentation';
 import {
   AELIQO_CONFIG_SCHEMAS,
   AELIQO_OPERATION_REFS,
@@ -38,6 +43,7 @@ export function buildManifests(options: AeliqoPresentationRegistryOptions): read
       extension: false,
       resolveConfig: (values, result) => tableConfig(values, result, resolveEntity, defaultTableConfigs),
       suggestConfig: suggestTable,
+      assess: (_config, _result, environment) => assessTable(environment),
     },
     {
       ref: AELIQO_PRESENTATION_REFS.trend,
@@ -66,6 +72,19 @@ export function buildManifests(options: AeliqoPresentationRegistryOptions): read
     },
   ];
   return Object.freeze(manifests);
+}
+
+function assessTable(environment: PresentationEnvironment) {
+  const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 640;
+  return {
+    ok: true as const,
+    value: {
+      taskFit: narrow ? 70 : 90,
+      informationDensity: narrow ? 65 : 90,
+      interactionEffort: narrow ? 20 : 5,
+      legibilityPenalty: narrow ? 10 : 0,
+    },
+  };
 }
 
 function tableOperations(): readonly VersionRef[] {

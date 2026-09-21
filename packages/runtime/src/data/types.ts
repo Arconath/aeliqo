@@ -72,6 +72,8 @@ export type DataOperation = 'describe' | 'plan' | 'execute';
 
 export interface ReadGrant {
   readonly scopeDigest: string;
+  /** Host-owned opaque partition used to bind in-process cursors to a principal. */
+  readonly cursorPartition?: string;
   readonly maxBudget?: Partial<QueryBudget>;
   readonly entities?: readonly string[];
   readonly fields?: Readonly<Record<string, readonly string[]>>;
@@ -122,7 +124,17 @@ export interface LocalDataServiceOptions {
   readonly hostBudget?: QueryBudget;
   readonly authorize?: AuthorizeRead;
   readonly planTtlMs?: number;
+  /** Continuation cursor lifetime. Defaults to the accepted-plan lifetime. */
+  readonly cursorTtlMs?: number;
+  /** Host clock used for plan and cursor expiry checks. */
+  readonly now?: () => number;
+  /** Host monotonic clock used for request and evaluator time budgets. */
+  readonly workNow?: () => number;
   readonly maxPlans?: number;
+  /** Maximum number of issued continuation cursors retained by this host. */
+  readonly maxCursors?: number;
+  /** Maximum number of distinct source revisions retained for the service lifetime. */
+  readonly maxSourceRevisions?: number;
   /** Host-owned activation policy. It is never accepted from a client request. */
   readonly meaningActivation?: {
     readonly registry: FunctionRegistry;
@@ -202,7 +214,8 @@ export interface DataHttpServerOptions {
 export type DataHttpHandler = (request: Request) => Promise<Response>;
 
 export interface UnsupportedCapability {
-  readonly kind: 'operator' | 'aggregation' | 'grouping' | 'relation' | 'pagination' | 'source';
+  readonly kind:
+    'field' | 'operator' | 'metric' | 'aggregation' | 'grouping' | 'relation' | 'ordering' | 'pagination' | 'source';
   readonly id: string;
   readonly reason: string;
   readonly alternatives: readonly string[];

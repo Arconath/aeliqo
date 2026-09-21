@@ -1,3 +1,4 @@
+import type { Catalog, Outcome } from '@aeliqo/core';
 import type { LocalDataService, LocalDataServiceOptions } from './types.js';
 import { describeLocalData } from './local/describe.js';
 import { executeLocalData } from './local/execute.js';
@@ -9,11 +10,23 @@ import { planLocalData } from './local/plan.js';
 import { createLocalDataServiceState } from './local/service-state.js';
 import { DEFAULT_BUDGET } from './local/budget.js';
 import { DEFAULT_SOURCE_LIMITS } from './local/source.js';
+import { brandLocalDataService } from './local/source-pin.js';
 
 export function createLocalDataService(options: LocalDataServiceOptions): LocalDataService {
-  const state = createLocalDataServiceState(options);
-  return {
-    ...(options.cohortResolver === undefined ? {} : { cohortResolver: options.cohortResolver }),
+  return createService(createLocalDataServiceState(options));
+}
+
+export function createFeatureLocalDataService(
+  options: LocalDataServiceOptions,
+  fixedCatalog: Catalog,
+  snapshotValidator?: (snapshot: LocalDataServiceOptions['snapshot']) => Outcome<void>,
+): LocalDataService {
+  return createService(createLocalDataServiceState(options, fixedCatalog, snapshotValidator, true));
+}
+
+function createService(state: ReturnType<typeof createLocalDataServiceState>): LocalDataService {
+  const service: LocalDataService = {
+    ...(state.options.cohortResolver === undefined ? {} : { cohortResolver: state.options.cohortResolver }),
     get catalog() {
       return state.currentCatalog;
     },
@@ -26,6 +39,7 @@ export function createLocalDataService(options: LocalDataServiceOptions): LocalD
     replaceSnapshot: (snapshot) => replaceLocalSnapshot(state, snapshot),
     registerMeaningBundle: (bundle) => registerMeaningBundleWithState(state, bundle),
   };
+  return brandLocalDataService(service, () => state.snapshot.sourceRevision);
 }
 
 export { DEFAULT_BUDGET, DEFAULT_SOURCE_LIMITS };

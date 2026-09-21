@@ -67,14 +67,16 @@ export class ResultHandleController extends ResultHandleBase {
     this.requestId = input.requestId;
   }
 
-  private ingestDescriptor(event: Extract<ResultEvent, { readonly kind: 'descriptor' }>): Outcome<ResultEvent> {
+  private async ingestDescriptor(
+    event: Extract<ResultEvent, { readonly kind: 'descriptor' }>,
+  ): Promise<Outcome<ResultEvent>> {
     // A descriptor starts a replacement snapshot. A failed replacement falls
     // back to the previous authorized snapshot rather than exposing partial data.
     const priorCarry = this.carry;
     this.showingCarry = false;
     this.carry = priorCarry;
     this.state = this.emptyState('loading');
-    const checked = validateResultDescriptor(event.descriptor, this.key, this.populationDigest);
+    const checked = await validateResultDescriptor(event.descriptor, this.key, this.populationDigest);
     if (!checked.ok) {
       this.restoreCarry('failed', checked.diagnostics[0]);
       return { ok: false, diagnostics: checked.diagnostics };
@@ -136,7 +138,7 @@ export class ResultHandleController extends ResultHandleBase {
     const descriptor = this.state.descriptor;
     if (descriptor === undefined)
       return this.invalid('data.result-order', 'A result completion arrived before its descriptor.');
-    const checked = validateResultCompletion(event, descriptor, this.populationDigest, this.state.loadedRows);
+    const checked = validateResultCompletion(event, descriptor, this.key, this.populationDigest, this.state.loadedRows);
     if (!checked.ok) return this.invalid(checked.diagnostics[0].code, checked.diagnostics[0].message);
     const finalDescriptor = frozen({ ...descriptor, coverage: event.finalCoverage });
     const descriptorDelta = byteLength(finalDescriptor) - byteLength(descriptor);
@@ -172,7 +174,7 @@ export class ResultHandleController extends ResultHandleBase {
     return { ok: true, value: event };
   }
 
-  private dispatchEvent(event: ResultEvent): Outcome<ResultEvent> {
+  private async dispatchEvent(event: ResultEvent): Promise<Outcome<ResultEvent>> {
     if (event.kind === 'descriptor') return this.ingestDescriptor(event);
     if (event.kind === 'batch') return this.ingestBatch(event);
     if (event.kind === 'progress') return this.ingestProgress(event);
@@ -180,7 +182,7 @@ export class ResultHandleController extends ResultHandleBase {
     return this.ingestError(event);
   }
 
-  ingest(raw: unknown): Outcome<ResultEvent> {
+  async ingest(raw: unknown): Promise<Outcome<ResultEvent>> {
     if (!this.current()) return failure('data.stale-result', 'A stale result generation cannot commit events.');
     if (this.state.terminal)
       return failure('data.result-terminal', 'A result stream continued after its terminal event.');
@@ -190,7 +192,7 @@ export class ResultHandleController extends ResultHandleBase {
       this.restoreCarry('failed', parsed.diagnostics[0]);
       return parsed;
     }
-    const outcome = this.dispatchEvent(parsed.value);
+    const outcome = await this.dispatchEvent(parsed.value);
     if (outcome.ok) this.state.lastEvent = outcome.value;
     return outcome;
   }

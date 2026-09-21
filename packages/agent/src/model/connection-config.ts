@@ -50,10 +50,20 @@ function validateModel(model: string | undefined): asserts model is string {
   if (!text(model, 160)) configuration('The model connection requires a bounded model identifier.');
 }
 
-function normalizeAuth(auth: ToolModelAuth | undefined): { readonly auth: ToolModelAuth; readonly secret: string } {
-  if (auth === null || typeof auth !== 'object' || (auth.scheme !== 'bearer' && auth.scheme !== 'header'))
+function normalizeAuth(auth: ToolModelAuth | undefined): { readonly auth: ToolModelAuth; readonly secret?: string } {
+  if (auth === null || typeof auth !== 'object' || !['none', 'bearer', 'header'].includes(auth.scheme))
     configuration('The model connection requires an explicit authentication scheme.');
-  const secret = readModelSecret(auth.secret);
+  if (auth.scheme === 'none') {
+    if ('secret' in auth || 'headerName' in auth)
+      configuration('The no-auth model connection cannot include a credential or authentication header.');
+    return { auth };
+  }
+  let secret: string;
+  try {
+    secret = readModelSecret(auth.secret);
+  } catch {
+    configuration('The model connection requires a valid server-owned credential.');
+  }
   if (
     auth.scheme === 'header' &&
     (!text(auth.headerName, 128) ||
@@ -92,6 +102,13 @@ function validateAllowedOrigins(policy: ToolModelConnectionPolicy, origin: strin
   }
 }
 
+function validateNoAuthPolicy(auth: ToolModelAuth, policy: ToolModelConnectionPolicy, baseURL: string): void {
+  if (auth.scheme !== 'none') return;
+  const origin = new URL(baseURL).origin;
+  if (policy.allowedOrigins === undefined || !policy.allowedOrigins.includes(origin))
+    configuration('The no-auth model connection requires an explicitly allowlisted endpoint origin.');
+}
+
 function normalizeBaseURL(value: string, policy: ToolModelConnectionPolicy): string {
   if (!text(value, 2048)) configuration('The model endpoint requires a bounded absolute URL.');
   let parsed: URL;
@@ -114,12 +131,16 @@ function endpointURL(baseURL: string, path: string): string {
 
 function normalizeHeaders(
   headers: Readonly<Record<string, string>> | undefined,
-  secret: string,
+  secret: string | undefined,
 ): Readonly<Record<string, string>> {
   const result: Record<string, string> = {};
   if (headers === undefined) return result;
   for (const [name, value] of Object.entries(headers)) {
-    if (!/^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/u.test(name) || !text(value, 4096) || value.includes(secret))
+    if (
+      !/^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$/u.test(name) ||
+      !text(value, 4096) ||
+      (secret !== undefined && value.includes(secret))
+    )
       configuration('The model connection contains an invalid or credential-bearing header.');
     const lower = name.toLowerCase();
     if (
@@ -213,6 +234,7 @@ export function normalizeToolModelConnection(options: ToolModelConnectionOptions
   validateModel(options.model);
   const { auth, secret } = normalizeAuth(options.auth);
   const baseURL = normalizeBaseURL(options.baseURL, options.policy);
+  validateNoAuthPolicy(auth, options.policy, baseURL);
   const url = endpointURL(baseURL, options.adapter.endpointPath);
   validateCapabilities(options);
   const limits = normalizeLimits(options);

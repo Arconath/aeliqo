@@ -71,6 +71,38 @@ it('layer shared scales map equal values to equal positions across results', () 
   expect(a.geometry.marks[1]).toMatchObject({ x: 220, y: 108 });
   expect(b.geometry.marks[0]).toMatchObject({ x: 220, y: 108 });
 });
+it('keeps otherwise identical plot inputs isolated by source lineage', () => {
+  const sourceA = { ...ref, sourceLineage: 'source-a' };
+  const sourceB = { ...ref, sourceLineage: 'source-b' };
+  const first: Result = { ...descriptor, ref: sourceA };
+  const second: Result = { ...descriptor, ref: sourceB };
+  const compiled = compilePlotComposition(
+    {
+      version: '1',
+      root: {
+        kind: 'layer',
+        scales: 'independent',
+        children: [
+          { ...unit, result: sourceA },
+          { ...unit, result: sourceB },
+        ],
+      },
+    },
+    [first, second],
+    [
+      { result: sourceA, rows },
+      { result: sourceB, rows: rows.map((row) => ({ ...row, id: `other-${row.id}` })) },
+    ],
+    options,
+  );
+  expect(compiled.ok).toBe(true);
+  if (!compiled.ok || compiled.value.root.kind !== 'layer') return;
+  const [left, right] = compiled.value.root.children;
+  if (left?.kind !== 'unit' || right?.kind !== 'unit') throw new Error('Expected two compiled plot units.');
+  expect(left.geometry.result.ref).toEqual(sourceA);
+  expect(right.geometry.result.ref).toEqual(sourceB);
+  expect(left.displayedIdentities).not.toEqual(right.displayedIdentities);
+});
 it('retains explicit concatenation direction and rejects missing datasets', () => {
   const spec: PlotSpec = { version: '1', root: { kind: 'concat', direction: 'block', children: [unit, unit] } };
   const r = compilePlotComposition(spec, [descriptor], [{ result: ref, rows }], options);

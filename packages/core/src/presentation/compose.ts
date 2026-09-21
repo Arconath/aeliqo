@@ -64,7 +64,7 @@ function validateCandidate(
     reject(state, label, checked.diagnostics);
     return false;
   }
-  consider(state, checked.value, candidateIsIncumbent);
+  consider(state, checked.value, candidateIsIncumbent, label);
   return true;
 }
 
@@ -80,10 +80,6 @@ function contextHasRenderer(capabilities: readonly VersionRef[], ref: VersionRef
   } catch {
     return false;
   }
-}
-
-function patternLabel(candidate: CompositionCandidate): string {
-  return 'pattern.' + candidate.pattern!.id;
 }
 
 function expandPattern(state: CompositionState, pattern: PresentationPatternManifest): Outcome<unknown> {
@@ -103,11 +99,10 @@ function expandPattern(state: CompositionState, pattern: PresentationPatternMani
 
 function processPatternCandidate(
   state: CompositionState,
-  candidate: CompositionCandidate,
   pattern: PresentationPatternManifest | undefined,
+  label: string,
 ): void {
   if (!spend(state)) return;
-  const label = patternLabel(candidate);
   if (pattern === undefined) {
     reject(state, label, [
       { code: 'presentation.pattern', message: 'The registered pattern is unavailable.', retryable: false },
@@ -134,16 +129,17 @@ function processCandidate(state: CompositionState, input: unknown, index: number
     return;
   }
   const candidate = input as CompositionCandidate;
+  const candidateIndex = candidate.id ?? 'candidate.' + index;
   const pattern = validPattern(candidate, state.registry.patterns ?? [], state.prepared);
   if (!pattern.ok) {
-    reject(state, 'candidate.' + index, pattern.diagnostics);
+    reject(state, candidateIndex, pattern.diagnostics);
     return;
   }
   if (candidate.source === 'pattern') {
-    processPatternCandidate(state, candidate, pattern.value);
+    processPatternCandidate(state, pattern.value, candidate.id ?? 'pattern.' + candidate.pattern!.id);
     return;
   }
-  validateCandidate(state, candidate.plan, 'candidate.' + index, {}, false, false, true);
+  validateCandidate(state, candidate.plan, candidateIndex, {}, false, false, true);
 }
 
 function processExplicitCandidates(state: CompositionState): void {
@@ -160,10 +156,7 @@ function requiredNeeds(state: CompositionState): Outcome<readonly Task['needs'][
       need.outputId !== undefined &&
       state.prepared.results.filter((result) => result.ref.outputId === need.outputId).length > 1
     )
-      return fail(
-        'ambiguous-result',
-        'Several result revisions match a named output; select an exact authorized descriptor before composing.',
-      );
+      return fail('ambiguous-result', 'Select one authorized result.');
   }
   return { ok: true, value: required };
 }
@@ -297,8 +290,7 @@ function rejectMissingRegisteredComposition(state: CompositionState): void {
   reject(state, 'registered-composition', [
     {
       code: 'presentation.no-suggestion',
-      message:
-        'No complete suggestion is available from the installed registry. Explicit registered configurations may still be feasible.',
+      message: 'No complete registered suggestion is available.',
       retryable: false,
     },
   ]);
@@ -325,16 +317,13 @@ function searchRegistered(state: CompositionState, required: readonly Task['need
 }
 
 function finishAtExpansionLimit(state: CompositionState): Outcome<PresentationComposition> {
-  if (state.best === undefined)
-    return {
-      ok: true,
-      value: freezePresentation({ status: 'search-exhausted', expansions: state.expansions, rejected: state.rejected }),
-    };
+  const presentation = state.best?.presentation;
   return {
     ok: true,
     value: freezePresentation({
       status: 'search-exhausted',
-      presentation: state.best.presentation,
+      ...(presentation === undefined ? {} : { presentation }),
+      ...(state.best === undefined ? {} : { selectedCandidate: state.best.label }),
       expansions: state.expansions,
       rejected: state.rejected,
     }),
@@ -342,20 +331,15 @@ function finishAtExpansionLimit(state: CompositionState): Outcome<PresentationCo
 }
 
 function finishComposition(state: CompositionState): Outcome<PresentationComposition> {
-  if (state.best === undefined)
-    return {
-      ok: true,
-      value: freezePresentation({
-        status: state.budgetBlocked ? 'search-exhausted' : 'conflict',
-        expansions: state.expansions,
-        rejected: state.rejected,
-      }),
-    };
+  const presentation = state.best?.presentation;
+  let status: PresentationComposition['status'] = presentation === undefined ? 'conflict' : 'composed';
+  if (state.budgetBlocked) status = 'search-exhausted';
   return {
     ok: true,
     value: freezePresentation({
-      status: state.budgetBlocked ? 'search-exhausted' : 'composed',
-      presentation: state.best.presentation,
+      status,
+      ...(presentation === undefined ? {} : { presentation }),
+      ...(state.best === undefined ? {} : { selectedCandidate: state.best.label }),
       expansions: state.expansions,
       rejected: state.rejected,
     }),
@@ -374,6 +358,7 @@ export function composePresentation(
   processExplicitCandidates(state);
   const required = requiredNeeds(state);
   if (!required.ok) return required;
+  if (request.searchRegistered === false) return finishComposition(state);
   if (state.expansions >= state.prepared.constraints.maxExpansions) return finishAtExpansionLimit(state);
   searchRegistered(state, required.value);
   return finishComposition(state);

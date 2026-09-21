@@ -9,6 +9,7 @@ const field = { id: 'id', label: 'ID', type: { value: 'text' as const, nullable:
 const ref = {
   id: 'result-1',
   revision: 'source-1',
+  sourceLineage: 'source-1',
   outputId: 'rows',
   queryDigest: 'query-1',
   scopeDigest: 'scope-1',
@@ -78,6 +79,55 @@ describe('result store handles', () => {
     expect(Object.isFrozen(snapshot.batches[0])).toBe(true);
     expect(() => ((snapshot.batches[0]!.rows[0] as Record<string, unknown>).id = 'forged')).toThrow();
     expect(handle.snapshot().batches[0]!.rows[0]!.id).toBe('a');
+  });
+
+  it('pins accepted-plan descriptors to their source revision and lineage', async () => {
+    for (const forgedRef of [
+      { ...ref, revision: 'other-revision' },
+      { ...ref, sourceLineage: 'other-lineage' },
+    ]) {
+      const handle = createResultStore().begin({
+        ...key(`accepted-source-${forgedRef.revision}`),
+        sourceLineage: 'source-1',
+        planDigest: 'plan-1',
+        resultShape: 'rows',
+      });
+      await collect(handle, from([{ kind: 'descriptor', descriptor: { ...descriptor, ref: forgedRef } }]));
+      expect(handle.snapshot().status).toBe('failed');
+      expect(handle.snapshot().diagnostics[0]?.code).toBe('data.result-lineage');
+    }
+  });
+
+  it('accepts an advanced live revision only under the accepted immutable lineage', async () => {
+    const liveRef = { ...ref, revision: 'source-2' };
+    const liveDescriptor = {
+      ...descriptor,
+      ref: liveRef,
+      consistency: {
+        kind: 'mixed' as const,
+        sourceLineage: 'source-1',
+        sourceRevisions: { employees: 'source-2' },
+        reason: 'live keyset publication',
+      },
+      evidence: { kind: 'observed' as const, source: { id: 'employees', revision: 'source-2' } },
+    };
+    const handle = createResultStore().begin({
+      ...key('accepted-live-revision'),
+      sourceLineage: 'source-1',
+      planDigest: 'plan-1',
+      resultShape: 'rows',
+    });
+    await collect(
+      handle,
+      from([
+        { kind: 'descriptor', descriptor: liveDescriptor },
+        { ...events[1], result: liveRef },
+        { ...events[2], result: liveRef },
+        { ...events[3], result: liveRef },
+      ]),
+    );
+    expect(handle.snapshot().status).toBe('ready');
+    expect(handle.snapshot().descriptor?.ref.revision).toBe('source-2');
   });
 
   it('rejects type, identity, sequence and count inconsistencies', async () => {

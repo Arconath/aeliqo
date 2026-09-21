@@ -10,7 +10,14 @@ async function setup() {
   const registry = createStandardFunctionRegistry();
   if (!registry.ok) throw Error('registry');
   const digest = registry.value.digest;
-  const ref = { id: 'result', revision: 'source', outputId: 'rows', queryDigest: 'query', scopeDigest: 'scope' };
+  const ref = {
+    id: 'result',
+    revision: 'source',
+    sourceLineage: 'source',
+    outputId: 'rows',
+    queryDigest: 'query',
+    scopeDigest: 'scope',
+  };
   const catalog: Catalog = {
     version: '1',
     revision: 'catalog',
@@ -51,6 +58,7 @@ async function setup() {
     catalogRevision: 'catalog',
     functionRegistryDigest: digest,
     sourceRevision: 'source',
+    sourceLineage: 'source',
     queryDigest: 'query',
     outputId: 'rows',
     taskId: 'task',

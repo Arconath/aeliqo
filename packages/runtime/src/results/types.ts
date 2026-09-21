@@ -29,6 +29,14 @@ export interface ResultCacheKey {
   readonly catalogRevision: string;
   readonly functionRegistryDigest: string;
   readonly sourceRevision: string;
+  /** Stable source identity from the accepted plan, distinct from a revision. */
+  readonly sourceLineage?: string;
+  /** The accepted plan that authorizes the result shape, when available. */
+  readonly planDigest?: string;
+  /** Trusted expected output shape; scalar aggregate exceptions require this pin. */
+  readonly resultShape?: 'rows' | 'global-aggregate';
+  /** Canonical digest of the accepted result-input lineage. */
+  readonly lineageDigest?: string;
   readonly outputId: string;
   readonly taskId: string;
 }

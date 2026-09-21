@@ -83,6 +83,10 @@ void subpathPolicy;
 `,
 );
 await writeFile(join(consumer, 'fixtures.ts'), await readFile(join(root, 'tests/contracts/fixtures.ts')));
+await writeFile(
+  join(consumer, 'registered-bar.mjs'),
+  await readFile(join(root, 'tests/consumers/adaptation-registered-bar.mjs')),
+);
 await writeFile(join(consumer, 'index.html'), await readFile(join(root, 'tests/adaptation-semantic/index.html')));
 await writeFile(
   join(consumer, 'tsconfig.json'),
@@ -111,6 +115,7 @@ run(
   ],
   consumer,
 );
+run(['node', '--disallow-code-generation-from-strings', 'registered-bar.mjs'], consumer);
 await writeFile(join(consumer, 'vite.config.mjs'), `export default {build:{target:'es2022'}};`);
 run(['node', 'node_modules/vite/bin/vite.js', 'build'], consumer);
 const server = createServer(async (req, res) => {
@@ -139,6 +144,7 @@ try {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('http://127.0.0.1:' + server.address().port);
   await page.waitForFunction(() => window.ready === true);
+  assert.equal((await page.evaluate(() => window.initial)).value.status, 'committed');
   const input = page.getByRole('textbox', { name: 'Name', exact: true });
   await expect(input).toHaveValue('Ada');
   await input.fill('Installed draft');
@@ -157,6 +163,24 @@ try {
     ),
     true,
   );
+  const rejectedTargets = await page.evaluate(async () => {
+    const capture = () => ({
+      revision: window.proof.region.snapshot().regionRevision,
+      plan: JSON.stringify(window.proof.element.presentation?.plan),
+    });
+    const before = capture();
+    const stale = await window.proof.requestWithTarget(900, 'stale');
+    const afterStale = capture();
+    const mismatched = await window.proof.requestWithTarget(900, 'active', 'another-surface');
+    const afterMismatch = capture();
+    return { before, stale, afterStale, mismatched, afterMismatch };
+  });
+  assert.equal(rejectedTargets.stale.ok, false);
+  assert.equal(rejectedTargets.stale.diagnostics[0].code, 'presentation.target-inactive');
+  assert.equal(rejectedTargets.mismatched.ok, false);
+  assert.equal(rejectedTargets.mismatched.diagnostics[0].code, 'presentation.target-inactive');
+  assert.deepEqual(rejectedTargets.afterStale, rejectedTargets.before);
+  assert.deepEqual(rejectedTargets.afterMismatch, rejectedTargets.before);
   await page.screenshot({ path: join(runDirectory, 'installed.png'), fullPage: true });
   await page.evaluate(() => window.proof.region.revoke('revoked'));
   await expect(input).toHaveCount(0);
@@ -176,7 +200,7 @@ await writeFile(
       artifacts,
       consumerDirectory: consumer,
       scope:
-        'Actual core/runtime/web tarballs, optional web runtime peer, strict public declarations, Node SSR measurement without code generation, production-built Chromium default region draft/focus/replay/revoke.',
+        'Actual core/runtime/web tarballs, optional web runtime peer, strict public declarations, packed registered-bar manifest/config/selection/analyze proof, Node SSR measurement without code generation, production-built Chromium matching active target plus stale/mismatched target fence without stage/render, default region draft/focus/replay/revoke.',
       environment: { node: process.version, chromium: chromiumVersion },
     },
     null,

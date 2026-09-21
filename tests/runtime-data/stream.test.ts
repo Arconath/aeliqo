@@ -8,6 +8,8 @@ const context: ResultStreamContext = {
   queryDigest: ref.queryDigest,
   scopeDigest: ref.scopeDigest,
   outputId: ref.outputId,
+  sourceRevision: ref.revision,
+  sourceLineage: ref.sourceLineage,
   limits: { bytes: 100_000, messageBytes: 10_000, messages: 10, rows: 10 },
 };
 const valid = [resultEvents.descriptor, resultEvents.batch, resultEvents.progress, resultEvents.complete];
@@ -52,6 +54,26 @@ describe('bounded result stream', () => {
         {
           ...resultEvents.descriptor,
           descriptor: { ...resultEvents.descriptor.descriptor, ref: { ...ref, scopeDigest: 'other' } },
+        },
+      ],
+      'data.stream-scope',
+    ],
+    [
+      'descriptor revision differs from the accepted plan',
+      [
+        {
+          ...resultEvents.descriptor,
+          descriptor: { ...resultEvents.descriptor.descriptor, ref: { ...ref, revision: 'other' } },
+        },
+      ],
+      'data.stream-scope',
+    ],
+    [
+      'descriptor lineage differs from the accepted plan',
+      [
+        {
+          ...resultEvents.descriptor,
+          descriptor: { ...resultEvents.descriptor.descriptor, ref: { ...ref, sourceLineage: 'other' } },
         },
       ],
       'data.stream-scope',

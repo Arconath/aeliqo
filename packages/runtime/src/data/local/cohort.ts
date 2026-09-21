@@ -69,7 +69,7 @@ function createCohortSetup(
   const contextFactory = state.options.cohortContext;
   if (resolver === undefined || (context.cohort === undefined && contextFactory === undefined))
     return unsupportedFixedPopulation();
-  const remaining = budget.maxMilliseconds - (Date.now() - startedAt);
+  const remaining = budget.maxMilliseconds - (state.workNow() - startedAt);
   if (remaining <= 0)
     return failure('data.budget', 'Cohort resolution exceeded the effective time budget.', ['budget']);
   if (context.cohort === undefined && hasStructuredPrincipal(context.principal))
@@ -82,8 +82,8 @@ function createCohortSetup(
     ok: true,
     value: {
       resolver,
-      resolverContext: buildResolverContext(catalog, grant, context, principalKey, handles.value),
-      request: buildCohortRequest(query, catalog, grant, context, remaining),
+      resolverContext: buildResolverContext(catalog, grant, context, principalKey, handles.value, state.now),
+      request: buildCohortRequest(query, catalog, grant, context, remaining, state.now),
     },
   };
 }
@@ -136,7 +136,7 @@ function cohortHandles(
         catalogRevision: catalog.revision,
         functionRegistryDigest: catalog.functionRegistryDigest,
         catalog,
-        now: () => Date.now(),
+        now: state.now,
       }),
     };
   } catch {
@@ -150,6 +150,7 @@ function buildResolverContext(
   context: ReadContext,
   principalKey: string,
   handles: Pick<CohortResolverContext, 'resultStore' | 'resolveResult'>,
+  now: () => number,
 ): CohortResolverContext {
   return {
     readContext: policyContext(context),
@@ -161,7 +162,7 @@ function buildResolverContext(
     catalog,
     grants: ['result.inspect'],
     ...handles,
-    now: () => Date.now(),
+    now,
   };
 }
 
@@ -171,6 +172,7 @@ function buildCohortRequest(
   grant: ReadGrant,
   context: ReadContext,
   remaining: number,
+  now: () => number,
 ): CohortRequest {
   const population = query.population;
   if (population.kind !== 'fixed') throw new TypeError('A cohort request requires a fixed population.');
@@ -183,7 +185,7 @@ function buildCohortRequest(
     ...(grant.policyRevision === undefined ? {} : { policyRevision: grant.policyRevision }),
     catalogRevision: catalog.revision,
     sourceRevision: population.source.revision,
-    deadlineAt: Date.now() + remaining,
+    deadlineAt: now() + remaining,
     ...(context.signal === undefined ? {} : { signal: context.signal }),
   };
 }

@@ -1,11 +1,15 @@
 import type { Expression, Outcome, SemanticType } from '../../contracts/types.js';
 import type { FunctionSignature } from '../../expressions/types.js';
-import type { AggregateSpec, QueryOutcome, QueryValue } from '../types.js';
+import type { AggregateSpec, QueryOutcome, QueryRow, QueryValue } from '../types.js';
 import { failure, relationKey, unsupported, type EvalGroup, type EvalState } from './shared.js';
 import { tick } from './execution-budget.js';
 import { evaluateCall, evaluateConditional, evaluateExpression, trustedLocalSignature } from './expression-runtime.js';
 import { expressionSemanticType, expressionValueType } from './expression-semantics.js';
-import { isDecimal, scalarKey } from './value-utils.js';
+import { compareValue, isDecimal, scalarKey } from './value-utils.js';
+
+type MissingPolicy = 'propagate' | 'exclude-pair' | 'reject';
+const PERIOD_END_ERROR = 'Invalid.';
+const MISSING_ERROR = 'Missing.';
 
 interface AggregateContext {
   readonly state: EvalState;
@@ -13,6 +17,7 @@ interface AggregateContext {
   readonly group: EvalGroup;
   readonly signature: FunctionSignature;
   readonly values: readonly (readonly QueryValue[])[];
+  readonly policy: MissingPolicy | undefined;
 }
 
 function registeredAggregate(item: AggregateSpec, state: EvalState): Outcome<FunctionSignature> {
@@ -22,8 +27,18 @@ function registeredAggregate(item: AggregateSpec, state: EvalState): Outcome<Fun
   return trustedLocalSignature(supplied);
 }
 
-function isAggregateSignature(signature: FunctionSignature): boolean {
+function isAggregateFunction(signature: FunctionSignature): boolean {
   return ['aggregate', 'ratio-of-sums', 'mean-of-rates'].includes(signature.operation);
+}
+
+function valuesForPolicy(
+  values: readonly QueryValue[],
+  policy: MissingPolicy | undefined,
+): QueryOutcome<readonly QueryValue[] | null> {
+  const missing = values.some((value) => value === null);
+  if (policy === 'reject' && missing) return failure('query.missing-value', MISSING_ERROR);
+  if (policy === 'propagate' && missing) return { ok: true, value: null };
+  return { ok: true, value: policy === 'exclude-pair' && missing ? values.filter((value) => value !== null) : values };
 }
 
 function evaluateGroupArguments(state: EvalState, item: AggregateSpec, group: EvalGroup): QueryOutcome<QueryValue[][]> {
@@ -44,43 +59,16 @@ function evaluateNonAggregateCall(
   item: AggregateSpec,
   group: EvalGroup,
   signature: FunctionSignature,
+  inheritedMissingPolicy?: MissingPolicy,
 ): QueryOutcome<QueryValue | undefined> {
   const arguments_: QueryValue[] = [];
   for (const expression of item.arguments) {
-    const value = evaluateAggregateExpression(state, expression, group);
+    const value = evaluateAggregateExpression(state, expression, group, inheritedMissingPolicy);
     if (!value.ok) return value;
     arguments_.push(value.value === undefined ? null : value.value);
   }
   const types = item.arguments.map((argument) => expressionSemanticType(argument, group.schema, state.registry));
   return evaluateCall(state, signature, arguments_, types);
-}
-
-function countValues({ values }: AggregateContext): QueryOutcome<QueryValue | undefined> {
-  const first = values[0];
-  const count = first === undefined ? 0 : first.filter((value) => value !== null).length;
-  return { ok: true, value: count };
-}
-
-function countDistinctValues(context: AggregateContext): QueryOutcome<QueryValue | undefined> {
-  const { values, item, group, state } = context;
-  const expression = item.arguments[0];
-  const type = expression === undefined ? undefined : expressionValueType(expression, group.schema, state.registry);
-  const unique = new Set((values[0] ?? []).filter((value) => value !== null).map((value) => scalarKey(value, type)));
-  return { ok: true, value: unique.size };
-}
-
-function sumAggregateValues(context: AggregateContext): QueryOutcome<QueryValue | undefined> {
-  const { values, item, group, signature, state } = context;
-  const inputs = values[0] ?? [];
-  if (signature.nullPolicy === 'propagate' && inputs.some((value) => value === null)) return { ok: true, value: null };
-  const expression = item.arguments[0];
-  if (expression === undefined) return failure('query.aggregate', 'Sum requires an input expression.');
-  const type = expressionSemanticType(expression, group.schema, state.registry);
-  return sumValues(
-    state,
-    inputs.filter((value) => value !== null),
-    type,
-  );
 }
 
 function resolveDivision(state: EvalState, policy: FunctionSignature['zeroDenominator']): Outcome<FunctionSignature> {
@@ -94,23 +82,31 @@ function resolveDivision(state: EvalState, policy: FunctionSignature['zeroDenomi
 }
 
 function ratioOfSums(context: AggregateContext): QueryOutcome<QueryValue | undefined> {
-  const { state, values, item, group, signature } = context;
-  if (values.length < 2)
-    return failure('query.aggregate', 'Ratio-of-sums requires numerator and denominator arguments.');
+  const { state, values, item, group, signature, policy } = context;
+  if (values.length < 2) return failure('query.aggregate', 'Inputs.');
   const numeratorExpression = item.arguments[0];
   const denominatorExpression = item.arguments[1];
-  if (numeratorExpression === undefined || denominatorExpression === undefined)
-    return failure('query.aggregate', 'Ratio-of-sums requires numerator and denominator arguments.');
+  if ([numeratorExpression, denominatorExpression].includes(undefined)) return failure('query.aggregate', 'Inputs.');
+  const pairs = values[0]!.map((numerator, index) => [numerator, values[1]?.[index] ?? null] as const);
+  const missing = pairs.some(([numerator, denominator]) => numerator === null || denominator === null);
+  if (missing) {
+    if (policy === 'reject') return failure('query.missing-value', MISSING_ERROR);
+    if (policy === 'propagate') return { ok: true, value: null };
+  }
+  const available =
+    policy === 'exclude-pair'
+      ? pairs.filter(([numerator, denominator]) => numerator !== null && denominator !== null)
+      : pairs;
   const numerator = sumValues(
     state,
-    values[0]!,
-    expressionSemanticType(numeratorExpression, group.schema, state.registry),
+    available.map(([value]) => value),
+    expressionSemanticType(numeratorExpression!, group.schema, state.registry),
     true,
   );
   const denominator = sumValues(
     state,
-    values[1]!,
-    expressionSemanticType(denominatorExpression, group.schema, state.registry),
+    available.map(([, value]) => value),
+    expressionSemanticType(denominatorExpression!, group.schema, state.registry),
     true,
   );
   if (!numerator.ok) return numerator;
@@ -121,98 +117,152 @@ function ratioOfSums(context: AggregateContext): QueryOutcome<QueryValue | undef
   return evaluateCall(state, divide.value, [numerator.value, denominator.value]);
 }
 
-function meanOfRates(context: AggregateContext): QueryOutcome<QueryValue | undefined> {
-  const { state, values, signature } = context;
-  const inputs = values[0] ?? [];
-  if (inputs.some((value) => value === null) && signature.nullPolicy === 'propagate') return { ok: true, value: null };
-  const numeric: number[] = [];
+function meanOfRates(state: EvalState, inputs: readonly QueryValue[]): QueryOutcome<QueryValue | undefined> {
+  let total = 0;
+  let count = 0;
   for (const value of inputs) {
-    if (typeof value === 'number') numeric.push(value);
-    else if (isDecimal(value)) {
+    if (typeof value === 'number') {
+      total += value;
+      count += 1;
+    } else if (isDecimal(value)) {
       const converted = Number(value.decimal);
-      if (!Number.isFinite(converted))
-        return failure('query.numeric-overflow', 'Decimal mean input exceeded the bounded floating representation.');
-      numeric.push(converted);
+      if (!Number.isFinite(converted)) return failure('query.numeric-overflow', 'Mean overflow.');
+      total += converted;
+      count += 1;
     }
   }
-  if (numeric.length === 0) return { ok: true, value: null };
+  if (count === 0) return { ok: true, value: null };
   state.approximate = true;
-  return { ok: true, value: numeric.reduce((sum, value) => sum + value, 0) / numeric.length };
+  return { ok: true, value: total / count };
 }
 
 function unsupportedAggregate(context: AggregateContext): QueryOutcome<QueryValue | undefined> {
   const { signature } = context;
-  return unsupported(
-    'aggregate-runtime',
-    `No trusted local aggregate implementation exists for ${signature.ref.id}@${signature.ref.revision}.`,
-  );
+  return unsupported('aggregate-runtime', `No: ${signature.ref.id}@${signature.ref.revision}.`);
 }
 
-const AGGREGATE_HANDLERS: Readonly<
-  Record<string, (context: AggregateContext) => QueryOutcome<QueryValue | undefined>>
-> = {
-  'core.aggregate.count': countValues,
-  'core.aggregate.count-distinct': countDistinctValues,
-  'core.aggregate.sum': sumAggregateValues,
-};
+function periodValue(
+  state: EvalState,
+  expression: Expression,
+  row: QueryRow,
+  schema: EvalGroup['schema'],
+): QueryOutcome<QueryValue> {
+  const evaluated = evaluateExpression(state, expression, row, schema);
+  if (!evaluated.ok) return evaluated;
+  if (evaluated.value === undefined || evaluated.value === null)
+    return failure('query.temporal-value', PERIOD_END_ERROR);
+  return { ok: true, value: evaluated.value! };
+}
+
+function semiAdditiveGroup(state: EvalState, item: AggregateSpec, group: EvalGroup): QueryOutcome<EvalGroup> {
+  const expression = item.semantics?.timeExpression;
+  if (expression === undefined) return unsupported('semi-additive-time', 'Time.');
+  const type = expressionSemanticType(expression, group.schema, state.registry) ?? 'date';
+  let latest: QueryRow[] = [];
+  let latestValue: QueryValue | undefined;
+  for (const row of group.rows) {
+    const evaluated = periodValue(state, expression, row, group.schema);
+    if (!evaluated.ok) return evaluated;
+    if (latestValue === undefined) {
+      latest = [row];
+      latestValue = evaluated.value;
+      continue;
+    }
+    const compared = compareValue(evaluated.value, latestValue!, type);
+    if (compared === undefined) return failure('query.temporal-value', PERIOD_END_ERROR);
+    if (compared === 0) latest.push(row);
+    else if (compared > 0) {
+      latest = [row];
+      latestValue = evaluated.value;
+    }
+  }
+  return {
+    ok: true,
+    value: { keyRow: group.keyRow, rows: latest, schema: group.schema },
+  };
+}
 
 function evaluateAggregateResult(context: AggregateContext): QueryOutcome<QueryValue | undefined> {
-  const operation = context.signature.operation;
-  if (operation === 'ratio-of-sums') return ratioOfSums(context);
-  if (operation === 'mean-of-rates' || context.signature.ref.id === 'core.mean-of-rates') return meanOfRates(context);
-  const handler = AGGREGATE_HANDLERS[context.signature.ref.id];
-  if (handler !== undefined) return handler(context);
+  const { signature, values, item, group, state } = context;
+  if (signature.operation === 'ratio-of-sums') return ratioOfSums(context);
+  const inputs = signature.operation === 'mean-of-rates' ? values.flat() : (values[0] ?? []);
+  const available = valuesForPolicy(inputs, context.policy);
+  if (!available.ok) return available;
+  if (available.value === null) return { ok: true, value: null };
+  if (signature.operation === 'mean-of-rates') return meanOfRates(state, available.value);
+  if (signature.ref.id === 'core.aggregate.count') return { ok: true, value: available.value.length };
+  if (signature.ref.id === 'core.aggregate.count-distinct') {
+    const expression = item.arguments[0];
+    const type = expression === undefined ? undefined : expressionValueType(expression, group.schema, state.registry);
+    return { ok: true, value: new Set(available.value.map((value) => scalarKey(value, type))).size };
+  }
+  if (signature.ref.id === 'core.aggregate.sum') {
+    const expression = item.arguments[0];
+    if (expression === undefined) return failure('query.aggregate', 'Input.');
+    return sumValues(state, available.value, expressionSemanticType(expression, group.schema, state.registry));
+  }
   return unsupportedAggregate(context);
+}
+
+function aggregatePolicy(
+  item: AggregateSpec,
+  signature: FunctionSignature,
+  inherited?: MissingPolicy,
+): MissingPolicy | undefined {
+  if (item.semantics !== undefined) return item.semantics.missingPolicy;
+  if (inherited !== undefined) return inherited;
+  if (signature.ref.id === 'core.aggregate.count' || signature.ref.id === 'core.aggregate.count-distinct')
+    return 'exclude-pair';
+  return signature.nullPolicy;
+}
+
+function evaluateResolvedAggregate(
+  state: EvalState,
+  item: AggregateSpec,
+  group: EvalGroup,
+  signature: FunctionSignature,
+  inheritedMissingPolicy?: MissingPolicy,
+): QueryOutcome<QueryValue | undefined> {
+  const inheritedPolicy = item.semantics?.missingPolicy ?? inheritedMissingPolicy;
+  const policy = aggregatePolicy(item, signature, inheritedMissingPolicy);
+  const semiAdditive = item.semantics?.aggregation === 'semi-additive';
+  if (signature.ref.id === 'core.if' && !semiAdditive) {
+    const expression: Expression = { kind: 'call', function: item.function, arguments: item.arguments };
+    return evaluateAggregateExpression(state, expression, group, inheritedPolicy);
+  }
+  const aggregate = isAggregateFunction(signature);
+  if (![aggregate, semiAdditive].includes(true))
+    return evaluateNonAggregateCall(state, item, group, signature, inheritedPolicy);
+  const charged = tick(state);
+  if (!charged.ok) return charged;
+  const prepared: QueryOutcome<EvalGroup> = semiAdditive
+    ? semiAdditiveGroup(state, item, group)
+    : { ok: true, value: group };
+  if (!prepared.ok) return prepared;
+  if (!aggregate) return evaluateNonAggregateCall(state, item, prepared.value, signature, policy);
+  const evaluated = evaluateGroupArguments(state, item, prepared.value);
+  if (!evaluated.ok) return evaluated;
+  return evaluateAggregateResult({ state, item, group: prepared.value, signature, values: evaluated.value, policy });
 }
 
 export function aggregateValues(
   state: EvalState,
   item: AggregateSpec,
   group: EvalGroup,
+  inheritedMissingPolicy?: MissingPolicy,
+  suppliedSignature?: FunctionSignature,
 ): QueryOutcome<QueryValue | undefined> {
-  const resolved = registeredAggregate(item, state);
+  const resolved: Outcome<FunctionSignature> =
+    suppliedSignature === undefined ? registeredAggregate(item, state) : { ok: true, value: suppliedSignature };
   if (!resolved.ok) return resolved;
-  const signature = resolved.value;
-  if (signature.ref.id === 'core.if') {
-    const expression: Expression = { kind: 'call', function: item.function, arguments: item.arguments };
-    return evaluateAggregateExpression(state, expression, group);
-  }
-  if (!isAggregateSignature(signature)) return evaluateNonAggregateCall(state, item, group, signature);
-  const charged = tick(state);
-  if (!charged.ok) return charged;
-  const evaluated = evaluateGroupArguments(state, item, group);
-  if (!evaluated.ok) return evaluated;
-  return evaluateAggregateResult({ state, item, group, signature, values: evaluated.value });
-}
-
-function aggregateCall(
-  state: EvalState,
-  expression: Extract<Expression, { kind: 'call' }>,
-  group: EvalGroup,
-  signature: FunctionSignature,
-): QueryOutcome<QueryValue | undefined> {
-  if (isAggregateSignature(signature)) {
-    const item: AggregateSpec = {
-      id: `nested-${expression.function.id}`,
-      function: expression.function,
-      arguments: expression.arguments,
-    };
-    return aggregateValues(state, item, group);
-  }
-  const arguments_: QueryValue[] = [];
-  for (const argument of expression.arguments) {
-    const value = evaluateAggregateExpression(state, argument, group);
-    if (!value.ok) return value;
-    arguments_.push(value.value === undefined ? null : value.value);
-  }
-  const types = expression.arguments.map((argument) => expressionSemanticType(argument, group.schema, state.registry));
-  return evaluateCall(state, signature, arguments_, types);
+  return evaluateResolvedAggregate(state, item, group, resolved.value, inheritedMissingPolicy);
 }
 
 function evaluateAggregateExpression(
   state: EvalState,
   expression: Expression,
   group: EvalGroup,
+  inheritedMissingPolicy?: MissingPolicy,
 ): QueryOutcome<QueryValue | undefined> {
   if (expression.kind === 'literal') {
     const step = tick(state);
@@ -227,16 +277,18 @@ function evaluateAggregateExpression(
       );
     return evaluateExpression(state, expression, group.rows[0]!, group.schema);
   }
-  const resolved = registeredAggregate(
-    { id: `nested-${expression.function.id}`, function: expression.function, arguments: expression.arguments },
-    state,
-  );
+  const item: AggregateSpec = {
+    id: `nested-${expression.function.id}`,
+    function: expression.function,
+    arguments: expression.arguments,
+  };
+  const resolved = registeredAggregate(item, state);
   if (!resolved.ok) return resolved;
   if (resolved.value.ref.id === 'core.if')
     return evaluateConditional(state, expression.arguments, (child) =>
-      evaluateAggregateExpression(state, child, group),
+      evaluateAggregateExpression(state, child, group, inheritedMissingPolicy),
     );
-  return aggregateCall(state, expression, group, resolved.value);
+  return evaluateResolvedAggregate(state, item, group, resolved.value, inheritedMissingPolicy);
 }
 
 function validatedAddition(state: EvalState): Outcome<FunctionSignature> {

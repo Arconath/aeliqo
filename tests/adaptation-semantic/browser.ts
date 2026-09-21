@@ -1,4 +1,8 @@
-import { createPresentationRegistry, type PresentationPatternManifest } from '@aeliqo/core/presentation';
+import {
+  createPresentationRegistry,
+  type PresentationPatternManifest,
+  type PresentationTargetEvidence,
+} from '@aeliqo/core/presentation';
 import type { PresentationPlan } from '@aeliqo/core';
 import { createRegionStore } from '@aeliqo/runtime/regions';
 import { createAeliqoRegionAdaptation } from '@aeliqo/web/region/adaptation';
@@ -132,6 +136,17 @@ const authority = {
 };
 const store = createRegionStore({ readAuthority: () => ok(authority), authorizeCommit: () => ok(undefined) });
 const region = unwrap(store.create({ id: 'region-1', state: { task } }));
+const target = (state: PresentationTargetEvidence['state'], surfaceId = region.id): PresentationTargetEvidence => ({
+  address: {
+    runtimeId: 'installed-consumer',
+    scopeInstanceId: 'scope-1',
+    activationEpoch: 1,
+    surfaceId,
+    surfaceGeneration: 1,
+  },
+  state,
+});
+let targetEvidence = target('active');
 const container = document.querySelector('#mount')!;
 const shadow = container.attachShadow({ mode: 'open' });
 const element = document.createElement('aeliqo-region') as AeliqoRegionElement;
@@ -142,6 +157,7 @@ const adaptation = createAeliqoRegionAdaptation({
   element,
   region,
   registry,
+  target: { address: target('active').address, read: () => targetEvidence },
   autoObserve: false,
   dwellMs: 0,
   baseContext: (input) => {
@@ -198,6 +214,10 @@ Object.assign(window, {
     adaptation,
     reads: () => reads,
     request: (width: number, textScale = 1) => adaptation.request(measure(width, textScale), { force: true }),
+    requestWithTarget: (width: number, state: PresentationTargetEvidence['state'], surfaceId?: string) => {
+      targetEvidence = target(state, surfaceId);
+      return adaptation.request(measure(width), { force: true });
+    },
   },
 });
 const initial = await adaptation.request(measure(900), { force: true });

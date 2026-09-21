@@ -3,3 +3,4 @@ export { preparePresentationContext, validatePresentationPlan } from './validate
 export type { PresentationValidationOptions, PreparedPresentationContext } from './validate.js';
 export type * from './types.js';
 export { composePresentation } from './compose.js';
+export { resolvePresentation } from './resolve.js';

@@ -56,6 +56,35 @@ describe('semantic visualization registry', () => {
     expect(resolved.value.ports).toEqual([]);
     expect(resolved.value.operations).toEqual([{ id: 'data.read', revision: '1' }]);
     expect(resolved.value.values).toEqual({ visualization: matrix });
+    const barManifest = manifests.value.find((manifest) => manifest.ref.id === 'visualization.bar')!;
+    const barResolved = barManifest.resolveConfig(
+      {
+        visualization: {
+          version: '1',
+          view: 'bar',
+          plot: {
+            version: '1',
+            root: {
+              kind: 'unit',
+              mark: 'bar',
+              result: ref,
+              missing: 'gap',
+              encoding: {
+                x: { field: 'id', scale: 'ordinal' },
+                y: { field: 'amount', scale: 'linear', zero: true },
+              },
+            },
+          },
+        },
+      },
+      result,
+    );
+    expect(barResolved.ok).toBe(true);
+    if (barResolved.ok)
+      expect(barResolved.value.operations).toEqual([
+        { id: 'data.read', revision: '1' },
+        { id: 'data.analyze', revision: '1' },
+      ]);
   });
 
   it('derives a trusted selection port and rejects aliases or stale descriptors', () => {
@@ -99,6 +128,26 @@ describe('semantic visualization registry', () => {
     } as AeliqoVisualizationBinding;
     expect(createAeliqoVisualizationPresentationManifests([malformed]).ok).toBe(false);
   });
+
+  it('accepts the runtime source-lineage pin while rejecting unknown ResultRef keys', () => {
+    const lineageRef = { ...ref, sourceLineage: 'source-lineage-1' };
+    const lineageResult: Result = { ...result, ref: lineageRef };
+    const lineageBinding: AeliqoVisualizationBinding = {
+      result: lineageResult,
+      context: { results: [lineageResult] },
+      datasets: [{ result: lineageRef, rows }],
+    };
+    expect(createAeliqoVisualizationPresentationManifests([lineageBinding]).ok).toBe(true);
+    expect(
+      createAeliqoVisualizationPresentationManifests([
+        {
+          ...lineageBinding,
+          datasets: [{ result: { ...lineageRef, untrusted: 'extra' } as never, rows }],
+        } as AeliqoVisualizationBinding,
+      ]).ok,
+    ).toBe(false);
+  });
+
   it('rejects malformed materialization budgets', () => {
     for (const maxDatasets of [NaN, Infinity, -1, 0, 1.5, 65])
       expect(createAeliqoVisualizationPresentationManifests([binding], { maxDatasets }).ok).toBe(false);

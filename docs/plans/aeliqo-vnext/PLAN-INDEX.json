@@ -1,0 +1,609 @@
+{
+  "schema_version": 1,
+  "pack_version": "final-v3",
+  "source_reference": "9092d6cff454b81cd623a7a4be7621c6a750d9c7",
+  "product_status": "not-executed",
+  "tasks": [
+    {
+      "id": "T00",
+      "title": "Fresh inventory, policy, baseline, and harness",
+      "depends_on": [],
+      "requirements": [
+        "RQ01",
+        "RQ32"
+      ]
+    },
+    {
+      "id": "T01",
+      "title": "Freeze the API through consumer-first design probes",
+      "depends_on": [
+        "T00"
+      ],
+      "requirements": [
+        "RQ03",
+        "RQ45"
+      ]
+    },
+    {
+      "id": "T02",
+      "title": "Immutable feature contracts and compatibility lowering",
+      "depends_on": [
+        "T01"
+      ],
+      "requirements": [
+        "RQ04",
+        "RQ33"
+      ]
+    },
+    {
+      "id": "T03",
+      "title": "Scoped surface instances, ownership, and registry lifecycle",
+      "depends_on": [
+        "T02"
+      ],
+      "requirements": [
+        "RQ05",
+        "RQ07"
+      ]
+    },
+    {
+      "id": "T04",
+      "title": "Scope activation, safe workspace transitions, and draft guards",
+      "depends_on": [
+        "T03"
+      ],
+      "requirements": [
+        "RQ37",
+        "RQ39",
+        "RQ40"
+      ]
+    },
+    {
+      "id": "T05",
+      "title": "Local data convenience and update correctness",
+      "depends_on": [
+        "T04"
+      ],
+      "requirements": [
+        "RQ08"
+      ]
+    },
+    {
+      "id": "T06",
+      "title": "Remote data, coverage, caching, and semantic correctness",
+      "depends_on": [
+        "T05"
+      ],
+      "requirements": [
+        "RQ09",
+        "RQ10",
+        "RQ43"
+      ]
+    },
+    {
+      "id": "T07",
+      "title": "One deterministic adaptive decision engine",
+      "depends_on": [
+        "T03",
+        "T06"
+      ],
+      "requirements": [
+        "RQ11"
+      ]
+    },
+    {
+      "id": "T08",
+      "title": "Registered views, bounded composition, and state transfer",
+      "depends_on": [
+        "T07"
+      ],
+      "requirements": [
+        "RQ12"
+      ]
+    },
+    {
+      "id": "T09",
+      "title": "Workspace-wide adaptive presentation without tenancy changes",
+      "depends_on": [
+        "T04",
+        "T08"
+      ],
+      "requirements": [
+        "RQ41"
+      ]
+    },
+    {
+      "id": "T10",
+      "title": "React DX, native custom views, and headless consumption",
+      "depends_on": [
+        "T04",
+        "T09"
+      ],
+      "requirements": [
+        "RQ02",
+        "RQ06",
+        "RQ13"
+      ]
+    },
+    {
+      "id": "T11",
+      "title": "Host actions and a genuine non-data feature",
+      "depends_on": [
+        "T04",
+        "T10"
+      ],
+      "requirements": [
+        "RQ14",
+        "RQ15"
+      ]
+    },
+    {
+      "id": "T12",
+      "title": "SSR, hydration, framework and islands compatibility",
+      "depends_on": [
+        "T10"
+      ],
+      "requirements": [
+        "RQ16",
+        "RQ17"
+      ]
+    },
+    {
+      "id": "T13",
+      "title": "Accessible and predictable adaptive experience",
+      "depends_on": [
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "requirements": [
+        "RQ18",
+        "RQ19"
+      ]
+    },
+    {
+      "id": "T14",
+      "title": "Optional scoped agent bridge and truthful receipts",
+      "depends_on": [
+        "T04",
+        "T09",
+        "T10",
+        "T11"
+      ],
+      "requirements": [
+        "RQ20",
+        "RQ35",
+        "RQ38",
+        "RQ44"
+      ]
+    },
+    {
+      "id": "T15",
+      "title": "Protocol-based BYOK and provider conformance",
+      "depends_on": [
+        "T14"
+      ],
+      "requirements": [
+        "RQ21",
+        "RQ22"
+      ]
+    },
+    {
+      "id": "T16",
+      "title": "Threat model, authority, retention, and abuse limits",
+      "depends_on": [
+        "T11",
+        "T12",
+        "T14",
+        "T15"
+      ],
+      "requirements": [
+        "RQ23",
+        "RQ34",
+        "RQ42"
+      ]
+    },
+    {
+      "id": "T17",
+      "title": "Every component documented and copyable examples verified",
+      "depends_on": [
+        "T13",
+        "T14",
+        "T15",
+        "T16"
+      ],
+      "requirements": [
+        "RQ24",
+        "RQ25"
+      ]
+    },
+    {
+      "id": "T18",
+      "title": "Four cross-domain reference journeys and value comparison",
+      "depends_on": [
+        "T17"
+      ],
+      "requirements": [
+        "RQ26"
+      ]
+    },
+    {
+      "id": "T19",
+      "title": "Bundle, latency, heap, and module-scale qualification",
+      "depends_on": [
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T17",
+        "T18"
+      ],
+      "requirements": [
+        "RQ27",
+        "RQ28"
+      ]
+    },
+    {
+      "id": "T20",
+      "title": "Packaging, migrations, and qualified support",
+      "depends_on": [
+        "T17",
+        "T18",
+        "T19"
+      ],
+      "requirements": [
+        "RQ29",
+        "RQ36",
+        "RQ46"
+      ]
+    },
+    {
+      "id": "T21",
+      "title": "Full review, candidate, and authorized release",
+      "depends_on": [
+        "T00",
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16",
+        "T17",
+        "T18",
+        "T19",
+        "T20"
+      ],
+      "requirements": [
+        "RQ30",
+        "RQ31"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "RQ01",
+      "requirement": "Fresh checkout, active policy, toolchain, catalog, and baseline recorded",
+      "owner": "T00",
+      "required_evidence": "Baseline manifest and source SHA"
+    },
+    {
+      "id": "RQ02",
+      "requirement": "No-AI standalone and adaptive paths work without model imports/requests",
+      "owner": "T10",
+      "required_evidence": "Installed consumer + network/module-graph assertion"
+    },
+    {
+      "id": "RQ03",
+      "requirement": "Public DX has small typed APIs; no giant all-props component or config",
+      "owner": "T01",
+      "required_evidence": "Positive/negative TypeScript consumer fixtures"
+    },
+    {
+      "id": "RQ04",
+      "requirement": "Features are immutable definitions; data and identities are scoped bindings",
+      "owner": "T02",
+      "required_evidence": "Definition tests + server import graph"
+    },
+    {
+      "id": "RQ05",
+      "requirement": "Multiple instances of one feature are independent and explicitly addressed",
+      "owner": "T03",
+      "required_evidence": "Two-surface isolation and wrong-target tests"
+    },
+    {
+      "id": "RQ06",
+      "requirement": "Lifecycle survives Strict Mode, interrupted render, unmount, and disposal",
+      "owner": "T10",
+      "required_evidence": "Browser lifecycle tests + retained-handle counts"
+    },
+    {
+      "id": "RQ07",
+      "requirement": "Controlled host state cannot be bypassed by UI or agent requests",
+      "owner": "T03",
+      "required_evidence": "Proposal/accept/reject/revision tests"
+    },
+    {
+      "id": "RQ08",
+      "requirement": "Local data updates retain controller identity and bounded resource use",
+      "owner": "T05",
+      "required_evidence": "Snapshot-update, duplicates, null/empty/shape tests"
+    },
+    {
+      "id": "RQ09",
+      "requirement": "Remote queries preserve coverage, pagination, unsupported capabilities",
+      "owner": "T06",
+      "required_evidence": "Real protocol fixture and query assertions"
+    },
+    {
+      "id": "RQ10",
+      "requirement": "Analytics respects grain, units, ratios, time, nulls, and partial data",
+      "owner": "T06",
+      "required_evidence": "Expected-value semantic fixtures"
+    },
+    {
+      "id": "RQ11",
+      "requirement": "Same normalized inputs yield the same resolver result and explanation",
+      "owner": "T07",
+      "required_evidence": "Determinism/property tests with injected environment"
+    },
+    {
+      "id": "RQ12",
+      "requirement": "Eligibility, pins, ambiguity, fallback, and composition are explicit",
+      "owner": "T08",
+      "required_evidence": "Candidate/coverage/fallback/state-mapping tests"
+    },
+    {
+      "id": "RQ13",
+      "requirement": "Existing host UI and native React custom views work without remount hacks",
+      "owner": "T10",
+      "required_evidence": "React-context/portal/controlled-input consumer"
+    },
+    {
+      "id": "RQ14",
+      "requirement": "Writes retain preview, confirmation, authorization, idempotency, ambiguity",
+      "owner": "T11",
+      "required_evidence": "Server-side action integration and restart/retry cases"
+    },
+    {
+      "id": "RQ15",
+      "requirement": "Non-relational/editor/job feature uses capabilities without fake table data",
+      "owner": "T11",
+      "required_evidence": "Real non-data vertical slice"
+    },
+    {
+      "id": "RQ16",
+      "requirement": "SSR has meaningful initial content and matching safe hydration",
+      "owner": "T12",
+      "required_evidence": "HTML assertions + hydration error capture"
+    },
+    {
+      "id": "RQ17",
+      "requirement": "Framework-independent paths and support matrix are honestly qualified",
+      "owner": "T12",
+      "required_evidence": "React/Lit/Vanilla/Vue/Next/island fixture results"
+    },
+    {
+      "id": "RQ18",
+      "requirement": "UX preserves work and exposes all important states accessibly",
+      "owner": "T13",
+      "required_evidence": "Keyboard/browser/visual/state-transition tests"
+    },
+    {
+      "id": "RQ19",
+      "requirement": "Theme, locale, RTL, time, reduced motion, zoom, and expansion work",
+      "owner": "T13",
+      "required_evidence": "Per-profile visual and behavior evidence"
+    },
+    {
+      "id": "RQ20",
+      "requirement": "Agent connection is optional, scoped, authenticated, and cancellable",
+      "owner": "T14",
+      "required_evidence": "Session expiry/disconnect/replay/race tests"
+    },
+    {
+      "id": "RQ21",
+      "requirement": "BYOK uses protocol capabilities, not hardcoded vendor/model selection",
+      "owner": "T15",
+      "required_evidence": "Model conformance profiles and secret scan"
+    },
+    {
+      "id": "RQ22",
+      "requirement": "Model/provider quality is separated from mock protocol compatibility",
+      "owner": "T15",
+      "required_evidence": "Explicit synthetic/live evaluation ledger"
+    },
+    {
+      "id": "RQ23",
+      "requirement": "Permissions, egress, prompt injection, forged receipts are contained",
+      "owner": "T16",
+      "required_evidence": "Adversarial cross-boundary tests"
+    },
+    {
+      "id": "RQ24",
+      "requirement": "Every catalog component has accurate standalone/semantic/adaptive docs",
+      "owner": "T17",
+      "required_evidence": "Catalog-to-doc/example/API coverage report"
+    },
+    {
+      "id": "RQ25",
+      "requirement": "Every advertised copyable code example typechecks in its declared environment and key examples run from tarballs",
+      "owner": "T17",
+      "required_evidence": "Generated docs consumer and browser preview tests"
+    },
+    {
+      "id": "RQ26",
+      "requirement": "Product value is shown across distinct application classes",
+      "owner": "T18",
+      "required_evidence": "Four reference journeys + host-only comparison"
+    },
+    {
+      "id": "RQ27",
+      "requirement": "Bundle, work, latency, memory, and module scaling meet measured budgets",
+      "owner": "T19",
+      "required_evidence": "Reproducible raw performance artifacts"
+    },
+    {
+      "id": "RQ28",
+      "requirement": "Large apps use scoped registries/lazy loading, not global eager imports",
+      "owner": "T19",
+      "required_evidence": "Import graph + unrelated-surface isolation counters"
+    },
+    {
+      "id": "RQ29",
+      "requirement": "Versioned public APIs/protocols/migrations and old consumers are covered",
+      "owner": "T20",
+      "required_evidence": "Export/ABI/consumer matrix and migration fixtures"
+    },
+    {
+      "id": "RQ30",
+      "requirement": "Existing full quality matrix stays enforced with new gates added",
+      "owner": "T21",
+      "required_evidence": "Fresh `pnpm check` on accepted unchanged source"
+    },
+    {
+      "id": "RQ31",
+      "requirement": "Publish and deploy are separately authorized, verified, and recoverable",
+      "owner": "T21",
+      "required_evidence": "Registry/tarball/image/runtime evidence or named blocker"
+    },
+    {
+      "id": "RQ32",
+      "requirement": "Checkpoints preserve decisions, failures, and remaining work",
+      "owner": "T00",
+      "required_evidence": "Continuously updated execution state and task ledger"
+    },
+    {
+      "id": "RQ33",
+      "requirement": "No duplicate authority/query/business-state engine introduced",
+      "owner": "T02",
+      "required_evidence": "Dependency review and existing/new path parity tests"
+    },
+    {
+      "id": "RQ34",
+      "requirement": "Rate, concurrency, cancellation, retention, and quotas remain bounded",
+      "owner": "T16",
+      "required_evidence": "Slow/hostile-client saturation and release tests"
+    },
+    {
+      "id": "RQ35",
+      "requirement": "Progress/results/diagnostics never imply success without actual receipts",
+      "owner": "T14",
+      "required_evidence": "Rejected/no-commit/late-ack/partial/ambiguous tests"
+    },
+    {
+      "id": "RQ36",
+      "requirement": "No unsupported claim of unlimited scale or every framework/provider",
+      "owner": "T20",
+      "required_evidence": "Machine-readable qualification/support matrix"
+    },
+    {
+      "id": "RQ37",
+      "requirement": "Application scope switching is isolated, stale-safe, and has explicit state portability rules",
+      "owner": "T04",
+      "required_evidence": "Workspace A\u2192B transition, late-result, cache/cursor/action-revocation tests"
+    },
+    {
+      "id": "RQ38",
+      "requirement": "Agent context follows the current trusted scope without allowing the model to choose or reuse another scope",
+      "owner": "T14",
+      "required_evidence": "Mid-request workspace switch, rebind, cross-scope metadata/tool-result tests"
+    },
+    {
+      "id": "RQ39",
+      "requirement": "Voluntary scope changes guard unsaved work; forced invalidation fences access without carrying drafts",
+      "owner": "T04",
+      "required_evidence": "Save/Discard/Stay, failed save, forced logout and scoped recovery tests"
+    },
+    {
+      "id": "RQ40",
+      "requirement": "Old controller callbacks and A-B-A activations cannot retarget a new scope",
+      "owner": "T04",
+      "required_evidence": "Monotonic activation and immutable surface-generation/address race tests"
+    },
+    {
+      "id": "RQ41",
+      "requirement": "Workspace-wide layouts adapt coherently without changing tenancy or duplicating controllers",
+      "owner": "T09",
+      "required_evidence": "Single/split/compare, child-failure, stale-read-set and real-DOM composition tests"
+    },
+    {
+      "id": "RQ42",
+      "requirement": "Browser/server transport and rendering boundaries resist credential, CSRF, XSS and cache leakage",
+      "owner": "T16",
+      "required_evidence": "SSR escaping, origin checks, cookie mutation, session/bfcache and cross-principal fixtures"
+    },
+    {
+      "id": "RQ43",
+      "requirement": "Cache/cursor semantics separate value identity and freshness from active UI fencing",
+      "owner": "T06",
+      "required_evidence": "A-B-A reauthorization, live/snapshot pagination and no-per-render cache explosion tests"
+    },
+    {
+      "id": "RQ44",
+      "requirement": "Agent pairing and conversation/continuation state are isolated by scope and target",
+      "owner": "T14",
+      "required_evidence": "Outbound payload audit, old continuation rejection and explicit target allowlists"
+    },
+    {
+      "id": "RQ45",
+      "requirement": "One consistent API contract and non-vacuous consumer tests replace conflicting chat examples",
+      "owner": "T01",
+      "required_evidence": "Positive/negative installed consumers, immutable target types, visible SSR DOM proof"
+    },
+    {
+      "id": "RQ46",
+      "requirement": "Final handoff, migration and export/entry documentation refer to the same version and requirements",
+      "owner": "T20",
+      "required_evidence": "Manifest, task graph, public export/docs mapping and checkpoint migration checks"
+    }
+  ],
+  "v2_to_v3_tasks": {
+    "T00": "T00",
+    "T01": "T01",
+    "T02": "T02",
+    "T03": "T03",
+    "T04": "T05",
+    "T05": "T06",
+    "T06": "T07",
+    "T07": "T08",
+    "T08": "T10",
+    "T09": "T11",
+    "T10": "T12",
+    "T11": "T13",
+    "T12": "T14",
+    "T13": "T15",
+    "T14": "T16",
+    "T15": "T17",
+    "T16": "T18",
+    "T17": "T19",
+    "T18": "T20",
+    "T19": "T21"
+  },
+  "new_tasks": [
+    "T04",
+    "T09"
+  ],
+  "new_requirements": [
+    "RQ39",
+    "RQ40",
+    "RQ41",
+    "RQ42",
+    "RQ43",
+    "RQ44",
+    "RQ45",
+    "RQ46"
+  ]
+}

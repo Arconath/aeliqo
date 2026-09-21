@@ -126,6 +126,8 @@ assert.deepEqual(Object.keys(manifest.dependencies ?? {}), ['zod']);
 assert.deepEqual(Object.keys(manifest.peerDependencies ?? {}), []);
 assert.deepEqual(Object.keys(manifest.optionalDependencies ?? {}), []);
 assert.equal(manifest.exports?.['./schema']?.import, './dist/contracts/schemas.js');
+assert.equal(manifest.exports?.['./features']?.import, './dist/features/index.js');
+assert.equal(manifest.exports?.['./features']?.types, './dist/features/index.d.ts');
 assert.equal(typeof manifest.exports?.['./schemas/*'], 'string');
 assert.equal(manifest.exports?.['.'].import, './dist/index.js');
 assert.equal(manifest.exports?.['.'].types, './dist/index.d.ts');
@@ -187,6 +189,14 @@ for (const entry of tarEntries) {
   assert(entry.startsWith('package/') && !entry.split('/').includes('..'), `Unexpected archive path: ${entry}`);
 }
 assert(tarEntries.includes('package/LICENSE'), 'Apache license is absent from the tarball');
+assert(
+  tarEntries.includes('package/dist/features/local-shape.js'),
+  'Local shape implementation is absent from tarball',
+);
+assert(
+  tarEntries.includes('package/dist/features/local-shape.d.ts'),
+  'Local shape declarations are absent from tarball',
+);
 for (const name of expectedSchemas) {
   assert(tarEntries.includes(`package/schemas/${name}.schema.json`), `Schema is absent from tarball: ${name}`);
 }
@@ -268,11 +278,33 @@ const catalogInput = {
   ],
   relationships: [],
   meanings: [],
-  capabilities: [],
+  capabilities: [
+    {
+      ref: { id: 'employees.remote', revision: '1' },
+      entity: 'employee',
+      operators: [],
+      fields: ['employee.id'],
+      relations: [],
+      metrics: [],
+      pagination: {
+        mode: 'snapshot',
+        stableOrder: [{ field: 'employee.id', direction: 'asc', nulls: 'last' }],
+        identity: ['employee.id'],
+      },
+      maxOutputRows: 100,
+    },
+  ],
 };
 const resultInput = {
   version: '1',
-  ref: { id: 'result-1', revision: '1', outputId: 'table', queryDigest: 'query-1', scopeDigest: 'scope-1' },
+  ref: {
+    id: 'result-1',
+    revision: '1',
+    sourceLineage: 'source-1',
+    outputId: 'table',
+    queryDigest: 'query-1',
+    scopeDigest: 'scope-1',
+  },
   taskId: 'task-1',
   fields: [],
   identity: [],
@@ -792,7 +824,7 @@ function runInstalledInteractionGraph(validateInteractionGraph, parseInteraction
 }
 const graphConsumerSource = runInstalledInteractionGraph.toString();
 
-function runInstalledPresentation(createPresentationRegistry, documents, current) {
+function runInstalledPresentation(createPresentationRegistry, documents, current, resolve) {
   const operation = { id: 'read', revision: '1' };
   const resultDescriptor = { ...documents.result, fields: documents.catalog.entities[0].fields };
   const manifest = (id, container) => ({
@@ -867,9 +899,54 @@ function runInstalledPresentation(createPresentationRegistry, documents, current
     ).ok
   )
     throw new Error('Installed presentation accepted stale state');
-  return { noPreset: true, unknownSSR: true, coverageChecked: true, staleRejected: true };
+  const resolver =
+    resolve === undefined ? undefined : runInstalledPresentationResolver(resolve, context, registered.value, current);
+  return {
+    noPreset: true,
+    unknownSSR: true,
+    coverageChecked: true,
+    staleRejected: true,
+    ...(resolver === undefined ? {} : resolver),
+  };
+}
+
+function runInstalledPresentationResolver(resolve, context, registry, current) {
+  const target = {
+    address: {
+      runtimeId: 'installed-runtime',
+      scopeInstanceId: 'installed-scope',
+      activationEpoch: 1,
+      surfaceId: context.task.regionId,
+      surfaceGeneration: 1,
+    },
+    state: 'active',
+  };
+  const resolved = resolve({
+    id: 'installed-resolver',
+    revision: '1',
+    preconditions: current,
+    context,
+    registry,
+    target,
+    candidates: [],
+  });
+  if (resolved.status !== 'ready' || !Object.isFrozen(resolved.plan.plan))
+    throw new Error('Installed presentation resolver did not return a validated ready plan');
+  const inactive = resolve({
+    id: 'installed-resolver-inactive',
+    revision: '1',
+    preconditions: current,
+    context,
+    registry,
+    target: { ...target, state: 'stale' },
+    candidates: [],
+  });
+  if (inactive.status !== 'unsupported' || inactive.diagnostic.code !== 'presentation.target-inactive')
+    throw new Error('Installed presentation resolver accepted inactive target evidence');
+  return { resolverReady: true, inactiveTargetRejected: true };
 }
 const presentationConsumerSource = runInstalledPresentation.toString();
+const presentationResolverConsumerSource = runInstalledPresentationResolver.toString();
 
 function runInstalledAgentContracts(parseContract, serializeContract, compareScalars, resultRef) {
   const type = { value: 'decimal', nullable: false };
@@ -916,15 +993,23 @@ import {
   validateTaskStructure,
   resolveExperienceConstraints,
   validateCommitReadSet,
+  inferLocalDataShape,
 } from '@aeliqo/core';
 import {
   composePresentation,
+  resolvePresentation,
   validatePresentationPlan,
   createPresentationRegistry,
 } from '@aeliqo/core/presentation';
 import {
   validateInteractionGraph,
   } from '@aeliqo/core/interaction';
+import { z } from 'zod';
+import {
+  defineDataFeature,
+  defineFeature,
+} from '@aeliqo/core/features';
+import type { DataFeatureDefinition, FeatureIntentValue } from '@aeliqo/core/features';
 import {
   checkExpression,
   } from '@aeliqo/core/expressions';
@@ -962,6 +1047,7 @@ import {
   createTypedAuthoring,
   createQueryFunctionRegistry,
 } from '@aeliqo/core/expressions';
+import { inferLocalDataShape as inferFeatureLocalDataShape } from '@aeliqo/core/features';
 import {
   NarrativeClaim,
   OperationGrant,
@@ -980,6 +1066,34 @@ import type {
   QueryResult,
   QuerySource,
 } from '@aeliqo/core/query';
+const installedPersonSchema = z.object({id:z.string(), name:z.string()});
+const installedPeopleFeature = defineDataFeature({id:'people',
+  schema:installedPersonSchema,
+  identity:['id']});
+const typedPeopleFeature: DataFeatureDefinition<typeof installedPersonSchema> = installedPeopleFeature;
+const installedJobFeature = defineFeature({id:'job',
+  capabilities:[{ref:{id:'job.status', revision:'1'},
+    kind:'status',
+    schema:z.object({jobId:z.string(), state:z.string()})}],
+  views:[{ref:{id:'job.progress', revision:'1'},
+    capabilities:[{id:'job.status', revision:'1'}]}],
+  intents:[{ref:{id:'job.configure', revision:'1'},
+    schema:z.object({template:z.string()}),
+    capabilities:[{id:'job.status', revision:'1'}],
+    views:[{id:'job.progress', revision:'1'}]}]});
+const parsedInstalledJob = installedJobFeature.parseIntent({intent:{id:'job.configure', revision:'1'},
+  input:{template:'invoice'}});
+// @ts-expect-error Data feature identities are immutable metadata.
+installedPeopleFeature.identity.push('name');
+// @ts-expect-error A typed job intent requires the declared input shape.
+const wrongInstalledJobInput: FeatureIntentValue<typeof installedJobFeature.intents> = {intent:{id:'job.configure', revision:'1'}, input:{template:7}};
+const installedShapeOutcome = inferLocalDataShape({id:'installed-shape', rows:[{id:'one'}], identity:['id']});
+if (!installedShapeOutcome.ok) throw new Error('shape');
+const installedShape: import('@aeliqo/core/features').LocalDataShape = installedShapeOutcome.value;
+const installedFeatureShape = inferFeatureLocalDataShape({id:'installed-feature-shape', rows:[], schema:installedPersonSchema, identity:['id']});
+// @ts-expect-error Local shape identity fields and callback are mutually exclusive.
+inferLocalDataShape({id:'installed-invalid', rows:[{id:'one'}], identity:['id'], getRowId: row => row});
+void [typedPeopleFeature, parsedInstalledJob, wrongInstalledJobInput, installedShape, installedFeatureShape];
 const commitPins: CommitPreconditions = ${JSON.stringify(commitPins)};
 declare const visualizationResult: Result;
 const visualization: VisualizationSpec = {version: '1',
@@ -1221,6 +1335,7 @@ import {
   validateTaskStructure,
   resolveExperienceConstraints,
   validateCommitReadSet,
+  inferLocalDataShape,
 } from '@aeliqo/core';
 import { bindVisualizationSpec } from '@aeliqo/core/visualization';
 import {
@@ -1230,6 +1345,7 @@ import {
 import {
   createPresentationRegistry,
   composePresentation,
+  resolvePresentation,
   validatePresentationPlan,
 } from '@aeliqo/core/presentation';
 import {
@@ -1238,6 +1354,8 @@ import {
   createStandardFunctionRegistry,
   createTypedAuthoring,
 } from '@aeliqo/core/expressions';
+import { inferLocalDataShape as inferFeatureLocalDataShape } from '@aeliqo/core/features';
+import { z } from 'zod';
 import { authorizeMeaningActivation } from '@aeliqo/core/semantics';
 import { createQueryPlanner } from '@aeliqo/core/query';
 assert.deepEqual(parseWireValue('{"requestId":"one"}'),
@@ -1247,6 +1365,13 @@ assert.equal(parseWireValue('{"requestId":"one","requestId":"two"}').ok,
   false);
 assert.equal(parseWireValue({requestId:undefined}).ok,
   false);
+const localSchema = z.object({id: z.string(), value: z.string().nullable()});
+const localReady = inferLocalDataShape({id: 'installed-local', rows: [{id: 'one', value: 'ready'}], schema: localSchema, identity: ['id']});
+assert.equal(localReady.ok, true);
+assert.equal(inferFeatureLocalDataShape({id: 'installed-empty', rows: [], schema: localSchema, identity: ['id']}).ok, true);
+assert.equal(inferLocalDataShape({id: 'installed-duplicate', rows: [{id: 'one'}, {id: 'one'}], identity: ['id']}).ok, false);
+// @ts-expect-error A local shape cannot declare identity fields and a callback together.
+inferLocalDataShape({id: 'installed-invalid', rows: [{id: 'one'}], identity: ['id'], getRowId: row => row});
 const commitPins = ${JSON.stringify(commitPins)};
 const documents = ${fixtureSource};
 const t05 = ${t05FixtureSource};
@@ -1542,9 +1667,16 @@ assert.equal(runInstalledInteractionGraph(validateInteractionGraph,
   parseInteractionState).selectionEquivalence,
   true);
 ${presentationConsumerSource}
-assert.equal(runInstalledPresentation(createPresentationRegistry,
+${presentationResolverConsumerSource}
+const installedPresentation = runInstalledPresentation(createPresentationRegistry,
   documents,
-  commitPins).noPreset,
+  commitPins,
+  resolvePresentation);
+assert.equal(installedPresentation.noPreset,
+  true);
+assert.equal(installedPresentation.resolverReady,
+  true);
+assert.equal(installedPresentation.inactiveTargetRejected,
   true);
 ${agentConsumerSource}
 assert.equal(runInstalledAgentContracts(parseContract,
@@ -1639,6 +1771,10 @@ await writeFile(
   join(consumerDirectory, 'index.html'),
   '<!doctype html><html><body><script type="module" src="/bundle-entry.js"></script></body></html>',
 );
+await writeFile(
+  join(consumerDirectory, 'browser-fixtures.json'),
+  JSON.stringify({ commitPins, documents, t05: t05Fixtures, t04: t04Fixtures }),
+);
 // Keep generic parsing and agent contracts in Node; this browser budget covers typed core imports.
 await writeFile(
   join(consumerDirectory, 'bundle-entry.js'),
@@ -1673,10 +1809,9 @@ const validWire = parseWireValue('{"requestId":"one"}');
 if (!validWire.ok || validWire.value.requestId !== 'one' ||
     parseWireValue('{"requestId":"one","requestId":"two"}').ok ||
     parseWireValue({requestId:undefined}).ok) throw new Error('Browser wire parser regression');
-const commitPins = ${JSON.stringify(commitPins)};
-const documents = ${fixtureSource};
-const t05 = ${t05FixtureSource};
-const t04 = ${t04FixtureSource};
+const {commitPins, documents, t05, t04} = await fetch(
+  new URL('./browser-fixtures.json', import.meta.url),
+).then((response) => response.json());
 ${queryConsumerSource}
 const installedQueryResult = runInstalledQuery();
 ${graphConsumerSource}

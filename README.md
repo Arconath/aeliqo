@@ -26,6 +26,11 @@ connects a bounded local data source and trusted authority adapter, mounts a
 Region, and renders an intent. It uses the same source that the documentation
 build typechecks.
 
+The published stable line is `0.4.2`. The breaking `0.5.0` vNext release line
+is being cut over through the owner-approved release workflow; use its package
+install command only after that workflow publishes the matching five packages.
+Never mix `0.4.2` and `0.5.0` packages in one application.
+
 The common application entry points are:
 
 ```ts
