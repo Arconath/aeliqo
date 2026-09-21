@@ -1,4 +1,4 @@
-const forbiddenAgent = await import('@aeliqo/agent/browser');
+import * as forbiddenAgent from '@aeliqo/agent/browser';
 
 globalThis.__aeliqoT20Forbidden = {
   module: forbiddenAgent,
