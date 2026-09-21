@@ -250,6 +250,7 @@ async function bundleEntry(consumer, entry) {
         target: 'es2022',
         rollupOptions: {
           input: join(consumer, entry),
+          treeshake: false,
           output: { format: 'es', codeSplitting: false },
         },
       },
