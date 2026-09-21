@@ -248,7 +248,10 @@ async function bundleEntry(consumer, entry) {
         write: false,
         minify: false,
         target: 'es2022',
-        rollupOptions: { input: join(consumer, entry), output: { format: 'es' } },
+        rollupOptions: {
+          input: join(consumer, entry),
+          output: { format: 'es', codeSplitting: false },
+        },
       },
     }),
     consumer,
@@ -268,7 +271,8 @@ function isAgentModule(moduleId) {
   return (
     normalized === '@aeliqo/agent' ||
     normalized.startsWith('@aeliqo/agent/') ||
-    normalized.includes('/node_modules/@aeliqo/agent/')
+    normalized.includes('/node_modules/@aeliqo/agent/') ||
+    normalized.includes('/@aeliqo+agent@')
   );
 }
 
