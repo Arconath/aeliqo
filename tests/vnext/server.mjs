@@ -12,6 +12,9 @@ function requestHeader(headers, name) {
 const root = fileURLToPath(new URL('../../examples/vnext', import.meta.url));
 const server = await createServer({
   root,
+  // Parallel browser fixtures must not trigger optimizer-discovery page reloads
+  // after a test has committed a presentation.
+  optimizeDeps: { noDiscovery: true, include: ['react', 'react-dom/client', 'react/jsx-dev-runtime'] },
   server: { host: '127.0.0.1', port, strictPort: true },
   plugins: [
     {
