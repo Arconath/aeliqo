@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createPortal } from 'react-dom';
 import type { Intent } from '@aeliqo/core';
 import {
   createPresentationRegistry,
@@ -39,10 +40,42 @@ const list: PresentationManifest = {
 };
 const installed = createPresentationRegistry([table, list]);
 if (!installed.ok) throw new Error(installed.diagnostics[0].message);
-const views = defineReactViews<Intent, PeopleSurfaceState>([
-  { ...tableRef, render: () => <p data-testid="native-choice">wide table</p> },
-  { ...listRef, render: () => <p data-testid="native-choice">narrow list</p> },
-]);
+const HostContext = createContext('missing-host');
+let failNextViewLoad = false;
+let holdViewLoads = false;
+let loadCount = 0;
+const pendingLoads: Array<() => void> = [];
+function WideView(): React.JSX.Element {
+  const [draft, setDraft] = useState('');
+  const context = useContext(HostContext);
+  return (
+    <section>
+      <p data-testid="native-choice">wide table</p>
+      <input aria-label="Native draft" value={draft} onChange={(event) => setDraft(event.target.value)} />
+      {createPortal(<span data-testid="native-portal">{context}</span>, document.getElementById('portal-target')!)}
+    </section>
+  );
+}
+function loadList() {
+  loadCount += 1;
+  document.getElementById('load-count')!.textContent = String(loadCount);
+  if (failNextViewLoad) {
+    failNextViewLoad = false;
+    throw new Error('Synthetic lazy view load failure');
+  }
+  return (async () => {
+    if (holdViewLoads) await new Promise<void>((resolve) => pendingLoads.push(resolve));
+    return (await import('./lazy-list.js')).default;
+  })();
+}
+function makeViews(includeWide = true) {
+  return defineReactViews<Intent, PeopleSurfaceState>([
+    ...(includeWide ? [{ ...tableRef, render: () => <WideView /> }] : []),
+    { ...listRef, load: () => loadList() },
+  ]);
+}
+let includeWide = true;
+let views = makeViews();
 const evidence = surface.presentationEvidence?.();
 if (evidence === undefined) throw new Error('The native fixture needs a committed runtime evaluation.');
 const presentation: PresentationResolverInput = {
@@ -72,9 +105,35 @@ const presentation: PresentationResolverInput = {
   })),
 };
 
-createRoot(document.getElementById('root')!).render(
-  <AdaptiveSurface surface={surface} views={views} presentation={presentation} />,
-);
+const root = createRoot(document.getElementById('root')!);
+function renderHost() {
+  root.render(
+    <React.StrictMode>
+      <HostContext.Provider value="existing-host">
+        <AdaptiveSurface surface={surface} views={views} presentation={presentation} />
+      </HostContext.Provider>
+    </React.StrictMode>,
+  );
+}
+renderHost();
 document.getElementById('narrow')!.addEventListener('click', () => {
   document.getElementById('host')!.style.width = '360px';
+});
+document.getElementById('fail-next')!.addEventListener('click', () => {
+  failNextViewLoad = true;
+});
+document.getElementById('remove-wide')!.addEventListener('click', () => {
+  includeWide = false;
+  views = makeViews(includeWide);
+  renderHost();
+});
+document.getElementById('hold-loads')!.addEventListener('click', () => {
+  holdViewLoads = true;
+});
+document.getElementById('rerender')!.addEventListener('click', () => {
+  views = makeViews(includeWide);
+  renderHost();
+});
+document.getElementById('release-load')!.addEventListener('click', () => {
+  pendingLoads.shift()?.();
 });

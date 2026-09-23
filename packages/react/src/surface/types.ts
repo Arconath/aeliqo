@@ -15,14 +15,16 @@ export interface ReactViewProps<I, S> {
 }
 
 /** Trusted local React code. It is not a wire-renderer registration. */
-export interface ReactViewInput<I, S> extends VersionRef {
-  readonly render: ComponentType<ReactViewProps<I, S>>;
-}
+export type ReactViewInput<I, S> = VersionRef &
+  (
+    | { readonly render: ComponentType<ReactViewProps<I, S>>; readonly load?: never }
+    | { readonly load: () => Promise<ComponentType<ReactViewProps<I, S>>>; readonly render?: never }
+  );
 
-export interface ReactViewDefinition<I, S> {
-  readonly ref: VersionRef;
-  readonly render: ComponentType<ReactViewProps<I, S>>;
-}
+export type ReactViewDefinition<I, S> = { readonly ref: VersionRef } & (
+  | { readonly render: ComponentType<ReactViewProps<I, S>>; readonly load?: never }
+  | { readonly load: () => Promise<ComponentType<ReactViewProps<I, S>>>; readonly render?: never }
+);
 
 export interface ReactViewRegistry<I, S> {
   readonly views: readonly ReactViewDefinition<I, S>[];

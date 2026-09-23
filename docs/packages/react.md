@@ -105,6 +105,30 @@ views. A host selector is treated as a pin through shared eligibility checks;
 plain registration does not qualify a view. An unknown explicit `ViewSurface`
 ref renders an accessible diagnostic instead of silently switching views.
 
+For a route-split native view, register a trusted loader in place of `render`:
+
+```tsx
+const peopleViews = defineReactViews([
+  {
+    id: 'people.native-detail',
+    revision: '1',
+    load: () => import('./PeopleDetail.js').then(module => module.default),
+  },
+]);
+```
+
+The loader returns a React component and is called after commit, not while
+defining the registry or rendering on the server. `ViewSurface` and the
+resolver-backed native `AdaptiveSurface` keep the previous authorized view
+mounted while a new view loads. A failure leaves that view usable and shows a
+retry control; retry calls the registered loader again. If a dynamic import
+failure is cached by the host's module loader, supply a retryable loader or a
+fresh module route. Initial loading shows a status or the supplied fallback.
+Denial, disposal, a changed activation target, or loss of eligibility removes
+the old view immediately. The loader is application code; neither a model nor
+a wire payload may choose its import path. Keep a view definition immutable for
+one ID and revision; increment the revision when its implementation changes.
+
 The advanced `useSurface` and factory overload of `useDataSurface` accept a
 stable application-authored factory. The factory is called only in a committed
 effect; that overload returns `undefined` while pending and disposes only its

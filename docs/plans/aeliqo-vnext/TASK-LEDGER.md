@@ -4,6 +4,19 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 
 ## Current-source reconciliation (2026-09-23)
 
+`4a31da6a862bc1bc7d06f791369f0753a80fdd39` was pushed to `main` after
+its unchanged-source local `pnpm check` passed 87/87. Independent A35 review
+then found that a newly selected lazy native React view could fail without a
+retained authorized view or retry. The current follow-up source adds a trusted
+`load` registration and tests failure/retry, context/portal/controlled-input
+continuity, removal of a no-longer-eligible prior view, and stable pending
+loading and controlled input across an equivalent registry rebuild. Focused vNext 283/283,
+browser 54/54, installed framework consumer, site build/test, docs artifact,
+lint, format, and bundle 6/6 passed; this changed worktree still requires a
+new clean-source `pnpm check` and remote same-SHA Quality run. Synthetic
+remote query/cancellation and no-agent disconnect browser checks have also
+been strengthened. The earlier 4a31 Quality run cannot qualify these edits.
+
 The local 0.5.0 candidate extends this baseline with `createLocalDataSurface`,
 the React `useDataSurface`/`AdaptiveSurface` convenience route, committed
 presentation evidence, monotonic local revisions, selector and disposal
@@ -22,7 +35,7 @@ passed vNext 281/281, browser 50/50, and bundle 6/6 without changing the
 principal and an explicit registered pattern candidate; scope isolation and
 automatic empty-candidate discovery are separate claims.
 
-- Fresh `origin/main` baseline was `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the local candidate started from it and has not been pushed.
+- Fresh `origin/main` baseline was `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the newer `4a31da6` candidate was later pushed, and the A35 follow-up changes are not yet a clean final commit.
 - Fresh npm registry reads show all five public packages (`core`, `runtime`, `web`, `react`, `agent`) at `latest=0.4.2` and `next=0.5.0-rc.1`. GitHub publish run `35816382654` used `main` source `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the newer local candidate was not in that RC. Published npm versions are immutable, so that RC cannot be overwritten with this source.
 - `release-metadata.json` describes 0.5.0 as a candidate; that source metadata is not registry publication evidence. Registry facts were read with `npm view @aeliqo/<package> dist-tags --json` and `npm view @aeliqo/<package> versions --json` for each of the five names.
 - Existing T00–T20 evidence below records accepted earlier source revisions. Keep that history intact; it does not establish that the added A01–A50 cases pass at c0b4a64. Those operational cases are recorded as NOT RUN in `03-ACCEPTANCE.md` pending exact-current-source evidence.
@@ -103,10 +116,10 @@ passed 87/87; the new J3 and docs edits require another clean run.
 | A21 | F05/F07 | `tests/vnext/journey-workspace-goal.test.ts`, `examples/vnext/workspace/goal.ts`, `examples/vnext/workspace-goal/`, `tests/vnext/browser/workspace.spec.ts` | Bounded integrated browser flow: one registered three-need Task, three runtime Results, a registered pattern candidate, committed plan, and real summary/trend/breakdown DOM. Unknown goals reject; empty-candidate automatic pattern discovery remains unproved. |
 | A22–A24 | F07 | `tests/vnext/workspace-layout.test.ts`, `tests/vnext/scope-race.test.ts`, `examples/vnext/workspace/`, `tests/vnext/browser/workspace.spec.ts` | Bounded child ownership, prior-layout retention, capacity/cycle rejection, fixed-scope integrated plan, and child DOM focus/resize/result retention. The integrated fixture retains its old view after mandatory breakdown failure; cross-scope proof belongs to the separate scope/security suites. |
 | A25–A29 | F07/F08 | `tests/vnext/scope-draft.test.ts`, `tests/vnext/scope-race.test.ts`, `tests/vnext/agent-bridge.test.ts`, `tests/vnext/actions.test.ts` | Bounded voluntary/forced transitions, A-B-A fencing, controlled receipts, and scoped continuity. |
-| A30–A33 | F03/F08 | `tests/vnext/remote-data.test.ts`, `tests/vnext/remote-server.test.ts`, `tests/vnext/journey-remote.test.ts` | Partial: synthetic HTTP, cursor, lineage and cancellation profiles pass; no customer server or complete combined first-page/global-aggregate profile. |
+| A30–A33 | F03/F08 | `tests/vnext/remote-data.test.ts`, `tests/vnext/remote-server.test.ts`, `tests/vnext/journey-remote.test.ts` | Bounded synthetic HTTP evidence now asserts the accepted first-page and global-count queries at the server, rejected unsupported operations with zero execution, cursor/lineage behavior, and a blocked non-cancellable adapter whose late response cannot commit after cancellation. No customer server was tested. |
 | A34 | F09 | `tests/vnext/browser/ssr.spec.ts`, `tests/next-platform/` | Bounded no-JS authorized DOM, hydration and principal isolation. |
-| A35–A36 | F06/F09 | `tests/vnext/react.spec.tsx`, `tests/vnext/browser/experience.spec.ts`, three-engine visual matrix | Partial: context, accessibility and responsive fixtures pass; portals, lazy-import recovery and human assistive-technology use remain unproved. |
-| A37 | F08 | `tests/release/t20-packaging.test.mjs`, no-agent packed graph | Partial: no-agent import graph passes; a combined browser network trace through disconnect/manual recovery is not recorded. |
+| A35–A36 | F06/F09 | `tests/vnext/react.spec.tsx`, `tests/vnext/browser/react-adaptive.spec.ts`, `tests/vnext/browser/experience.spec.ts`, three-engine visual matrix | Bounded native React context, portal, controlled-input continuity, lazy-load failure/retry, prior-view eligibility, and registry-update browser checks pass. Human assistive-technology use remains unproved. |
+| A37 | F08 | `tests/release/t20-packaging.test.mjs`, `apps/site/tests/site/byok.spec.ts`, no-agent packed graph | Bounded packed import graph and browser request trace cover no-agent manual use, explicit provider disconnect, and subsequent manual intent with no new provider/browser requests. |
 | A38–A40 | F08 | `tests/vnext/security.test.ts`, `tests/vnext/actions.test.ts`, `tests/agents/`, protocol suites | Bounded hostile-input, synthetic action and explicit model-profile checks. |
 | A41 | F08 | `tests/agent-evaluation/` synthetic runner only | External blocker: no approved paid provider/budget/corpus run. |
 | A42–A43 | F10/F11 | `tests/performance/`, `tests/docs-artifact/`, `tests/catalog-examples/`, `artifacts/product-ci/ci.json` | Bounded at the first SHA; final source requires renewed full performance/docs gates. |

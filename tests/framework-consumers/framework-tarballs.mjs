@@ -276,6 +276,7 @@ const input = <AeliqoTextField label="Person" value={detail.value} onValueChange
 const table = <AeliqoTable caption="People" columns={columns} rows={rows} />;
 const nativeViews = defineReactViews<{readonly kind: "browse"}, {readonly rows: readonly string[]}>([
   {id: "people.native", revision: "1", render: ({snapshot}) => <p>{snapshot.state.rows.length}</p>},
+  {id: "people.lazy", revision: "1", load: async () => ({snapshot}) => <p>{snapshot.state.rows.length}</p>},
 ]);
 void [input, table, nativeViews];
 `,
@@ -441,6 +442,8 @@ assert.match(input, /aeliqo-text-field/); assert.match(input, /SSR person/); ass
 assert.match(table, /aeliqo-table/); assert.match(table, /SSR people/); assert.match(table, /Ada/);
 const nativeViews = defineReactViews([{id: "people.native", revision: "1", render: () => null}]);
 assert.equal(nativeViews.resolve({id: "people.native", revision: "1"})?.ref.id, "people.native");
+const lazyViews = defineReactViews([{id: "people.lazy", revision: "1", load: async () => () => null}]);
+assert.equal(typeof lazyViews.resolve({id: "people.lazy", revision: "1"})?.load, "function");
 assert.throws(() => defineReactViews([{id: "people.native", revision: "1", render: () => null}, {id: "people.native", revision: "1", render: () => null}]));
 console.log(JSON.stringify({input: input.length, table: table.length, hasDeclarativeShadow: input.includes("shadowrootmode=\\\"open\\\"")}));
 `,

@@ -123,6 +123,7 @@ const CURSOR_SECRET = 'remote-people-cursor-secret-v1';
 export interface RemoteRequestObservation {
   readonly kind: string;
   readonly principal?: string;
+  readonly query?: QuerySpec;
 }
 
 export interface RemoteResultStoreBeginObservation extends ResultBeginInput {
@@ -182,6 +183,8 @@ export interface RemotePeopleFixtureOptions {
   readonly sameAuthorityLabels?: boolean;
   readonly cursorTtlMs?: number;
   readonly estimatedPopulation?: boolean;
+  /** Test barrier that deliberately does not listen for cancellation. */
+  readonly executionGate?: { readonly started: () => void; readonly release: Promise<void> };
 }
 
 function createRemoteFeature(aggregate: boolean, schemaRevision: string, meaning: MeaningDefinition) {
@@ -350,8 +353,17 @@ function cursorTtl(options: RemotePeopleFixtureOptions): number {
   return value;
 }
 
-function observe(observations: RemoteRequestObservation[], kind: string, principal: RemotePrincipal | undefined): void {
-  observations.push({ kind, ...(principal === undefined ? {} : { principal: principal.key }) });
+function observe(
+  observations: RemoteRequestObservation[],
+  kind: string,
+  principal: RemotePrincipal | undefined,
+  query?: QuerySpec,
+): void {
+  observations.push({
+    kind,
+    ...(principal === undefined ? {} : { principal: principal.key }),
+    ...(query === undefined ? {} : { query }),
+  });
 }
 
 function catalogFor(
@@ -867,7 +879,7 @@ function remoteService(
     },
     async plan(request: PlanRequest, context: ReadContext = {}): Promise<Outcome<PlanAcceptance>> {
       const principal = principalFrom(context);
-      observe(observations, 'plan', principal);
+      observe(observations, 'plan', principal, request.query);
       if (principal === undefined) return failed('data.denied', 'The authenticated principal is not recognized.');
       if (request.catalogRevision !== catalog.revision)
         return failed('data.stale-catalog', 'The plan must pin the current catalog revision.');
@@ -935,7 +947,7 @@ function remoteService(
     },
     async *execute(request: AcceptedQuery, context: ReadContext = {}): AsyncGenerator<ResultEvent> {
       const principal = principalFrom(context);
-      observe(observations, 'execute', principal);
+      observe(observations, 'execute', principal, request.query);
       if (principal === undefined) {
         yield {
           kind: 'error',
@@ -993,6 +1005,10 @@ function remoteService(
         return;
       }
       try {
+        if (options.executionGate !== undefined) {
+          options.executionGate.started();
+          await options.executionGate.release;
+        }
         await waitForCancellation(context.signal, 20);
         const mode = options.pagination ?? 'snapshot';
         if (options.mutateDuringExecution === true) insertLeadingRow(mutation);

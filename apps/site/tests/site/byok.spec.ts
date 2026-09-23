@@ -100,16 +100,31 @@ async function installFetchProbe(page: Page): Promise<void> {
   }, endpoint);
 }
 
-test('requires opt-in and sends a bounded tool loop directly to DeepSeek', async ({ page }) => {
+test('manual intent stays network-free before and after provider disconnect', async ({ page }) => {
   const providerRequests: { readonly headers: Record<string, string>; readonly body: Record<string, unknown> }[] = [];
   const leakedRequests: string[] = [];
+  const browserRequests: string[] = [];
   await installFetchProbe(page);
+  page.on('request', (request) => browserRequests.push(request.url()));
   page.on('request', (request) => {
     if (request.url() === endpoint) return;
     const contents = `${request.url()} ${request.postData() ?? ''} ${request.headers()['authorization'] ?? ''}`;
     if (contents.includes(fakeKey)) leakedRequests.push(request.url());
   });
   await page.goto('/playground/');
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await page.locator('#pg-manual summary').click();
+  await page.locator('#pg-manual-step').selectOption('people-detail');
+  await page.getByRole('button', { name: 'Apply intent' }).click();
+  await expect(page.locator('aeliqo-detail')).toContainText('Ada Chen');
+  await page.locator('#pg-manual summary').click();
+  const pageOrigin = new URL(page.url()).origin;
+  const noAgentProviderRequests = browserRequests.filter((url) => {
+    const requestUrl = new URL(url);
+    return requestUrl.origin !== pageOrigin || requestUrl.pathname.startsWith('/api/');
+  });
+  expect(noAgentProviderRequests).toEqual([]);
+
   await prepareDeepSeek(page);
   await expect(page.locator('#pg-deepseek-key')).toHaveAttribute('type', 'password');
   await expect(page.locator('#pg-deepseek-key')).toHaveAttribute('autocomplete', 'off');
@@ -196,6 +211,16 @@ test('requires opt-in and sends a bounded tool loop directly to DeepSeek', async
   await expect(page.locator('#pg-deepseek-consent')).not.toBeChecked();
   await expect(page.locator('#pg-prompt')).toBeDisabled();
   await expect(page.locator('#pg-send')).toBeDisabled();
+
+  const requestsAtDisconnect = browserRequests.length;
+  await page.getByRole('button', { name: 'Without AI' }).click();
+  await page.locator('#pg-manual summary').click();
+  await page.locator('#pg-manual-step').selectOption('people-detail');
+  await page.getByRole('button', { name: 'Apply intent' }).click();
+  await expect(page.locator('aeliqo-detail')).toContainText('Ada Chen');
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  expect(providerRequests).toHaveLength(2);
+  expect(browserRequests.slice(requestsAtDisconnect)).toEqual([]);
 });
 
 test('reset clears the key and requires a fresh opt-in', async ({ page }) => {

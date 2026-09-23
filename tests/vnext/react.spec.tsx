@@ -93,6 +93,27 @@ it('renders a registered native React view from a real headless surface snapshot
   fixture.dispose();
 });
 
+it('registers a retryable lazy native view without invoking its loader during definition', async () => {
+  let loads = 0;
+  const views = defineReactViews<Intent, PeopleSurfaceState>([
+    {
+      id: 'people.lazy',
+      revision: '1',
+      load: async () => {
+        loads += 1;
+        return PeopleNativeView;
+      },
+    },
+  ]);
+
+  expect(loads).toBe(0);
+  const definition = views.resolve({ id: 'people.lazy', revision: '1' });
+  expect(definition).toBeDefined();
+  if (definition === undefined || definition.load === undefined) throw new Error('Lazy view was not registered.');
+  expect(await definition.load()).toBe(PeopleNativeView);
+  expect(loads).toBe(1);
+});
+
 it('does not render an unqualified host-selected view and reports an unknown fixed view explicitly', async () => {
   const fixture = createPeopleFixture();
   const surface = fixture.runtime.createSurface({

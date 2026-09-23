@@ -50,6 +50,9 @@ Do not use that RC as evidence for this newer candidate.
   adaptive selection requires trusted presentation evidence and uses the
   shared resolver; standalone view registration alone is not automatic
   eligibility.
+- Native React registrations now accept a trusted `load` function for a
+  route-split view. The adapter retains an authorized previous view during
+  loading and failure, exposes retry, and clears old content on target loss.
 - The optional model adapter restricts unauthenticated profiles to explicitly
   allowlisted loopback origins. Remote hosted connections require a
   server-owned credential profile.

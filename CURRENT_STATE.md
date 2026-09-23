@@ -1,5 +1,21 @@
 # CURRENT_STATE — Deep Product Audit Aeliqo
 
+## Latest source checkpoint — 2026-09-23
+
+`4a31da6a862bc1bc7d06f791369f0753a80fdd39` was pushed to `main` after
+its unchanged-source local `pnpm check` passed 87/87. A later independent A35
+review found that native React lazy views had no retained-view/retry path, so
+that commit and its GitHub Quality run are historical checkpoints rather than
+qualification of the subsequent correction. The current source adds a trusted
+retryable native-view loader, retains only a still-eligible prior view during
+loading/failure, and tests the behavior with controlled input, portal,
+revocation of the prior registration, and a recreated registry. Synthetic
+remote query/fencing and no-agent disconnect browser evidence were also
+strengthened. Focused verification is recorded in
+`docs/plans/aeliqo-vnext/TASK-LEDGER.md`; a new clean-source matrix and remote
+Quality run are required before release. The detailed audit below remains
+bound to its stated historical SHA.
+
 ## Candidate implementation update — 2026-09-23
 
 The audit below remains a historical snapshot of `04937d2`. The current

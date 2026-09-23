@@ -19,11 +19,18 @@ export function defineReactViews<I, S>(inputs: readonly ReactViewInput<I, S>[]):
   for (const input of inputs) {
     const ref = { id: input.id, revision: input.revision };
     if (!validRef(ref)) throw new TypeError('React view references must use bounded id and revision values.');
-    if (typeof input.render !== 'function') throw new TypeError(`React view ${input.id} requires a render component.`);
+    const hasRender = typeof input.render === 'function';
+    const hasLoad = typeof input.load === 'function';
+    if (hasRender === hasLoad)
+      throw new TypeError(`React view ${input.id} requires exactly one render or load function.`);
     const key = refKey(ref);
     if (seen.has(key)) throw new TypeError(`React view ${input.id}@${input.revision} is already registered.`);
     seen.add(key);
-    views.push(Object.freeze({ ref: Object.freeze(ref), render: input.render }));
+    views.push(
+      Object.freeze(
+        hasRender ? { ref: Object.freeze(ref), render: input.render } : { ref: Object.freeze(ref), load: input.load },
+      ) as ReactViewDefinition<I, S>,
+    );
   }
   const frozenViews: readonly ReactViewDefinition<I, S>[] = Object.freeze(views);
   const byRef = new Map<string, ReactViewDefinition<I, S>>(
