@@ -235,7 +235,7 @@ export async function createScopeFixture() {
   const preparationCallbacks = new Map<string, () => void>();
   const transitionDeactivateCallbacks = new Map<string, () => void>();
   let lastResolution: ScopeResolution | undefined;
-  const allowedFeatures = ['orders'];
+  const allowedFeatures = ['orders', 'react-orders'];
   let activeActionPort: ActionPort | undefined;
   let actionGate:
     | {
@@ -706,7 +706,10 @@ export async function createScopeFixture() {
   let detach: (() => void) | undefined;
 
   return {
+    runtime,
     scope,
+    feature: ordersFeature,
+    bindingsFor: (id: string) => bindings(source.forScope(id)),
     currentOrders() {
       if (current === undefined) throw new TypeError('The Orders surface is not active.');
       return current;

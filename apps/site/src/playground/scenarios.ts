@@ -218,6 +218,15 @@ export const PLAYGROUND_RECORDS = Object.freeze({
 });
 
 const intent = <T extends Intent>(value: T): T => value;
+export const jakartaPeopleIntent = (): Intent =>
+  intent({
+    version: '1',
+    id: 'people-jakarta',
+    kind: 'browse',
+    resource: 'people',
+    fields: ['name', 'team', 'location'],
+    filter: { op: 'compare', field: 'location', comparison: 'eq', value: 'Jakarta' },
+  });
 const scenarios: readonly PlaygroundScenario[] = [
   {
     id: 'people',

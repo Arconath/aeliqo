@@ -5,6 +5,7 @@ import { resolvePresentation } from '../../packages/core/src/presentation/index.
 import type { Catalog, MeaningDefinition, QuerySpec } from '../../packages/core/src/contracts/types.js';
 import type { QuerySource } from '../../packages/core/src/query/types.js';
 import { twoMetricTrendFixture } from './fixtures/presentation.js';
+import { attendanceDayFilter } from '../../examples/vnext/attendance/period.js';
 
 // Synthetic employee/day observations. A scheduled day is eligible unless approved
 // leave removes it; an observation missing from the complete source is unknown,
@@ -97,7 +98,7 @@ const catalog: Catalog = {
   capabilities: [],
 };
 
-const period: QuerySpec['period'] = {
+const period: NonNullable<QuerySpec['period']> = {
   from: '2026-09-01T00:00:00+07:00',
   toExclusive: '2026-10-01T00:00:00+07:00',
   timezone: 'Asia/Jakarta',
@@ -114,14 +115,8 @@ const query: QuerySpec = {
   population: { kind: 'all-authorized' },
   order: [{ field: 'day', direction: 'asc', nulls: 'last' }],
   timeBucket: { field: 'day', grain: 'day', calendar: 'gregorian', timezone: 'Asia/Jakarta' },
-  // Host-supplied civil-day bounds from the visible period and fixed as-of.
-  where: {
-    op: 'and',
-    predicates: [
-      { op: 'compare', field: 'day', comparison: 'gte', value: '2026-09-01' },
-      { op: 'compare', field: 'day', comparison: 'lt', value: '2026-09-06' },
-    ],
-  },
+  // Host projection of the visible instant period onto supported civil days.
+  where: attendanceDayFilter(period, '2026-09-06'),
 };
 
 function source(
@@ -240,13 +235,7 @@ describe('J2 synthetic attendance acceptance (A17–A19)', () => {
     const engine = planner();
     const planned = engine.plan({
       ...query,
-      where: {
-        op: 'and',
-        predicates: [
-          { op: 'compare', field: 'day', comparison: 'gte', value: '2026-09-01' },
-          { op: 'compare', field: 'day', comparison: 'lt', value: '2026-10-01' },
-        ],
-      },
+      where: attendanceDayFilter(period, '2026-10-01'),
     });
     expect(planned.ok, JSON.stringify(planned)).toBe(true);
     if (!planned.ok) return;
@@ -268,6 +257,17 @@ describe('J2 synthetic attendance acceptance (A17–A19)', () => {
         ],
       },
     });
+  });
+
+  it('derives query bounds from the visible period and rejects an unsupported civil-time projection', () => {
+    expect(attendanceDayFilter(period, '2026-09-06')).toEqual(query.where);
+    const narrower = { ...period, from: '2026-09-02T00:00:00+07:00' };
+    expect(attendanceDayFilter(narrower, '2026-09-06')).toMatchObject({
+      predicates: [{ value: '2026-09-02' }, { value: '2026-09-06' }],
+    });
+    expect(() => attendanceDayFilter({ ...period, timezone: 'America/New_York' }, '2026-09-06')).toThrow(
+      'supported Jakarta civil-day period',
+    );
   });
 
   it('keeps New York DST transition days civil, with missing and future coverage explicit', () => {

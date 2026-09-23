@@ -153,7 +153,7 @@ it('commits a registered summary, daily trend, and employee breakdown workspace 
           agentAllowed: false,
           allowedRepresentations: Object.values(REF).map((ref) => ref.id),
           allowedPatterns: [PATTERN.id],
-          composition: { allowWithoutPreset: true, maxNodes: 4, maxExpansions: 8 },
+          composition: { allowWithoutPreset: false, maxNodes: 4, maxExpansions: 8 },
           requiredOperations: [],
           tokenProfile: { id: 'tokens.default', revision: '1' },
           extensionAllowlist: [],
@@ -186,30 +186,11 @@ it('commits a registered summary, daily trend, and employee breakdown workspace 
         },
         state: 'active',
       },
-      // The pattern candidate contract currently requires a plan field. This
-      // inert placeholder is ignored; the registered expander builds the plan.
-      candidates: [
-        {
-          id: 'registered-overview',
-          source: 'pattern',
-          pattern: PATTERN,
-          plan: {
-            id: 'unused-pattern-plan',
-            revision: '1',
-            rootId: 'unused',
-            preconditions,
-            nodes: [],
-            links: [],
-            coverage: [],
-            stateTransfer: [],
-            diagnostics: [],
-          },
-        },
-      ],
+      candidates: [],
     });
     expect(decision.status, JSON.stringify(decision)).toBe('ready');
     if (decision.status !== 'ready') return;
-    expect(decision.receipt.selectedCandidate).toBe('registered-overview');
+    expect(decision.receipt.selectedCandidate).toBe('registered');
     expect(decision.plan.plan.id).toBe('attendance-resolve');
     expect(decision.plan.plan.nodes).toHaveLength(4);
     expect(decision.plan.plan.coverage.map((entry) => entry.needId)).toEqual([...ROLES]);

@@ -32,6 +32,20 @@ test('guided intents render real adaptive views without a model', async ({ page 
   expect(errors).toEqual([]);
 });
 
+test('public 0.5 journeys remain legible at mobile, tablet, and desktop widths', async ({ page }) => {
+  await page.goto('/playground/');
+  for (const width of [360, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.locator('[data-journey="attendance"]').click();
+    await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.locator('[data-journey="workspace"]').click();
+    await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect((await new AxeBuilder({ page }).include('.pg-app').analyze()).violations).toEqual([]);
+  }
+});
+
 test('a constant series keeps its mark on the labeled y-axis tick', async ({ page }) => {
   await page.goto('/playground/');
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');

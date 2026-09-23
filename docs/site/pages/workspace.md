@@ -18,8 +18,10 @@ Use this pattern when one registered goal genuinely needs several simultaneous
 outputs. If a person is only browsing one result, keep one ordinary surface.
 Register each child representation and its result binding in application code;
 the goal names required outputs, not arbitrary components supplied by a model.
-The host provides the candidate pattern. The current candidate does not
-discover a suitable pattern when the candidate list is empty.
+The host registers allowed patterns. When an experience requires a registered
+pattern, the resolver can discover a matching one from that registry even if
+the candidate list is empty; a supplied candidate still passes the same
+validation.
 
 ## Keep child identity and state
 
@@ -34,15 +36,16 @@ The host supplies candidate plans and the runtime validates their captured task,
 ## Current evidence
 
 From the repository root, run `pnpm test:vnext:browser` after installing the
-workspace dependencies. The 0.5 source candidate's
+workspace dependencies. The 0.5 source's
 `examples/vnext/workspace-goal` fixture compiles one registered attendance goal
 to a Task with three required needs, evaluates three Results, offers a
-registered bounded pattern to the resolver, commits the selected plan, and
+empty candidate list to the resolver, which discovers its registered bounded
+pattern, commits the selected plan, and
 renders summary, trend, and breakdown in one Region. Its browser test checks
 exact need/output/Result identities and retains the authorized old layout
 after an unknown goal or mandatory breakdown failure.
 
-The separate `examples/vnext/workspace` fixture checks child focus and reflow
+Run **Analytical workspace** in the [public Playground](/playground/) to inspect the registered pattern and three committed outputs. The separate `examples/vnext/workspace` fixture checks child focus and reflow
 at 360, 768, and 1440 pixels. These fixtures use synthetic data and are not a
 live model or customer rollout. See [runnable examples](/examples/) for their
 boundaries.

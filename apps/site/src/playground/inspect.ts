@@ -8,6 +8,19 @@ export interface PlaygroundEvidence {
   readonly receipt?: WebRenderReceipt;
 }
 
+export function selectedView(receipt: WebRenderReceipt): string {
+  if (!('presentation' in receipt)) return receipt.status;
+  return (
+    receipt.presentation.nodes.find((node) => node.node.id === receipt.presentation.plan.rootId)?.manifest.id ??
+    receipt.status
+  );
+}
+
+export function viewLabel(view: string): string {
+  const name = view.split('.').at(-1) ?? view;
+  return name.replaceAll('-', ' ').replace(/^\w/u, (letter) => letter.toUpperCase());
+}
+
 const intentSummary = 'The exact bounded request sent by guided controls, application code, or an agent tool.';
 const diagnosticSummary = 'Actionable runtime diagnostics. Empty means no diagnostic was emitted for the last request.';
 

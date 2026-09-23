@@ -40,13 +40,13 @@ or executable code.
 | `@aeliqo/agent/meaning` | Meaning-related agent capabilities |
 | `@aeliqo/agent/browser` | Optional scoped bridge for explicit surface targets |
 
-## Scoped browser bridge (0.5 source candidate)
+## Scoped browser bridge (0.5)
 
 `connectAgent` pairs a host-owned client to an already authorized scope and an
 explicit target allowlist. The host registers each target with a live surface;
 the bridge does not search the DOM or discover every surface in the runtime.
-This entry belongs to the newer, unpublished 0.5 source candidate. The
-published `0.5.0-rc.1` was built from an earlier revision; verify its export
+This entry belongs to the 0.5 release line. The historical `0.5.0-rc.1` was
+built from an earlier revision; verify its export
 map before attempting to use this entry from that package.
 
 ```ts

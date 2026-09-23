@@ -23,6 +23,39 @@ test('the public playground uses the app facade without AI and through structure
   expect(errors).toEqual([]);
 });
 
+test('public journeys show Jakarta people, daily attendance, and a composed workspace without AI', async ({ page }) => {
+  await page.goto('/playground/');
+  await page.getByRole('button', { name: 'People in Jakarta' }).click();
+  await expect(page.locator('#pg-committed-filter')).toContainText('Jakarta');
+  await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
+  await expect(page.locator('aeliqo-table')).not.toContainText('Sam Rivera');
+  await page.getByRole('button', { name: 'Daily attendance' }).click();
+  await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
+  await expect(page.locator('[data-testid="period"]')).toContainText('Asia/Jakarta');
+  await expect(page.locator('[data-testid="daily-values"]')).toContainText('2026-09-02: 0.5');
+  await page.getByRole('button', { name: 'Compare attendance metrics' }).click();
+  await expect(page.locator('#metric-choice')).toBeVisible();
+  await expect(page.locator('#pg-journey-result')).toHaveText('Needs a choice');
+  await expect(page.locator('#pg-journey-view')).toHaveText('Choose a metric');
+  await page.getByRole('button', { name: 'Inspect', exact: true }).click();
+  await page.locator('[data-inspector="intent"]').click();
+  await expect(page.locator('#pg-inspector-content')).toContainText('Analyze daily attendance');
+  await page.locator('[data-inspector="diagnostics"]').click();
+  await expect(page.locator('#pg-inspector-content')).toContainText('needs-input:web.recipe.needs-input.measure');
+  await expect(page.locator('#pg-inspector-content')).not.toContainText('Analyze daily attendance');
+  await page.getByRole('button', { name: 'Close inspector' }).click();
+  await page.getByRole('button', { name: 'Analytical workspace' }).click();
+  await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+  await expect(page.locator('[data-testid="goal-workspace"]')).toHaveAttribute('data-needs', 'summary,trend,breakdown');
+  await page.getByRole('button', { name: 'Request anomaly' }).click();
+  await expect(page.locator('[data-testid="goal-status"]')).toContainText('unsupported:intent.unknown-custom');
+  await expect(page.locator('[data-testid="goal-workspace"]')).toContainText('Ada');
+  await page.getByRole('button', { name: 'Reset playground' }).click();
+  await page.getByRole('button', { name: 'Analytical workspace' }).click();
+  await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-model-calls')).toHaveText('0');
+});
+
 test('theme selection follows the system, updates mounted components, and persists an override', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/playground/');
@@ -137,22 +170,16 @@ test('simulated WebMCP host registers the standard tools and renders through the
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
 });
 
-test('playground exports the selected scenario as an installable credential-free project archive', async ({ page }) => {
+test('candidate playground does not offer a ZIP pinned to an unpublished release', async ({ page }) => {
   await page.goto('/playground/');
   await page.locator('#pg-scenario').selectOption('knowledge');
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project' }).click();
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe('aeliqo-knowledge-example.zip');
-  const stream = await download.createReadStream();
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
-  const archive = Buffer.concat(chunks);
-  expect(archive.readUInt32LE(0)).toBe(0x04034b50);
-  expect(archive.includes(Buffer.from('src/main.ts'))).toBe(true);
-  expect(archive.includes(Buffer.from('createAeliqoApp'))).toBe(true);
-  expect(archive.toString('utf8')).not.toMatch(/api[_-]?key|bearer\s+[a-z0-9]/iu);
-  await expect(page.locator('#pg-status')).toContainText('installable Knowledge project');
+  await expect(page.getByRole('button', { name: 'Export project' })).toBeDisabled();
+  await expect(page.locator('#pg-export-note')).toContainText('0.5.0 packages');
+  await expect(page.locator('#pg-export-note a')).toHaveAttribute('href', '/examples/');
+  await page.locator('#pg-export-note a').click();
+  await expect(page.getByRole('heading', { name: 'Run the 0.5 source' })).toBeVisible();
+  await expect(page.locator('main')).toContainText('pnpm install --frozen-lockfile');
+  await expect(page.locator('main')).toContainText('pnpm test:vnext:browser');
 });
 
 test('home, deep docs, search, and narrow playground remain navigable', async ({ page }) => {

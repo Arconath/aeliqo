@@ -7,7 +7,10 @@ import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 
 const root = dirname(new URL(import.meta.url).pathname);
 const siteRoot = root;
-const releaseStatus = JSON.parse(readFileSync(resolve(root, '../../release-metadata.json'), 'utf8')).status ?? 'stable';
+const sourceReleaseStatus = JSON.parse(readFileSync(resolve(root, '../../release-metadata.json'), 'utf8')).status;
+const releaseStatus = process.env.AELIQO_EXPORT_VERIFIED_VERSION === RELEASE_VERSION ? 'stable' : sourceReleaseStatus;
+if (releaseStatus !== 'candidate' && releaseStatus !== 'stable')
+  throw new Error('Site release status must be candidate or stable.');
 export const generatedRoot = resolve(root, 'artifacts/site-source');
 export const generatedPublic = resolve(root, 'artifacts/site-public');
 
@@ -124,7 +127,7 @@ function extractSiteShell(home) {
 }
 
 async function loadSitePages() {
-  const docs = (await buildPublicPages()).map((page) => ({ ...page, surface: 'docs' }));
+  const docs = (await buildPublicPages({ releaseStatus })).map((page) => ({ ...page, surface: 'docs' }));
   const docsPages = docs;
   const all = [...docs];
   const playground = await readFile(join(siteRoot, 'playground.html'), 'utf8');
@@ -256,7 +259,11 @@ export async function generatePages() {
   await rm(generatedPublic, { recursive: true, force: true });
   await mkdir(generatedRoot, { recursive: true });
   await mkdir(generatedPublic, { recursive: true });
-  const home = await readFile(join(siteRoot, 'index.html'), 'utf8');
+  const releaseNote =
+    releaseStatus === 'stable'
+      ? 'Try the local demo with synthetic data. The React starter uses the published 0.5.0 packages.'
+      : 'Try the local demo with synthetic data. The React starter shows upcoming 0.5 APIs; matching packages are not published yet.';
+  const home = (await readFile(join(siteRoot, 'index.html'), 'utf8')).replace('{{AELIQO_RELEASE_NOTE}}', releaseNote);
   await writeFile(join(generatedRoot, 'index.html'), home);
   await copyFile(join(siteRoot, 'public/aeliqo.png'), join(generatedPublic, 'aeliqo.png'));
   const shell = extractSiteShell(home);

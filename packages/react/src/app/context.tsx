@@ -33,3 +33,8 @@ export function useAeliqoRuntime(): AeliqoRuntime {
   if (runtime === undefined) throw new Error('Aeliqo React bindings require an AeliqoProvider runtime.');
   return runtime;
 }
+
+/** Internal optional read for hooks that also support a providerless local path. */
+export function useOptionalAeliqoRuntime(): AeliqoRuntime | undefined {
+  return useContext(AeliqoRuntimeContext);
+}

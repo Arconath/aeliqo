@@ -305,6 +305,42 @@ export function assertApprovedRc({ candidate, publication, consumer, version, so
   assertApprovedPackageIntegrity(candidate, publication, consumer);
 }
 
+function assertStablePublication(candidate, publication, version, sourceRevision) {
+  if (
+    candidate?.schema !== 'aeliqo.release-candidate.v1' ||
+    candidate.version !== version ||
+    candidate.sourceRevision !== sourceRevision ||
+    publication?.schema !== 'aeliqo.npm-publication.v2' ||
+    publication.version !== version ||
+    publication.sourceRevision !== sourceRevision ||
+    publication.tag !== 'latest' ||
+    publication.mode !== 'trusted-publishing' ||
+    typeof publication.completedAt !== 'string'
+  )
+    throw new Error('Stable publication needs an exact-source candidate and trusted latest publish');
+}
+
+function assertStableConsumer(consumer, version, sourceRevision) {
+  if (
+    consumer?.schema !== 'aeliqo.registry-consumer.v2' ||
+    consumer.version !== version ||
+    consumer.expectedSourceRevision !== sourceRevision ||
+    consumer.provenanceVerified !== true
+  )
+    throw new Error('Stable publication needs exact-source registry consumer proof');
+}
+
+/** Require one exact stable publication and installed consumer from this source. */
+export function assertApprovedStable({ candidate, publication, consumer, version, sourceRevision }) {
+  assertCandidateIdentity(candidate, { tag: 'latest' });
+  assertStablePublication(candidate, publication, version, sourceRevision);
+  assertStableConsumer(consumer, version, sourceRevision);
+  assertApprovedPackageLists(publication, consumer);
+  assertApprovedPackageIntegrity(candidate, publication, consumer);
+  if (publication.packages.some((item) => item.distTag !== 'latest'))
+    throw new Error('Stable publication packages must use the latest tag');
+}
+
 function decodedStatements(verified) {
   const statements = [];
   for (const attestation of verified?.attestationBundles ?? []) {

@@ -17,6 +17,8 @@
     "knip": "knip",
     "release:registry-check": "node scripts/release/check-registry-availability.mjs",
     "test:agent-evaluation:run": "node tests/agent-evaluation/run.mjs",
+    "test:agent-evaluation:live": "node tests/agent-evaluation/run-live-journeys.mjs",
+    "test:agent-evaluation:live-offline": "pnpm build:agent && pnpm build:platform && node --test tests/agent-evaluation/live-*.test.mjs && playwright test --config tests/agent-evaluation/live-browser/playwright.config.mjs",
     "release:legacy:inspect": "node scripts/release/deprecate-legacy.mjs",
     "release:legacy:deprecate": "node scripts/release/deprecate-legacy.mjs --apply",
     "typecheck": "pnpm build:runtime && pnpm build:platform && pnpm build:agent && tsc --project tsconfig.json",

@@ -194,7 +194,7 @@ async function writeConsumerSources(consumer, fixtureDirectory) {
     join(consumer, 'new-run.mjs'),
     [
       "const entries = await Promise.all([import('@aeliqo/core/features'), import('@aeliqo/runtime/surfaces'), import('@aeliqo/runtime/scopes'), import('@aeliqo/react/surface'), import('@aeliqo/agent/browser')]);",
-      "for (const [module, names] of [[entries[0], ['defineDataFeature', 'defineFeature', 'inferLocalDataShape']], [entries[1], ['createLocalDataBinding', 'createLocalDataSurface']], [entries[3], ['AdaptiveSurface', 'AeliqoScope', 'ViewSurface', 'defineReactViews', 'useSurfaceState']], [entries[4], ['connectAgent', 'createScopedSurfaceEndpoint']]]) for (const name of names) if (!(name in module)) throw new Error(`Missing vNext export ${name}`);",
+      "for (const [module, names] of [[entries[0], ['defineDataFeature', 'defineFeature', 'inferLocalDataShape']], [entries[1], ['createLocalDataBinding', 'createLocalDataSurface']], [entries[3], ['AdaptiveSurface', 'AeliqoScope', 'ViewSurface', 'defineReactViews', 'useSurface', 'useSurfaceState']], [entries[4], ['connectAgent', 'createScopedSurfaceEndpoint']]]) for (const name of names) if (!(name in module)) throw new Error(`Missing vNext export ${name}`);",
       "if (typeof entries[2] !== 'object') throw new Error('Runtime scope entry did not load');",
       "const local = entries[1].createLocalDataSurface({ data: [{ id: 'ada', name: 'Ada' }], getRowId: row => row.id });",
       "try { const receipt = await local.surface.request({ kind: 'browse' }); if (receipt.status !== 'committed' || local.surface.getSnapshot().state.rows[0]?.name !== 'Ada') throw new Error('Packed local surface did not browse rows'); } finally { local.dispose(); }",
@@ -343,10 +343,10 @@ async function readQualificationInputs() {
   assert.equal(matrix.claims.stablePublished, false);
   assert.match(migration, /0\.4\.2/u);
   assert.match(migration, /0\.5\.0/u);
-  assert.match(releaseNotes, /vNext source candidate \(0\.5\.0\)/u);
-  assert.match(releaseNotes, /0\.5\.0-rc\.1.*`next` tag/u);
+  assert.match(releaseNotes, /## Aeliqo 0\.5\.0/u);
+  assert.match(releaseNotes, /historical `0\.5\.0-rc\.1`/u);
   assert.match(releaseNotes, /earlier source revision that lacks the local React path/u);
-  assert.match(packagePage, /vNext migration guide/u);
+  assert.match(packagePage, /0\.4 to 0\.5 migration guide/u);
   for (const entry of [
     '@aeliqo/core/features',
     '@aeliqo/runtime/surfaces',

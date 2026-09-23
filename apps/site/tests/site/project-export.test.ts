@@ -9,7 +9,7 @@ const releaseVersion = (
 
 describe('playground project export', () => {
   it.each(['people', 'products', 'support', 'knowledge'] as const)(
-    'builds a bounded installable %s project without credentials',
+    'builds a bounded %s source project without credentials',
     async (scenario) => {
       const files = projectFiles(scenario, releaseVersion);
       expect(files.map((file) => file.path)).toEqual([
@@ -33,6 +33,9 @@ describe('playground project export', () => {
       expect(manifest.scripts).toEqual({ dev: 'vite', build: 'tsc --noEmit && vite build' });
       const source = files.map((file) => file.content).join('\n');
       expect(source).toContain('createAeliqoApp');
+      expect(files.find((file) => file.path === 'README.md')?.content).toContain(
+        `Install requires the pinned ${releaseVersion} packages to be published to npm`,
+      );
       expect(source).not.toMatch(/api[_-]?key|bearer\s+[a-z0-9]/iu);
       const archive = new Uint8Array(await zipProject(files).arrayBuffer());
       expect(new DataView(archive.buffer).getUint32(0, true)).toBe(0x04034b50);

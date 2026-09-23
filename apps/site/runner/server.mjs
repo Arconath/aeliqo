@@ -6,9 +6,12 @@ import { extname, resolve, sep } from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { createMcpHttpHandler } from '@aeliqo/agent/mcp';
-import { createOpaqueModelSecret, createOpenAICompatibleToolModel, runToolModel } from '@aeliqo/agent/model';
+import { runToolModel } from '@aeliqo/agent/model';
 import { RELEASE_VERSION } from '../../../scripts/release/metadata.mjs';
 import { BrowserSessionBroker } from './broker.mjs';
+import { createModelAdapter } from './model-adapter.mjs';
+import { readModelConfiguration } from './model-config.mjs';
+import { publicPromptReceipt } from './prompt-receipt.mjs';
 
 const runnerRoot = fileURLToPath(new URL('..', import.meta.url));
 const siteRoot = resolve(runnerRoot, '../site/dist');
@@ -98,52 +101,10 @@ async function readJson(request, maxBytes = 32_000) {
   return value;
 }
 
-function readModelSettings() {
-  const apiKey = process.env.AELIQO_MODEL_API_KEY?.trim();
-  const modelName = process.env.AELIQO_MODEL?.trim();
-  const baseURL = process.env.AELIQO_MODEL_BASE_URL?.trim();
-  if (!apiKey && !modelName && !baseURL) return undefined;
-  if (!apiKey || !modelName || !baseURL)
-    throw new Error('AELIQO_MODEL_API_KEY, AELIQO_MODEL, and AELIQO_MODEL_BASE_URL must be configured together.');
-  return { apiKey, modelName, baseURL };
-}
-
-function validateModelEndpoint(baseURL) {
-  const endpoint = new URL(baseURL);
-  const insecure = endpoint.protocol === 'http:';
-  const loopback = ['127.0.0.1', 'localhost', '::1'].includes(endpoint.hostname);
-  if (endpoint.username !== '' || endpoint.password !== '')
-    throw new Error('Model endpoint credentials must be supplied through AELIQO_MODEL_API_KEY, not the URL.');
-  if (endpoint.protocol !== 'https:' && !insecure)
-    throw new Error('Model endpoints must use HTTPS, or explicitly enabled HTTP on loopback.');
-  if (insecure && (!loopback || process.env.AELIQO_ALLOW_INSECURE_MODEL_HTTP !== '1'))
-    throw new Error('Plain HTTP model endpoints require an explicit loopback-only opt-in.');
-  return { endpoint, insecure };
-}
-
-function createModelAdapter(settings, endpointConfiguration) {
-  const { apiKey, modelName } = settings;
-  const { endpoint, insecure } = endpointConfiguration;
-  return createOpenAICompatibleToolModel({
-    baseURL: endpoint.href,
-    model: modelName,
-    secret: createOpaqueModelSecret(apiKey, 'trusted-server'),
-    capabilities: ['tool-calls'],
-    policy: {
-      allowExternalEgress: true,
-      allowedOrigins: [endpoint.origin],
-      ...(insecure ? { allowInsecureHttp: true } : {}),
-    },
-    budget: { maxRequestBytes: 128_000, maxResponseBytes: 128_000 },
-    timeoutMs: 30_000,
-    retry: { maxAttempts: 1 },
-  });
-}
-
 function modelConfiguration() {
-  const settings = readModelSettings();
+  const settings = readModelConfiguration(process.env);
   if (settings === undefined) return undefined;
-  return createModelAdapter(settings, validateModelEndpoint(settings.baseURL));
+  return createModelAdapter(settings);
 }
 
 const model = modelConfiguration();
@@ -176,12 +137,7 @@ async function runPrompt(prompt, broker, signal) {
     signal,
   });
   if (!result.ok) throw new Error(result.diagnostics[0]?.message ?? 'The model loop failed.');
-  return {
-    stop: result.value.stop,
-    modelRequests: result.value.modelRequests,
-    toolCalls: result.value.toolCalls,
-    ...(result.value.textDraft === undefined ? {} : { message: result.value.textDraft }),
-  };
+  return publicPromptReceipt(result.value);
 }
 
 const mcpResource = new URL('/mcp', origin);

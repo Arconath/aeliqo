@@ -6,6 +6,7 @@ import { PUBLIC_PACKAGE_NAMES, sha256, sha512Integrity } from '../../scripts/rel
 import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 import {
   assertApprovedRc,
+  assertApprovedStable,
   assertCandidateIdentity,
   assertCandidateTarball,
   assertRegistryVersionAvailable,
@@ -299,6 +300,46 @@ test('approved RC records bind source and all candidate integrities', () => {
       }),
     /each public package/,
   );
+});
+
+test('stable image export requires exact-source installed latest packages', () => {
+  const stableCandidate = {
+    ...candidate,
+    version: RELEASE_VERSION,
+    packages: packages.map((item) => ({
+      ...item,
+      version: RELEASE_VERSION,
+      file: item.file.replace(rc2, RELEASE_VERSION),
+    })),
+  };
+  const publication = {
+    schema: 'aeliqo.npm-publication.v2',
+    sourceRevision,
+    version: RELEASE_VERSION,
+    tag: 'latest',
+    mode: 'trusted-publishing',
+    completedAt: 'now',
+    packages: stableCandidate.packages.map((item) => ({ ...item, distTag: 'latest' })),
+  };
+  const consumer = {
+    schema: 'aeliqo.registry-consumer.v2',
+    expectedSourceRevision: sourceRevision,
+    provenanceVerified: true,
+    version: RELEASE_VERSION,
+    packages: stableCandidate.packages,
+  };
+  const input = { candidate: stableCandidate, publication, consumer, version: RELEASE_VERSION, sourceRevision };
+  assert.doesNotThrow(() => assertApprovedStable(input));
+  assert.throws(() => assertApprovedStable({ ...input, sourceRevision: 'b'.repeat(40) }), /exact-source/);
+  assert.throws(
+    () => assertApprovedStable({ ...input, consumer: { ...consumer, provenanceVerified: false } }),
+    /registry consumer/,
+  );
+  assert.throws(
+    () => assertApprovedStable({ ...input, publication: { ...publication, packages: publication.packages.slice(1) } }),
+    /each public package/,
+  );
+  assert.throws(() => assertApprovedStable({ ...input, publication: { ...publication, tag: 'next' } }), /exact-source/);
 });
 
 test('npm provenance binds package bytes to canonical workflow and source', () => {

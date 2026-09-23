@@ -34,9 +34,9 @@ provider accepts exactly one of those values and never disposes either one.
 
 ## Native React views and headless surfaces
 
-For a small complete array already supplied by the application, the newer
-0.5.0 source candidate has a providerless path with no factory or explicit
-runtime. The published `0.5.0-rc.1` came from an earlier source revision and
+For a small complete array already supplied by the application, the 0.5.0
+line has a providerless path with no factory or explicit runtime. The historical
+`0.5.0-rc.1` came from an earlier source revision and
 does not include this path:
 
 ```tsx
@@ -97,7 +97,14 @@ export function PeopleNativeView({
 ```
 
 `AeliqoScope` attaches and detaches the supplied scope for committed React
-lifecycle work, but never disposes it. `useSurfaceState` subscribes to one
+lifecycle work, but never disposes it. It renders children only for an active,
+authorized activation. Initial resolution, denied access, forced invalidation,
+and disposal show a safe status without rendering the scoped children. During a
+voluntary Save / Discard / Stay guard, the current scope and its React subtree
+remain mounted; the requested selector is only pending. An accepted switch
+remounts the scoped subtree under the new activation epoch, including A→B→A.
+The host must call `scope.invalidate(...)` on logout or revocation; changing a
+route prop alone does not fence access. `useSurfaceState` subscribes to one
 controller with a selector, so unrelated controller updates do not rely on a
 global React context broadcast. Advanced `AdaptiveSurface` requires trusted
 presentation evidence to make an automatic choice from registered native
@@ -129,13 +136,55 @@ the old view immediately. The loader is application code; neither a model nor
 a wire payload may choose its import path. Keep a view definition immutable for
 one ID and revision; increment the revision when its implementation changes.
 
-The advanced `useSurface` and factory overload of `useDataSurface` accept a
-stable application-authored factory. The factory is called only in a committed
-effect; that overload returns `undefined` while pending and disposes only its
-own controller on cleanup. Construct the factory with `useMemo` or outside
-rendering, and keep authority/scope binding at the host boundary. A providerless
-local hook nested inside an application-owned scope fails visibly instead of
-creating a parallel authority context.
+For a feature bound to an application scope, mount `AeliqoProvider` with the
+host runtime, then `AeliqoScope` with its host scope. A descendant can use
+`useSurface(feature, { id, bindings })`. The hook reads those nearest owners,
+creates the controller only after commit, makes the first request then, and
+returns `undefined` until the controller exists. A data feature starts with browse; a
+capability feature starts from its typed `bindings.initialIntent`. Supply a
+stable surface ID within an activation and bindings for that activation:
+
+```tsx
+import { AeliqoProvider } from '@aeliqo/react/app';
+import { AeliqoScope, useSurface } from '@aeliqo/react/surface';
+import type { DataFeatureDefinition } from '@aeliqo/core/features';
+import type { AeliqoRuntime } from '@aeliqo/runtime/app';
+import type { ScopeController } from '@aeliqo/runtime/scopes';
+import type { DataSurfaceBindings } from '@aeliqo/runtime/surfaces';
+
+type OrdersState = { readonly rows: readonly { readonly id: string }[] };
+
+function Orders({ feature, bindings }: {
+  feature: DataFeatureDefinition;
+  bindings: DataSurfaceBindings<OrdersState>;
+}) {
+  const surface = useSurface(feature, { id: 'orders-main', bindings });
+  return <p>{surface?.getSnapshot().phase ?? 'Preparing orders'}</p>;
+}
+
+export function OrdersWorkspace({ runtime, scope, feature, bindings }: {
+  runtime: AeliqoRuntime;
+  scope: ScopeController;
+  feature: DataFeatureDefinition;
+  bindings: DataSurfaceBindings<OrdersState>;
+}) {
+  return <AeliqoProvider runtime={runtime}>
+    <AeliqoScope scope={scope}><Orders feature={feature} bindings={bindings} /></AeliqoScope>
+  </AeliqoProvider>;
+}
+```
+
+This example only shows controller creation; use `useSurfaceState` in a child
+component to subscribe to changing controller state. Keep feature definitions
+immutable and create new scope-specific bindings for a new activation. A
+callback holding an old controller remains bound to its old address and cannot
+act in a later activation. Changing the binding reference within an activation
+does not replace the controller; use the runtime's source update contract for
+data changes. The existing factory overloads of `useSurface` and
+`useDataSurface` remain available for application-authored factories and
+dispose only the controllers they create. A providerless local hook nested
+inside an application-owned scope fails visibly instead of creating a parallel
+authority context.
 
 ## Component wrappers
 

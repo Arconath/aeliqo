@@ -12,15 +12,18 @@ description: 'Copy a complete no-AI React starter, then add registered People da
 
 <aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Use Node.js 24, React 19.2, TypeScript, and one React root. Keep every Aeliqo package on the same exact version. The expanded tutorial sources below are compiled by this repository.</p></aside>
 
-<aside class="doc-callout" data-tone="warning"><strong>Release line</strong><p>This tutorial targets the breaking <code>0.5.0</code> release line. It becomes installable when the approved release workflow publishes that version. Until then, keep existing applications on the published <code>0.4.2</code> line and do not mix package versions.</p></aside>
+<aeliqo-release-status></aeliqo-release-status>
+
+This tutorial targets the breaking `0.5.0` line. Keep all installed Aeliqo
+packages on exactly the same version.
 
 ## Start here: a complete local React app without AI
 
-Create an empty directory with these four files. After the matching `0.5.0`
-packages are published, run `npm install`, `npm run typecheck`, and `npm run dev`.
-The published `0.5.0-rc.1` predates this local-surface API; it cannot run this
-example. The example uses application-owned rows and makes no model or remote
-data request.
+Create an empty directory with these four files. With the matching `0.5.0`
+packages available in the registry, run `npm install`, `npm run typecheck`, and
+`npm run dev`. The historical `0.5.0-rc.1` predates this local-surface API;
+it cannot run this example. The example uses application-owned rows and makes
+no model or remote data request.
 
 **package.json**
 

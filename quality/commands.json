@@ -392,6 +392,11 @@
       "timeoutSeconds": 180
     },
     {
+      "kind": "browser",
+      "argv": ["pnpm", "test:agent-evaluation:live-offline"],
+      "timeoutSeconds": 300
+    },
+    {
       "kind": "unit",
       "argv": ["pnpm", "test:scenarios"],
       "timeoutSeconds": 180

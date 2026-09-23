@@ -2,6 +2,54 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## Current 0.5 candidate — PR #31 (2026-09-24)
+
+The current source is the clean head of `codex/aeliqo-0.5-site-docs` in
+[PR #31](https://github.com/Arconath/aeliqo/pull/31). Read its `headSha` and
+the matching Quality report; earlier SHA-specific tables and checkpoints below
+are historical evidence, not the candidate's current release state.
+
+F02/T10 scope and API, F06/F09/T18 J1–J3 runtime and presentation, F10/F11/T17
+public playground and docs, and T14/T15 trusted model runner have integrated
+source and focused verification. The installed core tarball consumer passed
+after a bundle-size correction at 71,672/71,680 bytes gzip; vNext 289/289,
+lint, format, and performance bundle 6/6 passed. F13/T20–T21 and A41/A45–A50
+remain release-gated: the final-head 89-gate PR Quality, accepted `main` Quality,
+authorized real-model evaluation, exact-source registry packages, immutable
+site image, platform cutover, live smoke, and rollback evidence are still
+required. No paid provider call or 0.5 stable publication is claimed. The
+older 80/88 report is interrupted and does not count as a pass.
+
+## 2026-09-24 0.5 closure overlay
+
+The integrated correction checkpoint below records pre-freeze source
+evidence. F02/T10, F06/F09/T18, F10/F11/T17, and T14/T15 have focused local
+verification recorded in `07-EXECUTION-STATE.md`, including the new 89th
+offline J1–J3 quality gate. A41 live model evidence is blocked at zero paid
+requests pending its separate authorization. F13/T20–T21 release evidence is
+open until one candidate SHA passes PR and main Quality, exact registry and
+image proofs, platform cutover, live smoke, and rollback qualification. The
+read-only registry preflight found `0.5.0-rc.2` and stable `0.5.0` available
+for all five package names; availability is not publication evidence.
+
+The starting source for the current correction is clean branch
+`codex/aeliqo-0.5-site-docs` at
+`6c468f909e3a5d7699ef844a0589e12feb7b7afe`. The previous overlay below
+describes the earlier uncommitted `930ba21` checkpoint and is historical.
+The `6c468f9` quality report is interrupted at 80/88 and still says `running`;
+it is not an acceptance pass. This checkpoint's focused checks cannot replace
+exact-source PR and main Quality qualification.
+
+F02/T10 (React scope/API), F06/F09/T18 (J1–J3 runtime and presentation),
+F10/F11/T17 (public playground/docs), T14/T15 (local runner and model profile),
+and F13/T20–T21 (release evidence) are open in this correction. Focused J2/J3
+tests passed 35/35, runtime presentation 58/58, and Chromium browser 12/12
+after period-bound and registered-pattern changes. These results do not close
+the A-case matrix. Ruling: the J3 approved registered pattern uses
+`allowWithoutPreset: false` and the existing bounded search so generic
+three-table suggestions do not replace the intended summary/trend/breakdown;
+if another host wants generic layouts, it must approve them in its experience.
+
 ## 2026-09-24 local site/docs overlay
 
 Starting source is `930ba212142caecf9a18df2d71adf343bdbf2986`; the current 0.5.0 edits are local and uncommitted while verification finishes. F10/A43 now has authored Purpose coverage for all 71 component pages, one sidebar entry per component on every component route, source-derived 71/63/6 standalone/semantic/adaptive maturity, and expanded task-specific public/package guidance. `pnpm test:docs-artifact` passed for 126 pages/71 components; the full docs browser suite passed 13/13. F11/A44 has a passing `pnpm site:test`, `pnpm test:catalog-examples`, lint/Knip, format, and focused Chromium/Firefox/WebKit action-review tests. The 639-case catalog visual batch passed across all three browsers; the remaining dirty-source batches were stopped because the final clean-source `pnpm check` reruns the complete matrix. A43–A44 and A50 require an exact clean candidate commit and a new `pnpm check` report bound to that commit before final qualification.

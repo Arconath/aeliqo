@@ -1,5 +1,133 @@
 # Aeliqo vNext execution state
 
+## Current 0.5 candidate — PR #31 (2026-09-24)
+
+The current source is the clean head of `codex/aeliqo-0.5-site-docs` in
+[PR #31](https://github.com/Arconath/aeliqo/pull/31); use `git rev-parse HEAD`
+and the PR Quality run's `headSha` for the exact revision. The paragraphs below
+are dated checkpoints, not a claim that the earlier `6c468f9` or `930ba21`
+source is current. The old `artifacts/product-ci/ci.json` reports 80/88 at
+`6c468f9` after interruption and cannot qualify this candidate.
+
+The reviewed correction implements the React scope boundary and scoped hook,
+real J1–J3 playground journeys, period-bound J2 queries, registered-pattern
+J3 composition, trusted local model configuration, and release-aware copy and
+ZIP gates. Independent React, site, and release reviews were reconciled before
+PR creation. The first two PR Quality attempts found the installed core
+consumer bundle above its 70 KiB budget; this was corrected in the candidate
+without raising the budget. The latest local installed-tarball consumer passed
+with 71,672/71,680 bytes gzip and Chromium execution. Final-source vNext
+289/289, lint, format, and performance bundle 6/6 passed. PR Quality's 89-gate
+result must be read on the final head; those focused checks are not a release
+pass.
+
+Current blockers are the final exact-source PR Quality result, accepted `main`
+and its required Quality, explicit authorization and real-provider evidence for
+the paid 12-case model evaluation, exact-source RC/stable registry evidence,
+site image and ZIP registry evidence, platform promotion, live smoke, and
+rollback proof. `RELEASED_VERIFIED` is not assigned. The product task owns only
+this repository; the platform task owns shared admission and promotion.
+
+## 2026-09-24 0.5.0 closure in progress
+
+### Integrated correction checkpoint (pre-freeze evidence, 2026-09-24)
+
+- React scope children now follow committed authorization, including initial,
+  denied, revocation, dirty voluntary transition, and A→B→A epochs. The scoped
+  `useSurface(feature, { id, bindings })` path uses the host runtime and nearest
+  active scope; the existing factory path remains. J2 query bounds derive from
+  the visible Asia/Jakarta period. J3 discovers its registered pattern with an
+  empty candidate list and preserves the three distinct child Results.
+- The public playground contains People Jakarta, Daily attendance, and
+  Analytical workspace alongside four earlier scenarios. The reviewed
+  clarification, reset, inspector, and committed-filter feedback defects were
+  corrected. Browser provider-key input and direct provider transport were
+  removed. The local runner requires an explicit trusted model profile.
+- A 12-case J1–J3 live evaluation corpus, real browser host, scorer, and
+  request/spend preflight exist. The approved DeepSeek example is deliberately
+  `authorized: false`; its dry report has zero provider requests and zero
+  spend. Live model quality is still unverified. Current official peak prices
+  used for reservation are $0.30 per million cache-miss input tokens and $1.20
+  per million output tokens; the full 48-request reservation is $0.576.
+- The site-release workflow now requires successful exact-source stable npm
+  publication, a fresh five-package registry/provenance consumer, current
+  `latest` dist-tags, and installation/build of all four exported ZIP projects
+  before enabling export in the immutable image. A stable-build simulation
+  generated release-aware public copy; it did not publish an image.
+- Fresh pre-freeze checks passed: `pnpm site:test` (including 24 visual
+  baseline cases), `pnpm test:docs-artifact` (126 pages, 71 components),
+  `pnpm test:catalog-examples` (3/3), `pnpm test:release-tooling` (31/31),
+  `pnpm test:vnext` (289/289), `pnpm test:vnext:browser` (61/61),
+  `pnpm test:vnext:visual` (27/27 across Chromium, Firefox, WebKit),
+  `pnpm test:agent-evaluation:host` (28/28),
+  `pnpm test:agent-evaluation:live-offline` (7 Node and 3 browser),
+  `pnpm test:framework:consumers`, `pnpm test:performance:bundles` (6/6),
+  `pnpm lint`, and `pnpm format:check`. Source edits after an individual check
+  still require the PR Quality matrix on the final commit. Read-only npm
+  preflight found all five `0.5.0-rc.2` and `0.5.0` versions available.
+- The acceptance matrix now has 89 gates, including the offline J1–J3 model
+  host. The prior 80/88 interrupted report remains historical. Open gates:
+  independent final diff review, one frozen candidate commit, PR Quality,
+  required push Quality on accepted `main`, separately authorized paid live
+  evaluation, owner publication, image proof, platform promotion, live smoke,
+  and rollback evidence. `RELEASED_VERIFIED` is not assigned.
+
+- Accepted starting source for this correction is clean branch
+  `codex/aeliqo-0.5-site-docs` at
+  `6c468f909e3a5d7699ef844a0589e12feb7b7afe`. The earlier paragraph
+  below records the historical `930ba21` worktree before that source was
+  committed; it is not the current candidate state.
+- `artifacts/product-ci/ci.json` still reports `running` at `6c468f9` with
+  80 completed of 88 scheduled gates after an interrupted run. It is not a
+  pass and cannot be resumed as an unchanged-source qualification. No 0.5
+  stable package or site from this source is published.
+- The source correction targets the authorized React scope boundary
+  and scoped hook, trusted local model runner, three public journeys, live
+  AI evidence, truthful export/docs, and exact-source release gates. J2 civil
+  bounds now derive from its displayed period. J3 resolves its registered
+  pattern with an empty candidate list and commits three distinct child
+  views. Focused J2/J3 Vitest 35/35, runtime presentation 58/58, and J2/J3
+  Chromium browser 12/12 passed in this dirty worktree; these are not release
+  qualification.
+- After integration and independent review, make one source candidate commit,
+  run the full Quality matrix against that unchanged commit, and reconcile
+  the A01–A50 evidence. The platform task owns shared deployment state.
+
+### Release operator continuation (planned; no release command run here)
+
+The product operator owns the Aeliqo repository's Quality, package publish,
+and site image workflows. The platform operator owns shared GitOps admission,
+`production-deploy.py prepare`, promotion preflight, and rollback execution
+from current `platform-apps/main`. No product task should push platform state.
+
+1. Review the candidate source and independent findings, then freeze one
+   source commit on the approved single PR branch. Require its PR
+   Quality report. Merge only through required checks; record accepted `main`
+   SHA and its successful push Quality run. An interrupted or different-SHA
+   `artifacts/product-ci/ci.json` cannot satisfy this gate.
+2. Recheck npm availability. Owner-dispatch `release-publish.yml` for the next
+   available 0.5 RC from accepted `main`, verify its five installed packages,
+   then owner-dispatch matching stable `0.5.0` from the same SHA using that RC
+   evidence. Keep each workflow's candidate manifest, publication record,
+   registry consumer report, package integrity, and provenance.
+3. Owner-dispatch `site-release.yml` on the same `main` SHA with the successful
+   stable publication run ID in `stable_publish_run_id`. Its gate downloads the
+   exact-source publication artifact, reinstalls five packages from npm,
+   verifies source-bound provenance, and only then enables ZIP export for the
+   immutable site image. Record Quality run, site-release run, image digest,
+   SBOM/scan/provenance, and image route/health smoke. A missing artifact or
+   mismatched version/source keeps export disabled and blocks image publish.
+4. Give the platform operator the accepted SHA, run IDs, verified image digest,
+   ephemeral qualification, and prior image digest. Platform prepares and
+   preflights promotion before cutover. After cutover verify `/healthz`,
+   `/readyz`, `/version`, landing, docs, search, catalog, playground, ZIP
+   registry install, and manual J1–J3. Keep the prior image for rollback;
+   repair an already published npm version with a patch rather than unpublish.
+
+These are procedures, not evidence that publication, deployment, human
+usability, or rollback has occurred. `RELEASED_VERIFIED` remains closed until
+source, registry, image, live site, and rollback evidence all match.
+
 ## 2026-09-24 local 0.5.0 site and documentation correction
 
 - Starting source: clean `main` at `930ba212142caecf9a18df2d71adf343bdbf2986`. The worktree now contains local 0.5.0 candidate edits; none of the earlier exact-source matrix reports qualify these edits. Do not publish, deploy, or promote from this dirty state.

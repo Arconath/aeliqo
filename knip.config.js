@@ -86,6 +86,7 @@ export default {
         'tests/**/server.mjs',
         'tests/**/*-child.mjs',
         'tests/agent-evaluation/runner.ts',
+        'tests/agent-evaluation/live-browser/browser.mjs',
         'tests/agent-evaluation/ui-development/host.ts',
         'tests/performance/adverse-visualization.ts',
         'tests/performance/perceived-input.ts',

@@ -3,17 +3,17 @@ id: 'migration-0-4'
 path: '/ship/migration-0.4/'
 section: 'Ship'
 title: 'Migrate from 0.4.2 to vNext 0.5'
-description: 'Move from live Aeliqo 0.4.2 to the breaking 0.5.0 source candidate after its release gates.'
+description: 'Move from Aeliqo 0.4.2 to the breaking 0.5.0 release line.'
 ---
 
 ## Release line and compatibility
 
-Aeliqo `0.4.2` remains the live, stable release. The vNext work is prepared as
-a breaking `0.5.0` source candidate because it adds public surface and scoped
-runtime contracts. `0.5.0-rc.1` exists on npm's `next` tag from an earlier
-source revision; it does not contain every change on this page. Nothing here
-changes the published `0.4.2` packages. Use the newer candidate only after
-its own release gates and publication are approved.
+<aeliqo-release-status></aeliqo-release-status>
+
+Aeliqo `0.5.0` is a breaking successor with public surface and scoped runtime
+contracts. The historical `0.5.0-rc.1` came from an earlier source revision
+and does not contain every change on this page. The `0.4.2` packages remain
+available for older integrations.
 
 The wire contract remains version `1`. The existing application/resource/Region
 path is the compatibility adapter for applications that are not ready to move.

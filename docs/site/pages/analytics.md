@@ -29,4 +29,4 @@ The resolver may choose a trend when the Result has a compatible time field, reg
 - Cancellation and late Results cannot replace a newer committed view.
 - A failed update keeps the previous Result only while that Result remains authorized; scope revocation clears it.
 
-The attendance journey uses synthetic records and does not validate a live provider or a customer dataset. A server adapter must enforce the same authorization and coverage claims before returning data; see [HTTP data](/guides/http-data/).
+Run **Daily attendance** in the [public Playground](/playground/) to see the fixture's committed trend, denominator, period, missing coverage, and clarification choice in one shell. The journey uses synthetic records and does not validate a live provider or a customer dataset. A server adapter must enforce the same authorization and coverage claims before returning data; see [HTTP data](/guides/http-data/).
