@@ -14,6 +14,14 @@ a fresh `pnpm check` artifact whose source revision equals the final `HEAD` can
 satisfy the unchanged-source final gate. A01–A50 remain baseline NOT RUN in
 `03-ACCEPTANCE.md` until exact-source evidence is reconciled.
 
+A second clean matrix passed 87/87 at `122ab40a7eaf0faf08e069e6778bbf402564489e`
+with unchanged source. The subsequent integrated J3 browser fixture and public
+documentation corrections require a new final-source matrix. Focused J3 checks
+passed vNext 281/281, browser 50/50, and bundle 6/6 without changing the
+163,840-byte `region-table` cap. The synthetic J3 fixture uses one fixed
+principal and an explicit registered pattern candidate; scope isolation and
+automatic empty-candidate discovery are separate claims.
+
 - Fresh `origin/main` baseline was `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the local candidate started from it and has not been pushed.
 - Fresh npm registry reads show all five public packages (`core`, `runtime`, `web`, `react`, `agent`) at `latest=0.4.2` and `next=0.5.0-rc.1`. GitHub publish run `35816382654` used `main` source `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the newer local candidate was not in that RC. Published npm versions are immutable, so that RC cannot be overwritten with this source.
 - `release-metadata.json` describes 0.5.0 as a candidate; that source metadata is not registry publication evidence. Registry facts were read with `npm view @aeliqo/<package> dist-tags --json` and `npm view @aeliqo/<package> versions --json` for each of the five names.
@@ -42,7 +50,7 @@ satisfy the unchanged-source final gate. A01–A50 remain baseline NOT RUN in
 | T17  | implemented-and-verified | Accepted `b64e043`/`733ed14`; source-driven active catalog inventory, public export/page/example parity, authored wording checks, inventory 71/71 and docs artifact 10/10. |
 | T18  | implemented-and-verified | Accepted `52b2bfe`/`adef0f3`; four synthetic reference journeys, real scoped agent parity, remote transport fixture, host approval/revocation, and job progress/cancel/output refs; remote 1/1 and browser 4/4 in Chromium/Firefox/WebKit. |
 | T19  | implemented-and-verified | Accepted final source-bound performance evidence; two-surface isolation, module tiers 10/100/1000, 5×100 samples/tier, every tier under the 100ms p95 budget, bundle 6/6 within the 163840-byte cap, and runtime/browser/heap gates green. |
-| T20  | implemented-and-verified | Candidate 0.5.0 is unreleased/breaking from stable 0.4.2; latest packed five-package report under `artifacts/t20-qualification/` proves legacy/vNext/no-agent support and release tooling 31/31. |
+| T20  | implemented-and-verified | Breaking 0.5.0 newer source candidate is unpublished; stable remains 0.4.2 and `0.5.0-rc.1` exists from older source. The packed five-package report under `artifacts/t20-qualification/` proved legacy/vNext/no-agent support and release tooling 31/31 at its historical source. |
 | T21  | final-review-gated        | Independent final review and the clean 87-gate matrix are the handoff evidence; publication and deployment remain separately unauthorized. |
 
 RQ45 remains owned by T01, but its evidence is deliberately split: T01 freezes
@@ -77,7 +85,8 @@ was corrected to prebundle React explicitly without late dependency discovery;
 focused browser checks passed 47/47 and 141/141 repeated. The candidate then
 merged current `origin/main` at `368cffc` locally, retaining the removal of
 automatic production promotion. Neither the failed matrix nor the focused
-reruns qualify the new merged source; a clean full matrix is still required.
+reruns qualified the merged source. The subsequent clean `122ab40` matrix
+passed 87/87; the new J3 and docs edits require another clean run.
 
 | Cases | Owner | Code and executable evidence | Current result or limit |
 | --- | --- | --- | --- |
@@ -91,8 +100,8 @@ reruns qualify the new merged source; a clean full matrix is still required.
 | A13–A16 | F04/F06 | `tests/vnext/react.spec.tsx`, `tests/vnext/presentation.test.ts`, `tests/vnext/browser/react-adaptive.spec.ts` | Bounded shared resolver, eligibility/pins, resize and narrow container behavior. |
 | A17–A19 | F03/F05/F06 | `tests/vnext/journey-attendance.test.ts`, `examples/vnext/attendance/`, `tests/vnext/browser/attendance.spec.ts` | Partial: approved synthetic daily ratios, missing/future data, ambiguity, runtime chart, visible period/metric, and browser clarification pass; offset/DST period execution remains explicitly unsupported. |
 | A20 | F03 | `tests/vnext/metrics.test.ts`, `tests/semantics/` | Bounded independent ratio, units, decimal and aggregation expected values. |
-| A21 | F05/F07 | `tests/vnext/journey-workspace-goal.test.ts`, `examples/vnext/workspace/`, `tests/vnext/browser/workspace.spec.ts` | Partial: a registered pattern derives summary/trend/breakdown from committed Task/Result evidence and commits the workspace; browser tests render three registered one-need child tasks. The two paths are not one end-to-end browser flow, and empty-candidate automatic role selection is not implemented. Unknown goals reject. |
-| A22–A24 | F07 | `tests/vnext/workspace-layout.test.ts`, `tests/vnext/scope-race.test.ts`, `tests/vnext/browser/workspace.spec.ts` | Bounded child ownership, prior-layout retention, capacity/cycle rejection, and child DOM focus/resize/result retention; one multi-need plan in browser remains unproved. |
+| A21 | F05/F07 | `tests/vnext/journey-workspace-goal.test.ts`, `examples/vnext/workspace/goal.ts`, `examples/vnext/workspace-goal/`, `tests/vnext/browser/workspace.spec.ts` | Bounded integrated browser flow: one registered three-need Task, three runtime Results, a registered pattern candidate, committed plan, and real summary/trend/breakdown DOM. Unknown goals reject; empty-candidate automatic pattern discovery remains unproved. |
+| A22–A24 | F07 | `tests/vnext/workspace-layout.test.ts`, `tests/vnext/scope-race.test.ts`, `examples/vnext/workspace/`, `tests/vnext/browser/workspace.spec.ts` | Bounded child ownership, prior-layout retention, capacity/cycle rejection, fixed-scope integrated plan, and child DOM focus/resize/result retention. The integrated fixture retains its old view after mandatory breakdown failure; cross-scope proof belongs to the separate scope/security suites. |
 | A25–A29 | F07/F08 | `tests/vnext/scope-draft.test.ts`, `tests/vnext/scope-race.test.ts`, `tests/vnext/agent-bridge.test.ts`, `tests/vnext/actions.test.ts` | Bounded voluntary/forced transitions, A-B-A fencing, controlled receipts, and scoped continuity. |
 | A30–A33 | F03/F08 | `tests/vnext/remote-data.test.ts`, `tests/vnext/remote-server.test.ts`, `tests/vnext/journey-remote.test.ts` | Partial: synthetic HTTP, cursor, lineage and cancellation profiles pass; no customer server or complete combined first-page/global-aggregate profile. |
 | A34 | F09 | `tests/vnext/browser/ssr.spec.ts`, `tests/next-platform/` | Bounded no-JS authorized DOM, hydration and principal isolation. |

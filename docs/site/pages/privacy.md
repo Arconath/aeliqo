@@ -1,9 +1,25 @@
 ---
-id: "privacy"
-path: "/legal/privacy/"
-section: "About"
-title: "Privacy"
-description: "How the public documentation and synthetic playground handle data."
+id: 'privacy'
+path: '/legal/privacy/'
+section: 'About'
+title: 'Privacy'
+description: 'How the public documentation and synthetic playground handle data.'
 ---
 
-<p class="lead">The public playground is designed to run synthetic data without a model provider.</p><h2>Local state</h2><p>Filtering, structured intents, and evaluation run in the browser. Playground state is local to the session and can be reset. Exports must never include provider keys or private records.</p><h2>Optional analytics</h2><p>If production analytics are enabled, the site asks before loading them. Aggregate events exclude form content, URL query parameters, credentials, and direct identity.</p><h2>Connected agents</h2><p>MCP or BYOK requires a user-run host. That host must disclose provider egress and retain keys only in the trusted process. Native WebMCP follows browser capability and policy.</p><h2>External links</h2><p>Opening GitHub, npm, or another external service sends a request to that destination.</p>
+<p class="lead">The public playground uses synthetic data and works without a model provider.</p>
+
+## Local state
+
+Filtering, structured intents, and evaluation run in the browser. Playground state is local to the session and can be reset. Exports must never include provider keys or private records.
+
+## Optional analytics
+
+If production analytics are enabled, the site asks before loading them. Aggregate events exclude form content, URL query parameters, credentials, and direct identity.
+
+## Connected agents
+
+The local runner keeps a BYOK key in the user-run host process. The hosted Playground also offers an explicitly opted-in DeepSeek connection: the browser sends the key, prompt, selected synthetic scenario context, and bounded tool metadata directly to DeepSeek. Aeliqo does not proxy that request or receive the key. The browser keeps the key in memory for the connection and clears it on disconnect, reset, or page close. DeepSeek may process the submitted content and charge the key owner's account. See [BYOK](/agents/byok/) for limits and failure behavior. MCP integrations use the host configured by their operator, which must disclose provider egress and protect credentials. Native WebMCP follows browser capability and policy.
+
+## External links
+
+Opening GitHub, npm, or another external service sends a request to that destination.

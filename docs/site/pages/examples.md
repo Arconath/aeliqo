@@ -1,9 +1,9 @@
 ---
-id: "examples"
-path: "/examples/"
-section: "Examples"
-title: "Runnable examples"
-description: "Four synthetic applications prove that one pipeline supports records, commerce, support workflows, and knowledge content—not only dashboards."
+id: 'examples'
+path: '/examples/'
+section: 'Examples'
+title: 'Runnable examples'
+description: 'Four synthetic applications prove that one pipeline supports records, commerce, support workflows, and knowledge content—not only dashboards.'
 ---
 
 <p class="lead">The examples use the same public 0.4 packages as an application. Each scenario defines its resource, synthetic records, allowed actions, and registered views; the playground runs them through the local runtime.</p>
@@ -11,6 +11,6 @@ description: "Four synthetic applications prove that one pipeline supports recor
 <h2>vNext reference journeys</h2>
 <p>The maintained <code>examples/vnext/journeys</code> fixture exercises four intentionally small integration classes: public static content with an optional island, catalog comparison through manual and deterministic host-fixture paths, independently mounted remote windows with a host approval, and a non-data document job. It imports public package entries, keeps all records synthetic, and does not make a model request.</p>
 <p>The fixture-agent comparison is deterministic parity coverage for the same typed intent; it uses the scoped bridge with a fake model response and a renderer receipt, not a provider evaluation or a claim of user research. The enterprise transport evidence is a companion test against the repository's HTTP DataService fixture, including two authenticated, independent partial windows. The separate <code>examples/vnext/host-only</code> fixture implements the same synthetic Jakarta people-filter task without Aeliqo; the browser test checks the visible rows and committed filter label in both fixtures. This is one executable host-only baseline, not a developer study or measured integration-time saving.</p>
-<p>Additional development fixtures exercise the vNext product journeys. <code>examples/vnext</code> shows a committed Jakarta filter and allows eligible wide and narrow browse views. A scoped fake-model test proposes the same Jakarta filter on the same authorized target; it is not a live provider evaluation. <code>examples/vnext/attendance</code> renders approved daily attendance as a trend with a visible period, timezone, denominator, missing-date coverage, and metric clarification. <code>examples/vnext/workspace</code> renders registered summary, trend, and breakdown child tasks in the browser, including a retained result after an unsupported child update. A separate runtime integration test exercises one registered three-need goal and coordinating plan; the browser fixture does not yet connect that whole plan to its DOM. Pattern selection still requires an explicit host choice.</p>
+<p>Additional development fixtures exercise the vNext product journeys. <code>examples/vnext</code> shows a committed Jakarta filter and allows eligible wide and narrow browse views. A scoped fake-model test proposes the same Jakarta filter on the same authorized target; it is not a live provider evaluation. <code>examples/vnext/attendance</code> renders approved daily attendance as a trend with a visible period, timezone, denominator, missing-date coverage, and metric clarification. <code>examples/vnext/workspace-goal</code> compiles one registered three-need attendance goal, evaluates three Results, offers a registered pattern to the resolver, commits the plan, and renders summary, trend, and breakdown in one Region; its browser tests cover unknown-goal and mandatory breakdown failure retention. The separate <code>examples/vnext/workspace</code> fixture covers stable child focus and 360/768/1440 reflow. Empty-candidate automatic pattern discovery and a live model are not demonstrated.</p>
 <aside class="doc-callout" data-tone="note"><strong>Synthetic by design</strong><p>Public demo data contains no customer records. Demo writes live only in the local session and can be reset.</p></aside>
 <nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/playground/"><span>Open playground</span><small>Run all four scenarios through one interface.</small><b aria-hidden="true">→</b></a><a href="/start/"><span>Build your own</span><small>Start from the compiled minimal consumer.</small><b aria-hidden="true">→</b></a></nav>

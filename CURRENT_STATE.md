@@ -7,7 +7,10 @@ checkout started from fresh `origin/main` at
 `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8` and now contains a local
 0.5.0 candidate change. The first clean `pnpm check` passed 87/87 at `58f13a9`,
 but independent whole-diff review found React and documentation corrections
-that require a new clean-source run. For final qualification, read
+that required a new clean-source run. A later matrix passed 87/87 at
+`122ab40a7eaf0faf08e069e6778bbf402564489e` with `sourceChangedDuringRun:
+false`. Subsequent J3 and documentation changes require another exact-source
+run. For final qualification, read
 `artifacts/product-ci/ci.json` and require its source SHA to equal `HEAD` with
 `sourceChangedDuringRun: false`; the historical audit below does not certify
 this change.
@@ -43,14 +46,16 @@ The examined legacy routes, redirects, package aliases, migration docs, and
 release workflows still have active consumers or rollback duties; none was
 deleted speculatively.
 
-The post-review local journey suite now passes 281/281 vNext tests and 47/47
+The post-review local journey suite now passes 281/281 vNext tests and 50/50
 vNext browser tests; the bundle gate passes 6/6 with the same five-byte
 `region-table` margin. J1 has synthetic manual/connected-agent parity on one
 scoped target. J2 has an actual browser trend, approved daily values,
-clarification, keyboard and automated accessibility checks. J3 has a registered
-three-need runtime plan and separate three-child browser rendering; these are
-not yet one automatic end-to-end browser composition. No live model or human
-adoption result is implied by these local fixtures.
+clarification, keyboard and automated accessibility checks. J3 now has one
+browser path from a registered three-need goal through runtime Results and a
+host-supplied pattern candidate to committed summary/trend/breakdown DOM, plus
+separate child focus/reflow and failure-retention checks. Empty-candidate
+pattern discovery, live model behavior, and human adoption are not proved by
+these synthetic fixtures.
 
 The exact-source matrix at `587430c` passed 83 gates, including Chromium,
 Firefox, and WebKit visual suites, then failed vNext browser gate 84 when the

@@ -1,30 +1,64 @@
 ---
-id: "custom-views"
-path: "/guides/custom-views/"
-section: "Build"
-title: "Custom views"
-description: "Register a typed application renderer with explicit identity, capability, input contract, and lifecycle."
+id: 'custom-views'
+path: '/guides/custom-views/'
+section: 'Build'
+title: 'Custom views'
+description: 'Register a trusted application renderer with an exact presentation manifest and lifecycle.'
 ---
 
-<p class="lead">Custom views are trusted application code. They may wrap a Web Component or host framework component, but an agent cannot install them or supply an import path.</p>
-<h2>Define and register</h2>
+<p class="lead">A custom view is trusted application code. An agent may request a registered view, but cannot install one, supply its import path, or render its own HTML.</p>
 
-**kanban.ts**
+## Define a view
+
+This article renderer uses the same `defineView` contract as the [Knowledge example](/examples/knowledge/). Its top-level reference and manifest reference must match. The manifest declares the result and operation it can use; `render` receives an authorized result and returns a Lit template.
 
 ```ts
-import { createAeliqoApp } from '@aeliqo/web/app';
 import { defineView } from '@aeliqo/web/recipes';
+import { html } from 'lit';
 
-const kanban = defineView({
-  manifest: {id: 'support.kanban', revision: '1', intents: ['browse']},
-  assess: ({task, result, environment}) => assessKanban(task, result, environment),
-  render: ({host, result, signal}) => mountKanban(host, result, signal),
+export const knowledgeArticleView = defineView({
+  ref: { id: 'demo.knowledge-article', revision: '1' },
+  manifest: {
+    ref: { id: 'demo.knowledge-article', revision: '1' },
+    configSchema: { id: 'demo.knowledge-article.config', revision: '1' },
+    roles: ['article'],
+    operations: [{ id: 'data.read', revision: '1' }],
+    result: 'required',
+    children: { min: 0, max: 0 },
+    visibility: 'leaf',
+    extension: true,
+    resolveConfig: (values) => ({
+      ok: true,
+      value: {
+        values,
+        fields: ['title', 'topic', 'excerpt', 'content'],
+        ports: [],
+        operations: [{ id: 'data.read', revision: '1' }],
+      },
+    }),
+  },
+  render: ({ result }) => {
+    const article = result?.rows[0];
+    if (article === undefined) return html`<p>No article was found.</p>`;
+    return html`<article>
+      <p>${String(article.topic)}</p>
+      <h2>${String(article.title)}</h2>
+      <p>${String(article.excerpt)}</p>
+      <p>${String(article.content)}</p>
+    </article>`;
+  },
 });
-
-const app = createAeliqoApp({resources, authority, views: [kanban]});
 ```
 
+Register `knowledgeArticleView` in the `views` option of the application composition root alongside its app-owned resources and authority. A view is eligible only when the validated task, result, presentation policy, and manifest agree. The optional `assess` callback belongs on the manifest and must make a synchronous, pure, bounded quality assessment; it does not replace eligibility checks.
 
-<h2>Extension contract</h2><div class="doc-checklist"><ul><li>Namespaced identity and version are stable.</li><li>Input schema and supported capabilities are explicit.</li><li>Assessment is synchronous, pure, and bounded.</li><li>Render supports cancellation and complete disposal.</li><li>State mapping declares which selection, draft, focus, and navigation context can transfer.</li><li>Duplicate or incompatible registration fails before use.</li></ul></div>
-<h2>Core stays unchanged</h2><p>If a custom view or intent can express its needs through Task, Result, presentation manifest, and state mapping, it belongs in consumer code. Add a core primitive only when multiple independent domains reveal a missing invariant.</p>
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/examples/knowledge/"><span>Knowledge example</span><small>See content use a custom presentation outside dashboard UI.</small><b aria-hidden="true">→</b></a><a href="/reference/app-api/"><span>Definition reference</span><small>Inspect <code>defineView</code> and <code>defineRecipe</code>.</small><b aria-hidden="true">→</b></a></nav>
+## Extension contract
+
+- Use a stable namespaced ID and revision in both references.
+- Declare the configuration schema, roles, operations, result requirement, child bounds, and visibility.
+- Set `extension: true`; the renderer is trusted host code, not model output.
+- Resolve configuration with declared fields, ports, and operations.
+- Render an explicit empty or failure state when the authorized result lacks the expected row.
+- Register state mappings when a transition must preserve selection, draft, focus, or navigation state.
+
+If a view can express its needs through the existing Task, Result, presentation manifest, and state mapping, it belongs in consumer code. See [adaptive regions](/guides/adaptive-region/) for selection and [state ownership](/concepts/state-ownership/) for transitions.

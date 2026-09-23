@@ -3,12 +3,14 @@ id: 'support-matrix'
 path: '/ship/support-matrix/'
 section: 'Ship'
 title: 'vNext support matrix'
-description: 'Qualified framework, browser, provider, and workload profiles for the unreleased Aeliqo 0.5.0 candidate.'
+description: 'Bounded framework, browser, provider, and workload evidence for the Aeliqo 0.5.0 source candidate.'
 ---
 
-The live package line remains `0.4.2`. This matrix describes the unreleased
-`0.5.0` candidate only; it is a qualification record, not a promise that every
-framework, provider, or application size is supported.
+The live stable package line remains `0.4.2`. This matrix describes the newer
+`0.5.0` source candidate; the published `0.5.0-rc.1` on `next` came from an
+earlier revision and is not qualified by this matrix. This is bounded local
+evidence, not a promise that every framework, provider, or application size
+is supported.
 
 The machine-readable source is [`docs/support-matrix.json`](https://github.com/Arconath/aeliqo/blob/main/docs/support-matrix.json).
 `qualified` means the named fixture and version passed. `qualified-bounded`

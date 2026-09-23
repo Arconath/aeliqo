@@ -1,6 +1,6 @@
 # Aeliqo vNext — acceptance, qualification, and coverage
 
-Status at handoff: NOT RUN. This is a set of proposed product requirements and test gates, not evidence that Aeliqo already satisfies them. Every requirement has an owning task in `02-EXECPLAN.md`. Cross-cutting tests may add owners but cannot remove the primary owner without updating both files.
+The A01–A50 `NOT RUN at c0b4a64` cells below preserve the original handoff baseline, not the status of the newer local candidate. Current bounded results and external blockers are tracked in `TASK-LEDGER.md`; the exact-source `artifacts/product-ci/ci.json` report is authoritative for the final quality run. Every requirement has an owning task in `02-EXECPLAN.md`. Cross-cutting tests may add owners but cannot remove the primary owner without updating both files.
 
 ## 1. Traceability matrix
 

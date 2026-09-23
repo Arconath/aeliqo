@@ -21,7 +21,7 @@ intent cannot grant itself access.
 
 ## Scoped surfaces (vNext candidate)
 
-The unreleased surface API adds live instances without changing the existing
+The 0.5.0 source-candidate surface API adds live instances without changing the existing
 app/Region compatibility path. A host creates an explicit local read-only scope
 and may create multiple controllers from one immutable feature definition:
 
@@ -88,7 +88,7 @@ remote permissions:
 ```ts
 import { createLocalDataSurface } from '@aeliqo/runtime/surfaces';
 
-const owned = createLocalDataSurface({ data: rows, getRowId: row => row.id });
+const owned = createLocalDataSurface({ data: rows, getRowId: (row) => row.id });
 await owned.surface.request({ kind: 'browse' });
 // A new array reference may replace data while retaining the controller address.
 const accepted = owned.replaceData(updatedRows);
