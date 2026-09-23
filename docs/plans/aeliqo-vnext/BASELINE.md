@@ -29,7 +29,7 @@ Observed: 2026-09-19 (Asia/Jakarta).
 - Active catalog: 71 unique component IDs. Authored current component pages: 71, with set equality at baseline.
 - Runnable catalog source is centralized under `examples/catalog/`; behavioral parity still requires the existing catalog-example gate and later per-ID vNext evidence.
 - Package direction remains core → runtime → web → react; agent depends only on core/runtime.
-- Current workflows are `.github/workflows/quality.yml`, `release-publish.yml`, `site-release.yml`, and `production-promotion.yml`.
+- At this baseline, workflows included `.github/workflows/quality.yml`, `release-publish.yml`, `site-release.yml`, and `production-promotion.yml`; the last was removed during the workspace cutover because it could push GitOps before reviewed preflight.
 - Existing ADRs end at `docs/adr/011-aeliqo-0.4-product-boundaries.md`; the vNext API decision uses ADR 012.
 
 ## Baseline verification status
