@@ -56,6 +56,36 @@ The machine-readable task graph is `PLAN-INDEX.json`. It and each task's depende
 | Documentation and value | T17–T18 | Every catalog entry and four real reference journeys |
 | Qualification and delivery | T19–T21 | Benchmarks, compatibility, reviewed candidate and authorized release |
 
+## Operational handoff ownership (2026-09-23 reconciliation)
+
+The attached final handoff adds work-package labels F00–F13 and operational
+acceptance cases A01–A50. These labels map onto the existing T00–T21 graph;
+they do not create a second plan or change historical T-task evidence. Re-run
+the mapped acceptance cases against the current source before treating old
+evidence as applicable.
+
+| Handoff package | Work-package focus | Existing T-task owner(s) |
+|---|---|---|
+| F00 | Fresh source, policy, registry, and baseline reconciliation | T00; release facts feed T20/T21 |
+| F01 | API contract, local and advanced entry points, goal lowering | T01/T02 |
+| F02 | Local data DX, React lifecycle, identity, and selector stability | T02/T03/T05/T10 |
+| F03 | Local/remote data updates, coverage, and analytics correctness | T05/T06 |
+| F04 | Shared adaptive resolver, ordering, eligibility, and pins | T07 |
+| F05 | Registered goal to bounded single or multiple needs | T02/T05/T08 |
+| F06 | Native React renderer and responsive/container adaptation | T10/T13 |
+| F07 | Scoped workspace composition, child ownership, and transition safety | T04/T09/T13 |
+| F08 | Optional agent, protocol profiles, security, and host effects | T11/T14/T15/T16 |
+| F09 | SSR, framework integration, accessibility, and interaction UX | T10/T12/T13/T17 |
+| F10 | Performance limits, lifecycle, and honest value evidence | T18/T19 |
+| F11 | Docs/catalog, verified obsolete cleanup, and full quality | T17/T20/T21 |
+| F12 | Exact-source package and site release qualification | T20/T21 |
+| F13 | Closure, rollback evidence, and auditable handoff | T21 |
+
+This crosswalk preserves distinct ownership: shared API/plan-index edits remain
+with the execution lead, package and site releases remain separate, and
+F13/T21 cannot claim release completion from build, dispatch, or planning
+evidence alone.
+
 Core types, export maps and the coordinator have a single writer. Parallelize only disjoint code or read-only review after interfaces are locked. Candidate review must not be represented as independent review if performed only by the implementer.
 
 ---

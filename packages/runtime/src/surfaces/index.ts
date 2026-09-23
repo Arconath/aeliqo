@@ -1,5 +1,8 @@
 export { createLocalSurfaceScope } from './scope.js';
 export { createLocalDataBinding } from './local-data.js';
+export { createLocalDataSurface } from './local-convenience.js';
+export type { LocalBrowseState, LocalDataSurfaceInput, OwnedLocalDataSurface } from './local-convenience.js';
+export type { SurfacePresentationEvidence } from './presentation-evidence.js';
 export type {
   CapabilitySourceBinding,
   CapabilitySurfaceBindings,

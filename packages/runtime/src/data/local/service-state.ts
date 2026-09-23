@@ -39,6 +39,7 @@ export interface LocalDataServiceState {
   readonly maxPlans: number;
   readonly maxSourceRevisions: number;
   readonly revisionHistory: Set<string>;
+  readonly sequence?: { readonly prefix: string; last: number };
   readonly snapshotValidator?: (snapshot: LocalSnapshot) => Outcome<void>;
   readonly rejectExecutableToJSON: boolean;
   snapshot: StoredSnapshot;
@@ -63,6 +64,7 @@ export function createLocalDataServiceState(
   const maxCursors = options.maxCursors ?? DEFAULT_MAX_CURSORS;
   const maxSourceRevisions = options.maxSourceRevisions ?? DEFAULT_MAX_SOURCE_REVISIONS;
   validatePlanLimits(planTtlMs, cursorTtlMs, maxPlans, maxCursors, maxSourceRevisions, now, workNow);
+  const sequence = normalizeSourceRevisionMode(options.revisionMode, snapshot.sourceRevision);
   return {
     options,
     sourceLimits,
@@ -80,15 +82,33 @@ export function createLocalDataServiceState(
     maxPlans,
     maxSourceRevisions,
     revisionHistory: new Set([snapshot.sourceRevision]),
+    ...(sequence === undefined ? {} : { sequence }),
     ...(snapshotValidator === undefined ? {} : { snapshotValidator }),
     rejectExecutableToJSON,
   };
 }
 
+export function sourceSequenceNumber(revision: string, prefix: string): number | undefined {
+  const suffix = revision.slice(prefix.length);
+  const sequence = Number(suffix);
+  return isSafePositive(sequence) && revision === prefix + sequence ? sequence : undefined;
+}
+
+function normalizeSourceRevisionMode(
+  mode: LocalDataServiceOptions['revisionMode'],
+  initialRevision: string,
+): LocalDataServiceState['sequence'] {
+  if (mode === undefined) return undefined;
+  if (mode?.kind !== 'monotonic' || typeof mode.prefix !== 'string' || mode.prefix.length === 0)
+    throw new TypeError('Bad mode.');
+  const initial = sourceSequenceNumber(initialRevision, mode.prefix);
+  if (initial === undefined) throw new TypeError('Bad sourceRevision.');
+  return { prefix: mode.prefix, last: initial };
+}
+
 function normalizeFixedCatalog(input: Catalog | undefined, snapshot: Catalog): Catalog | undefined {
   if (input === undefined) return undefined;
-  if (canonical(input) !== canonical(snapshot))
-    throw new TypeError('fixedCatalog must match the initial local snapshot catalog.');
+  if (canonical(input) !== canonical(snapshot)) throw new TypeError('Catalog mismatch.');
   return snapshot;
 }
 
@@ -101,13 +121,13 @@ function validatePlanLimits(
   now: () => number,
   workNow: () => number,
 ): void {
-  validateBoundedPositive(planTtlMs, 86_400_000, 'planTtlMs must be a bounded positive duration.');
-  validateBoundedPositive(cursorTtlMs, 86_400_000, 'cursorTtlMs must be a bounded positive duration.');
-  if (typeof now !== 'function') throw new TypeError('now must be a host clock function.');
-  if (typeof workNow !== 'function') throw new TypeError('workNow must be a host monotonic clock function.');
+  validateBoundedPositive(planTtlMs, 86_400_000, 'Invalid planTtlMs duration.');
+  validateBoundedPositive(cursorTtlMs, 86_400_000, 'Invalid cursorTtlMs duration.');
+  if (typeof now !== 'function') throw new TypeError('now must be a clock function.');
+  if (typeof workNow !== 'function') throw new TypeError('workNow must be a monotonic clock.');
   validateBoundedPositive(maxPlans, 10_000, 'maxPlans must be a bounded positive count.');
   validateBoundedPositive(maxCursors, 100_000, 'maxCursors must be a bounded positive count.');
-  validateBoundedPositive(maxSourceRevisions, 10_000, 'maxSourceRevisions must be a bounded positive count.');
+  validateBoundedPositive(maxSourceRevisions, 10_000, 'Invalid maxSourceRevisions count.');
 }
 
 function validateBoundedPositive(value: number, maximum: number, message: string): void {

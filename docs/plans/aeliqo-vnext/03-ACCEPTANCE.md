@@ -53,6 +53,67 @@ Status at handoff: NOT RUN. This is a set of proposed product requirements and t
 | RQ45 | One consistent API contract and non-vacuous consumer tests replace conflicting chat examples | T01 | Positive/negative installed consumers, immutable target types, visible SSR DOM proof |
 | RQ46 | Final handoff, migration and export/entry documentation refer to the same version and requirements | T20 | Manifest, task graph, public export/docs mapping and checkpoint migration checks |
 
+## 1.1 Additional operational acceptance cases (handoff A01–A50)
+
+These cases come from `AELIQO_FINAL_PLAN.md` §9 and supplement RQ01–RQ46.
+All are **NOT RUN against current source SHA c0b4a64** until fresh source-bound
+evidence is recorded. Prior T00–T20 checks were run on earlier accepted source
+revisions; they are historical evidence and do not automatically satisfy these
+current-source cases. F00–F13 ownership maps to the existing T-task graph in
+`02-EXECPLAN.md`.
+
+| ID | Owner | Required current-source outcome / evidence | Status |
+|---|---|---|---|
+| A01 | F00 | A fresh current-main snapshot, policy and registry status are recorded; a historical source is not restored. | NOT RUN at c0b4a64 |
+| A02 | F01/F02 | The exact minimal local React example installs and runs from packed packages; no hidden runtime/factory/catalog/grants are required. | NOT RUN at c0b4a64 |
+| A03 | F02 | Empty rows without schema show an honest empty state and guidance; explicit schema supports typed empty input. | NOT RUN at c0b4a64 |
+| A04 | F02/F03 | All-null, heterogeneous, nested/accessor/executable records fail or request explicit projection safely; there is no silent business inference. | NOT RUN at c0b4a64 |
+| A05 | F02 | Duplicate/missing/changed row identities cannot target the wrong selection/detail/edit; display-only keys are not business IDs. | NOT RUN at c0b4a64 |
+| A06 | F02/F03 | Data prop replacement refreshes visible rows while retaining controller/address within the activation; unchanged input causes no unnecessary work. | NOT RUN at c0b4a64 |
+| A07 | F02/F03 | Same-reference mutation has an explicit documented version/update signal; unsupported mutation is not silently treated as fresh. | NOT RUN at c0b4a64 |
+| A08 | F03 | Source-revision budget exhaustion and long-lived update recovery preserve stale fencing and do not silently stop updating. | NOT RUN at c0b4a64 |
+| A09 | F02 | Primitive, reference, object and array selectors are stable for unchanged snapshots and do not cause React loops. | NOT RUN at c0b4a64 |
+| A10 | F02/F06 | A selector whose selected state is unchanged causes zero unrelated notifications/renders according to the canonical gate. | NOT RUN at c0b4a64 |
+| A11 | F02 | Strict Mode, interrupted rendering and unmount during pending work leave no live registrations/listeners/jobs. | NOT RUN at c0b4a64 |
+| A12 | F02/F09 | Injected host runtime/scope ownership is respected; provider cleanup never permanently disposes what it did not create. | NOT RUN at c0b4a64 |
+| A13 | F04/F06 | Native AdaptiveSurface without selectView uses the same shared resolver as web, not first-view fallback. | NOT RUN at c0b4a64 |
+| A14 | F04 | Equivalent normalized context and capabilities yield the same decision/reasons even with reversed candidate/registry order. | NOT RUN at c0b4a64 |
+| A15 | F04/F06 | Hard pins are respected when valid and rejected clearly when invalid; soft preferences do not bypass eligibility. | NOT RUN at c0b4a64 |
+| A16 | F06 | Wide/narrow container browse and resize adaptation are observed in real DOM; no model call or unnecessary data refetch occurs. | NOT RUN at c0b4a64 |
+| A17 | F03/F05/F06 | Daily attendance expected values and visible period/metric are correct; an eligible trend is selected under the pinned test profile. | NOT RUN at c0b4a64 |
+| A18 | F03/F05 | Ambiguous team/location/metric/time produces structured clarification or the registered visible default; no hidden choice changes the result. | NOT RUN at c0b4a64 |
+| A19 | F03 | Timezone boundaries, DST profile, half-open period, missing dates, future dates, and partial month never invent zeroes or completed coverage. | NOT RUN at c0b4a64 |
+| A20 | F03 | Ratios/denominators, mixed units, decimals and semi-additive snapshots are verified against expected values independent of the implementation. | NOT RUN at c0b4a64 |
+| A21 | F05/F07 | A registered summary+trend+breakdown goal builds a bounded multi-need workspace; unknown/anomaly capability is not invented. | NOT RUN at c0b4a64 |
+| A22 | F07 | Single/split/compare changes preserve scope, eligible selection/filter/focus/draft, and stable child addresses with one owner per child. | NOT RUN at c0b4a64 |
+| A23 | F07 | A mandatory child failure/cancellation keeps the authorized old layout; visible partial layout requires explicit policy. | NOT RUN at c0b4a64 |
+| A24 | F07 | Cycles, excessive depth/nodes/fan-out, duplicate owners, cross-scope child and stale child revisions are rejected. | NOT RUN at c0b4a64 |
+| A25 | F07 | Voluntary dirty switch keeps old authorized subtree labeled correctly during Save/Discard/Stay; failed/stale save cannot approve transition. | NOT RUN at c0b4a64 |
+| A26 | F07/F08 | Forced logout/revocation fences immediately despite dirty-work guards and does not retain unauthorized rows as error fallback. | NOT RUN at c0b4a64 |
+| A27 | F07/F08 | Observe a real A1 pending operation start, activate B then A2, complete A1 last: old read/render/proposal/action/agent work cannot retarget. | NOT RUN at c0b4a64 |
+| A28 | F07/F08 | Controlled proposal rejection is not a commit; acceptance is bound to proposal ID/address/revision/authority. | NOT RUN at c0b4a64 |
+| A29 | F08 | Scope change removes old transcript/continuation/tool-result markers from new-scope outbound payloads. | NOT RUN at c0b4a64 |
+| A30 | F03 | A real remote first page cannot masquerade as full population/global aggregate; expected server query and coverage are asserted. | NOT RUN at c0b4a64 |
+| A31 | F03 | Unsupported filter, sort and aggregate each fail honestly; no full-source download emulation. | NOT RUN at c0b4a64 |
+| A32 | F03 | Snapshot/keyset cursors, stable tie-break, source lineage, concurrent updates, cross-principal misuse and expiry follow explicit source policy. | NOT RUN at c0b4a64 |
+| A33 | F03/F08 | Timeout/cancellation reaches adapters where supported; a late or non-cancellable response cannot commit after fencing. | NOT RUN at c0b4a64 |
+| A34 | F09 | Advertised SSR shows authorized cells with JS disabled and hydrates without mismatch; simultaneous requests do not share private snapshots. | NOT RUN at c0b4a64 |
+| A35 | F06/F09 | Native React contexts/portals/controlled inputs/custom views survive updates without separate per-node roots; lazy import failure is recoverable. | NOT RUN at c0b4a64 |
+| A36 | F09 | Keyboard/focus/announcements/zoom/RTL/text expansion/reduced motion/theme and all documented state surfaces pass their named profiles. | NOT RUN at c0b4a64 |
+| A37 | F08 | No-agent standalone/adaptive import graphs and network traces have zero provider SDK/transport/model requests; manual works after disconnect. | NOT RUN at c0b4a64 |
+| A38 | F08 | Malformed/executable/oversized/injected model content, forged authority/receipt, unknown or ambiguous targets fail closed. | NOT RUN at c0b4a64 |
+| A39 | F08 | Real synthetic-server action preview/confirm/revision/auth/idempotency and ambiguous-result recovery prevent unauthorized or repeated effects. | NOT RUN at c0b4a64 |
+| A40 | F08 | Generic tool protocol profiles, missing usage/streaming support/auth/custom headers/local no-auth match explicit capability contracts. | NOT RUN at c0b4a64 |
+| A41 | F08 | A claimed live model profile runs the approved synthetic J1/J2/J3 corpus within approved request/money ceilings; exact results and failures are retained. | NOT RUN at c0b4a64 |
+| A42 | F10 | Bundle, raw latency repetitions, active-surface/lazy-module counters, disposal and heap budgets pass unchanged canonical thresholds. | NOT RUN at c0b4a64 |
+| A43 | F11 | Every actual catalog ID has exactly the required current docs/example/API mapping and accurate standalone/semantic/adaptive classification. | NOT RUN at c0b4a64 |
+| A44 | F11/F12 | Full exact-source quality, security/import graphs, dependency/license scan, docs/visual/consumer/release gates pass without weaker assertions. | NOT RUN at c0b4a64 |
+| A45 | F12 | RC packages from registry have expected version/dependencies/integrity/provenance and real consumer behavior, not only successful upload. | NOT RUN at c0b4a64 |
+| A46 | F12 | Stable packages pass fresh registry install and behavior checks; partial multi-package publication is reconciled and cannot be called complete. | NOT RUN at c0b4a64 |
+| A47 | F12 | Tag/release, source and website immutable digest match the correct artifact records; owner policy is enforced and no private PAT bridge is added. | NOT RUN at c0b4a64 |
+| A48 | F12/F13 | Applicable ephemeral site qualification, authorized promotion, live route/version/playground readback and rollback readiness are evidenced separately from npm. | NOT RUN at c0b4a64 |
+| A49 | F10/F13 | Existing four reference journeys and one host-only baseline are documented honestly; no fabricated human participants, savings or PMF. | NOT RUN at c0b4a64 |
+| A50 | F11/F13 | RQ01–RQ46 mapping is complete; obsolete-owned cleanup, current-state/ledger/release records and remaining limits agree with actual evidence. | NOT RUN at c0b4a64 |
 ## 2. Required adversarial scenarios
 
 A voluntary pending leave guard must keep the authorized old subtree mounted and labeled with its old selector. Save/Discard/Stay does not destroy component state. Recheck draft, active selector and permission revisions after asynchronous guards; an outdated acceptance cannot switch scope. Test A1→B→A2 with A1 actually completing only after A2 is active and rendered.

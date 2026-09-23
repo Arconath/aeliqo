@@ -1,12 +1,6 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useSyncExternalStore,
-  type PropsWithChildren,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, type PropsWithChildren } from 'react';
 import type { ScopeController, ScopeSnapshot } from '@aeliqo/runtime/scopes';
+import { useStoreSelector } from './hooks.js';
 
 const AeliqoScopeContext = createContext<ScopeController | undefined>(undefined);
 
@@ -27,10 +21,15 @@ export function useAeliqoScope(): ScopeController {
   return scope;
 }
 
+/** Internal boundary check for providerless local helpers. */
+export function useOptionalAeliqoScope(): ScopeController | undefined {
+  return useContext(AeliqoScopeContext);
+}
+
 /** Subscribes to an immutable host-owned scope snapshot with a narrow selector. */
 export function useAeliqoScopeState<T>(selector: (snapshot: ScopeSnapshot) => T): T {
   const scope = useAeliqoScope();
   const subscribe = useCallback((listener: () => void) => scope.subscribe(listener), [scope]);
-  const snapshot = useCallback(() => selector(scope.getSnapshot()), [scope, selector]);
-  return useSyncExternalStore(subscribe, snapshot, snapshot);
+  const snapshot = useCallback(() => scope.getSnapshot(), [scope]);
+  return useStoreSelector(subscribe, snapshot, selector);
 }

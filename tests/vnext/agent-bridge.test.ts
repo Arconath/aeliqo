@@ -95,7 +95,7 @@ it('closes the scoped endpoint on disconnect and cancels a pending model request
   await f.dispose();
 });
 
-it('fences a late A response and starts B with a fresh scoped model context', async () => {
+it('fences a late A1 response and starts B then A2 with fresh scoped model contexts', async () => {
   const scopeFixture = await createScopeFixture();
   await scopeFixture.activate('acme');
   let release!: () => void;
@@ -160,7 +160,15 @@ it('fences a late A response and starts B with a fresh scoped model context', as
   const next = await connection.runExperience('B-marker');
   expect(next).toMatchObject({ ok: true, value: { stop: 'renderer-ready' } });
   expect(requests.at(-1)).not.toContain('A-marker');
-  expect(connection.inspect().activationEpoch).toBeGreaterThan(1);
+  const bSession = connection.inspect().sessionId;
+  const bEpoch = connection.inspect().activationEpoch;
+  await scopeFixture.activate('acme');
+  const secondA = await connection.runExperience('A2-marker');
+  expect(secondA).toMatchObject({ ok: true, value: { stop: 'renderer-ready' } });
+  expect(requests.at(-1)).not.toContain('A-marker');
+  expect(requests.at(-1)).not.toContain('B-marker');
+  expect(connection.inspect().sessionId).not.toBe(bSession);
+  expect(connection.inspect().activationEpoch).toBeGreaterThan(bEpoch ?? 0);
   connection.disconnect();
   await scopeFixture.dispose();
 });

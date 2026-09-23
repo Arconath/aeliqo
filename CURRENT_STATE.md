@@ -1,5 +1,38 @@
 # CURRENT_STATE — Deep Product Audit Aeliqo
 
+## Candidate implementation update — 2026-09-23
+
+The audit below remains a historical snapshot of `04937d2`. The current
+checkout started from fresh `origin/main` at
+`c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8` and now contains a local
+0.5.0 candidate change. Read `artifacts/product-ci/ci.json` after the clean
+`pnpm check` run for the accepted source SHA and exact gate results; the
+historical audit results below do not certify this change.
+
+The candidate adds an installed-package React local path
+`useDataSurface({data,getRowId})` + `AdaptiveSurface`, runtime-owned local
+data evaluation, monotonic source revisions, committed Task/Result evidence
+for the shared resolver, native table/cards selection from measured container
+size, stable selectors, and a denied/disposed guard for explicit React views.
+The optional agent's no-auth profile is restricted to allowlisted loopback
+origins. Public package and site docs now describe the candidate and distinguish
+it from published stable 0.4.2.
+
+Focused worktree checks passed: vNext 270/270, vNext browser 33/33, runtime
+data 109/109, release tooling 31/31 with five packed package consumers,
+docs artifact 10/10 and 71/71 catalog inventory, catalog examples 3/3,
+site build/test, lint, format, and bundle 6/6. The measured `region-table`
+bundle is 163,835 bytes gzip against the unchanged 163,840-byte cap, leaving
+a five-byte margin. These checks were run before the accepted clean-source
+matrix and are not registry or production evidence.
+
+No 0.5.0 package, image, tag, or website release has been published or
+deployed by this work. Live paid-model evaluation, owner-controlled
+publication, GitOps promotion, and production readback remain separate gates.
+The examined legacy routes, redirects, package aliases, migration docs, and
+release workflows still have active consumers or rollback duties; none was
+deleted speculatively.
+
 Tanggal audit: 2026-09-21
 Pemilik/repository: Arconath / Arconath/aeliqo
 Produk yang diaudit: **Aeliqo** — satu produk/framework; audit ini tidak mencakup produk Arconath lain.

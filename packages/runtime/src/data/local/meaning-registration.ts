@@ -3,6 +3,7 @@ import type { MeaningDefinition, Outcome } from '@aeliqo/core';
 import { authorizeMeaningActivation, validateMeaningBundle } from '@aeliqo/core/semantics';
 import type { MeaningActivationReceipt, MeaningBundle } from '@aeliqo/core/semantics';
 import type { LocalSnapshot, MeaningRegistration } from '../types.js';
+import { sourceSequenceNumber } from './service-state.js';
 import type { LocalDataServiceState } from './service-state.js';
 import { freezeCatalog, isSourceCapacityError, normalizeSnapshot, sourceDiagnosticCode } from './source.js';
 import { canonical, failure, freezeDeep } from './shared.js';
@@ -17,31 +18,36 @@ export function replaceLocalSnapshot(state: LocalDataServiceState, next: LocalSn
   if (!normalized.ok) return normalized;
   const revisionState = sameRevisionState(state.snapshot, normalized.value);
   if (revisionState === 'conflict')
-    return failure(
-      'data.source-revision-conflict',
-      'Source records or catalog changed without a new immutable source revision.',
-      ['sourceRevision'],
-    );
-  if (revisionState === 'equivalent') return { ok: true, value: undefined };
-  if (state.fixedCatalog !== undefined && canonical(state.fixedCatalog) !== canonical(normalized.value.catalog))
-    return failure('data.source-catalog-conflict', 'A feature-owned local source cannot replace its mounted catalog.', [
-      'catalog',
-    ]);
-  if (state.revisionHistory.has(normalized.value.sourceRevision))
-    return failure(
-      'data.source-revision-conflict',
-      'A local source revision cannot be reused after the service has advanced.',
-      ['sourceRevision'],
-    );
-  if (state.revisionHistory.size >= state.maxSourceRevisions)
-    return failure('data.source-revision-capacity', 'The local source revision lifetime limit has been reached.', [
+    return failure('data.source-revision-conflict', 'Source content changed without a new revision.', [
       'sourceRevision',
     ]);
+  if (revisionState === 'equivalent') return { ok: true, value: undefined };
+  if (state.fixedCatalog !== undefined && canonical(state.fixedCatalog) !== canonical(normalized.value.catalog))
+    return failure('data.source-catalog-conflict', 'The local catalog cannot change.', ['catalog']);
+  const revision = normalized.value.sourceRevision;
+  const checked = checkRevision(state, revision);
+  if (!checked.ok) return checked;
   state.snapshot = normalized.value;
   state.currentCatalog = normalized.value.catalog;
-  state.revisionHistory.add(normalized.value.sourceRevision);
   state.plans.clear();
   state.registeredBundles.clear();
+  return { ok: true, value: undefined };
+}
+
+function checkRevision(state: LocalDataServiceState, revision: string): Outcome<void> {
+  const sequence = state.sequence;
+  if (sequence !== undefined) {
+    const next = sourceSequenceNumber(revision, sequence.prefix);
+    if (next === undefined || next <= sequence.last)
+      return failure('data.source-revision-sequence', 'Old revision.', ['sourceRevision']);
+    sequence.last = next;
+  } else {
+    if (state.revisionHistory.has(revision))
+      return failure('data.source-revision-conflict', 'Source revision was already used.', ['sourceRevision']);
+    if (state.revisionHistory.size >= state.maxSourceRevisions)
+      return failure('data.source-revision-capacity', 'Source revision limit reached.', ['sourceRevision']);
+    state.revisionHistory.add(revision);
+  }
   return { ok: true, value: undefined };
 }
 
@@ -58,9 +64,7 @@ function normalizeReplacementSnapshot(state: LocalDataServiceState, next: LocalS
     const sourceCode = sourceDiagnosticCode(error);
     return failure<ReturnType<typeof normalizeSnapshot>>(
       capacity ? 'data.source-capacity' : (sourceCode ?? 'data.source-shape'),
-      capacity
-        ? 'The replacement source snapshot exceeds the configured bounded source capacity.'
-        : 'The replacement source snapshot is not a bounded canonical source.',
+      capacity ? 'Replacement exceeds the source capacity.' : 'Replacement is not a bounded canonical source.',
     );
   }
 }
@@ -90,11 +94,7 @@ export function registerMeaningBundle(
 
 function activationControl(state: LocalDataServiceState): Outcome<ActivationControl> {
   const control = state.options.meaningActivation;
-  if (control === undefined)
-    return failure(
-      'data.meaning-controlplane',
-      'Meaning registration requires a host-owned activation policy and function registry.',
-    );
+  if (control === undefined) return failure('data.meaning-controlplane', 'Missing meaning policy or registry.');
   return { ok: true, value: control };
 }
 
@@ -131,9 +131,7 @@ function activateNewBundle(
   control: ActivationControl,
 ): Outcome<MeaningRegistration> {
   if (bundle.catalogRevision !== state.currentCatalog.revision)
-    return failure('data.stale-catalog', 'Meaning registration must pin the current catalog revision.', [
-      'catalogRevision',
-    ]);
+    return failure('data.stale-catalog', 'Catalog revision is stale.', ['catalogRevision']);
   const validated = validateBundle(state, bundle, control);
   if (!validated.ok) return validated;
   const reviewed = reviewOrigin(validated.value.meanings);
@@ -167,11 +165,7 @@ function validateBundle(state: LocalDataServiceState, bundle: MeaningBundle, con
 
 function reviewOrigin(meanings: readonly MeaningDefinition[]): Outcome<void> {
   if (!meanings.some((meaning) => meaning.origin === 'ai-assisted')) return { ok: true, value: undefined };
-  return failure(
-    'data.meaning-origin',
-    'Only reviewed code-owned meanings may enter the local activation control plane.',
-    ['meanings'],
-  );
+  return failure('data.meaning-origin', 'Only reviewed code-owned meanings may be activated.', ['meanings']);
 }
 
 function uniqueCatalogMeanings(
@@ -212,8 +206,7 @@ function activationReceipts(
 
 function appendMeanings(state: LocalDataServiceState, meanings: readonly MeaningDefinition[]): Outcome<void> {
   const revision = secureToken('catalog');
-  if (revision === undefined)
-    return failure('data.crypto', 'WebCrypto random values are required for immutable catalog revisions.');
+  if (revision === undefined) return failure('data.crypto', 'WebCrypto unavailable.');
   const catalog = parseCatalog({
     ...state.currentCatalog,
     revision,

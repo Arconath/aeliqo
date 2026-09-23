@@ -48,9 +48,10 @@ arguments.
 Use `createOpenAICompatibleToolModel` for a generic Chat Completions endpoint.
 Its `baseURL`, model ID, auth scheme, capabilities, and egress policy are
 explicit configuration; the adapter never infers a provider or model from a
-hostname or key format. A local/self-hosted endpoint may use
-`auth: { scheme: 'none' }` only when its exact origin is in
-`policy.allowedOrigins` and insecure HTTP has been explicitly enabled. Hosted
+hostname or key format. `auth: { scheme: 'none' }` is limited to an explicit
+loopback endpoint (`localhost`, `127.0.0.1`, or `[::1]`) whose exact origin is
+in `policy.allowedOrigins`. HTTP additionally requires explicit insecure-HTTP
+permission. Hosted
 bearer and custom-header connections require a server-owned
 `createOpaqueModelSecret` handle, and missing credentials fail closed.
 

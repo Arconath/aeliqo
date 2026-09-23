@@ -41,6 +41,16 @@ claims separate from the current release.
   addresses across explicit source revisions, and rejects same-revision or
   catalog conflicts atomically. This candidate remains unpublished and
   undeployed.
+- The local React path can now use `useDataSurface({ data, getRowId })` with an
+  owned providerless local controller. Its runtime source can accept an
+  opt-in monotonic revision sequence for long-lived updates while rejecting
+  replay; the default arbitrary-revision cap is unchanged. Native React
+  adaptive selection requires trusted presentation evidence and uses the
+  shared resolver; standalone view registration alone is not automatic
+  eligibility.
+- The optional model adapter restricts unauthenticated profiles to explicitly
+  allowlisted loopback origins. Remote hosted connections require a
+  server-owned credential profile.
 - Remote data now uses the same validated `DataService`, ResultStore, and
   Region path as local data. Catalog capabilities declare metrics and stable
   snapshot or keyset pagination; cursors are partitioned by authority and pin

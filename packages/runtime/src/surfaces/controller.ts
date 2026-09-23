@@ -3,6 +3,8 @@ import type { FeatureDefinition } from '@aeliqo/core/features';
 import type { RuntimeRenderReceipt } from '../app/types.js';
 import { SurfaceListeners } from './lifecycle.js';
 import { ProposalSequencer } from './ownership.js';
+import { presentationEvidence } from './presentation-evidence.js';
+import type { SurfacePresentationEvidence } from './presentation-evidence.js';
 import type { SurfaceRegistration } from './registration.js';
 import { freezeSnapshot, nextRevision, sameAddress } from './state.js';
 import type {
@@ -86,6 +88,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   private externalSnapshot: SurfaceSnapshot<I, S> | undefined;
   private maskedSnapshot: SurfaceSnapshot<I, S> | undefined;
   private maskedSnapshotNotified = false;
+  private committedEvidence: SurfacePresentationEvidence | undefined;
   private active: AbortController | undefined;
   private sequence = 0;
   private disposed = false;
@@ -114,6 +117,10 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     if (!this.config.scope.authorize(this.config.feature.id).ok) return this.maskDenied(false);
     if (this.ownership.mode !== 'external') return this.snapshot;
     return this.refreshExternal(this.ownership.store.getSnapshot());
+  }
+
+  presentationEvidence(): SurfacePresentationEvidence | undefined {
+    return this.getSnapshot().phase === 'ready' ? this.committedEvidence : undefined;
   }
 
   subscribe(listener: () => void): () => void {
@@ -163,6 +170,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.committedEvidence = undefined;
     this.active?.abort();
     this.clearPendingProposals();
     this.unregisterTarget?.();
@@ -294,6 +302,7 @@ export class SurfaceControllerImpl<I, S> implements SurfaceController<I, S> {
     }
     const revision = nextRevision(this.snapshot.revision);
     const prepared = freezeSnapshot({ ...this.snapshot, revision, phase: 'ready', intent, state: result.state });
+    this.committedEvidence = presentationEvidence(receipt, this.address);
     this.publishPrepared(prepared);
     return { status: 'committed', revision };
   }

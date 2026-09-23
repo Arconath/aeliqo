@@ -34,12 +34,36 @@ provider accepts exactly one of those values and never disposes either one.
 
 ## Native React views and headless surfaces
 
-`@aeliqo/react/surface` adapts a real, application-owned
-`SurfaceController` into the existing React tree. It does not create a React
-root, add a second data engine, or accept view implementations from a wire
-payload. A host creates the surface through the runtime, keeps authority and
-data bindings at its composition boundary, and registers trusted local React
-components explicitly.
+For a small complete array already supplied by the application, the unreleased
+0.5.0 candidate has a providerless path with no factory or explicit runtime:
+
+```tsx
+import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
+
+type Person = { id: string; name: string; team: string };
+
+export function People({ rows }: { rows: readonly Person[] }) {
+  const surface = useDataSurface({ data: rows, getRowId: row => row.id });
+  return <AdaptiveSurface surface={surface} />;
+}
+```
+
+The hook creates its local runtime and default browse request after React
+commits. Server rendering exposes meaningful read-only rows before hydration;
+the client then reads through the same runtime source/evaluator path. Rows
+must have a bounded consistent scalar shape and one real unique identity field.
+An initially empty array needs an explicit Zod schema and `identity` field;
+without them, the component shows empty-data guidance. This local path never
+grants remote access. Replace the data prop with a new array to refresh while
+retaining the controller address; mutate-in-place callers must change the
+`version` option to request a fresh snapshot. Unsupported or invalid updates retain the last
+committed rows and show a diagnostic.
+
+For an advanced host-controlled surface, `@aeliqo/react/surface` adapts a real,
+application-owned `SurfaceController` into the existing React tree. It does not
+create a React root, add a second data engine, or accept view implementations
+from a wire payload. The host creates the surface at its runtime boundary and
+registers trusted local React components explicitly.
 
 ```tsx
 import { AeliqoScope, ViewSurface, defineReactViews, useSurfaceState } from '@aeliqo/react/surface';
@@ -73,18 +97,19 @@ export function PeopleNativeView({
 `AeliqoScope` attaches and detaches the supplied scope for committed React
 lifecycle work, but never disposes it. `useSurfaceState` subscribes to one
 controller with a selector, so unrelated controller updates do not rely on a
-global React context broadcast. `AdaptiveSurface` selects only from the same
-bounded registry (or a host selector); an unknown explicit `ViewSurface` ref
-renders an accessible diagnostic instead of silently switching views.
+global React context broadcast. Advanced `AdaptiveSurface` requires trusted
+presentation evidence to make an automatic choice from registered native
+views. A host selector is treated as a pin through shared eligibility checks;
+plain registration does not qualify a view. An unknown explicit `ViewSurface`
+ref renders an accessible diagnostic instead of silently switching views.
 
-Providerless `useDataSurface` and hook-owned `useSurface` allocation are not
-implicit global allocation. Both accept a stable, application-authored
-`factory` that returns a real controller. The factory is called only in a
-committed effect; the hook returns `undefined` while it is pending, and it
-disposes only that created controller on cleanup. This keeps interrupted render
-and Strict Mode replay from registering a surface during render. Construct the
-factory with `useMemo` (or outside rendering), retain authority/scope binding in
-the host factory, and render a loading state until a controller is available.
+The advanced `useSurface` and factory overload of `useDataSurface` accept a
+stable application-authored factory. The factory is called only in a committed
+effect; that overload returns `undefined` while pending and disposes only its
+own controller on cleanup. Construct the factory with `useMemo` or outside
+rendering, and keep authority/scope binding at the host boundary. A providerless
+local hook nested inside an application-owned scope fails visibly instead of
+creating a parallel authority context.
 
 ## Component wrappers
 

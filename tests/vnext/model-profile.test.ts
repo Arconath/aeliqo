@@ -66,7 +66,7 @@ function connection(
     readonly timeoutMs?: number;
   } = {},
 ) {
-  const auth = options.auth ?? 'none';
+  const auth = options.auth ?? 'bearer';
   return createToolModelConnection({
     adapter: openAICompatibleChatAdapter,
     baseURL: 'https://models.fixture.test/v1',
@@ -108,6 +108,16 @@ describe('vNext model protocol conformance profiles', () => {
   });
 
   it('keeps no-auth and hosted credential policy explicit', () => {
+    expect(() =>
+      createToolModelConnection({
+        adapter: openAICompatibleChatAdapter,
+        baseURL: 'https://models.fixture.test/v1',
+        model: 'hosted-model',
+        auth: { scheme: 'none' },
+        policy: { allowExternalEgress: true, allowedOrigins: ['https://models.fixture.test'] },
+        capabilities: ['tool-calls'],
+      }),
+    ).toThrow('local endpoint');
     expect(() =>
       createToolModelConnection({
         adapter: openAICompatibleChatAdapter,

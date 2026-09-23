@@ -68,4 +68,6 @@ Leave enough width for the localized date at 200% text. Keep the label and decla
 
 ## Version
 
-Aeliqo 0.4.2.
+This page documents the unreleased 0.5.0 candidate source. The stable npm
+release remains 0.4.2; candidate API and behavior details here are not a
+guarantee of availability in the stable release.

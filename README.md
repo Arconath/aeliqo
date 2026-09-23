@@ -31,6 +31,20 @@ is being cut over through the owner-approved release workflow; use its package
 install command only after that workflow publishes the matching five packages.
 Never mix `0.4.2` and `0.5.0` packages in one application.
 
+The 0.5.0 candidate also has a small React path for a complete local array:
+
+```tsx
+import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
+
+export function People({ rows }: { rows: readonly { id: string; name: string }[] }) {
+  const surface = useDataSurface({ data: rows, getRowId: row => row.id });
+  return <AdaptiveSurface surface={surface} />;
+}
+```
+
+This API is in source and [candidate documentation](docs/packages/react.md),
+but is not yet available from the published `0.4.2` packages.
+
 The common application entry points are:
 
 ```ts

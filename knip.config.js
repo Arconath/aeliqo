@@ -50,7 +50,7 @@ export default {
     '**/*.fixture.*',
     'tests/release/fixtures/legacy-usage.ts',
     'tests/release/fixtures/no-agent-forbidden.mjs',
-    'tests/release/fixtures/vnext-entries.ts',
+    'tests/release/fixtures/vnext-entries.tsx',
     'tests/consumers/adaptation-registered-bar.mjs',
   ],
   ignoreIssues: {

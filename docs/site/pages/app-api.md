@@ -3,11 +3,14 @@ id: "app-api"
 path: "/reference/app-api/"
 section: "Reference"
 title: "Application API"
-description: "Lifecycle, ownership, outcomes, and extension points for the Aeliqo 0.4 application facade."
+description: "Lifecycle, ownership, outcomes, and extension points for the unreleased Aeliqo 0.5.0 application facade candidate."
 ---
 
 Import the application facade from `@aeliqo/web/app`. This entry point uses
 `@aeliqo/runtime`; component-only consumers can import the web package root.
+This page follows the current 0.5.0 candidate source. The stable npm release
+remains 0.4.2, so candidate API and behavior details here are not a guarantee
+of availability in the stable release.
 
 <h2>createAeliqoApp</h2>
 
@@ -17,7 +20,7 @@ Import the application facade from `@aeliqo/web/app`. This entry point uses
 createAeliqoApp(options: AeliqoAppOptions): AeliqoApp
 ```
 
-<p><strong>Required:</strong> one or more resource/data bindings and an authority adapter. <strong>Optional:</strong> custom intents, action port, recipes, views, form-state adapter, result store, and resource limits. Standard recipes are included unless a registered preference overrides policy.</p>
+<p><strong>Required:</strong> a resources array with at least one resource/data binding, plus an authority adapter. <strong>Optional:</strong> runtime ID, custom intents, action port, result store and result-store options, region/render limits, recipes, views, form-state adapter, and an action-event callback. Standard recipes are used when no recipes are supplied.</p>
 <h2>mount</h2>
 
 **Signature**

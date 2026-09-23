@@ -14,6 +14,8 @@ import { AeliqoProvider, useAeliqoRuntime } from '../../packages/react/src/index
 import { createPeopleFixture, type PeopleSurfaceState } from './fixtures/people.js';
 import { createScopeFixture } from './fixtures/scope.js';
 import type { Intent } from '@aeliqo/core';
+import { z } from 'zod';
+import { reactPresentationFixture, listRef, tableRef } from './fixtures/react-presentation.js';
 
 const HostContext = createContext('missing-host-context');
 
@@ -58,7 +60,7 @@ it('renders a registered native React view from a real headless surface snapshot
   fixture.dispose();
 });
 
-it('selects only a host-registered native view and reports an unknown view explicitly', async () => {
+it('does not render an unqualified host-selected view and reports an unknown fixed view explicitly', async () => {
   const fixture = createPeopleFixture();
   const surface = fixture.runtime.createSurface({
     scope: fixture.scope,
@@ -86,7 +88,7 @@ it('selects only a host-registered native view and reports an unknown view expli
     <ViewSurface surface={surface} views={views} view={{ id: 'unknown.native', revision: '1' }} />,
   );
 
-  expect(adaptive).toContain('Ada Chen');
+  expect(adaptive).toContain('No eligible native React view');
   expect(missing).toContain('requested native React view is not registered');
   expect(() =>
     defineReactViews([
@@ -94,6 +96,115 @@ it('selects only a host-registered native view and reports an unknown view expli
       { id: 'people.native', revision: '1', render: PeopleNativeView },
     ]),
   ).toThrow('already registered');
+  fixture.dispose();
+});
+
+it('does not treat the first standalone native view as automatically eligible', async () => {
+  const fixture = createPeopleFixture();
+  const surface = fixture.runtime.createSurface({
+    scope: fixture.scope,
+    id: 'react-unqualified-people',
+    feature: fixture.feature,
+    bindings: fixture.bindings,
+  });
+  await surface.request({ kind: 'browse' });
+  const views = defineReactViews<Intent, PeopleSurfaceState>([
+    { id: 'people.native', revision: '1', render: PeopleNativeView },
+  ]);
+
+  const html = renderToStaticMarkup(<AdaptiveSurface surface={surface} views={views} />);
+
+  expect(html).toContain('No eligible native React view');
+  expect(html).not.toContain('Ada Chen');
+  fixture.dispose();
+});
+
+it('uses the shared resolver to select an eligible native view independent of registry order', async () => {
+  const fixture = createPeopleFixture();
+  const surface = fixture.runtime.createSurface({
+    scope: fixture.scope,
+    id: 'region-1',
+    feature: fixture.feature,
+    bindings: fixture.bindings,
+  });
+  await surface.request({ kind: 'browse' });
+  const views = defineReactViews<Intent, PeopleSurfaceState>([
+    { id: tableRef.id, revision: tableRef.revision, render: () => <p>table view</p> },
+    { id: listRef.id, revision: listRef.revision, render: PeopleNativeView },
+  ]);
+  const resolution = reactPresentationFixture();
+
+  const html = renderToStaticMarkup(<AdaptiveSurface surface={surface} views={views} presentation={resolution} />);
+
+  expect(html).toContain('Ada Chen');
+  expect(html).not.toContain('table view');
+  fixture.dispose();
+});
+
+it('does not render an authorized descriptor after the surface is denied', async () => {
+  const fixture = createPeopleFixture();
+  const surface = fixture.runtime.createSurface({
+    scope: fixture.scope,
+    id: 'region-1',
+    feature: fixture.feature,
+    bindings: fixture.bindings,
+  });
+  await surface.request({ kind: 'browse' });
+  fixture.scope.setFeaturePermission('people', false);
+  await surface.request({ kind: 'browse' });
+  const views = defineReactViews<Intent, PeopleSurfaceState>([{ ...listRef, render: PeopleNativeView }]);
+
+  const html = renderToStaticMarkup(
+    <AdaptiveSurface surface={surface} views={views} presentation={reactPresentationFixture()} />,
+  );
+
+  expect(html).toContain('No eligible native React view');
+  expect(html).not.toContain('Ada Chen');
+  fixture.dispose();
+});
+
+it('does not render a fixed native view from a retained disposed controller', async () => {
+  const fixture = createPeopleFixture();
+  const surface = fixture.runtime.createSurface({
+    scope: fixture.scope,
+    id: 'react-disposed-people',
+    feature: fixture.feature,
+    bindings: fixture.bindings,
+  });
+  await surface.request({ kind: 'browse' });
+  const views = defineReactViews<Intent, PeopleSurfaceState>([
+    { id: 'people.native', revision: '1', render: PeopleNativeView },
+  ]);
+  surface.dispose();
+
+  const html = renderToStaticMarkup(
+    <ViewSurface surface={surface} views={views} view={{ id: 'people.native', revision: '1' }} />,
+  );
+
+  expect(html).toContain('No eligible native React view');
+  expect(html).not.toContain('Ada Chen');
+  fixture.dispose();
+});
+
+it('does not let selectView bypass renderer eligibility without resolver evidence', async () => {
+  const fixture = createPeopleFixture();
+  const surface = fixture.runtime.createSurface({
+    scope: fixture.scope,
+    id: 'react-unvalidated-pin',
+    feature: fixture.feature,
+    bindings: fixture.bindings,
+  });
+  await surface.request({ kind: 'browse' });
+  const views = defineReactViews<Intent, PeopleSurfaceState>([
+    { id: 'people.native', revision: '1', render: PeopleNativeView },
+  ]);
+
+  const html = renderToStaticMarkup(
+    <AdaptiveSurface surface={surface} views={views} selectView={(_snapshot, available) => available[0]?.ref} />,
+  );
+
+  expect(html).toContain('No eligible native React view');
+  expect(html).not.toContain('Ada Chen');
   fixture.dispose();
 });
 
@@ -177,4 +288,56 @@ it('defers injected controller creation and initial data requests until committe
   expect(creations).toBe(0);
   expect(fixture.source.sourceRevision).toBe('people-source-1');
   fixture.dispose();
+});
+
+it('renders meaningful initial local browse HTML through the beginner API', () => {
+  const rows = [
+    { id: 'ada', name: 'Ada Chen', team: 'Design' },
+    { id: 'sam', name: 'Sam Rivera', team: 'Engineering' },
+  ];
+  function People(): React.JSX.Element {
+    const surface = useDataSurface({ data: rows, getRowId: (row) => row.id });
+    return <AdaptiveSurface surface={surface} />;
+  }
+
+  const html = renderToStaticMarkup(<People />);
+
+  expect(html).toContain('Ada Chen');
+  expect(html).toContain('Sam Rivera');
+  expect(html).toContain('<table');
+});
+
+it('renders honest empty guidance and a schema-backed empty state', () => {
+  const schema = z.object({ id: z.string(), name: z.string() });
+  type Person = z.infer<typeof schema>;
+  function Empty({ identity }: { readonly identity?: string }): React.JSX.Element {
+    const surface = useDataSurface({
+      data: [] as readonly Person[],
+      schema,
+      ...(identity === undefined ? {} : { identity }),
+      getRowId: (row) => row.id,
+    });
+    return <AdaptiveSurface surface={surface} />;
+  }
+
+  expect(renderToStaticMarkup(<Empty />)).toContain('Add an identity field');
+  expect(renderToStaticMarkup(<Empty identity="id" />)).toContain('No records to show.');
+});
+
+it('rejects an implicit local authority inside an application-owned scope', async () => {
+  const fixture = await createScopeFixture();
+  function ScopedLocal(): React.JSX.Element {
+    const surface = useDataSurface({ data: [{ id: 'ada', name: 'Ada Chen' }], getRowId: (row) => row.id });
+    return <AdaptiveSurface surface={surface} />;
+  }
+
+  const html = renderToStaticMarkup(
+    <AeliqoScope scope={fixture.scope}>
+      <ScopedLocal />
+    </AeliqoScope>,
+  );
+
+  expect(html).toContain('data.scope-incompatible');
+  expect(html).not.toContain('Ada Chen');
+  await fixture.dispose();
 });

@@ -104,9 +104,12 @@ function validateAllowedOrigins(policy: ToolModelConnectionPolicy, origin: strin
 
 function validateNoAuthPolicy(auth: ToolModelAuth, policy: ToolModelConnectionPolicy, baseURL: string): void {
   if (auth.scheme !== 'none') return;
-  const origin = new URL(baseURL).origin;
+  const parsed = new URL(baseURL);
+  const origin = parsed.origin;
   if (policy.allowedOrigins === undefined || !policy.allowedOrigins.includes(origin))
     configuration('The no-auth model connection requires an explicitly allowlisted endpoint origin.');
+  if (!['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname))
+    configuration('The no-auth model connection requires a local endpoint.');
 }
 
 function normalizeBaseURL(value: string, policy: ToolModelConnectionPolicy): string {

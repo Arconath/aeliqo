@@ -159,7 +159,7 @@ async function installConsumer(consumer, artifacts, version) {
 
 async function writeConsumerSources(consumer, fixtureDirectory) {
   await cp(join(fixtureDirectory, 'legacy-usage.ts'), join(consumer, 'legacy-usage.ts'));
-  await cp(join(fixtureDirectory, 'vnext-entries.ts'), join(consumer, 'new-entries.ts'));
+  await cp(join(fixtureDirectory, 'vnext-entries.tsx'), join(consumer, 'new-entries.tsx'));
   await writeFile(
     join(consumer, 'tsconfig.json'),
     `${JSON.stringify(
@@ -175,7 +175,7 @@ async function writeConsumerSources(consumer, fixtureDirectory) {
           lib: ['ES2022', 'DOM', 'DOM.Iterable'],
           types: ['node', 'react', 'react-dom'],
         },
-        files: ['legacy-usage.ts', 'new-entries.ts'],
+        files: ['legacy-usage.ts', 'new-entries.tsx'],
       },
       null,
       2,
@@ -194,8 +194,13 @@ async function writeConsumerSources(consumer, fixtureDirectory) {
     join(consumer, 'new-run.mjs'),
     [
       "const entries = await Promise.all([import('@aeliqo/core/features'), import('@aeliqo/runtime/surfaces'), import('@aeliqo/runtime/scopes'), import('@aeliqo/react/surface'), import('@aeliqo/agent/browser')]);",
-      "for (const [module, names] of [[entries[0], ['defineDataFeature', 'defineFeature', 'inferLocalDataShape']], [entries[1], ['createLocalDataBinding']], [entries[3], ['AdaptiveSurface', 'AeliqoScope', 'ViewSurface', 'defineReactViews', 'useSurfaceState']], [entries[4], ['connectAgent', 'createScopedSurfaceEndpoint']]]) for (const name of names) if (!(name in module)) throw new Error(`Missing vNext export ${name}`);",
+      "for (const [module, names] of [[entries[0], ['defineDataFeature', 'defineFeature', 'inferLocalDataShape']], [entries[1], ['createLocalDataBinding', 'createLocalDataSurface']], [entries[3], ['AdaptiveSurface', 'AeliqoScope', 'ViewSurface', 'defineReactViews', 'useSurfaceState']], [entries[4], ['connectAgent', 'createScopedSurfaceEndpoint']]]) for (const name of names) if (!(name in module)) throw new Error(`Missing vNext export ${name}`);",
       "if (typeof entries[2] !== 'object') throw new Error('Runtime scope entry did not load');",
+      "const local = entries[1].createLocalDataSurface({ data: [{ id: 'ada', name: 'Ada' }], getRowId: row => row.id });",
+      "try { const receipt = await local.surface.request({ kind: 'browse' }); if (receipt.status !== 'committed' || local.surface.getSnapshot().state.rows[0]?.name !== 'Ada') throw new Error('Packed local surface did not browse rows'); } finally { local.dispose(); }",
+      "const React = await import('react'); const { renderToStaticMarkup } = await import('react-dom/server');",
+      "function LocalPeople() { const surface = entries[3].useDataSurface({ data: [{ id: 'ada', name: 'Ada' }], getRowId: row => row.id }); return React.createElement(entries[3].AdaptiveSurface, { surface }); }",
+      "if (!renderToStaticMarkup(React.createElement(LocalPeople)).includes('Ada')) throw new Error('Packed React local surface did not render useful SSR data');",
       'console.log(JSON.stringify({vNext: true}));',
     ].join('\n') + '\n',
   );
@@ -204,10 +209,10 @@ async function writeConsumerSources(consumer, fixtureDirectory) {
     join(consumer, 'no-agent-entry.mjs'),
     [
       "import { defineDataFeature } from '@aeliqo/core/features';",
-      "import { createLocalDataBinding } from '@aeliqo/runtime/surfaces';",
+      "import { createLocalDataBinding, createLocalDataSurface } from '@aeliqo/runtime/surfaces';",
       "import { registerAeliqoElements } from '@aeliqo/web';",
-      "import { defineReactViews } from '@aeliqo/react/surface';",
-      'globalThis.__aeliqoT20NoAgent = { defineDataFeature, createLocalDataBinding, registerAeliqoElements, defineReactViews };',
+      "import { AdaptiveSurface, defineReactViews, useDataSurface } from '@aeliqo/react/surface';",
+      'globalThis.__aeliqoT20NoAgent = { defineDataFeature, createLocalDataBinding, createLocalDataSurface, registerAeliqoElements, AdaptiveSurface, defineReactViews, useDataSurface };',
     ].join('\n') + '\n',
   );
 }

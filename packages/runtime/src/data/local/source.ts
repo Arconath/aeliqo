@@ -48,7 +48,7 @@ export function normalizeSourceLimits(input: LocalDataServiceOptions['sourceLimi
     !Number.isSafeInteger(input.bytes) ||
     input.bytes < 1
   )
-    throw new TypeError('sourceLimits must be bounded positive rows and bytes limits.');
+    throw new TypeError('Invalid sourceLimits.');
   return Object.freeze({ rows: input.rows, bytes: input.bytes });
 }
 
@@ -127,7 +127,7 @@ function identityPart(value: DataValue, fieldType: string): string {
 
 function sourceJsonBytes(value: unknown): number {
   const serialized = JSON.stringify(value);
-  if (serialized === undefined) throw new TypeError('Source value is not JSON.');
+  if (serialized === undefined) throw new TypeError('Non-JSON source value.');
   return new TextEncoder().encode(serialized).byteLength;
 }
 
@@ -165,7 +165,7 @@ function createByteBudget(limits: SourceLimits): ByteBudget {
 function captureSnapshotRows(value: unknown, maxRows: number): readonly DataRecord[] {
   if (!Array.isArray(value)) throw new TypeError('Rows must be an array.');
   const length = ownDataValue(value, 'length', 'Rows could not be safely inspected.') as number;
-  if (!Number.isSafeInteger(length) || length < 0) throw new TypeError('Rows could not be safely inspected.');
+  if (!Number.isSafeInteger(length) || length < 0) throw new TypeError('Invalid row length.');
   if (length > maxRows) throw new SourceError('Local data exceeds row limit.');
   const captured: DataRecord[] = [];
   let count = 0;
@@ -176,7 +176,7 @@ function captureSnapshotRows(value: unknown, maxRows: number): readonly DataReco
     captured[Number(key)] = ownDataValue(value, key, 'Rows contain an accessor.') as DataRecord;
     count += 1;
   }
-  if (count !== length) throw new TypeError('Rows must contain plain object records.');
+  if (count !== length) throw new TypeError('Rows require plain objects.');
   return captured;
 }
 
@@ -187,7 +187,7 @@ function captureSnapshotRecords(
   if (records === null || typeof records !== 'object' || Array.isArray(records))
     throw new TypeError('Snapshot records must be an entity map.');
   const keys = Reflect.ownKeys(records);
-  if (keys.length > WIRE_LIMITS.properties) throw new TypeError('Snapshot records exceed the bounded entity limit.');
+  if (keys.length > WIRE_LIMITS.properties) throw new TypeError('Too many source entities.');
   const captured: Record<string, readonly DataRecord[]> = Object.create(null) as Record<string, readonly DataRecord[]>;
   for (const key of keys) {
     if (typeof key !== 'string') throw new TypeError('Snapshot records contain a symbol entity.');

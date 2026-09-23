@@ -80,6 +80,32 @@ finally the owning runtime; every dispose operation is idempotent.
 
 ### Canonical local data binding
 
+For a bounded providerless data array, `createLocalDataSurface` owns a local
+runtime, scope, source, and controller. Construct it in a committed UI effect
+or an imperative owner, then explicitly request browse. It never supplies
+remote permissions:
+
+```ts
+import { createLocalDataSurface } from '@aeliqo/runtime/surfaces';
+
+const owned = createLocalDataSurface({ data: rows, getRowId: row => row.id });
+await owned.surface.request({ kind: 'browse' });
+// A new array reference may replace data while retaining the controller address.
+const accepted = owned.replaceData(updatedRows);
+if (accepted.ok) await owned.surface.request({ kind: 'browse' });
+owned.dispose();
+```
+
+Rows need one real scalar identity field and a bounded, consistent scalar
+shape. A declared Zod object schema can fix the shape of nullable fields;
+an initially empty array also needs `identity: 'id'` (or the actual declared
+identity field) because `getRowId` cannot be observed without a row. Invalid replacements
+leave the last committed state in place. `replaceData` returns a diagnostic if
+its safe integer revision sequence is exhausted; callers must surface that
+failure and must not present old rows as a successful refresh. The local helper
+uses an opt-in monotonically increasing source revision sequence, so ordinary
+long-lived updates do not consume the general service's 256-ID history cap.
+
 For an application-owned snapshot, use the one public convenience adapter so
 the surface, `LocalDataService`, ResultStore, and Region lifecycle share one
 source and one address:
@@ -132,6 +158,14 @@ never silently truncate. `maxSourceRevisions` defaults to 256 and is bounded at
 10,000; it caps the service lifetime's non-reusable revision history. A cap
 failure preserves the current snapshot, and a deliberate rollback uses a
 fresh revision.
+
+An application with a trusted monotonically numbered source can opt into
+`revisionMode: { kind: 'monotonic', prefix: 'people-' }` on the
+local service. The initial source revision and every replacement must use that
+prefix followed by a canonical positive safe integer. A stale, repeated, or
+malformed sequence is rejected. This mode retains a high-water mark instead
+of storing every old revision ID; the default arbitrary-revision history and
+its cap remain unchanged.
 
 The binding validates bounded scalar structure before it can emit a result:
 empty/no-schema, schema-less all-null fields, nested/accessor/executable rows, invalid identifiers,

@@ -2,6 +2,7 @@ import type { Intent, Outcome, VersionRef } from '@aeliqo/core';
 import type { DataFeatureDefinition, FeatureDefinition } from '@aeliqo/core/features';
 import type { ActionPort } from '../actions/types.js';
 import type { DataService, ResultEvent } from '../data/types.js';
+import type { SurfacePresentationEvidence } from './presentation-evidence.js';
 
 export type SurfaceRevision = string;
 export type SurfacePhase =
@@ -59,6 +60,8 @@ export interface SurfaceController<I, S> {
   readonly id: string;
   readonly address: SurfaceAddress;
   getSnapshot(): SurfaceSnapshot<I, S>;
+  /** Present only for committed data evaluations that have live authorized metadata. */
+  presentationEvidence?(): SurfacePresentationEvidence | undefined;
   subscribe(listener: () => void): () => void;
   request(intent: SurfaceRequest<I>, options?: RequestOptions): Promise<RequestResult>;
   dispose(): void;

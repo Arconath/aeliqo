@@ -1,5 +1,16 @@
 # Aeliqo vNext execution state
 
+## 2026-09-23 current-main candidate continuation
+
+- Fresh `origin/main` baseline: `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the historical T-task rows below remain source-bound to earlier revisions.
+- Current work is an uncommitted local 0.5.0 candidate on `main`. It adds the beginner React data path, runtime presentation evidence, long-lived monotonic local revisions, resolver-backed native React adaptation, selector and disposal fixes, loopback-only local model auth, candidate docs, and packed consumer coverage. Read `TASK-LEDGER.md` for the F00–F13/A01–A50 crosswalk.
+- Fresh focused results before the clean-source matrix: `pnpm test:vnext` 270/270; `pnpm test:vnext:browser` 33/33; `pnpm test:data` 109/109; `pnpm test:release-tooling` 31/31 with five packed packages and the new no-agent entry graph; `pnpm test:docs-artifact` 10/10 plus 71/71 catalog inventory; `pnpm test:catalog-examples` 3/3; `pnpm site:build`, `pnpm site:test`, `pnpm lint`, `pnpm format:check`, and `pnpm test:performance:bundles` pass. Latest bundle report: `artifacts/performance-bundles/run-IRth9J/report.json`, 163,835/163,840 bytes gzip for `region-table`.
+- A deliberate `pnpm check` attempt before committing stopped at its clean-checkout precondition; no matrix gate ran. Next action: commit the reviewed candidate locally, run `pnpm check` on that exact clean commit, inspect the fresh report, then reconcile any failures without treating historical evidence as a pass.
+- Independent runtime/security review found no confirmed defect in the initial runtime seam. Independent UI review found and the implementation fixed the narrow React browse transition, missing fixture title/h1, unstable allocating selectors, and disposed fixed-view exposure. The follow-up unit/browser checks passed; final integrated review remains a release gate.
+- Registry facts: each public package remains `latest=0.4.2`, `next=0.4.2-rc.1`; no 0.5.0 registry artifact is known. No paid model call, push, merge, package publication, image promotion, or production operation occurred here. Release actor, approved RC, same-SHA CI, OIDC, site promotion, and live verification remain separate external gates.
+
+The 2026-09-20 checkpoint and detailed T-task history follow.
+
 Updated: 2026-09-20 (final-v3 implementation and acceptance checkpoint).
 
 ## Source and authority
@@ -47,9 +58,10 @@ Planning pack: final-v3 validated from the supplied ZIP and pristine temporary e
 
 ## Next executable action
 
-Preserve the final review and source-bound `pnpm check` artifacts for handoff.
-Keep candidate artifacts local and unpublishable until explicit release
-authorization exists; do not alter the stable 0.4.2 line.
+For the 2026-09-23 continuation, commit the reviewed local candidate and run
+the clean-source `pnpm check` matrix on its exact SHA. Read the fresh artifact
+and reconcile any failure before a release operation. Keep candidate artifacts
+local until the actual release actor, approval, and promotion gates are met.
 
 ## Decisions to preserve
 

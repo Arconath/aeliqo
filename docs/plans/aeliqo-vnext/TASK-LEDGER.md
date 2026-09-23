@@ -2,6 +2,22 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## Current-source reconciliation (2026-09-23)
+
+The local 0.5.0 candidate extends this baseline with `createLocalDataSurface`,
+the React `useDataSurface`/`AdaptiveSurface` convenience route, committed
+presentation evidence, monotonic local revisions, selector and disposal
+guards, and loopback-only no-auth model profiles. Focused worktree results are
+listed in `07-EXECUTION-STATE.md`; only the clean `pnpm check` artifact after
+commit can satisfy the unchanged-source final gate. A01–A50 remain baseline
+NOT RUN in `03-ACCEPTANCE.md` until exact-source evidence is reconciled.
+
+- Fresh `HEAD` and `origin/main` both resolve to `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`.
+- Fresh npm registry reads show all five public packages (`core`, `runtime`, `web`, `react`, `agent`) at `latest=0.4.2` and `next=0.4.2-rc.1`; each version list ends at `0.4.2`. No `0.5.0` or `0.5.0-rc.*` is published as of this check. The registry's `next` tag is still the historical 0.4.2 RC, not a vNext candidate.
+- `release-metadata.json` describes 0.5.0 as a candidate; that source metadata is not registry publication evidence. Registry facts were read with `npm view @aeliqo/<package> dist-tags --json` and `npm view @aeliqo/<package> versions --json` for each of the five names.
+- Existing T00–T20 evidence below records accepted earlier source revisions. Keep that history intact; it does not establish that the added A01–A50 cases pass at c0b4a64. Those operational cases are recorded as NOT RUN in `03-ACCEPTANCE.md` pending exact-current-source evidence.
+- The current worktree also contains active changes outside this ledger; no evidence for those uncommitted changes is implied by the main branch-tip SHA or the historical T-task rows.
+
 | Task | State                    | Current evidence or next gate                                                                                                                                                                                                                                                                                                      |
 | ---- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | T00  | verified                 | Baseline/harness complete. Final clean-source matrix passed 87/87; `artifacts/product-ci/ci.json` records the exact source revision and `sourceChangedDuringRun: false`.                                                                                                                                 |
@@ -34,12 +50,12 @@ requirement is runtime-verified locally; production runtime remains unverified.
 
 ## Release state
 
-- Candidate built: locally qualified packed artifacts only; no registry/image publication.
+- 0.5.0 candidate built: locally qualified packed artifacts only; no 0.5.0 registry/image publication.
 - Independently reviewed: T02–T06 task candidates plus the final read-only T21 review.
-- RC published: no.
-- Stable published: no.
-- Image published: no.
-- Deployed: no.
+- 0.5.0 RC published: no. The registry `next` tag remains on 0.4.2-rc.1 for all five packages.
+- 0.5.0 stable published: no. Registry `latest` remains on 0.4.2 for all five packages.
+- 0.5.0 image published: no.
+- 0.5.0 deployed: no.
 - Runtime verified: focused T02 core behavior, T03 scoped surfaces, T04 guarded scope transitions, T05 bounded local binding, T06 remote/semantic execution, T16 security boundaries, T18 reference journeys, T19 performance, T20 clean packed consumers, and the final source-bound matrix. Production runtime remains unverified.
 
 ## Component documentation inventory

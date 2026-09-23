@@ -135,6 +135,8 @@ export interface LocalDataServiceOptions {
   readonly maxCursors?: number;
   /** Maximum number of distinct source revisions retained for the service lifetime. */
   readonly maxSourceRevisions?: number;
+  /** Opt-in for a host-owned prefix plus strictly increasing positive safe integer revision. */
+  readonly revisionMode?: { readonly kind: 'monotonic'; readonly prefix: string };
   /** Host-owned activation policy. It is never accepted from a client request. */
   readonly meaningActivation?: {
     readonly registry: FunctionRegistry;
