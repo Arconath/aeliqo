@@ -70,6 +70,15 @@ at `artifacts/product-ci/ci.json` was 87/87 for `58f13a9`, before subsequent
 review corrections. A final claim requires that report to be rerun with its
 `sourceRevision` equal to final `HEAD` and `sourceChangedDuringRun: false`.
 
+The later exact-source matrix at `587430c` stopped at gate 84 after 83 passes;
+Chromium, Firefox, and WebKit visual suites passed, while one vNext browser test
+observed a Vite same-URL reload and lost its comparison DOM. The test server
+was corrected to prebundle React explicitly without late dependency discovery;
+focused browser checks passed 47/47 and 141/141 repeated. The candidate then
+merged current `origin/main` at `368cffc` locally, retaining the removal of
+automatic production promotion. Neither the failed matrix nor the focused
+reruns qualify the new merged source; a clean full matrix is still required.
+
 | Cases | Owner | Code and executable evidence | Current result or limit |
 | --- | --- | --- | --- |
 | A01 | F00 | Git/registry/workflow readback above; `artifacts/product-ci/ci.json` | Partial: facts were refreshed after the first matrix; final SHA must match its report. |

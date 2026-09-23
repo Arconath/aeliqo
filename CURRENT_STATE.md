@@ -52,6 +52,16 @@ three-need runtime plan and separate three-child browser rendering; these are
 not yet one automatic end-to-end browser composition. No live model or human
 adoption result is implied by these local fixtures.
 
+The exact-source matrix at `587430c` passed 83 gates, including Chromium,
+Firefox, and WebKit visual suites, then failed vNext browser gate 84 when the
+Vite fixture page reloaded during Compare (46/47 browser tests passed). The
+server fixture now explicitly prebundles React and disables late dependency
+discovery; focused browser verification passed 47/47 and 141/141 on three
+repeats. This is a correction, not a passed final matrix. The local candidate
+also merged the newer `origin/main` commit `368cffc`, which removed automatic
+production promotion. A fresh full `pnpm check` is required on the final clean
+SHA before local qualification.
+
 Tanggal audit: 2026-09-21
 Pemilik/repository: Arconath / Arconath/aeliqo
 Produk yang diaudit: **Aeliqo** — satu produk/framework; audit ini tidak mencakup produk Arconath lain.
