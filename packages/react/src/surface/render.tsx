@@ -196,16 +196,15 @@ function NativeViewTransition<I, S>({
     if (!readyToLoad) return;
     let current = true;
     setFailed(false);
-    void Promise.resolve()
-      .then(() => latestImplementation.current.load!())
-      .then(
-        (render) => {
-          if (current) setActive({ ref, render });
-        },
-        () => {
-          if (current) setFailed(true);
-        },
-      );
+    void Promise.resolve().then(async () => {
+      if (!current) return;
+      try {
+        const loadedRender = await latestImplementation.current.load!();
+        if (current) setActive({ ref, render: loadedRender });
+      } catch {
+        if (current) setFailed(true);
+      }
+    });
     return () => {
       current = false;
     };

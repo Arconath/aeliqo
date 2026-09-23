@@ -647,14 +647,14 @@ it('fences a remote surface request while a source adapter ignores cancellation'
   const release = new Promise<void>((resolve) => {
     releaseExecution = resolve;
   });
+  const controller = new AbortController();
   const f = await createRemotePeopleFixture({
     logicalRows: 100,
     pageSize: 10,
     aggregate: false,
-    executionGate: { started: signalStarted, release },
+    executionGate: { started: signalStarted, release, wasCancelled: () => controller.signal.aborted },
   });
   const before = f.surface.getSnapshot();
-  const controller = new AbortController();
   const pending = f.surface.request(
     { kind: 'browse', resource: 'people', page: { size: 10 } },
     { signal: controller.signal },
@@ -664,6 +664,11 @@ it('fences a remote surface request while a source adapter ignores cancellation'
     controller.abort();
     expect((await pending).status).toBe('cancelled');
     releaseExecution();
+    await vi.waitFor(() => expect(f.server.lateDescriptors).toHaveLength(1));
+    expect(f.server.lateDescriptors[0]).toMatchObject({
+      counts: { loaded: 10 },
+      coverage: { kind: 'partial' },
+    });
     await vi.waitFor(() => expect(f.server.cancelledRequests).toHaveLength(1));
     expect(f.surface.getSnapshot().revision).toBe(before.revision);
     expect(f.surface.getSnapshot().state.rows).toEqual([]);

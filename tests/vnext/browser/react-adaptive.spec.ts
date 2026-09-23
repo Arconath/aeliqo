@@ -41,9 +41,9 @@ test('keeps one pending lazy load through an equivalent host registry update', a
   await expect(page.getByTestId('native-choice')).toHaveText('wide table');
   await page.getByRole('button', { name: 'Hold view loads' }).click();
   await page.getByRole('button', { name: 'Narrow host' }).click();
-  await expect(page.getByLabel('View load count')).toHaveText('1');
+  await expect(page.getByLabel('View load count', { exact: true })).toHaveText('1');
   await page.getByRole('button', { name: 'Rerender host' }).click();
-  await expect(page.getByLabel('View load count')).toHaveText('1');
+  await expect(page.getByLabel('View load count', { exact: true })).toHaveText('1');
   await page.getByRole('button', { name: 'Release one view load' }).click();
   await expect(page.getByTestId('native-choice')).toHaveText('narrow list');
 });
@@ -55,4 +55,11 @@ test('keeps a controlled native view mounted through an equivalent host registry
   await page.getByRole('button', { name: 'Rerender host' }).click();
   await expect(page.getByRole('textbox', { name: 'Native draft' })).toHaveValue('draft stays');
   await expect(page.getByTestId('native-portal')).toHaveText('existing-host');
+});
+
+test('loads an initially selected lazy native view once in StrictMode', async ({ page }) => {
+  await page.goto('/react-adaptive/');
+  await page.getByRole('button', { name: 'Mount initial lazy view' }).click();
+  await expect(page.getByTestId('initial-lazy-view')).toHaveText('initial lazy view');
+  await expect(page.getByLabel('Initial view load count')).toHaveText('1');
 });

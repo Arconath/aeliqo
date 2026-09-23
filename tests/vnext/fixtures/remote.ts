@@ -148,6 +148,7 @@ export interface RemotePeopleFixture {
     readonly origin: string;
     readonly observedRequests: readonly RemoteRequestObservation[];
     readonly cancelledRequests: readonly string[];
+    readonly lateDescriptors: readonly RemoteDescriptor[];
     readonly resultStoreBegins: readonly RemoteResultStoreBeginObservation[];
     readonly insertLeadingRow: () => void;
     readonly dispose: () => Promise<void>;
@@ -184,7 +185,11 @@ export interface RemotePeopleFixtureOptions {
   readonly cursorTtlMs?: number;
   readonly estimatedPopulation?: boolean;
   /** Test barrier that deliberately does not listen for cancellation. */
-  readonly executionGate?: { readonly started: () => void; readonly release: Promise<void> };
+  readonly executionGate?: {
+    readonly started: () => void;
+    readonly release: Promise<void>;
+    readonly wasCancelled: () => boolean;
+  };
 }
 
 function createRemoteFeature(aggregate: boolean, schemaRevision: string, meaning: MeaningDefinition) {
@@ -831,6 +836,7 @@ function remoteService(
   options: RemotePeopleFixtureOptions,
   observations: RemoteRequestObservation[],
   cancellations: string[],
+  lateDescriptors: RemoteDescriptor[],
   meaning: MeaningDefinition,
   mutation: RemoteMutationState,
 ): DataService {
@@ -1009,7 +1015,7 @@ function remoteService(
           options.executionGate.started();
           await options.executionGate.release;
         }
-        await waitForCancellation(context.signal, 20);
+        await waitForCancellation(options.executionGate === undefined ? context.signal : undefined, 20);
         const mode = options.pagination ?? 'snapshot';
         if (options.mutateDuringExecution === true) insertLeadingRow(mutation);
         const materializedSourceRevision = sourceRevisionFor(principal, options, mutation);
@@ -1059,8 +1065,9 @@ function remoteService(
           meaning,
           aggregatePopulation,
         );
+        if (options.executionGate?.wasCancelled()) lateDescriptors.push(first.descriptor);
         yield first;
-        await waitForCancellation(context.signal, 50);
+        await waitForCancellation(options.executionGate === undefined ? context.signal : undefined, 50);
         if (rows.length > 0) yield { kind: 'batch', result: first.descriptor.ref, sequence: 0, rows };
         const next =
           !aggregateResult && window.hasMore
@@ -1215,6 +1222,7 @@ export async function createRemotePeopleFixture(options: RemotePeopleFixtureOpti
   const feature = createRemoteFeature(options.aggregate, schemaRevisionFor(options), meaning);
   const observations: RemoteRequestObservation[] = [];
   const cancellations: string[] = [];
+  const lateDescriptors: RemoteDescriptor[] = [];
   const resultStoreBegins: RemoteResultStoreBeginObservation[] = [];
   const authorityReads: string[] = [];
   const sharedScopeDigest = options.sameAuthorityLabels === true ? 'remote-scope-shared' : undefined;
@@ -1242,7 +1250,7 @@ export async function createRemotePeopleFixture(options: RemotePeopleFixtureOpti
       },
     ],
   ]);
-  const service = remoteService(feature, options, observations, cancellations, meaning, mutation);
+  const service = remoteService(feature, options, observations, cancellations, lateDescriptors, meaning, mutation);
   const handler = createDataHttpHandler({
     service,
     authenticate: (request) => {
@@ -1501,6 +1509,9 @@ export async function createRemotePeopleFixture(options: RemotePeopleFixtureOpti
     },
     get cancelledRequests() {
       return Object.freeze(cancellations.slice());
+    },
+    get lateDescriptors() {
+      return Object.freeze(lateDescriptors.slice());
     },
     get resultStoreBegins() {
       return Object.freeze(resultStoreBegins.slice());

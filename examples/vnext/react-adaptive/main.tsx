@@ -7,7 +7,7 @@ import {
   type PresentationManifest,
   type PresentationResolverInput,
 } from '@aeliqo/core/presentation';
-import { AdaptiveSurface, defineReactViews } from '../../../packages/react/src/surface/index.js';
+import { AdaptiveSurface, ViewSurface, defineReactViews } from '../../../packages/react/src/surface/index.js';
 import { createPeopleFixture, type PeopleSurfaceState } from '../../../tests/vnext/fixtures/people.js';
 import { reactPresentationFixture, listRef, tableRef } from '../../../tests/vnext/fixtures/react-presentation.js';
 
@@ -136,4 +136,22 @@ document.getElementById('rerender')!.addEventListener('click', () => {
 });
 document.getElementById('release-load')!.addEventListener('click', () => {
   pendingLoads.shift()?.();
+});
+document.getElementById('mount-initial-lazy')!.addEventListener('click', () => {
+  let initialLoadCount = 0;
+  const initialViews = defineReactViews<Intent, PeopleSurfaceState>([
+    {
+      ...listRef,
+      load: async () => {
+        initialLoadCount += 1;
+        document.getElementById('initial-load-count')!.textContent = String(initialLoadCount);
+        return () => <p data-testid="initial-lazy-view">initial lazy view</p>;
+      },
+    },
+  ]);
+  createRoot(document.getElementById('initial-lazy-root')!).render(
+    <React.StrictMode>
+      <ViewSurface surface={surface} views={initialViews} view={listRef} />
+    </React.StrictMode>,
+  );
 });
