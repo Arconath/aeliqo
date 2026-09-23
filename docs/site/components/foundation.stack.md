@@ -11,7 +11,7 @@ contract: 'Arrange children in logical reading order with tokenized spacing.'
 
 ## Purpose
 
-Arrange children in logical reading order with tokenized spacing.
+Lay out slotted children in their existing reading order with the declared direction, gap, alignment, and wrapping. Stack provides spacing and arrangement, leaving interaction and semantic grouping to its children.
 
 ## When to use it
 

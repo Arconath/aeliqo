@@ -11,7 +11,9 @@ contract: 'Dated events/intervals with timezone semantics, explicit overlaps and
 
 ## Purpose
 
-Dated events/intervals with timezone semantics, explicit overlaps and chronological alternative.
+Timeline orders supplied dated events or intervals and lays overlapping intervals into separate lanes
+when the declared calendar supports a visual layout. The chronological data table remains available for
+exact endpoints and for calendars the graphic cannot render.
 
 ## When to use it
 

@@ -11,7 +11,9 @@ contract: 'Declared binning, count/density labeling and missing-population discl
 
 ## Purpose
 
-Declared binning, count/density labeling and missing-population disclosure.
+Histogram displays bins declared by the visualization spec, with count or density meaning attached to the
+plotted measure. Its scope text distinguishes delivered bins from the unknown coverage of source
+observations, so the chart does not imply that missing or outside-bin populations are counted.
 
 ## When to use it
 

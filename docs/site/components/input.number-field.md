@@ -11,7 +11,7 @@ contract: 'Locale-aware editing separates display text from exact numeric value;
 
 ## Purpose
 
-Locale-aware editing separates display text from exact numeric value; do not silently round money.
+Let a person edit a localized decimal while preserving the canonical exact value as a string. Validation checks declared minimum, maximum, and step without converting the value to a rounded JavaScript number.
 
 ## When to use it
 

@@ -11,7 +11,9 @@ contract: 'Selected entity facts including missing fields; record identity persi
 
 ## Purpose
 
-Selected entity facts including missing fields; record identity persists across views.
+Detail shows the fields of one application-supplied record as labeled facts. It can expose the record
+identity and uses a visible missing-value label, while selection and record lookup stay with the
+application.
 
 ## When to use it
 

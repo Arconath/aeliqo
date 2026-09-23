@@ -11,7 +11,7 @@ contract: 'Preserve logical document hierarchy independent of visual size.'
 
 ## Purpose
 
-Preserve logical document hierarchy independent of visual size.
+Render heading text at the requested document level while choosing its visual size separately. Changing its appearance does not change the heading level announced to assistive technology.
 
 ## When to use it
 

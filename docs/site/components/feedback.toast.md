@@ -11,7 +11,7 @@ contract: 'Bounded transient feedback; essential errors remain persistently avai
 
 ## Purpose
 
-Bounded transient feedback; essential errors remain persistently available elsewhere.
+Announce transient feedback while `open` and optionally dismiss it after the configured duration. Important failures need a persistent home elsewhere; the toast only reports the host's result and emits a dismissal request.
 
 ## When to use it
 
@@ -36,6 +36,11 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+Set `duration` to zero for a notification that remains visible until the host
+or user dismisses it. Timed notifications are capped at 60 seconds; a
+`danger` tone never dismisses on the timer. Keep a durable status or error
+elsewhere if a user may need to read or act on it after the toast closes.
 
 ## Keyboard, focus, and accessibility
 

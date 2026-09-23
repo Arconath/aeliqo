@@ -14,7 +14,7 @@ test('guided intents render real adaptive views without a model', async ({ page 
 
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('aeliqo-table')).toBeVisible();
-  await expect(page.locator('#pg-status')).toContainText('validated browse intent');
+  await expect(page.locator('#pg-status')).toContainText('is ready');
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.getByRole('button', { name: 'Engineering only' }).click();
   await expect(page.locator('aeliqo-table')).toContainText('Sam Rivera');
@@ -118,7 +118,7 @@ test('container adaptation switches browse to cards but preserves comparisons', 
   await expect(page.locator('aeliqo-card-collection')).toBeVisible();
   await expect(page.locator('aeliqo-table')).toHaveCount(0);
   await expect(page.locator('#pg-view-badge')).toHaveText('data.card-collection');
-  await expect(page.locator('#pg-status')).toContainText('validated browse intent');
+  await expect(page.locator('#pg-status')).toContainText('is ready');
   await openScenario(page, 'products');
   await expect(page.locator('aeliqo-card-collection')).toContainText('Field notebook');
   await page.getByRole('button', { name: 'Compare products' }).click();
@@ -141,20 +141,24 @@ test('schema-derived create form requires explicit confirmation before writing',
   await page.getByRole('textbox', { name: 'Category' }).fill('Stationery');
   await page.getByRole('textbox', { name: 'Price' }).fill('6.5');
   await page.getByRole('textbox', { name: 'Stock' }).fill('24');
-  await page.getByRole('button', { name: 'Create Products' }).click();
+  await page.getByRole('button', { name: 'Create record' }).click();
   await expect(page.getByRole('dialog', { name: 'Review action' })).toBeVisible();
   await expect(page.locator('#pg-action-content')).toContainText('products.create');
   await expect(page.locator('#pg-action-content')).toContainText('Travel ruler');
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Review action' })).toBeHidden();
   await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue('Travel ruler');
-  await page.getByRole('button', { name: 'Create Products' }).click();
+  await page.getByRole('button', { name: 'Create record' }).click();
   const confirm = page.getByRole('button', { name: 'Confirm action' });
   await confirm.dblclick();
-  await expect(page.getByRole('dialog', { name: 'Review action' })).toBeHidden();
+  await expect(page.getByRole('dialog', { name: 'Review action' })).toBeVisible();
   await expect(page.locator('#pg-status')).toHaveText('Action completed.');
   await expect(page.locator('#pg-receipt-state')).toHaveText('executed');
-  await expect(page.getByRole('button', { name: 'Create Products' })).toBeFocused();
+  await expect(confirm).toBeDisabled();
+  await page.getByRole('button', { name: 'Done' }).dblclick();
+  await expect(page.getByRole('dialog', { name: 'Review action' })).toBeHidden();
+  await expect(page.locator('#pg-status')).toHaveText('Action completed.');
+  await expect(page.getByRole('button', { name: 'Create record' })).toBeFocused();
   expect(pageErrors).toEqual([]);
 });
 
@@ -166,7 +170,7 @@ test('edit form loads trusted current state and keeps the draft after cancellati
   await expect(page.getByRole('textbox', { name: 'Subject' })).toHaveValue('Invoice PDF is unavailable');
   await expect(page.getByRole('textbox', { name: 'Ticket ID' })).toHaveCount(0);
   await page.getByRole('textbox', { name: 'Status' }).fill('Pending');
-  await page.getByRole('button', { name: 'Save Support tickets' }).click();
+  await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByRole('dialog', { name: 'Review action' })).toBeVisible();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Status' })).toHaveValue('Pending');

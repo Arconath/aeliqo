@@ -11,7 +11,9 @@ contract: 'Query state, collection, scoped result count and details with stale-r
 
 ## Purpose
 
-Query state, collection, scoped result count and details with stale-result protection.
+SearchResults ties a supplied card collection to the visible query and its revision. When the query
+revision differs from the result revision, it hides the outdated collection and shows refresh guidance;
+the application owns searching, counts, and selected detail.
 
 ## When to use it
 

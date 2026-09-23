@@ -158,20 +158,20 @@ async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
   ): void => {
     setFlow('view');
     const count = selectedTeam === 'all' ? '4' : '2';
-    const view = receipt.presentation.plan.nodes[0]?.representation.id ?? 'registered view';
-    setDemoStatus(`${count} of 4 synthetic people in an exact Result · ${view} · 0 model calls.`);
+    const view = receipt.presentation.plan.nodes[0]?.representation.id.split('.').at(-1) ?? 'registered';
+    setDemoStatus(`${count} of 4 synthetic people matched. Aeliqo chose the ${view} view. Zero model calls.`);
   };
   async function renderIntent(): Promise<void> {
     const selectedTeam = teamControl?.value ?? 'all';
     setFlow('request');
-    setDemoStatus('Validating and rendering the intent…');
+    setDemoStatus('Checking the request against registered data and views…');
     if (evaluateButton) evaluateButton.disabled = true;
     try {
       const receipt = await example.render(selectedTeam);
       if (receipt.status !== 'renderer-ready') throw new Error(receipt.diagnostics[0]?.message ?? receipt.status);
       showDemoResult(selectedTeam, receipt);
     } catch {
-      setDemoStatus('The intent failed safely. The previous valid interface remains available.');
+      setDemoStatus('This request could not be shown. The previous valid view remains available.');
     } finally {
       if (evaluateButton) evaluateButton.disabled = false;
     }

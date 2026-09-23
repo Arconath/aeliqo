@@ -11,7 +11,7 @@ contract: 'Stable reserved geometry with reduced motion and a named loading stat
 
 ## Purpose
 
-Stable reserved geometry with reduced motion and a named loading state.
+Reserve a visible shape for content that is still loading. Line count and variant describe the expected geometry; the host must replace it with an actual result, empty state, or error rather than leaving it as data evidence.
 
 ## When to use it
 
@@ -36,6 +36,11 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+The text variant renders between one and twelve lines, clamping an out-of-range
+`lines` value; rectangular and circular variants render one shape. Reduced
+motion turns off the pulse animation. The skeleton carries a loading status,
+but it cannot tell whether a request later became empty, denied, or failed.
 
 ## Keyboard, focus, and accessibility
 

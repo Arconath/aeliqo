@@ -29,13 +29,28 @@ function deepestActiveElement(): HTMLElement | undefined {
 class ActionReviewState implements ActionReviewController {
   private pending: PendingAction | undefined;
   private returnFocus: HTMLElement | undefined;
+  private lastTrigger: HTMLElement | undefined;
 
   constructor(private readonly options: ActionReviewOptions) {
+    document.addEventListener(
+      'click',
+      (event) => {
+        if (options.dialog.contains(event.target as Node)) return;
+        this.lastTrigger = event.composedPath().find((node) => node instanceof HTMLButtonElement) as
+          HTMLElement | undefined;
+      },
+      true,
+    );
     options.cancelButton.addEventListener('click', this.cancel);
     options.confirmButton.addEventListener('click', () => void this.confirm());
     options.dialog.addEventListener('cancel', (event) => {
       event.preventDefault();
       this.cancel();
+    });
+    options.dialog.addEventListener('close', () => {
+      const target = this.returnFocus;
+      this.returnFocus = undefined;
+      if (target?.isConnected === true) target.focus();
     });
   }
 
@@ -55,11 +70,29 @@ class ActionReviewState implements ActionReviewController {
   reset(): void {
     this.pending = undefined;
     this.returnFocus = undefined;
+    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.removeEventListener('click', this.guardNextClick, true);
   }
+
+  private guardNextPointerDown = (event: PointerEvent): void => {
+    if (event.detail < 2) return;
+    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  };
+
+  private guardNextClick = (event: MouseEvent): void => {
+    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.removeEventListener('click', this.guardNextClick, true);
+    if (event.detail < 2) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  };
 
   private showPreview(event: PendingAction): void {
     this.pending = event;
-    this.returnFocus = deepestActiveElement();
+    const active = deepestActiveElement();
+    this.returnFocus = active === document.body || active === this.options.dialog ? this.lastTrigger : active;
     this.options.cancelButton.disabled = false;
     this.options.cancelButton.textContent = 'Cancel';
     this.options.confirmButton.disabled = false;
@@ -90,20 +123,16 @@ class ActionReviewState implements ActionReviewController {
       state === 'executed' ? 'Action completed.' : 'The remote result is uncertain; reconcile before retrying.';
     this.options.pageStatus.textContent = this.options.status.textContent;
     this.options.receiptState.textContent = state;
-    if (state === 'executed') this.close();
-    else {
-      this.options.cancelButton.disabled = false;
-      this.options.cancelButton.textContent = 'Close';
-    }
+    this.options.cancelButton.disabled = false;
+    this.options.cancelButton.textContent = state === 'executed' ? 'Done' : 'Close';
   }
 
   private close(): void {
+    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.removeEventListener('click', this.guardNextClick, true);
+    document.addEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.addEventListener('click', this.guardNextClick, true);
     this.options.dialog.close();
-    const target = this.returnFocus;
-    this.returnFocus = undefined;
-    window.setTimeout(() => {
-      if (!this.options.dialog.open && target?.isConnected === true) target.focus();
-    }, 0);
   }
 
   private cancel = (): void => {

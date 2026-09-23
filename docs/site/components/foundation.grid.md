@@ -11,7 +11,7 @@ contract: 'Arrange responsive regions without changing semantic/focus order.'
 
 ## Purpose
 
-Arrange responsive regions without changing semantic/focus order.
+Place slotted children in the declared CSS grid without changing their DOM or focus order. `columns` and `minItem` control when the layout can fit another column; the children keep their own semantics.
 
 ## When to use it
 

@@ -11,7 +11,9 @@ contract: 'Entity-feature comparison preserving row/column association and usefu
 
 ## Purpose
 
-Entity-feature comparison preserving row/column association and useful comparison at narrow width.
+Matrix preserves row-to-column associations in a tabular view of supplied Result fields. Exact values and
+selection remain available in the data table, including when the layout narrows; it does not infer a time
+axis or aggregate the cells.
 
 ## When to use it
 
@@ -19,7 +21,7 @@ Entity-feature comparison preserving row/column association and useful compariso
 
 ## When to use a different component
 
-Use Heatmap when color encodes a value across two categories. Matrix keeps temporal dimensions and values in table form.
+Use Heatmap when color encodes a value across two categories. Matrix keeps supplied rows, columns, and exact values in table form.
 
 ## Properties and defaults
 

@@ -2,7 +2,7 @@
 component: 'visualization.calendar-grid'
 title: 'CalendarGrid'
 family: 'visualization'
-contract: 'Calendar-aligned 2D values/events; locale week boundaries and noncolor exact values.'
+contract: 'Calendar-aligned values/events with an explicit week start and exact values beyond color.'
 ---
 
 ## Import and live example
@@ -11,7 +11,9 @@ contract: 'Calendar-aligned 2D values/events; locale week boundaries and noncolo
 
 ## Purpose
 
-Calendar-aligned 2D values/events; locale week boundaries and noncolor exact values.
+CalendarGrid places supplied dates into civil-day cells using the declared week start. Exact
+values remain in the data table, and unsupported calendar systems retain that data view instead of being
+drawn as a misleading Gregorian grid.
 
 ## When to use it
 

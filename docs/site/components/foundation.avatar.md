@@ -11,7 +11,7 @@ contract: 'Display optional identity image; fallback initials and privacy-safe a
 
 ## Purpose
 
-Display optional identity image; fallback initials and privacy-safe alt policy.
+Show one person's identity with an optional image and a name-based initials fallback when the image is absent or fails. Set `alt` for a meaningful image; use `decorative` only when nearby text already names the person.
 
 ## When to use it
 

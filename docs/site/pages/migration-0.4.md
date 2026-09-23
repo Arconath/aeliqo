@@ -20,6 +20,13 @@ path is the compatibility adapter for applications that are not ready to move.
 Do not install a mixture of `0.4.2` and `0.5.0` packages in one application;
 keep all Aeliqo packages on one exact release line.
 
+Migrate one integration boundary at a time: keep the existing app and Region
+working, add an explicitly owned scope and one surface, then move that screen's
+rendering and optional agent pairing. Check the old and new paths against the
+same host authority and data source before removing the old Region. The
+[local data starter](/start/) is complete and copyable; the advanced snippets
+below show the ownership points in an existing application.
+
 ## Move feature definitions to the new entry
 
 The old resource path remains valid. New code can describe immutable data or
@@ -42,7 +49,11 @@ and host permissions outside the immutable definition.
 
 Create each live surface through `@aeliqo/runtime/surfaces` and keep its scope,
 identity, and data binding explicit. Scope transition contracts are available
-from `@aeliqo/runtime/scopes` as types for the host-owned lifecycle adapter:
+from `@aeliqo/runtime/scopes` as types for the host-owned lifecycle adapter.
+The following is an integration outline: `resources`, `authority`, `scope`,
+`peopleFeature`, `snapshot`, `coverage`, and `normalize` are supplied by the
+host; copy the concrete binding from the [runtime package guide](/reference/packages/)
+or the maintained fixtures before using it:
 
 ```ts
 import { createAeliqoRuntime } from '@aeliqo/runtime';
@@ -93,7 +104,9 @@ model port; never put them in prompts or tool arguments.
 ## Migration checks
 
 Build a clean consumer from packed artifacts and run the T20 qualification
-fixture before requesting a release candidate. It checks the old 0.4 root
+fixture before requesting a release candidate. From the repository root, run
+`pnpm test:release-tooling`; this includes the T20 packaging fixture. It checks
+the old 0.4 root
 imports, every new feature/surface/browser entry, export targets, legal files,
 optional peers, and the browser no-agent module graph. See the
 [qualified support matrix](/ship/support-matrix/) for the tested framework,

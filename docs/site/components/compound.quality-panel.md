@@ -11,7 +11,9 @@ contract: 'Source, freshness, completeness, provenance and unsupported claims di
 
 ## Purpose
 
-Source, freshness, completeness, provenance and unsupported claims displayed honestly.
+QualityPanel reports application-supplied source, freshness, completeness, provenance, and unsupported
+claims. It labels missing metadata as not supplied and lists unsupported claims separately; it does not
+independently verify the data source.
 
 ## When to use it
 

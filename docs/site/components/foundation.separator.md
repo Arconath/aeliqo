@@ -11,7 +11,7 @@ contract: 'Express visual or semantic separation without polluting keyboard orde
 
 ## Purpose
 
-Express visual or semantic separation without polluting keyboard order.
+Mark a boundary between adjacent sections using horizontal or vertical separator styling. Keep it decorative for a purely visual divider; expose separator semantics only when the boundary helps explain the content.
 
 ## When to use it
 

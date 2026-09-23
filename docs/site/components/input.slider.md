@@ -11,7 +11,7 @@ contract: 'Bounded quantity with keyboard and text alternative; steps and units 
 
 ## Purpose
 
-Bounded quantity with keyboard and text alternative; steps and units are declared.
+Edit one bounded numeric quantity with a native range control and a visible value and unit. The component applies `min`, `max`, and `step` to user changes; the host interprets the quantity and accepts its proposal.
 
 ## When to use it
 

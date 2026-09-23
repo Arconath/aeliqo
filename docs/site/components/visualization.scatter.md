@@ -11,7 +11,9 @@ contract: 'Two quantitative axes, declared units, stable point selection and non
 
 ## Purpose
 
-Two quantitative axes, declared units, stable point selection and noncausal interpretation.
+Scatter positions each supplied record using two declared quantitative axes. Its point selection refers
+to a stable Result identity, while the exact data table preserves values that are hard to read from the
+plot. Proximity is a visual relationship, not evidence of causation.
 
 ## When to use it
 

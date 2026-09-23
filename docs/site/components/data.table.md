@@ -11,9 +11,10 @@ contract: 'Native table first; separate interactive-grid mode; sorting, paging, 
 
 ## Purpose
 
-Render precise row and column relationships with a native table by default. Sorting, paging, selection, and virtual
-window events are requests: the application applies them to its data source, then updates the table rows, Result
-evidence, and controlled state. Interactive grid mode is an explicit choice for cell-style navigation.
+Table keeps row and column relationships explicit with a native table by default; interactive grid mode
+is a separate choice for cell navigation. Sorting, paging, selection, and virtual-window events are
+requests. The application updates rows, Result evidence, and controlled state after handling each
+request.
 
 ## When to use it
 

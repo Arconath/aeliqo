@@ -11,7 +11,7 @@ contract: 'Present a category/status with text as well as color.'
 
 ## Purpose
 
-Present a category/status with text as well as color.
+Show a short category or status as visible text with a supporting tone. The component changes appearance but does not update the underlying status or announce a new application event.
 
 ## When to use it
 

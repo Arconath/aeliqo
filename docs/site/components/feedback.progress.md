@@ -11,7 +11,7 @@ contract: 'Determinate or unknown progress honestly; no invented completion perc
 
 ## Purpose
 
-Determinate or unknown progress honestly; no invented completion percentages.
+Describe an ongoing operation with native progress semantics. A bounded value reports determinate progress; an absent value stays indeterminate, so the component never invents a completion percentage.
 
 ## When to use it
 
@@ -36,6 +36,11 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+With no finite `value`, the component renders an indeterminate progressbar.
+For determinate progress, it clamps the displayed value to the range from zero
+to `max`; an invalid or nonpositive `max` falls back to 100. The host should
+report completion only when the underlying operation actually finishes.
 
 ## Keyboard, focus, and accessibility
 

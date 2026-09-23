@@ -11,7 +11,7 @@ contract: 'Provide consistent bounded chrome; never impose dashboard cards on ev
 
 ## Purpose
 
-Provide consistent bounded chrome; never impose dashboard cards on every control.
+Group slotted content in a labelled section with a chosen surface tone. The wrapper adds visual containment and optional section labelling; it does not turn child content into an action or a data card.
 
 ## When to use it
 

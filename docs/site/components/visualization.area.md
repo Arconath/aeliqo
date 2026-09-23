@@ -11,7 +11,9 @@ contract: 'Temporal area/stack with compatible additive measures; reject mislead
 
 ## Purpose
 
-Temporal area/stack with compatible additive measures; reject misleading nonadditive stacking.
+Area shows how a quantitative series changes across ordered time values, with a filled shape that makes
+magnitude salient. The bound visualization must declare compatible additive measures before stacking; the
+component does not invent aggregation from raw rows.
 
 ## When to use it
 

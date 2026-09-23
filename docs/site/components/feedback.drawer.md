@@ -11,7 +11,7 @@ contract: 'Inline or modal detail according to an explicit mode; do not mix the 
 
 ## Purpose
 
-Inline or modal detail according to an explicit mode; do not mix the two focus models.
+Show secondary detail at the selected edge either within page layout or in a modal overlay. The chosen mode determines focus and dismissal behavior; closing emits a request and does not perform a business action.
 
 ## When to use it
 

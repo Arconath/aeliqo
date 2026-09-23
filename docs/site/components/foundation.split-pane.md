@@ -11,7 +11,7 @@ contract: 'Resize adjacent regions by pointer and keyboard while respecting mini
 
 ## Purpose
 
-Resize adjacent regions by pointer and keyboard while respecting minimum task requirements.
+Arrange two slotted panes around a resizable separator with bounded `min`, `max`, and `step` values. Pointer and keyboard changes emit a position proposal; use `position` for controlled layout or `defaultPosition` for initial local state.
 
 ## When to use it
 

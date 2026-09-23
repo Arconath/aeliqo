@@ -11,7 +11,7 @@ contract: 'Supplemental nonessential information; works on focus, dismisses, not
 
 ## Purpose
 
-Supplemental nonessential information; works on focus, dismisses, not the sole label.
+Reveal a short supplemental explanation when its built-in trigger receives focus or hover. Escape hides it, and it never replaces the trigger's accessible name or essential instructions outside the tooltip.
 
 ## When to use it
 
@@ -36,6 +36,13 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+The built-in trigger opens the tooltip on focus or pointer hover and closes
+it on blur, pointer leave, or Escape. There is no `disabled` property and no
+separate component event. Remove the trigger when the explanation must be
+unavailable; setting `open` to false alone will not disable focus or hover.
+Keep a concise visible trigger label,
+because tooltip content is supplementary.
 
 ## Keyboard, focus, and accessibility
 

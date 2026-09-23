@@ -11,7 +11,9 @@ contract: 'Trend, baseline, event timeline and detail; associations never imply 
 
 ## Purpose
 
-Trend, baseline, event timeline and detail; associations never imply causes.
+Investigation brings a supplied trend, baseline metric, event timeline, and selected detail into one
+scope. The application binds each Result and dataset; missing trend or event evidence gets an explicit
+message, and the view warns that association is not causation.
 
 ## When to use it
 

@@ -8,11 +8,16 @@ test('the public playground uses the app facade without AI and through structure
   await page.goto('/playground/');
   await expect(page.locator('#pg-boot')).toBeHidden();
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-journey-intent')).toHaveText('Browse people');
+  await expect(page.locator('#pg-journey-result')).toHaveText('Evaluated');
+  await expect(page.locator('#pg-journey-view')).toHaveText('Table');
+  await expect(page.locator('#pg-receipt-state')).toBeHidden();
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
   await page.getByText('Run a structured intent', { exact: true }).click();
   await page.locator('#pg-manual-step').selectOption('people-detail');
   await page.getByRole('button', { name: 'Apply intent' }).click();
   await expect(page.locator('aeliqo-detail')).toContainText('Ada Chen');
+  await expect(page.locator('#pg-journey-view')).toHaveText('Detail');
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.screenshot({ path: 'artifacts/site-browser/playground-desktop.png', fullPage: true });
   expect(errors).toEqual([]);
@@ -215,7 +220,7 @@ test('home proof uses the public adaptive facade and remains legible on narrow f
   await expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
   await page.locator('#team').selectOption('Engineering');
   await page.getByRole('button', { name: 'Apply filter', exact: true }).click();
-  await expect(page.locator('#demo-status')).toContainText('2 of 4 synthetic people in an exact Result');
+  await expect(page.locator('#demo-status')).toContainText('2 of 4 synthetic people matched');
   await expect(records).toContainText('Sam Rivera');
   await expect(records).not.toContainText('Ada Chen');
   await page.emulateMedia({ forcedColors: 'active' });
@@ -228,7 +233,7 @@ test('home proof uses the public adaptive facade and remains legible on narrow f
   expect(
     (await new AxeBuilder({ page }).include('main').analyze()).violations.filter(({ id }) => id === 'color-contrast'),
   ).toEqual([]);
-  await page.locator('details').filter({ hasText: 'View the complete integration' }).locator('summary').click();
+  await page.locator('details').filter({ hasText: 'View the runtime call' }).locator('summary').click();
   await expect(page.locator('#demo-source')).toContainText('createAeliqoApp');
   await expect(page.locator('#demo-source')).toContainText("kind: 'browse'");
   await expect(page.locator('#demo-source')).not.toContainText('createTaskEvaluator');

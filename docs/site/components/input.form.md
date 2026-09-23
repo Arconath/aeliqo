@@ -11,7 +11,7 @@ contract: 'Native submission semantics, draft validation, error summary and expl
 
 ## Purpose
 
-Native submission semantics, draft validation, error summary and explicit host action; rerender never submits.
+Provide a native form boundary around slotted controls and emit a typed submit proposal only after applicable constraint validation. Invalid submission focuses an error summary; the host performs every action and decides whether a reset is accepted.
 
 ## When to use it
 

@@ -11,7 +11,9 @@ contract: 'Filter plus collection plus selected detail using shared parameter/se
 
 ## Purpose
 
-Filter plus collection plus selected detail using shared parameter/selection state.
+Explorer places FilterBuilder, RecordList, and Detail in one bounded layout. The application supplies the
+rows, selected key, and detail record; filter and selection events are forwarded as proposals rather than
+changing host data silently.
 
 ## When to use it
 

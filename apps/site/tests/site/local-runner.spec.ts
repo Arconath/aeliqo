@@ -44,7 +44,7 @@ test('the local runner pairs one browser Region with the three real MCP tools', 
         { requestId: 'local-render' },
       ),
     ).resolves.toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
-    await expect(page.locator('#pg-status')).toContainText('validated browse intent');
+    await expect(page.locator('#pg-status')).toContainText('is ready');
     await expect(page.locator('aeliqo-card-collection')).toContainText('Desk lamp');
   } finally {
     endpoint.close();

@@ -11,7 +11,7 @@ contract: 'Native checked/indeterminate state; group ownership and submitted val
 
 ## Purpose
 
-Native checked/indeterminate state; group ownership and submitted value are explicit.
+Collect one checked value with a native checkbox and an explicit indeterminate display state. A user change clears indeterminate and emits a typed proposal; the form value and accepted application state remain under host control.
 
 ## When to use it
 

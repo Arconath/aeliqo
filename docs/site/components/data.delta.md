@@ -11,7 +11,9 @@ contract: 'Explicit compatible baseline; zero denominator and percentage-point v
 
 ## Purpose
 
-Explicit compatible baseline; zero denominator and percentage-point versus relative change distinguished.
+Delta displays the change between an application-supplied current value and baseline. Choose absolute,
+relative, or percentage-point mode deliberately; incompatible values and an undefined relative
+denominator render as unavailable instead of a misleading number.
 
 ## When to use it
 

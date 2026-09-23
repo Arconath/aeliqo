@@ -11,9 +11,7 @@ contract: 'Named panels with stable selection; automatic activation only when la
 
 ## Purpose
 
-Named panels with stable selection. The default activation mode is automatic, so arrow-key focus also selects a
-panel. Set `activation="manual"` when selecting a panel starts work that is not immediate; users then move focus with
-the arrow keys and activate with Enter or Space.
+Connect named tabs to panels with one selected value. Automatic activation selects as arrow-key focus moves; `activation='manual'` waits for Enter or Space, which is useful when changing panels starts costly work.
 
 ## When to use it
 

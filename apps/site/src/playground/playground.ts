@@ -41,6 +41,9 @@ const viewBadge = required<HTMLElement>('#pg-view-badge');
 const resultTitle = required<HTMLElement>('#pg-result-title');
 const receiptState = required<HTMLElement>('#pg-receipt-state');
 const modelCalls = required<HTMLElement>('#pg-model-calls');
+const journeyIntent = required<HTMLElement>('#pg-journey-intent');
+const journeyResult = required<HTMLElement>('#pg-journey-result');
+const journeyView = required<HTMLElement>('#pg-journey-view');
 const inspector = required<HTMLDialogElement>('#pg-inspector');
 const inspectorSummary = required<HTMLElement>('#pg-inspector-summary');
 const inspectorContent = required<HTMLElement>('#pg-inspector-content');
@@ -156,7 +159,10 @@ function resetSession(): void {
   prompt.value = '';
   updateComposer();
   setError();
-  status.textContent = 'Session reset. Choose a scenario step.';
+  status.textContent = 'Session reset. Choose a task.';
+  journeyIntent.textContent = 'Choose a task';
+  journeyResult.textContent = 'Waiting';
+  journeyView.textContent = 'Waiting';
   viewBadge.textContent = 'Waiting for intent';
   resultTitle.textContent = 'Employees';
   resultDefinition.hidden = true;
@@ -199,18 +205,35 @@ function selectedView(receipt: WebRenderReceipt): string {
   );
 }
 
+function viewLabel(view: string): string {
+  const name = view.split('.').at(-1) ?? view;
+  return name.replaceAll('-', ' ').replace(/^\w/u, (letter) => letter.toUpperCase());
+}
+
+function intentLabel(intent: Intent): string {
+  const registered = scenario.steps.find((step) => step.id === intent.id);
+  if (registered !== undefined) return registered.label;
+  const kind = intent.kind.replace(/^\w/u, (letter) => letter.toUpperCase());
+  return `${kind} ${scenario.label.toLowerCase()}`;
+}
+
 async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<void> {
   last = { intent, receipt };
   receiptState.textContent = receipt.status;
   viewBadge.textContent = selectedView(receipt);
+  journeyIntent.textContent = intentLabel(intent);
   const activeStep = scenario.steps.find((step) => step.id === intent.id);
   resultTitle.textContent = activeStep?.label ?? `${scenario.label} result`;
   resultDefinition.textContent = activeStep?.definition ?? '';
   resultDefinition.hidden = activeStep?.definition === undefined;
   if (receipt.status === 'renderer-ready') {
-    status.textContent = `${resultTitle.textContent} is ready from the validated ${intent.kind} intent.`;
+    journeyResult.textContent = 'Evaluated';
+    journeyView.textContent = viewLabel(selectedView(receipt));
+    status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
   } else {
     const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
+    journeyResult.textContent = 'Could not complete';
+    journeyView.textContent = 'No new view';
     status.textContent = message;
     setError(message);
   }
@@ -227,14 +250,21 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement): Promise<v
   const controller = new AbortController();
   activeRequest = controller;
   setError();
-  status.textContent = `Compiling ${intent.kind} intent…`;
+  journeyIntent.textContent = intentLabel(intent);
+  journeyResult.textContent = 'Checking…';
+  journeyView.textContent = 'Waiting';
+  status.textContent = 'Checking the request and evaluating the result…';
   trigger?.setAttribute('aria-busy', 'true');
   try {
     const receipt = await session.render(regionHost, intent, controller.signal);
     if (activeRequest !== controller) return;
     await applyReceipt(intent, receipt);
   } catch {
-    if (!controller.signal.aborted) setError('The playground request failed safely. Reset the session and try again.');
+    if (!controller.signal.aborted) {
+      journeyResult.textContent = 'Could not complete';
+      journeyView.textContent = 'No new view';
+      setError('The playground request failed safely. Reset the session and try again.');
+    }
   } finally {
     trigger?.removeAttribute('aria-busy');
     if (activeRequest === controller) activeRequest = undefined;

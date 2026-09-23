@@ -11,7 +11,9 @@ contract: 'Task-based steps, draft persistence, validation and reversible naviga
 
 ## Purpose
 
-Task-based steps, draft persistence, validation and reversible navigation before commit.
+FormFlow shows one named step at a time while collecting draft values from slotted controls. It checks
+the current step before forward navigation, emits step and commit proposals, and waits for
+application-owned active-step and validation updates.
 
 ## When to use it
 

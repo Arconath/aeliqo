@@ -11,7 +11,7 @@ contract: 'Multiline editing preserves draft, selection and composition across u
 
 ## Purpose
 
-Multiline editing preserves draft, selection and composition across unrelated updates.
+Edit multiline text in a native textarea while preserving caret position and IME composition through unrelated updates. The component emits draft changes and commit events; the host owns persistence and validation.
 
 ## When to use it
 

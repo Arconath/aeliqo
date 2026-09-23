@@ -50,7 +50,20 @@ export const knowledgeArticleView = defineView({
 });
 ```
 
-Register `knowledgeArticleView` in the `views` option of the application composition root alongside its app-owned resources and authority. A view is eligible only when the validated task, result, presentation policy, and manifest agree. The optional `assess` callback belongs on the manifest and must make a synchronous, pure, bounded quality assessment; it does not replace eligibility checks.
+This is a complete view definition, not a complete application: the host still
+provides the resource, data service, authority, intent, and Region. Install
+`lit` alongside the matching Aeliqo packages when copying the file. Register
+`knowledgeArticleView` in the `views` option of the application composition
+root alongside its app-owned resources and authority. The maintained source is
+`apps/site/src/playground/scenario-view.ts`; its registration is in
+`apps/site/src/playground/session.ts`. Run the
+[Knowledge playground](/playground/?scenario=knowledge) or copy the full
+[Knowledge example](/examples/knowledge/) to see the view in a working app.
+
+A view is eligible only when the validated task, result, presentation policy,
+and manifest agree. The optional `assess` callback belongs on the manifest
+and must make a synchronous, pure, bounded quality assessment; it does not
+replace eligibility checks.
 
 ## Extension contract
 

@@ -11,7 +11,7 @@ contract: 'Stable cursor/page scope; loaded rows are not misrepresented as globa
 
 ## Purpose
 
-Stable cursor/page scope; loaded rows are not misrepresented as global selection.
+Show the current page and available previous or next directions from host-supplied page information. Activating a control requests a page change; it does not fetch rows or claim that an unknown total is complete.
 
 ## When to use it
 

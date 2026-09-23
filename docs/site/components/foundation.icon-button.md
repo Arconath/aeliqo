@@ -11,7 +11,7 @@ contract: 'Named compact action with minimum target area; icon alone is never it
 
 ## Purpose
 
-Named compact action with minimum target area; icon alone is never its accessible name.
+Give a compact icon action a native button target and a text-based accessible name from `label`. The icon slot is visual content; the host handles the emitted action and owns any pending state.
 
 ## When to use it
 

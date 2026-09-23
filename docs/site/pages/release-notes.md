@@ -2,8 +2,8 @@
 id: 'release-notes'
 path: '/ship/release-notes/'
 section: 'Ship'
-title: 'Aeliqo 0.4 release notes'
-description: 'The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages.'
+title: 'Release notes'
+description: 'Published 0.4.2 changes and the separately identified, unpublished 0.5 source candidate.'
 ---
 
 ## vNext source candidate (0.5.0)
@@ -13,6 +13,12 @@ successor and has not reached stable publication or site deployment.
 `0.5.0-rc.1` is on npm's `next` tag for all five packages, but it was published
 from an earlier source revision that lacks the local React path described below.
 Do not use that RC as evidence for this newer candidate.
+
+The items in this section describe the current repository source. For an
+installed 0.4.2 release, use the compatibility app/Region path described in
+the [React tutorial](/start/). The providerless local surface
+and scoped APIs below require a later matching 0.5 package build. Follow the
+[0.4.2 to 0.5 migration guide](/ship/migration-0.4/) for adoption boundaries.
 
 - `@aeliqo/core/features` introduces immutable data and non-data feature
   definitions. Data features lower through the existing resource/catalog path;

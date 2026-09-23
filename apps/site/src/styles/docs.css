@@ -64,6 +64,39 @@
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
+.docs-component-menu {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.4rem;
+}
+.docs-component-menu details {
+  min-width: 0;
+}
+.docs-component-menu summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+.docs-component-menu summary:hover,
+.docs-component-menu details[open] > summary {
+  color: var(--text);
+  background: var(--surface);
+}
+.docs-component-menu summary span {
+  color: var(--faint);
+  font-size: var(--type-micro);
+}
+.docs-component-links {
+  display: grid;
+  padding-inline-start: 0.45rem;
+}
 .docs-sidebar nav a {
   padding: 0.42rem 0.6rem;
   border-radius: var(--radius-sm);
@@ -94,6 +127,11 @@
 .docs-nav-toggle,
 .docs-sidebar .docs-nav-summary {
   display: none;
+}
+.docs-nav-toggle:focus-visible + .docs-nav-summary {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
 }
 .docs-version {
   display: grid;

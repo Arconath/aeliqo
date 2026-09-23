@@ -11,7 +11,7 @@ contract: 'Bounded enumerated choice with native-first semantics; empty and unkn
 
 ## Purpose
 
-Bounded enumerated choice with native-first semantics; empty and unknown value are distinct.
+Present a bounded choice list through a native select. An empty value is distinct from a selected option, and a value missing from the current list remains visible as an unknown option instead of silently selecting another one.
 
 ## When to use it
 

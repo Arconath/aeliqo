@@ -11,7 +11,9 @@ contract: 'Two dimensions and one measure; accessible exact cell values and read
 
 ## Purpose
 
-Two dimensions and one measure; accessible exact cell values and readable color key.
+Heatmap encodes a measure over two declared dimensions with a color key. The accompanying data table
+keeps exact cell values available without relying on color, and binding requires the host's authorized
+Result and field meanings.
 
 ## When to use it
 

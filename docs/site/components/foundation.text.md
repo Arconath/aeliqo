@@ -11,7 +11,7 @@ contract: 'Render trusted/plain text with locale and wrapping; no untrusted HTML
 
 ## Purpose
 
-Render trusted/plain text with locale and wrapping; no untrusted HTML interpolation.
+Render a trusted string as text in the chosen semantic element, with optional muted emphasis. Text is inserted as content rather than interpreted as HTML, so the host controls its meaning and formatting.
 
 ## When to use it
 

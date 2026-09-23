@@ -11,7 +11,7 @@ contract: 'Distinguish no records, no matches, forbidden data, loading and failu
 
 ## Purpose
 
-Distinguish no records, no matches, forbidden data, loading and failure.
+Explain why a result area has no content using an explicit kind, heading, and message. An optional recovery button proposes a host action such as clearing filters; it does not fabricate rows or retry data access itself.
 
 ## When to use it
 

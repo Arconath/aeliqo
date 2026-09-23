@@ -4,6 +4,37 @@ import { componentCatalog } from '../shared/catalog.js';
 
 const COMPONENT_ROUTES = componentCatalog.map(({ id }) => `/components/${id}/`);
 
+test('each component page exposes the complete component menu and identifies its current entry', async ({ page }) => {
+  for (const route of [
+    '/components/foundation.button/',
+    '/components/data.table/',
+    '/components/compound.quality-panel/',
+  ]) {
+    await page.goto(route);
+    const menu = page.getByRole('navigation', { name: 'Documentation' });
+    const componentMenu = menu.locator('.docs-component-menu');
+    await expect(componentMenu.locator('a')).toHaveCount(COMPONENT_ROUTES.length);
+    for (const componentRoute of COMPONENT_ROUTES)
+      await expect(componentMenu.locator(`a[href="${componentRoute}"]`)).toHaveCount(1);
+    await expect(componentMenu.locator('a[aria-current="page"]')).toHaveAttribute('href', route);
+    await expect(componentMenu.locator('details[open]')).toHaveCount(1);
+    await expect(componentMenu.locator('details[open] a').first()).toHaveAttribute('href', route);
+  }
+  await page.goto('/components/');
+  await expect(page.locator('.docs-component-menu a')).toHaveCount(COMPONENT_ROUTES.length);
+  await page.goto('/components/data.table/');
+  const foundation = page.locator('.docs-component-menu details').filter({
+    has: page.locator('a[href="/components/foundation.button/"]'),
+  });
+  await foundation.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(foundation).toHaveAttribute('open');
+  await foundation.locator('a[href="/components/foundation.button/"]').click();
+  await expect(page).toHaveURL(/\/components\/foundation\.button\/$/);
+  await page.goto('/concepts/');
+  await expect(page.locator('.docs-component-menu')).toHaveCount(0);
+});
+
 const ADOPTION_ROUTES = [
   '/start/',
   '/start/existing-app/',
@@ -158,10 +189,20 @@ test('narrow documentation exposes compact navigation before the requested artic
   expect(sidebar).not.toBeNull();
   expect(heading!.y).toBeLessThan(800);
   expect(sidebar!.y).toBeLessThan(heading!.y);
-  await expect(page.locator('.docs-nav-toggle')).not.toBeChecked();
-  await page.locator('label.docs-nav-summary').click();
-  await expect(page.locator('.docs-nav-toggle')).toBeChecked();
+  const toggle = page.locator('.docs-nav-toggle');
+  await expect(toggle).not.toBeChecked();
+  for (
+    let index = 0;
+    index < 20 && !(await toggle.evaluate((element) => element === document.activeElement));
+    index += 1
+  )
+    await page.keyboard.press('Tab');
+  await expect(toggle).toBeFocused();
+  await expect(page.locator('label.docs-nav-summary')).toHaveCSS('outline-style', 'solid');
+  await page.keyboard.press('Space');
+  await expect(toggle).toBeChecked();
   await expect(page.locator('.docs-sidebar nav')).toBeVisible();
+  await expect(page.locator('.docs-component-menu a[aria-current="page"]')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const accessibility = await new AxeBuilder({ page }).analyze();
   expect(accessibility.violations).toEqual([]);
@@ -179,6 +220,8 @@ test('narrow documentation exposes compact navigation before the requested artic
     expect(noScriptHeading!.y).toBeLessThan(800);
     expect(noScriptSidebar!.y).toBeLessThan(noScriptHeading!.y);
     await expect(noScriptPage.locator('.docs-nav-toggle')).not.toBeChecked();
+    await noScriptPage.locator('label.docs-nav-summary').click();
+    await expect(noScriptPage.locator('.docs-component-menu a[aria-current="page"]')).toBeVisible();
     expect(await noScriptPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   } finally {
     await noScriptContext.close();

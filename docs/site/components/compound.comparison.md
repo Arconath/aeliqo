@@ -11,7 +11,9 @@ contract: 'A stable compare-set with compatible metrics and simultaneous compari
 
 ## Purpose
 
-A stable compare-set with compatible metrics and simultaneous comparison affordances.
+Comparison places a bounded set of entities side by side in a table of supplied metrics. The application
+declares whether units and grain are compatible; changing the compare set emits a proposal and does not
+recalculate metric values.
 
 ## When to use it
 

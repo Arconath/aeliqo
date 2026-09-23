@@ -11,7 +11,7 @@ contract: 'Explicit inclusive/exclusive boundaries, timezone/calendar policy and
 
 ## Purpose
 
-Explicit inclusive/exclusive boundaries, timezone/calendar policy and keyboard operation.
+Edit a start and end calendar date together and emit a range value that includes boundary and calendar meaning. The current value uses the Gregorian calendar and `timezone: 'calendar'`; inclusive ranges allow equal endpoints, while exclusive ranges require the start to precede the end.
 
 ## When to use it
 
@@ -36,6 +36,13 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+The range is invalid when a required endpoint is missing or the endpoints are
+out of order. The event detail includes both dates, the boundary policy,
+`timezone: 'calendar'`, `calendar: 'gregory'`, and validity. Native form
+submission contributes only `${name}[start]` and `${name}[end]` when the pair
+is valid; the host must carry the boundary and calendar policy into any query
+or action instead of inferring them from those two submitted fields.
 
 ## Keyboard, focus, and accessibility
 

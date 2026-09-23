@@ -11,7 +11,7 @@ contract: 'One selected option; native semantics or APG-equivalent keyboard beha
 
 ## Purpose
 
-One selected option; native semantics or APG-equivalent keyboard behavior.
+Present a bounded set of native radio options under one legend and submit one chosen value. Disabled options stay visible; the selected value is reflected from host state and change events are proposals.
 
 ## When to use it
 

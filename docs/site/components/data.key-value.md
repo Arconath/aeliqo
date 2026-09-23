@@ -11,7 +11,9 @@ contract: 'Labeled facts with stable ordering, wrapping and semantic links.'
 
 ## Purpose
 
-Labeled facts with stable ordering, wrapping and semantic links.
+KeyValue renders an ordered set of application-supplied facts as a definition list. Each item can include
+a description or a safe link, and the component reports scope and loading or failure states without
+fetching facts itself.
 
 ## When to use it
 

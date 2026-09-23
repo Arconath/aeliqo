@@ -168,6 +168,8 @@ test('manual intent stays network-free before and after provider disconnect', as
   await page.locator('#pg-send').click();
 
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
+  await expect(page.locator('#pg-journey-intent')).toHaveText('Browse people');
+  await expect(page.locator('#pg-journey-result')).toHaveText('Evaluated');
   await expect(page.locator('#pg-connect-status')).toContainText('renderer confirmed the view');
   await expect(page.locator('#pg-connection-label')).toContainText('DeepSeek verified');
   await expect(page.locator('#pg-connection-dot')).toHaveAttribute('data-state', 'verified');

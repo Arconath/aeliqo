@@ -248,6 +248,9 @@ function componentDocumentationBody(component, example, metadata, api, source) {
 
 export function componentPage(component, example, metadata, api, source) {
   const body = componentDocumentationBody(component, example, metadata, api, source);
+  const semantic = component.surfaces.includes('semantic');
+  const adaptive = component.surfaces.includes('adaptive');
+  const maturity = `<section class="component-maturity" aria-label="Integration levels"><div><strong>Standalone</strong><span>Available</span><p>Use the web element directly without the semantic runtime.</p></div><div><strong>Semantic binding</strong><span>${semantic ? 'Available' : 'No built-in binding'}</span><p>${semantic ? 'A registered presentation adapter can bind this component to host-owned meaning and state.' : 'Use this component directly or compose it in application code.'}</p></div><div><strong>Automatic adaptation</strong><span>${adaptive ? 'Standard recipe' : 'No standard recipe'}</span><p>${adaptive ? 'A standard recipe can select this component when its task, bindings, data, and policy are eligible.' : 'The standard recipe resolver does not select this component automatically.'}</p></div></section>`;
   return {
     id: component.id,
     path: `/components/${component.id}/`,
@@ -255,6 +258,6 @@ export function componentPage(component, example, metadata, api, source) {
     section: `Components / ${component.family}`,
     description: component.contract,
     component: component.id,
-    body: `<div class="component-meta"><span><small>Family</small>${escape(component.family)}</span><span><small>Surfaces</small>${component.surfaces.map((surface) => escape(surface)).join(' · ')}</span><span><small>License</small>${escape(component.license)}</span></div>${body}`,
+    body: `<div class="component-meta"><span><small>Family</small>${escape(component.family)}</span><span><small>License</small>${escape(component.license)}</span></div>${maturity}${body}`,
   };
 }

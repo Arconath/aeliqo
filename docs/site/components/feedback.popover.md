@@ -11,7 +11,7 @@ contract: 'Contextual nonmodal surface with explicit focus/dismiss behavior and 
 
 ## Purpose
 
-Contextual nonmodal surface with explicit focus/dismiss behavior and viewport containment.
+Attach short contextual content to a trigger with an explicit open state and dismissal policy. The host chooses nonmodal or modal behavior, and the component emits a close request rather than executing an action.
 
 ## When to use it
 

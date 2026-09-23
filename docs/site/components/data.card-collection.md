@@ -11,7 +11,9 @@ contract: 'Repeated compact records; preserve reading order, headings and bounde
 
 ## Purpose
 
-Repeated compact records; preserve reading order, headings and bounded loading.
+CardCollection presents supplied records as cards with a heading and optional fields in reading order.
+Selection buttons emit stable identity proposals, and Load more requests another window; the application
+remains responsible for fetching rows and updating selected keys.
 
 ## When to use it
 

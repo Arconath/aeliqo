@@ -11,7 +11,9 @@ contract: 'Disclose selected identities or server predicate scope; never imply u
 
 ## Purpose
 
-Disclose selected identities or server predicate scope; never imply unobserved global selection.
+SelectionSummary tells people whether selection contains observed record keys or a server-side predicate.
+It never turns a predicate into a claim that every matching record is loaded; Clear selection emits a
+request for the application to handle.
 
 ## When to use it
 

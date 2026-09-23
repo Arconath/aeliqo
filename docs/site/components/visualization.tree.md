@@ -11,7 +11,9 @@ contract: 'Explicit hierarchy, cycle validation, stable expansion and equivalent
 
 ## Purpose
 
-Explicit hierarchy, cycle validation, stable expansion and equivalent text navigation.
+Tree presents a declared parent-child hierarchy from authorized rows. The bound geometry validates the
+hierarchy and limits graphic complexity; a structured data view keeps node labels and selection reachable
+when the graphic cannot be shown.
 
 ## When to use it
 

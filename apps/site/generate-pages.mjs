@@ -45,8 +45,42 @@ function enhanceHeadings(body) {
   return { html, headings };
 }
 
+function componentMenu(pages, currentPath) {
+  const families = new Map();
+  for (const page of pages.filter((candidate) => candidate.component !== undefined)) {
+    const family = page.section.slice('Components / '.length);
+    if (!families.has(family)) families.set(family, []);
+    families.get(family).push(page);
+  }
+  const ordered = [...families].sort(([left, leftPages], [right, rightPages]) => {
+    if (leftPages.some((component) => component.path === currentPath)) return -1;
+    if (rightPages.some((component) => component.path === currentPath)) return 1;
+    return left.localeCompare(right);
+  });
+  return `<div class="docs-component-menu" role="group" aria-label="Component pages">${ordered
+    .map(([family, components]) => {
+      const open = components.some((component) => component.path === currentPath) ? ' open' : '';
+      const orderedComponents = open
+        ? [...components].sort((left, right) => Number(right.path === currentPath) - Number(left.path === currentPath))
+        : components;
+      const links = orderedComponents
+        .map(
+          (component) =>
+            `<a href="${component.path}"${component.path === currentPath ? ' aria-current="page"' : ''}>${escape(component.title)}</a>`,
+        )
+        .join('');
+      return `<details${open}><summary>${escape(family)} <span>${components.length}</span></summary><div class="docs-component-links">${links}</div></details>`;
+    })
+    .join('')}</div>`;
+}
+
 function docsSidebar(groups, docsPages, currentPath) {
-  const links = groups
+  const orderedGroups = currentPath.startsWith('/components/')
+    ? [...groups].sort(
+        ([left], [right]) => Number(right === 'Components & recipes') - Number(left === 'Components & recipes'),
+      )
+    : groups;
+  const links = orderedGroups
     .map(
       ([label, paths]) =>
         `<div class="docs-nav-group"><strong>${label}</strong>${paths
@@ -56,7 +90,9 @@ function docsSidebar(groups, docsPages, currentPath) {
             (page) =>
               `<a href="${page.path}"${page.path === currentPath ? ' aria-current="page"' : ''}>${escape(page.title)}</a>`,
           )
-          .join('')}</div>`,
+          .join(
+            '',
+          )}${label === 'Components & recipes' && currentPath.startsWith('/components/') ? componentMenu(docsPages, currentPath) : ''}</div>`,
     )
     .join('');
   const versionLabel = releaseStatus === 'candidate' ? 'Release candidate' : 'Current release';
@@ -89,7 +125,7 @@ function extractSiteShell(home) {
 
 async function loadSitePages() {
   const docs = (await buildPublicPages()).map((page) => ({ ...page, surface: 'docs' }));
-  const docsPages = docs.filter((page) => page.component === undefined);
+  const docsPages = docs;
   const all = [...docs];
   const playground = await readFile(join(siteRoot, 'playground.html'), 'utf8');
   all.push({

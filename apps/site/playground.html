@@ -1,18 +1,18 @@
 <header class="pg-intro" aria-labelledby="playground-title">
   <div>
     <p class="pg-kicker">Public runtime · synthetic data</p>
-    <h1 id="playground-title">Turn a task into a real interface.</h1>
-    <p class="pg-intro-dek">A small, honest tour of the Aeliqo contract.</p>
+    <h1 id="playground-title">See the interface take shape.</h1>
+    <p class="pg-intro-dek">A live path from intent to result to presentation.</p>
   </div>
   <div class="pg-intro-copy">
     <p>
-      Start with working employee data, then choose a structured task or connect your own agent. Every path uses the
-      same validated runtime.
+      Pick a task using synthetic data. See what the runtime accepts, evaluates, and shows. The default path needs no
+      account, API key, or AI provider.
     </p>
     <ol class="pg-intro-flow" aria-label="Playground flow">
-      <li><b>1</b><span>Choose a scenario</span></li>
-      <li><b>2</b><span>Choose a typed intent</span></li>
-      <li><b>3</b><span>Inspect the result</span></li>
+      <li><b>1</b><span>Choose a task</span></li>
+      <li><b>2</b><span>See the result</span></li>
+      <li><b>3</b><span>Inspect the view</span></li>
     </ol>
   </div>
 </header>
@@ -59,20 +59,20 @@
     <aside class="pg-request" aria-labelledby="pg-request-title">
       <div>
         <p class="pg-kicker" id="pg-mode-label">Without AI</p>
-        <h2 id="pg-request-title">Build a view</h2>
+        <h2 id="pg-request-title">Choose what to do</h2>
         <p id="pg-scenario-description"></p>
       </div>
       <section id="pg-guided" aria-labelledby="pg-guided-title">
         <h3 id="pg-guided-title">Pick a task</h3>
         <div id="pg-steps" class="pg-steps"></div>
         <p class="pg-note">
-          Each task sends a deterministic intent fixture. Nothing is guessed from free text in this mode.
+          Each task sends a predefined request through the real runtime. No model is called.
         </p>
       </section>
       <details id="pg-manual" class="pg-structured">
         <summary>Run a structured intent</summary>
         <section aria-labelledby="pg-manual-title">
-          <h3 id="pg-manual-title">Application controlled input</h3>
+          <h3 id="pg-manual-title">Request from application code</h3>
           <label>Action<select id="pg-manual-step" data-playground-boot-control disabled></select></label>
           <button type="button" class="primary" id="pg-run-manual" data-playground-boot-control disabled>
             Apply intent
@@ -163,7 +163,12 @@
         </div>
         <span id="pg-view-badge" class="visually-hidden">Waiting for intent</span>
       </header>
-      <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to render the first view.</p>
+      <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to show the first view.</p>
+      <ol class="pg-journey" aria-label="Current runtime journey">
+        <li><small>01 · Intent</small><strong id="pg-journey-intent">Choose a task</strong><span>Registered request</span></li>
+        <li><small>02 · Result</small><strong id="pg-journey-result">Waiting</strong><span>Evaluated with app data</span></li>
+        <li><small>03 · View</small><strong id="pg-journey-view">Waiting</strong><span>Presentation chosen</span></li>
+      </ol>
       <p id="pg-result-definition" class="pg-result-definition" hidden></p>
       <div id="pg-error" class="pg-error" role="alert" hidden></div>
       <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>

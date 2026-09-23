@@ -11,7 +11,9 @@ contract: 'Typed predicates, AND/OR/null handling, visible inherited scope and e
 
 ## Purpose
 
-Typed predicates, AND/OR/null handling, visible inherited scope and explicit query application.
+FilterBuilder turns allowed fields and operators into a local predicate draft. Apply validates the draft
+and emits a proposal that includes the visible inherited predicate; the application authorizes and
+executes the query. Typing a value never runs a query.
 
 ## When to use it
 

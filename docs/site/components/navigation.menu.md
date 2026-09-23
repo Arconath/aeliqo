@@ -11,7 +11,7 @@ contract: 'Action menu with focus return and keyboard behavior; no layout-genera
 
 ## Purpose
 
-Action menu with focus return and keyboard behavior; no layout-generated business actions.
+Show a bounded list of application-supplied actions with roving keyboard focus. Selecting an enabled item emits its ID; the host performs the action and decides how open state changes.
 
 ## When to use it
 

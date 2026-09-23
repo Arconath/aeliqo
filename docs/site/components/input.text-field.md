@@ -11,7 +11,7 @@ contract: 'Label, description, validation, autocomplete and IME-safe controlled/
 
 ## Purpose
 
-Label, description, validation, autocomplete and IME-safe controlled/uncontrolled value.
+Edit a single line in a native text input with a persistent label, descriptions, and validation feedback. Controlled and default values share the same field boundary, while composition-aware updates avoid disrupting active typing.
 
 ## When to use it
 

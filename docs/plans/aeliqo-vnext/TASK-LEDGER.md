@@ -2,6 +2,12 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## 2026-09-24 local site/docs overlay
+
+Starting source is `930ba212142caecf9a18df2d71adf343bdbf2986`; the current 0.5.0 edits are local and uncommitted while verification finishes. F10/A43 now has authored Purpose coverage for all 71 component pages, one sidebar entry per component on every component route, source-derived 71/63/6 standalone/semantic/adaptive maturity, and expanded task-specific public/package guidance. `pnpm test:docs-artifact` passed for 126 pages/71 components; the full docs browser suite passed 13/13. F11/A44 has a passing `pnpm site:test`, `pnpm test:catalog-examples`, lint/Knip, format, and focused Chromium/Firefox/WebKit action-review tests. The 639-case catalog visual batch passed across all three browsers; the remaining dirty-source batches were stopped because the final clean-source `pnpm check` reruns the complete matrix. A43–A44 and A50 require an exact clean candidate commit and a new `pnpm check` report bound to that commit before final qualification.
+
+The inspected `/docs/*` redirects, 0.3 migration guide, and legacy deprecation script still have active consumers or cutover duties. Keep the prior production image, npm artifacts, and Git tags for rollback. Retire old UI surfaces only after a verified site cutover. The existing `0.5.0-rc.1` packages came from older source and cannot qualify this candidate. A41 paid evaluation, A45–A48 registry/image publication and deployment, and A49 human study remain separate from local implementation evidence.
+
 ## Current-source reconciliation (2026-09-23)
 
 `4a31da6a862bc1bc7d06f791369f0753a80fdd39` was pushed to `main` after

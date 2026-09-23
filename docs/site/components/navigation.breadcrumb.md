@@ -11,7 +11,7 @@ contract: 'Reversible context path; approved routes and current-location semanti
 
 ## Purpose
 
-Reversible context path; approved routes and current-location semantics.
+Show the application-supplied path to the current location as an ordered set of links. The last item marks the current page; the host supplies approved destinations rather than asking the component to infer routes.
 
 ## When to use it
 

@@ -38,6 +38,42 @@ or executable code.
 | `@aeliqo/agent/capabilities` | Host-owned capability registry and dispatch |
 | `@aeliqo/agent/session` | Session scope, expiry, and lifecycle |
 | `@aeliqo/agent/meaning` | Meaning-related agent capabilities |
+| `@aeliqo/agent/browser` | Optional scoped bridge for explicit surface targets |
+
+## Scoped browser bridge (0.5 source candidate)
+
+`connectAgent` pairs a host-owned client to an already authorized scope and an
+explicit target allowlist. The host registers each target with a live surface;
+the bridge does not search the DOM or discover every surface in the runtime.
+This entry belongs to the newer, unpublished 0.5 source candidate. The
+published `0.5.0-rc.1` was built from an earlier revision; verify its export
+map before attempting to use this entry from that package.
+
+```ts
+import { connectAgent, type AgentClient } from '@aeliqo/agent/browser';
+
+const client: AgentClient = {
+  kind: 'host-agent-client',
+  registeredTargets: [{ id: 'people-main', surface: peopleSurface }],
+};
+const connection = connectAgent({
+  scope: authorizedScope,
+  client,
+  targets: ['people-main'],
+});
+// The host disconnects this pairing when its screen or session ends.
+connection.disconnect();
+```
+
+`peopleSurface` and `authorizedScope` above are application-owned values,
+created through `@aeliqo/runtime/surfaces` and
+`@aeliqo/runtime/scopes`. The snippet shows the bridge boundary; the complete
+synthetic setup and cleanup are in `examples/vnext/journeys` and
+`tests/vnext/fixtures/agent.ts`. A target's optional `render` callback may
+acknowledge a renderer-ready revision; without it, a committed controller
+request is not proof that a view rendered. When authority, activation epoch,
+target, or principal changes, the old pairing is fenced and scoped conversation
+continuity must reset. The target list grants no new data permission.
 
 Install optional provider or transport dependencies only for the integrations
 the host enables. Keep credentials in the host and outside prompts or tool

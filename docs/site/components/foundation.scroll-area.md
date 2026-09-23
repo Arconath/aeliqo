@@ -11,7 +11,7 @@ contract: 'Preserve native scrolling, focus visibility, zoom and platform afford
 
 ## Purpose
 
-Preserve native scrolling, focus visibility, zoom and platform affordances.
+Wrap long content in a native scroll viewport with an application-supplied label. Its `axis` and `tabIndex` determine which directions scroll and whether keyboard users can enter the region; child focus order remains intact.
 
 ## When to use it
 

@@ -11,7 +11,9 @@ contract: 'Comparable quantitative categories; baseline and negative values corr
 
 ## Purpose
 
-Comparable quantitative categories; baseline and negative values correctly represented.
+Bar compares a declared quantitative measure across categories from an authorized Result. The view keeps
+negative values and its baseline visible; the data table supplies exact values when visual marks are
+insufficient. A standard data recipe can choose this view for eligible analysis tasks.
 
 ## When to use it
 

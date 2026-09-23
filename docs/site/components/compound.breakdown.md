@@ -2,7 +2,7 @@
 component: 'compound.breakdown'
 title: 'Breakdown'
 family: 'compound'
-contract: 'Group a declared metric and inspect contributing records; recompute ratios from sufficient statistics.'
+contract: 'Display host-prepared group metrics and contributing records; group selection is a host request.'
 ---
 
 ## Import and live example
@@ -11,7 +11,9 @@ contract: 'Group a declared metric and inspect contributing records; recompute r
 
 ## Purpose
 
-Group a declared metric and inspect contributing records; recompute ratios from sufficient statistics.
+Breakdown shows application-supplied group metrics and optional contributing records. Selecting a group
+emits its key so the application can load or update the record window; this component displays provided
+values and never computes a ratio or regrouping itself.
 
 ## When to use it
 
@@ -19,7 +21,7 @@ Group a declared metric and inspect contributing records; recompute ratios from 
 
 ## When to use a different component
 
-Use Comparison for a fixed set of entities. Breakdown groups an authorized record set by a declared key.
+Use Comparison for a fixed set of entities. Breakdown displays groups and contributing records prepared by the application.
 
 ## Properties and defaults
 

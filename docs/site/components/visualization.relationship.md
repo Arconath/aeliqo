@@ -11,7 +11,9 @@ contract: 'Declared edges/cardinality only; deterministic bounded layout with ac
 
 ## Purpose
 
-Declared edges/cardinality only; deterministic bounded layout with accessible adjacency view.
+Relationship draws the directed edges explicitly declared in a bound visualization. The application
+supplies source, target, and cardinality meaning; an adjacency-style data view preserves edge labels and
+keyboard selection when the graphic is crowded or unavailable.
 
 ## When to use it
 

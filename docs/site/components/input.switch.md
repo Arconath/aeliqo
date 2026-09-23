@@ -11,7 +11,7 @@ contract: 'Binary setting with visible label; changing setting is not implicit b
 
 ## Purpose
 
-Binary setting with visible label; changing setting is not implicit business submission.
+Present one binary setting with a native checkbox that exposes switch semantics. Toggling changes the local checked state and emits a typed change; application code decides whether that setting change has any business effect.
 
 ## When to use it
 

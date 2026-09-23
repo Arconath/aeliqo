@@ -11,7 +11,7 @@ contract: 'Persistent status/error with severity semantics and actionable recove
 
 ## Purpose
 
-Persistent status/error with severity semantics and actionable recovery.
+Keep a status or warning visible with its heading and message until the host changes it. Optional action and dismiss buttons emit separate proposals; tone supplements the text rather than carrying the message alone.
 
 ## When to use it
 

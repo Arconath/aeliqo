@@ -11,7 +11,7 @@ contract: 'Group related controls with legend, descriptions and coordinated vali
 
 ## Purpose
 
-Group related controls with legend, descriptions and coordinated validation.
+Put related form controls under one legend with shared description and error text. The group can disable its child fieldset, while each child still owns its value and validation behavior.
 
 ## When to use it
 

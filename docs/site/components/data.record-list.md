@@ -11,7 +11,9 @@ contract: 'Scannable records with identity-based selection and reachable additio
 
 ## Purpose
 
-Scannable records with identity-based selection and reachable additional fields.
+RecordList gives supplied records a compact, scannable reading order. When selection is enabled, it emits
+proposed stable record keys and waits for the application to update the selected keys; an empty row set
+has its own visible state.
 
 ## When to use it
 

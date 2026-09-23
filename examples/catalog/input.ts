@@ -118,9 +118,10 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
   },
   combobox: {
     fixture: 'One open person combobox with a query draft and bounded options.',
-    props: ['label', 'name', 'options', 'value', 'query', 'open', 'minQueryLength', 'disabled'],
-    propsNotes: 'query is a draft separate from the selected value; the host owns filtering and execution authority.',
-    states: ['ready', 'disabled', 'invalid', 'pending'],
+    props: ['label', 'name', 'options', 'optionsLoader', 'value', 'query', 'open', 'minQueryLength', 'disabled'],
+    propsNotes:
+      'query is a draft separate from the selected value. Supply bounded options or a host-owned optionsLoader; stale loader results are cancelled and ignored.',
+    states: ['ready', 'disabled', 'invalid', 'pending', 'error'],
     keyboard: ['Tab', 'Arrow keys', 'Enter', 'Escape', 'IME composition'],
     events: ['aeliqo-input-change', 'aeliqo-combobox-query', 'aeliqo-validation'],
     expectedOutcome: 'The query and selected identity remain distinct while the list stays bounded.',

@@ -11,7 +11,7 @@ contract: 'Calendar date rather than timezone-shifted timestamp; typed entry and
 
 ## Purpose
 
-Calendar date rather than timezone-shifted timestamp; typed entry and picker agree.
+Edit one calendar date through a native date input while preserving date-only values. The component checks its declared bounds and emits changes; the host gives the date its timezone and business meaning before querying data.
 
 ## When to use it
 
