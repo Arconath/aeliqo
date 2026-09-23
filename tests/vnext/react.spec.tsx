@@ -16,8 +16,41 @@ import { createScopeFixture } from './fixtures/scope.js';
 import type { Intent } from '@aeliqo/core';
 import { z } from 'zod';
 import { reactPresentationFixture, listRef, tableRef } from './fixtures/react-presentation.js';
+import { createLocalDataSurface, type LocalBrowseState, type SurfaceController } from '@aeliqo/runtime/surfaces';
+import type { PresentationResolverInput } from '@aeliqo/core/presentation';
 
 const HostContext = createContext('missing-host-context');
+
+function committedPresentation<I, S>(surface: SurfaceController<I, S>): PresentationResolverInput {
+  const evidence = surface.presentationEvidence?.();
+  if (evidence === undefined) throw new Error('Missing committed presentation evidence.');
+  const base = reactPresentationFixture();
+  return {
+    ...base,
+    preconditions: evidence.current,
+    context: {
+      ...base.context,
+      task: evidence.task,
+      experience: { ...base.context.experience, revision: evidence.current.experienceRevision },
+      results: evidence.results,
+      current: evidence.current,
+    },
+    target: evidence.target,
+    candidates: base.candidates.map((candidate) => ({
+      ...candidate,
+      plan: {
+        ...candidate.plan,
+        preconditions: evidence.current,
+        nodes: candidate.plan.nodes.map((node) => ({ ...node, result: evidence.results[0]!.ref })),
+        coverage: evidence.task.needs.map((need) => ({
+          needId: need.id,
+          nodeIds: [candidate.plan.rootId] as const,
+          operations: [need.operation] as const,
+        })),
+      },
+    })),
+  };
+}
 
 function PeopleNativeView({ snapshot }: ReactViewProps<Intent, PeopleSurfaceState>): React.JSX.Element {
   const hostValue = useContext(HostContext);
@@ -132,13 +165,50 @@ it('uses the shared resolver to select an eligible native view independent of re
     { id: tableRef.id, revision: tableRef.revision, render: () => <p>table view</p> },
     { id: listRef.id, revision: listRef.revision, render: PeopleNativeView },
   ]);
-  const resolution = reactPresentationFixture();
+  const resolution = committedPresentation(surface);
 
   const html = renderToStaticMarkup(<AdaptiveSurface surface={surface} views={views} presentation={resolution} />);
 
   expect(html).toContain('Ada Chen');
   expect(html).not.toContain('table view');
   fixture.dispose();
+});
+
+it('preserves the committed internal region target for an advanced native resolver', async () => {
+  const owned = createLocalDataSurface({ data: [{ id: 'ada', name: 'Ada Chen' }], getRowId: (row) => row.id });
+  await owned.surface.request({ kind: 'browse' });
+  const evidence = owned.surface.presentationEvidence?.();
+  expect(evidence).toBeDefined();
+  if (evidence === undefined) throw new Error('Missing committed presentation evidence.');
+  expect(evidence.target.address.surfaceId).not.toBe(owned.surface.address.surfaceId);
+  const presentation = committedPresentation(owned.surface);
+  const views = defineReactViews<Intent, LocalBrowseState>([
+    { ...listRef, render: () => <p>authorized native list</p> },
+  ]);
+
+  const html = renderToStaticMarkup(
+    <AdaptiveSurface surface={owned.surface} views={views} presentation={presentation} />,
+  );
+
+  expect(html).toContain('authorized native list');
+  owned.dispose();
+});
+
+it('rejects advanced presentation evidence from another runtime owner', async () => {
+  const owned = createLocalDataSurface({ data: [{ id: 'ada', name: 'Ada Chen' }], getRowId: (row) => row.id });
+  await owned.surface.request({ kind: 'browse' });
+  const committed = committedPresentation(owned.surface);
+  const foreign: PresentationResolverInput = {
+    ...committed,
+    target: { ...committed.target, address: { ...committed.target.address, runtimeId: 'another-runtime' } },
+  };
+  const views = defineReactViews<Intent, LocalBrowseState>([{ ...listRef, render: () => <p>private native list</p> }]);
+
+  const html = renderToStaticMarkup(<AdaptiveSurface surface={owned.surface} views={views} presentation={foreign} />);
+
+  expect(html).toContain('No eligible native React view');
+  expect(html).not.toContain('private native list');
+  owned.dispose();
 });
 
 it('does not render an authorized descriptor after the surface is denied', async () => {
@@ -150,13 +220,12 @@ it('does not render an authorized descriptor after the surface is denied', async
     bindings: fixture.bindings,
   });
   await surface.request({ kind: 'browse' });
+  const presentation = committedPresentation(surface);
   fixture.scope.setFeaturePermission('people', false);
   await surface.request({ kind: 'browse' });
   const views = defineReactViews<Intent, PeopleSurfaceState>([{ ...listRef, render: PeopleNativeView }]);
 
-  const html = renderToStaticMarkup(
-    <AdaptiveSurface surface={surface} views={views} presentation={reactPresentationFixture()} />,
-  );
+  const html = renderToStaticMarkup(<AdaptiveSurface surface={surface} views={views} presentation={presentation} />);
 
   expect(html).toContain('No eligible native React view');
   expect(html).not.toContain('Ada Chen');
@@ -322,6 +391,41 @@ it('renders honest empty guidance and a schema-backed empty state', () => {
 
   expect(renderToStaticMarkup(<Empty />)).toContain('Add an identity field');
   expect(renderToStaticMarkup(<Empty identity="id" />)).toContain('No records to show.');
+});
+
+it('does not expose duplicate identities in a local SSR preview', () => {
+  function Duplicate(): React.JSX.Element {
+    const surface = useDataSurface({
+      data: [
+        { id: 'same', name: 'First' },
+        { id: 'same', name: 'Second' },
+      ],
+      getRowId: (row) => row.id,
+    });
+    return <AdaptiveSurface surface={surface} />;
+  }
+
+  const html = renderToStaticMarkup(<Duplicate />);
+
+  expect(html).toContain('data.identity-duplicate');
+  expect(html).not.toContain('First');
+  expect(html).not.toContain('Second');
+});
+
+it('rejects a declared local SSR identity that disagrees with getRowId', () => {
+  function Mismatch(): React.JSX.Element {
+    const surface = useDataSurface({
+      data: [{ id: 'ada', externalId: 'ext-ada' }],
+      identity: 'externalId',
+      getRowId: (row) => row.id,
+    });
+    return <AdaptiveSurface surface={surface} />;
+  }
+
+  const html = renderToStaticMarkup(<Mismatch />);
+
+  expect(html).toContain('data.identity-ambiguous');
+  expect(html).not.toContain('ext-ada');
 });
 
 it('rejects an implicit local authority inside an application-owned scope', async () => {

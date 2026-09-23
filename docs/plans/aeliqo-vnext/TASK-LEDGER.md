@@ -8,15 +8,17 @@ The local 0.5.0 candidate extends this baseline with `createLocalDataSurface`,
 the React `useDataSurface`/`AdaptiveSurface` convenience route, committed
 presentation evidence, monotonic local revisions, selector and disposal
 guards, and loopback-only no-auth model profiles. Focused worktree results are
-listed in `07-EXECUTION-STATE.md`; only the clean `pnpm check` artifact after
-commit can satisfy the unchanged-source final gate. A01–A50 remain baseline
-NOT RUN in `03-ACCEPTANCE.md` until exact-source evidence is reconciled.
+listed in `07-EXECUTION-STATE.md`. The first clean `pnpm check` passed 87/87 at
+`58f13a9`, but later whole-diff review found defects requiring correction. Only
+a fresh `pnpm check` artifact whose source revision equals the final `HEAD` can
+satisfy the unchanged-source final gate. A01–A50 remain baseline NOT RUN in
+`03-ACCEPTANCE.md` until exact-source evidence is reconciled.
 
-- Fresh `HEAD` and `origin/main` both resolve to `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`.
-- Fresh npm registry reads show all five public packages (`core`, `runtime`, `web`, `react`, `agent`) at `latest=0.4.2` and `next=0.4.2-rc.1`; each version list ends at `0.4.2`. No `0.5.0` or `0.5.0-rc.*` is published as of this check. The registry's `next` tag is still the historical 0.4.2 RC, not a vNext candidate.
+- Fresh `origin/main` baseline was `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the local candidate started from it and has not been pushed.
+- Fresh npm registry reads show all five public packages (`core`, `runtime`, `web`, `react`, `agent`) at `latest=0.4.2` and `next=0.5.0-rc.1`. GitHub publish run `35816382654` used `main` source `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8`; the newer local candidate was not in that RC. Published npm versions are immutable, so that RC cannot be overwritten with this source.
 - `release-metadata.json` describes 0.5.0 as a candidate; that source metadata is not registry publication evidence. Registry facts were read with `npm view @aeliqo/<package> dist-tags --json` and `npm view @aeliqo/<package> versions --json` for each of the five names.
 - Existing T00–T20 evidence below records accepted earlier source revisions. Keep that history intact; it does not establish that the added A01–A50 cases pass at c0b4a64. Those operational cases are recorded as NOT RUN in `03-ACCEPTANCE.md` pending exact-current-source evidence.
-- The current worktree also contains active changes outside this ledger; no evidence for those uncommitted changes is implied by the main branch-tip SHA or the historical T-task rows.
+- Historical T-task rows remain bound to their recorded source revisions. For the final local candidate, check `git status`, `HEAD`, and `artifacts/product-ci/ci.json` together; an earlier clean matrix does not certify later corrections.
 
 | Task | State                    | Current evidence or next gate                                                                                                                                                                                                                                                                                                      |
 | ---- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -50,13 +52,74 @@ requirement is runtime-verified locally; production runtime remains unverified.
 
 ## Release state
 
-- 0.5.0 candidate built: locally qualified packed artifacts only; no 0.5.0 registry/image publication.
+- 0.5.0 newer source candidate built: locally qualified packed artifacts; no registry/image publication of this source.
 - Independently reviewed: T02–T06 task candidates plus the final read-only T21 review.
-- 0.5.0 RC published: no. The registry `next` tag remains on 0.4.2-rc.1 for all five packages.
+- 0.5.0 RC published: yes, `0.5.0-rc.1` for all five packages from earlier source `c0b4a64`. It lacks the newer React local data path and is not an accepted RC for this candidate; qualification requires a new approved version and exact-source evidence.
 - 0.5.0 stable published: no. Registry `latest` remains on 0.4.2 for all five packages.
 - 0.5.0 image published: no.
 - 0.5.0 deployed: no.
 - Runtime verified: focused T02 core behavior, T03 scoped surfaces, T04 guarded scope transitions, T05 bounded local binding, T06 remote/semantic execution, T16 security boundaries, T18 reference journeys, T19 performance, T20 clean packed consumers, and the final source-bound matrix. Production runtime remains unverified.
+
+## A01–A50 current-candidate evidence overlay
+
+The A-case table in `03-ACCEPTANCE.md` preserves the handoff baseline state at
+`c0b4a64`. This overlay records what was actually exercised for the newer local
+candidate. “Bounded” means the named synthetic/local profile passed; it does
+not assert every environment or a live provider. The first full matrix report
+at `artifacts/product-ci/ci.json` was 87/87 for `58f13a9`, before subsequent
+review corrections. A final claim requires that report to be rerun with its
+`sourceRevision` equal to final `HEAD` and `sourceChangedDuringRun: false`.
+
+| Cases | Owner | Code and executable evidence | Current result or limit |
+| --- | --- | --- | --- |
+| A01 | F00 | Git/registry/workflow readback above; `artifacts/product-ci/ci.json` | Partial: facts were refreshed after the first matrix; final SHA must match its report. |
+| A02 | F01/F02 | `packages/react/src/surface/local.tsx`; `tests/vnext/react.spec.tsx`, `tests/release/t20-packaging.test.mjs` | Local packed consumer bounded; published RC lacks this API. |
+| A03–A05 | F02/F03 | `tests/vnext/local-convenience.test.ts`, `tests/vnext/react.spec.tsx`, `tests/vnext/security.test.ts` | Partial: malformed/empty/identity cases are exercised; selection/detail/edit targeting is outside the beginner browse path. |
+| A06–A07 | F02/F03 | `tests/vnext/browser/react-local.spec.ts` | Bounded prop replacement, address retention, version signal, and rejected-update recovery. |
+| A08 | F03 | `tests/runtime-data/monotonic-source-revision.test.ts` | Partial: more than 256 revisions and replay fences pass; sustained UI workload is unmeasured. |
+| A09–A10 | F02/F06 | `tests/vnext/browser/react-selectors.spec.ts` | Bounded selector stability and unrelated-render counts. |
+| A11–A12 | F02/F09 | `tests/vnext/react.spec.tsx`, `tests/vnext/browser/react-local.spec.ts` | Partial: Strict Mode, inert SSR, ownership and unmount covered; pending-work retained-handle census is not complete. |
+| A13–A16 | F04/F06 | `tests/vnext/react.spec.tsx`, `tests/vnext/presentation.test.ts`, `tests/vnext/browser/react-adaptive.spec.ts` | Bounded shared resolver, eligibility/pins, resize and narrow container behavior. |
+| A17–A19 | F03/F05/F06 | `tests/vnext/journey-attendance.test.ts`, `examples/vnext/attendance/`, `tests/vnext/browser/attendance.spec.ts` | Partial: approved synthetic daily ratios, missing/future data, ambiguity, runtime chart, visible period/metric, and browser clarification pass; offset/DST period execution remains explicitly unsupported. |
+| A20 | F03 | `tests/vnext/metrics.test.ts`, `tests/semantics/` | Bounded independent ratio, units, decimal and aggregation expected values. |
+| A21 | F05/F07 | `tests/vnext/journey-workspace-goal.test.ts`, `examples/vnext/workspace/`, `tests/vnext/browser/workspace.spec.ts` | Partial: a registered pattern derives summary/trend/breakdown from committed Task/Result evidence and commits the workspace; browser tests render three registered one-need child tasks. The two paths are not one end-to-end browser flow, and empty-candidate automatic role selection is not implemented. Unknown goals reject. |
+| A22–A24 | F07 | `tests/vnext/workspace-layout.test.ts`, `tests/vnext/scope-race.test.ts`, `tests/vnext/browser/workspace.spec.ts` | Bounded child ownership, prior-layout retention, capacity/cycle rejection, and child DOM focus/resize/result retention; one multi-need plan in browser remains unproved. |
+| A25–A29 | F07/F08 | `tests/vnext/scope-draft.test.ts`, `tests/vnext/scope-race.test.ts`, `tests/vnext/agent-bridge.test.ts`, `tests/vnext/actions.test.ts` | Bounded voluntary/forced transitions, A-B-A fencing, controlled receipts, and scoped continuity. |
+| A30–A33 | F03/F08 | `tests/vnext/remote-data.test.ts`, `tests/vnext/remote-server.test.ts`, `tests/vnext/journey-remote.test.ts` | Partial: synthetic HTTP, cursor, lineage and cancellation profiles pass; no customer server or complete combined first-page/global-aggregate profile. |
+| A34 | F09 | `tests/vnext/browser/ssr.spec.ts`, `tests/next-platform/` | Bounded no-JS authorized DOM, hydration and principal isolation. |
+| A35–A36 | F06/F09 | `tests/vnext/react.spec.tsx`, `tests/vnext/browser/experience.spec.ts`, three-engine visual matrix | Partial: context, accessibility and responsive fixtures pass; portals, lazy-import recovery and human assistive-technology use remain unproved. |
+| A37 | F08 | `tests/release/t20-packaging.test.mjs`, no-agent packed graph | Partial: no-agent import graph passes; a combined browser network trace through disconnect/manual recovery is not recorded. |
+| A38–A40 | F08 | `tests/vnext/security.test.ts`, `tests/vnext/actions.test.ts`, `tests/agents/`, protocol suites | Bounded hostile-input, synthetic action and explicit model-profile checks. |
+| A41 | F08 | `tests/agent-evaluation/` synthetic runner only | External blocker: no approved paid provider/budget/corpus run. |
+| A42–A43 | F10/F11 | `tests/performance/`, `tests/docs-artifact/`, `tests/catalog-examples/`, `artifacts/product-ci/ci.json` | Bounded at the first SHA; final source requires renewed full performance/docs gates. |
+| A44 | F11/F12 | `quality/commands.json`, `artifacts/product-ci/ci.json`; separate `pnpm audit --prod --audit-level high` and `pnpm licenses list --prod --json` | Partial: 87 local gates passed at the first SHA and audit found no known high vulnerabilities; license inventory is not legal clearance or image smoke. |
+| A45 | F12 | npm integrity/provenance for five `0.5.0-rc.1` packages; GitHub run `35816382654` | Failed for this candidate: RC source is `c0b4a64`, and its React tarball lacks the newer local-data hook. |
+| A46–A48 | F12/F13 | Registry tags, release workflow and public `/version` readback | External blocker: no corrected-source RC/stable install, 0.5 tag/release, immutable site image, authorized promotion or rollback proof. |
+| A49 | F10/F13 | `examples/vnext/host-only/`, `tests/vnext/browser/host-only-baseline.spec.ts`, four existing journey fixtures | Partial: one equivalent synthetic Jakarta task passes in Aeliqo and host-only UI; no human participants or measured savings. |
+| A50 | F11/F13 | RQ01–RQ46 table in `03-ACCEPTANCE.md`; this ledger and source-bound reports | Partial until final SHA, acceptance gaps, exact cleanup inventory and release state are reconciled. |
+
+J1 also has a bounded manual/connected-agent parity fixture in
+`tests/vnext/journey-jakarta-agent.test.ts`: both requests produce the same
+Jakarta rows on one scoped surface, and a missing or disallowed target cannot
+change it. The agent client uses a fake model and host renderer receipt; actual
+browser DOM and live-model quality are separate evidence.
+
+F00 is refreshed but remains tied to final-source reconciliation. F01–F11 have
+local implementation and bounded checks with the limits above. F12 is failed
+for the published RC's source match and blocked on a correctly authorized
+successor. F13 remains open for final same-source acceptance, release/site
+readback and honest unresolved limits. No historical T-task row or available
+RC attestation can stand in for those gates.
+
+Cleanup inventory: `apps/site/generate-pages.mjs` still emits the `/docs/*`
+redirect map consumed by `apps/site/deploy/server.go` and its route tests;
+`docs/site/pages/migration-0.3.md` is linked by the current packages, ship,
+and release pages; `scripts/release/deprecate-legacy.mjs` is covered by release
+tests and remains necessary for the post-cutover notice. These are active
+compatibility or cutover assets, so there is no proven-obsolete file in this
+inspected set to delete before production promotion. The published 0.4.2
+artifacts, tags, and prior site image are rollback assets. Recheck exact
+consumers after the new site is stable before retiring old UI surfaces.
 
 ## Component documentation inventory
 

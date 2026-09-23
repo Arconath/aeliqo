@@ -35,13 +35,40 @@ function sameRef(left: VersionRef, right: VersionRef): boolean {
   return left.id === right.id && left.revision === right.revision;
 }
 
+function matchesCommittedTarget<I, S>(
+  surface: SurfaceController<I, S>,
+  snapshot: SurfaceSnapshot<I, S>,
+  input: PresentationResolverInput,
+): boolean {
+  const publicAddress = snapshot.address;
+  const target = input.target.address;
+  if (target.runtimeId !== publicAddress.runtimeId || target.scopeInstanceId !== publicAddress.scopeInstanceId)
+    return false;
+  if (
+    target.activationEpoch !== publicAddress.activationEpoch ||
+    target.surfaceGeneration !== publicAddress.surfaceGeneration
+  )
+    return false;
+  if (target.surfaceId !== input.context.task.regionId) return false;
+  if (surface.presentationEvidence === undefined) return true;
+  const committed = surface.presentationEvidence();
+  return (
+    committed !== undefined &&
+    committed.target.address.surfaceId === target.surfaceId &&
+    committed.task.id === input.context.task.id &&
+    committed.task.revision === input.context.task.revision
+  );
+}
+
 function resolvedView<I, S>(
+  surface: SurfaceController<I, S>,
   snapshot: SurfaceSnapshot<I, S>,
   views: ReactViewRegistry<I, S>,
   input: PresentationResolverInput,
   preference?: VersionRef,
   size?: { readonly inline: number; readonly block: number },
 ): ReactViewDefinition<I, S> | undefined {
+  if (!matchesCommittedTarget(surface, snapshot, input)) return undefined;
   const rendererCapabilities = input.context.rendererCapabilities.filter((ref) => views.resolve(ref) !== undefined);
   const task =
     preference === undefined
@@ -62,10 +89,10 @@ function resolvedView<I, S>(
               blockSize: { state: 'known', value: size.block },
             },
     },
-    target: {
-      address: snapshot.address,
-      state: snapshot.phase === 'disposed' || snapshot.phase === 'denied' ? 'revoked' : 'active',
-    },
+    target:
+      snapshot.phase === 'disposed' || snapshot.phase === 'denied'
+        ? { ...input.target, state: 'revoked' }
+        : input.target,
   });
   if (decision.status !== 'ready') return undefined;
   const root = decision.plan.plan.nodes.find((node) => node.id === decision.plan.plan.rootId);
@@ -119,7 +146,7 @@ function NativeAdaptiveSurface<I, S>({
   const container = useContainerSize(presentation !== undefined);
   const selected = selectView?.(snapshot, views.views);
   if (presentation !== undefined) {
-    const definition = resolvedView(snapshot, views, presentation, selected, container.size);
+    const definition = resolvedView(surface, snapshot, views, presentation, selected, container.size);
     const content =
       definition === undefined ? (
         noEligibleView(fallback)

@@ -225,33 +225,55 @@ function reportReceipt(statusId: string, receipt: WebRenderReceipt): void {
   clarification.hidden = receipt.status !== 'needs-input';
 }
 
+const latestRenderByRegion = new Map<string, number>();
+let renderGeneration = 0;
 async function render(
   regionId: string,
   statusId: string,
   intent: Intent,
   signal?: AbortSignal,
 ): Promise<WebRenderReceipt> {
+  const generation = ++renderGeneration;
+  latestRenderByRegion.set(regionId, generation);
   const receipt = await app.render({ regionId, intent, ...(signal === undefined ? {} : { signal }) });
-  reportReceipt(statusId, receipt);
+  if (latestRenderByRegion.get(regionId) === generation) reportReceipt(statusId, receipt);
   return receipt;
 }
 
 let sequence = 0;
-const renderPeople = (preferredView?: string, page?: { readonly size: number }, signal?: AbortSignal) =>
-  render(
+let latestPeopleRequestId = '';
+const renderPeople = async (
+  preferredView?: string,
+  page?: { readonly size: number },
+  signal?: AbortSignal,
+  location?: string,
+): Promise<WebRenderReceipt> => {
+  const requestId = `browse-people-${++sequence}`;
+  latestPeopleRequestId = requestId;
+  const receipt = await render(
     'people',
     'people',
     {
       version: '1',
-      id: `browse-people-${++sequence}`,
+      id: requestId,
       kind: 'browse',
       resource: 'people',
       fields: ['id', 'name', 'team', 'location'],
       ...(preferredView === undefined ? {} : { preferredView }),
       ...(page === undefined ? {} : { page }),
+      ...(location === undefined
+        ? {}
+        : { filter: { op: 'compare' as const, field: 'location', comparison: 'eq' as const, value: location } }),
     },
     signal,
   );
+  if (requestId === latestPeopleRequestId && receipt.status === 'renderer-ready')
+    document.querySelector<HTMLElement>('#people-filter')!.textContent =
+      location === undefined
+        ? 'All authorized people · scope vnext-scope'
+        : `People with location ${location} · scope vnext-scope`;
+  return receipt;
+};
 
 const renderAnalysis = (
   preferredView: 'bar' | 'trend',
@@ -293,6 +315,9 @@ const renderCompare = () =>
   });
 
 document.querySelector('[data-action="people-adaptive"]')!.addEventListener('click', () => void renderPeople());
+document
+  .querySelector('[data-action="people-jakarta"]')!
+  .addEventListener('click', () => void renderPeople(undefined, undefined, undefined, 'Jakarta'));
 document.querySelector('[data-action="people-table"]')!.addEventListener('click', () => void renderPeople('table'));
 document.querySelector('[data-action="people-cards"]')!.addEventListener('click', () => void renderPeople('cards'));
 document

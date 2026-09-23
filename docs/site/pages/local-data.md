@@ -9,9 +9,10 @@ description: 'Evaluate canonical queries over a bounded, application-owned snaps
 <p class="lead">Use local data for synthetic demos, offline tools, tests, and records the application already has permission to expose.</p>
 <h2>Start with React</h2>
 
-The unreleased 0.5.0 candidate supports this installed-package API for a
-small complete dataset already owned by your application. No model, factory,
-catalog, or remote grant is needed:
+The newer 0.5.0 source candidate supports this API when built and installed
+from that source; the published `0.5.0-rc.1` came from an earlier revision and
+does not include it. For a small complete dataset already owned by your
+application, no model, factory, catalog, or remote grant is needed:
 
 ```tsx
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
@@ -106,8 +107,9 @@ revision history is needed. A cap failure preserves the current revision; a
 rollback uses a fresh revision with the old rows.
 Trusted sources with canonical increasing numeric revisions can opt into
 `revisionMode: { kind: 'monotonic', prefix: 'people-' }` to keep
-only a high-water mark. Replayed, malformed, or non-increasing revisions are
-rejected; the default history limit remains in force for arbitrary IDs.
+only a high-water mark. Changed content at a repeated revision, stale revisions,
+and malformed revisions are rejected; an exactly equivalent current revision
+remains a no-op. The default history limit remains in force for arbitrary IDs.
 <h2>Keep it bounded</h2><p>The snapshot is not a client-side database mirror. The binding performs bounded structural inference: empty input needs a declared schema, scalar fields must have consistent keys and types, and nested, accessor, executable, schema-less all-null, ambiguous, duplicate, or invalid-identity rows return explicit diagnostics. Configure row and source-byte limits; field count remains bounded by the wire/schema boundary, while query and result budgets bound each request. Page and row budgets return explicit partial coverage with a reason, population when known, and a continuation cursor when available; a byte budget that cannot fit a response returns <code>data.budget</code> instead of silently truncating. Declared nullable schemas accept null values. Dispose materialized results when the Region or authority context changes.</p>
 <h2>Failure recovery</h2><p>An unsupported query returns a diagnostic without mutating the current Region. A cancelled evaluation releases pending work. A denied request or failed replacement preserves the last committed rows only while the same authorized surface address remains active; disposal and scope transitions fence late updates.</p>
 <nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/start/"><span>Complete quickstart</span><small>See this adapter in the compiled People example.</small><b aria-hidden="true">→</b></a><a href="/guides/http-data/"><span>Move execution server-side</span><small>Keep private source records out of the browser.</small><b aria-hidden="true">→</b></a></nav>

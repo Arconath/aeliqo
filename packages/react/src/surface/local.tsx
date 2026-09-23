@@ -89,13 +89,11 @@ function useLocalUpdates<Row extends DataRecord>(
 ): void {
   const { owned, setError, initialData, initialVersion } = ownership;
   React.useEffect(() => {
-    if (
-      scoped ||
-      owned === undefined ||
-      options === undefined ||
-      (options.data === initialData.current && options.version === initialVersion.current)
-    )
+    if (scoped || owned === undefined || options === undefined) return;
+    if (options.data === initialData.current && options.version === initialVersion.current) {
+      setError((previous) => (previous === undefined ? previous : undefined));
       return;
+    }
     const result = owned.replaceData(options.data);
     if (!result.ok) {
       const diagnostic = result.diagnostics[0];
@@ -255,8 +253,11 @@ function LocalAdaptiveContent<Row extends DataRecord>({
         id: 'local-preview',
         rows: surface.data,
         ...(surface.schema === undefined ? {} : { schema: surface.schema }),
+        ...(surface.data.length === 0 && surface.identity !== undefined
+          ? { identity: [surface.identity] }
+          : { getRowId: surface.getRowId as (row: unknown) => unknown }),
       }),
-    [surface.data, surface.schema, surface.version],
+    [surface.data, surface.schema, surface.identity, surface.version],
   );
   if (
     surface.data.length === 0 &&
@@ -273,6 +274,12 @@ function LocalAdaptiveContent<Row extends DataRecord>({
     }
     return retainedResult(`${diagnostic.code}: ${diagnostic.message}`, surface.controller, size);
   }
+  if (surface.identity !== undefined && inspected.value.identity[0] !== surface.identity)
+    return retainedResult(
+      'data.identity-ambiguous: The declared identity does not match getRowId.',
+      surface.controller,
+      size,
+    );
   if (surface.error !== undefined) return retainedResult(surface.error, surface.controller, size);
   const fields = inspected.value.fields.map((field) => field.id);
   if (surface.controller !== undefined) return <LiveRows controller={surface.controller} size={size} />;

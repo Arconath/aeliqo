@@ -40,6 +40,9 @@ function People(): React.JSX.Element {
       <button type="button" onClick={() => setRows([...initial])}>
         Restore people
       </button>
+      <button type="button" onClick={() => setRows(initial)}>
+        Restore original
+      </button>
       <button type="button" onClick={() => setNarrow(true)}>
         Narrow host
       </button>

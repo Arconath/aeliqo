@@ -5,9 +5,12 @@
 The audit below remains a historical snapshot of `04937d2`. The current
 checkout started from fresh `origin/main` at
 `c0b4a64dac6b507b8eeb50195e3bd36e43bb7eb8` and now contains a local
-0.5.0 candidate change. Read `artifacts/product-ci/ci.json` after the clean
-`pnpm check` run for the accepted source SHA and exact gate results; the
-historical audit results below do not certify this change.
+0.5.0 candidate change. The first clean `pnpm check` passed 87/87 at `58f13a9`,
+but independent whole-diff review found React and documentation corrections
+that require a new clean-source run. For final qualification, read
+`artifacts/product-ci/ci.json` and require its source SHA to equal `HEAD` with
+`sourceChangedDuringRun: false`; the historical audit below does not certify
+this change.
 
 The candidate adds an installed-package React local path
 `useDataSurface({data,getRowId})` + `AdaptiveSurface`, runtime-owned local
@@ -26,12 +29,28 @@ bundle is 163,835 bytes gzip against the unchanged 163,840-byte cap, leaving
 a five-byte margin. These checks were run before the accepted clean-source
 matrix and are not registry or production evidence.
 
-No 0.5.0 package, image, tag, or website release has been published or
-deployed by this work. Live paid-model evaluation, owner-controlled
-publication, GitOps promotion, and production readback remain separate gates.
+An external workflow published `0.5.0-rc.1` for all five packages from the
+earlier `c0b4a64` source while this newer candidate was being qualified. The
+`next` tag points to that RC; `latest` remains `0.4.2`. This task has not
+published its source or an image, tag, or website release. Live paid-model
+evaluation, corrected-source owner publication, GitOps promotion, and
+production readback remain separate gates.
+Read-only production `/version` responses on 2026-09-23 still identify SDK/site
+revision `9092d6cff454b81cd623a7a4be7621c6a750d9c7` and version `0.4.2`;
+health, readiness, docs start, and playground routes returned 200. No vNext
+image digest or production readback is evidenced.
 The examined legacy routes, redirects, package aliases, migration docs, and
 release workflows still have active consumers or rollback duties; none was
 deleted speculatively.
+
+The post-review local journey suite now passes 281/281 vNext tests and 47/47
+vNext browser tests; the bundle gate passes 6/6 with the same five-byte
+`region-table` margin. J1 has synthetic manual/connected-agent parity on one
+scoped target. J2 has an actual browser trend, approved daily values,
+clarification, keyboard and automated accessibility checks. J3 has a registered
+three-need runtime plan and separate three-child browser rendering; these are
+not yet one automatic end-to-end browser composition. No live model or human
+adoption result is implied by these local fixtures.
 
 Tanggal audit: 2026-09-21
 Pemilik/repository: Arconath / Arconath/aeliqo

@@ -6,11 +6,13 @@ title: 'Aeliqo 0.4 release notes'
 description: 'The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages.'
 ---
 
-## vNext candidate (0.5.0, unreleased)
+## vNext source candidate (0.5.0)
 
 The live stable line remains `0.4.2`. The vNext candidate is a breaking
-successor and is not published or deployed; keep its packages and support
-claims separate from the current release.
+successor and has not reached stable publication or site deployment.
+`0.5.0-rc.1` is on npm's `next` tag for all five packages, but it was published
+from an earlier source revision that lacks the local React path described below.
+Do not use that RC as evidence for this newer candidate.
 
 - `@aeliqo/core/features` introduces immutable data and non-data feature
   definitions. Data features lower through the existing resource/catalog path;
@@ -28,23 +30,23 @@ claims separate from the current release.
   revalidates captured old-scope and target authority before fencing; a
   separate commit hook starts target effects only after the old activation is
   fenced.
-  Existing app/Region APIs remain the compatibility path; React lifecycle
-  adapters are not part of this candidate step.
+  Existing app/Region APIs remain the compatibility path.
 - Local implementation and acceptance evidence cover runtime, React, migration,
   compatibility, browser, documentation, performance, and packed-consumer
-  gates. This candidate has not been published or deployed, and production
+  gates. This newer source candidate has not been published or deployed, and production
   runtime remains unverified.
 - The unreleased runtime candidate now exposes one canonical
   `createLocalDataBinding` adapter under `@aeliqo/runtime/surfaces`. It lowers
   through the existing `LocalDataService`, ResultStore, and Region paths,
   validates bounded local shape and identity diagnostics, preserves controller
   addresses across explicit source revisions, and rejects same-revision or
-  catalog conflicts atomically. This candidate remains unpublished and
+  catalog conflicts atomically. This newer source candidate remains unpublished and
   undeployed.
 - The local React path can now use `useDataSurface({ data, getRowId })` with an
   owned providerless local controller. Its runtime source can accept an
   opt-in monotonic revision sequence for long-lived updates while rejecting
-  replay; the default arbitrary-revision cap is unchanged. Native React
+  stale or changed-content replay; identical current-revision content remains
+  a no-op. The default arbitrary-revision cap is unchanged. Native React
   adaptive selection requires trusted presentation evidence and uses the
   shared resolver; standalone view registration alone is not automatic
   eligibility.

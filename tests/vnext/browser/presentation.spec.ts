@@ -23,6 +23,34 @@ test.describe('public app presentation paths', () => {
     await expect(page.locator('#people-host aeliqo-card-collection')).toHaveCount(1);
   });
 
+  test('commits the Jakarta people filter through the public browse intent', async ({ page }) => {
+    await page.getByRole('button', { name: 'People in Jakarta' }).click();
+    await expect(page.locator('#people-status')).toContainText('renderer-ready:data.table');
+    await expect(page.locator('#people-filter')).toHaveText('People with location Jakarta · scope vnext-scope');
+    await expect(page.locator('#people-host aeliqo-table').getByText('Ada Chen')).toBeVisible();
+    await expect(page.locator('#people-host aeliqo-table').getByText('Sam Rivera')).toHaveCount(0);
+    await expect(page.locator('#people-host aeliqo-table').getByText('Iman Putra')).toHaveCount(0);
+  });
+
+  test('adapts the Jakarta browse to a compact eligible view in a narrow container', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+    await setRegionWidth(page, 280);
+    await page.getByRole('button', { name: 'People in Jakarta' }).click();
+    await expect(page.locator('#people-status')).toContainText('renderer-ready:data.card-collection');
+    await expect(page.locator('#people-host aeliqo-card-collection').getByText('Ada Chen')).toBeVisible();
+    await expect(page.locator('#people-filter')).toHaveText('People with location Jakarta · scope vnext-scope');
+  });
+
+  test('a late earlier browse receipt does not replace the latest Jakarta label or status', async ({ page }) => {
+    await page.getByRole('button', { name: 'Start cancellable update' }).click();
+    await expect(page.locator('body')).toHaveAttribute('data-people-read-held', 'true');
+    await page.getByRole('button', { name: 'People in Jakarta' }).click();
+    await expect(page.locator('#people-filter')).toHaveText('People with location Jakarta · scope vnext-scope');
+    await expect(page.locator('body')).toHaveAttribute('data-people-read-held', 'false');
+    await expect(page.locator('#people-status')).toContainText('renderer-ready:data.table');
+    await expect(page.locator('#people-filter')).toHaveText('People with location Jakarta · scope vnext-scope');
+  });
+
   test('renders the registered bar analysis view', async ({ page }) => {
     await page.getByRole('button', { name: 'Bar' }).click();
     await expect(page.locator('#analysis-status')).toContainText('renderer-ready:visualization.bar');

@@ -162,10 +162,11 @@ fresh revision.
 An application with a trusted monotonically numbered source can opt into
 `revisionMode: { kind: 'monotonic', prefix: 'people-' }` on the
 local service. The initial source revision and every replacement must use that
-prefix followed by a canonical positive safe integer. A stale, repeated, or
-malformed sequence is rejected. This mode retains a high-water mark instead
-of storing every old revision ID; the default arbitrary-revision history and
-its cap remain unchanged.
+prefix followed by a canonical positive safe integer. Changed content at a
+repeated sequence, a stale sequence, or a malformed sequence is rejected;
+exactly equivalent content at the current revision remains a no-op. This mode
+retains a high-water mark instead of storing every old revision ID; the default
+arbitrary-revision history and its cap remain unchanged.
 
 The binding validates bounded scalar structure before it can emit a result:
 empty/no-schema, schema-less all-null fields, nested/accessor/executable rows, invalid identifiers,

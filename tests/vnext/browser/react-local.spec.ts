@@ -24,6 +24,20 @@ test('a rejected local update reports the error and retains the last valid resul
   await expect(page.getByRole('table')).not.toContainText('First duplicate');
 });
 
+test('restoring the last accepted data reference clears a rejected update error', async ({ page }) => {
+  await page.goto('/react-local/');
+  await expect(page.getByTestId('source-state')).toHaveText('ready:2');
+  const address = await page.getByTestId('surface-address').textContent();
+  await page.getByRole('button', { name: 'Invalid update' }).click();
+  await expect(page.getByRole('alert')).toContainText('data.identity-duplicate');
+
+  await page.getByRole('button', { name: 'Restore original' }).click();
+
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('table')).toContainText('Ada Chen');
+  await expect(page.getByTestId('surface-address')).toHaveText(address ?? '');
+});
+
 test('same-reference mutations require and respect an explicit version signal', async ({ page }) => {
   await page.goto('/react-local/');
   await expect(page.getByRole('table')).toContainText('Engineering');

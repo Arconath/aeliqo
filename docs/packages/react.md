@@ -34,8 +34,10 @@ provider accepts exactly one of those values and never disposes either one.
 
 ## Native React views and headless surfaces
 
-For a small complete array already supplied by the application, the unreleased
-0.5.0 candidate has a providerless path with no factory or explicit runtime:
+For a small complete array already supplied by the application, the newer
+0.5.0 source candidate has a providerless path with no factory or explicit
+runtime. The published `0.5.0-rc.1` came from an earlier source revision and
+does not include this path:
 
 ```tsx
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';

@@ -42,8 +42,10 @@ export function People({ rows }: { rows: readonly { id: string; name: string }[]
 }
 ```
 
-This API is in source and [candidate documentation](docs/packages/react.md),
-but is not yet available from the published `0.4.2` packages.
+This API is in the newer source and [candidate documentation](docs/packages/react.md).
+It is absent from stable `0.4.2` and from `0.5.0-rc.1`, which was published
+from an earlier source revision. Install a later matching five-package release
+only after its registry consumer checks pass.
 
 The common application entry points are:
 
