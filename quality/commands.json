@@ -422,6 +422,11 @@
       "timeoutSeconds": 600
     },
     {
+      "kind": "browser",
+      "argv": ["pnpm", "test:vnext:visual"],
+      "timeoutSeconds": 600
+    },
+    {
       "kind": "performance",
       "argv": ["pnpm", "test:performance:vnext"],
       "timeoutSeconds": 300

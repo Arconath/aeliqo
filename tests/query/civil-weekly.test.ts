@@ -129,4 +129,19 @@ describe('explicit civil weekly query policy', () => {
       planner.plan({ ...query, timeBucket: { ...query.timeBucket!, timezone: 'America/New_York' } }),
     ).toMatchObject({ ok: false, diagnostics: [{ code: 'query.unsupported' }] });
   });
+  it('reports an unsupported New York instant period across the spring DST boundary', () => {
+    const { planner, query } = fixture('America/New_York', 'instant');
+    expect(
+      planner.plan({
+        ...query,
+        period: {
+          from: '2026-03-08T00:00:00-05:00',
+          toExclusive: '2026-03-09T00:00:00-04:00',
+          calendar: 'gregorian',
+          timezone: 'America/New_York',
+          interpretation: 'New York spring transition day',
+        },
+      }),
+    ).toMatchObject({ ok: false, diagnostics: [{ code: 'query.unsupported', path: ['period'] }] });
+  });
 });

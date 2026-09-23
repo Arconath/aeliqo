@@ -223,24 +223,27 @@ test('scrollable code remains focusable and named across static, hydrated, and o
   page,
 }) => {
   await page.goto('/start/');
-  const install = page.locator('.reading .doc-code pre').first();
-  await expect(install).toHaveAttribute('tabindex', '0');
-  await install.focus();
-  await expect(install).toBeFocused();
-  const recordListExample = page.locator('.reading .doc-code pre').nth(1);
-  await expect(recordListExample).toHaveAttribute('tabindex', '0');
-  await recordListExample.focus();
-  await expect(recordListExample).toBeFocused();
+  const packageManifest = page.locator('.reading .doc-code pre').first();
+  await expect(packageManifest).toContainText('"@aeliqo/react": "0.5.0"');
+  await expect(packageManifest).toHaveAttribute('tabindex', '0');
+  await packageManifest.focus();
+  await expect(packageManifest).toBeFocused();
+  const typescriptConfig = page.locator('.reading .doc-code pre').nth(1);
+  await expect(typescriptConfig).toContainText('"moduleResolution": "Bundler"');
+  await expect(typescriptConfig).toHaveAttribute('tabindex', '0');
+  await typescriptConfig.focus();
+  await expect(typescriptConfig).toBeFocused();
   expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
 
   const noScriptContext = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 360, height: 800 } });
   const noScriptPage = await noScriptContext.newPage();
   try {
     await noScriptPage.goto('/start/');
-    const staticInstall = noScriptPage.locator('.reading .doc-code pre').first();
-    await expect(staticInstall).toHaveAttribute('tabindex', '0');
-    await staticInstall.focus();
-    await expect(staticInstall).toBeFocused();
+    const staticPackageManifest = noScriptPage.locator('.reading .doc-code pre').first();
+    await expect(staticPackageManifest).toContainText('"@aeliqo/react": "0.5.0"');
+    await expect(staticPackageManifest).toHaveAttribute('tabindex', '0');
+    await staticPackageManifest.focus();
+    await expect(staticPackageManifest).toBeFocused();
 
     await noScriptPage.goto('/components/data.table/');
     const noScriptDetails = noScriptPage.locator('details.component-example');

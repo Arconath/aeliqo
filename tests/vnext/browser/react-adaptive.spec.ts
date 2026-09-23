@@ -63,3 +63,17 @@ test('loads an initially selected lazy native view once in StrictMode', async ({
   await expect(page.getByTestId('initial-lazy-view')).toHaveText('initial lazy view');
   await expect(page.getByLabel('Initial view load count')).toHaveText('1');
 });
+
+test('unmount during a pending native load releases listeners and leaves no rendered view', async ({ page }) => {
+  await page.goto('/react-adaptive/');
+  await expect(page.getByTestId('native-choice')).toHaveText('wide table');
+  await page.getByRole('button', { name: 'Hold view loads' }).click();
+  await page.getByRole('button', { name: 'Narrow host' }).click();
+  await expect(page.getByLabel('View load count', { exact: true })).toHaveText('1');
+
+  await page.getByRole('button', { name: 'Unmount host' }).click();
+  await expect(page.getByLabel('Active surface listeners')).toHaveText('0');
+  await page.getByRole('button', { name: 'Release one view load' }).click();
+  await expect(page.getByTestId('native-choice')).toHaveCount(0);
+  await expect(page.getByRole('alert')).toHaveCount(0);
+});

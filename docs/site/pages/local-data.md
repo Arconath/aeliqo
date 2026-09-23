@@ -12,7 +12,9 @@ description: 'Evaluate canonical queries over a bounded, application-owned snaps
 The newer 0.5.0 source candidate supports this API when built and installed
 from that source; the published `0.5.0-rc.1` came from an earlier revision and
 does not include it. For a small complete dataset already owned by your
-application, no model, factory, catalog, or remote grant is needed:
+application, no model, factory, catalog, or remote grant is needed. The
+[React quickstart](/start/) gives all four files for a copyable app; its central
+component is:
 
 ```tsx
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';

@@ -18,6 +18,18 @@ const surface = fixture.runtime.createSurface({
   feature: fixture.feature,
   bindings: fixture.bindings,
 });
+let activeListeners = 0;
+const subscribeToSurface = surface.subscribe.bind(surface);
+surface.subscribe = (listener) => {
+  activeListeners += 1;
+  document.getElementById('listener-count')!.textContent = String(activeListeners);
+  const release = subscribeToSurface(listener);
+  return () => {
+    release();
+    activeListeners -= 1;
+    document.getElementById('listener-count')!.textContent = String(activeListeners);
+  };
+};
 await surface.request({ kind: 'browse' });
 
 const quality = (wide: boolean) => ({
@@ -154,4 +166,7 @@ document.getElementById('mount-initial-lazy')!.addEventListener('click', () => {
       <ViewSurface surface={surface} views={initialViews} view={listRef} />
     </React.StrictMode>,
   );
+});
+document.getElementById('unmount-host')!.addEventListener('click', () => {
+  root.unmount();
 });

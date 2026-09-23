@@ -143,6 +143,7 @@ jobs:
             artifacts/product-ci
             artifacts/performance-bundles
             artifacts/visual-catalog
+            artifacts/vnext-visual
             artifacts/release-candidate
             apps/site/artifacts
           if-no-files-found: warn

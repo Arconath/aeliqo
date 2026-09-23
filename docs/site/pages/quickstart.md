@@ -3,16 +3,125 @@ id: 'quickstart'
 path: '/start/'
 section: 'Start'
 title: 'Tutorial: build an adaptive React app'
-description: 'Install Aeliqo, define People data, render a table, filter it, show a semantic headcount trend, add a form, and expose the same Region to a user-owned agent.'
+description: 'Copy a complete no-AI React starter, then add registered People data, a semantic trend, a form, and an optional agent.'
 ---
 
-<p class="lead">Build one React and TypeScript screen that works through ordinary controls first. You will add a registered table, a team filter, a month-end headcount chart, a host-owned form, and an optional MCP endpoint. Every path uses the same application authority and validated Region.</p>
+<p class="lead">Start with a local React surface that needs no model, provider, catalog, or grant setup. Then extend the same idea to registered resources, a semantic trend, a host-owned form, and an optional MCP endpoint.</p>
 
-<div class="docs-inline-cta"><p><strong>Result:</strong> the People screen switches among employee data and a semantic workforce trend without generated HTML or a model dependency.</p><a href="/playground/?scenario=people">Try the finished journey →</a></div>
+<div class="docs-inline-cta"><p><strong>Result:</strong> the starter filters local People data without a model; the registered tutorial below adds a semantic workforce trend.</p><a href="/playground/?scenario=people">Try the finished journey →</a></div>
 
-<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Use Node.js 24, React 19.2, TypeScript, and a client entry with one React root. Keep every Aeliqo package on the same exact version. The complete sources below are compiled by this repository.</p></aside>
+<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Use Node.js 24, React 19.2, TypeScript, and one React root. Keep every Aeliqo package on the same exact version. The expanded tutorial sources below are compiled by this repository.</p></aside>
 
 <aside class="doc-callout" data-tone="warning"><strong>Release line</strong><p>This tutorial targets the breaking <code>0.5.0</code> release line. It becomes installable when the approved release workflow publishes that version. Until then, keep existing applications on the published <code>0.4.2</code> line and do not mix package versions.</p></aside>
+
+## Start here: a complete local React app without AI
+
+Create an empty directory with these four files. After the matching `0.5.0`
+packages are published, run `npm install`, `npm run typecheck`, and `npm run dev`.
+The published `0.5.0-rc.1` predates this local-surface API; it cannot run this
+example. The example uses application-owned rows and makes no model or remote
+data request.
+
+**package.json**
+
+```json
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aeliqo/core": "0.5.0",
+    "@aeliqo/runtime": "0.5.0",
+    "@aeliqo/web": "0.5.0",
+    "@aeliqo/react": "0.5.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "typescript": "7.0.2",
+    "vite": "8.2.2"
+  }
+}
+```
+
+**tsconfig.json**
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": ["src"]
+}
+```
+
+**index.html**
+
+```html
+<!doctype html>
+<html lang="en">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>People</title></head>
+  <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>
+</html>
+```
+
+**src/main.tsx**
+
+```tsx
+import { StrictMode, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
+
+type Person = { id: string; name: string; team: string };
+const initial: Person[] = [
+  { id: 'ada', name: 'Ada Chen', team: 'Design' },
+  { id: 'sam', name: 'Sam Rivera', team: 'Engineering' },
+];
+
+function People() {
+  const [rows, setRows] = useState(initial);
+  const surface = useDataSurface({ data: rows, getRowId: row => row.id });
+
+  return <main>
+    <h1>People</h1>
+    <button type="button" onClick={() => setRows(
+      current => current.filter(person => person.team === 'Engineering')
+    )}>Show Engineering</button>
+    <button type="button" onClick={() => setRows(initial)}>Show everyone</button>
+    <AdaptiveSurface surface={surface} />
+  </main>;
+}
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode><People /></StrictMode>
+);
+```
+
+Filtering creates a new array; restoring the initial rows replaces that filtered
+array. The hook updates the same local controller after React commits; the view
+can adapt to its container. The local scope is read-only and gives no access to
+a server. For an initially empty array, declare a schema and `identity`; for an
+in-place mutation, supply a changed `version`. See
+[local data](/guides/local-data/) for those rules.
+
+## Continue: registered resources and an optional agent
+
+The larger People tutorial below adds semantic validation, forms, and an MCP
+endpoint. It uses the compatibility `@aeliqo/react/app` API for its registered
+Region. Choose this path when application data and authority live outside the
+local array.
 
 ## 1. Install the packages
 
