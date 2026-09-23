@@ -343,7 +343,9 @@ async function readQualificationInputs() {
   assert.equal(matrix.claims.stablePublished, false);
   assert.match(migration, /0\.4\.2/u);
   assert.match(migration, /0\.5\.0/u);
-  assert.match(releaseNotes, /vNext candidate \(0\.5\.0, unreleased\)/u);
+  assert.match(releaseNotes, /vNext source candidate \(0\.5\.0\)/u);
+  assert.match(releaseNotes, /0\.5\.0-rc\.1.*`next` tag/u);
+  assert.match(releaseNotes, /earlier source revision that lacks the local React path/u);
   assert.match(packagePage, /vNext migration guide/u);
   for (const entry of [
     '@aeliqo/core/features',
