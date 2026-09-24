@@ -94,9 +94,19 @@
       "evidence": ["tests/vnext/model-profile.test.ts", "tests/protocol-model"]
     },
     {
+      "id": "deepseek-flash-live-j1-j3",
+      "status": "qualified-bounded",
+      "scope": "DeepSeek deepseek-flash passed all 12 synthetic J1–J3 browser/provider/renderer cases on a tree-equivalent PR head. This qualifies only that model and corpus, not other models, providers, production workloads, or human use.",
+      "evidence": [
+        "tests/agent-evaluation/j1-j3-corpus.json",
+        "tests/agent-evaluation/live-journey-runner.mjs",
+        "docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json"
+      ]
+    },
+    {
       "id": "openai-compatible-live",
       "status": "unverified",
-      "reason": "No current endpoint, model, corpus, credential, or spend authorization was supplied."
+      "reason": "No general OpenAI-compatible provider or model profile is qualified by the bounded DeepSeek result."
     },
     {
       "id": "other-hosted-providers",
@@ -105,6 +115,17 @@
     }
   ],
   "workloads": [
+    {
+      "id": "playground-j1-j3",
+      "status": "qualified-bounded",
+      "scope": "The People Jakarta, Daily attendance, and Analytical workspace playground journeys exercise approved synthetic data through the real runtime and renderer without requiring a model.",
+      "evidence": [
+        "apps/site/tests/site/browser.spec.ts",
+        "tests/vnext/browser/visual-journeys.spec.ts",
+        "tests/vnext/browser/attendance.spec.ts",
+        "tests/vnext/browser/workspace.spec.ts"
+      ]
+    },
     {
       "id": "reference-journeys",
       "status": "qualified-bounded",

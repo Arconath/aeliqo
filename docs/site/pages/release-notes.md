@@ -8,11 +8,39 @@ description: 'Aeliqo 0.5 changes, migration boundaries, and the prior 0.4.2 rele
 
 ## Aeliqo 0.5.0
 
-<aeliqo-release-status></aeliqo-release-status>
+All five `0.5.0-rc.2` packages and matching stable `0.5.0` packages were
+published from accepted source `4e8b0395b92eee699da4e25c3cd4991bc50b4a5e`
+after the [Quality run](https://github.com/Arconath/aeliqo/actions/runs/35974446712),
+[RC publication run](https://github.com/Arconath/aeliqo/actions/runs/35985377354),
+and [stable publication run](https://github.com/Arconath/aeliqo/actions/runs/35988121627)
+succeeded. The [site image run](https://github.com/Arconath/aeliqo/actions/runs/35988444181)
+also succeeded. At image publication, production cutover and public live checks
+had not yet been verified.
+Production was subsequently accepted at 2026-09-24 11:17 UTC in the
+[platform deployment evidence](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a).
+The apex, www, and docs sites reported 0.5.0 at that source revision; the
+[stable GitHub release](https://github.com/Arconath/aeliqo/releases/tag/v0.5.0)
+was published after live verification.
+The [platform cutover receipt](https://github.com/Arconath/workspace/blob/c35cb83c60e276a21f7500fa39a497db17e000a6/docs/platform/cutover.json)
+records reviewed promotion gates, Flux and pod readback, and a qualified route
+back to the retained 0.4.2 image. No production rollback was executed.
 
 This is a breaking successor to `0.4.2`. The historical `0.5.0-rc.1` was
 published from an earlier source revision that lacks the local React path
 described below. Do not use that RC as evidence for this source.
+
+DeepSeek `deepseek-flash` passed the bounded 12-case synthetic J1–J3 live
+browser/provider/renderer corpus on tree-equivalent PR head `21afcca` (tree
+`955a7d1`); the [sanitized 12-case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json)
+records each result. This is model- and corpus-specific evidence; it does not qualify
+other hosted models or production workloads.
+
+The [public 0.5.0 browser receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/public-acceptance-4e8b039.json)
+records docs navigation/search, the no-AI People Jakarta, Daily attendance,
+and Analytical workspace journeys, and a downloadable ZIP. The separate
+[clean consumer receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/live-export-consumer-4e8b039.json)
+records installation of the exact 0.5.0 packages from npm, a successful build,
+and browser rendering of the ZIP's synthetic products.
 
 The items in this section describe the 0.5.0 source. For an existing
 0.4.2 integration, use the compatibility app/Region path described in
