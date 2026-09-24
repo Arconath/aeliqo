@@ -20,6 +20,10 @@ the [React tutorial](/start/). The providerless local surface
 and scoped APIs below require matching 0.5 packages. Follow the
 [0.4.2 to 0.5 migration guide](/ship/migration-0.4/) for adoption boundaries.
 
+The agent context can expose host-registered custom intents, presentation
+patterns, and time-window constraints for a paired Region. The host remains
+the authority for compilation, query bounds, and rendering.
+
 - `@aeliqo/core/features` introduces immutable data and non-data feature
   definitions. Data features lower through the existing resource/catalog path;
   non-data features declare versioned intents, views, and bounded capability
@@ -99,6 +103,10 @@ and scoped APIs below require matching 0.5 packages. Follow the
   employee breakdown. The attendance example derives its civil-day query
   bounds from the period shown to the user and explicitly rejects unsupported
   timezone projections.
+- The paired agent context can expose host-registered custom intent schemas
+  and presentation pattern references for a routable resource. The live
+  attendance workspace publishes these refs from the compiler and pattern
+  used by its render path.
 - The public playground adds People Jakarta, Daily attendance, and Analytical
   workspace journeys alongside People, Products, Support, and Knowledge.
   Manual operation remains available without a model. Model prompts use a

@@ -2,30 +2,34 @@
 
 ## Current 0.5 candidate — PR #31 (2026-09-24)
 
-The current source is the clean head of `codex/aeliqo-0.5-site-docs` in
-[PR #31](https://github.com/Arconath/aeliqo/pull/31); use `git rev-parse HEAD`
-and the PR Quality run's `headSha` for the exact revision. The paragraphs below
-are dated checkpoints, not a claim that the earlier `6c468f9` or `930ba21`
-source is current. The old `artifacts/product-ci/ci.json` reports 80/88 at
-`6c468f9` after interruption and cannot qualify this candidate.
+PR #31 head `46c6aa69bbc06d2685405138554d997955a82662` passed its GitHub
+Quality run `35911405421`: 89/89 gates, with `sourceChangedDuringRun: false`.
+That report qualifies only that PR head. Subsequent local changes to scope
+teardown and the live J2/J3 harness make the worktree dirty; they require a new
+source SHA, focused checks, review, and PR Quality before merge. The older
+`6c468f9` report at 80/88 remains an interrupted historical checkpoint.
 
-The reviewed correction implements the React scope boundary and scoped hook,
-real J1–J3 playground journeys, period-bound J2 queries, registered-pattern
-J3 composition, trusted local model configuration, and release-aware copy and
-ZIP gates. Independent React, site, and release reviews were reconciled before
-PR creation. The first two PR Quality attempts found the installed core
-consumer bundle above its 70 KiB budget; this was corrected in the candidate
-without raising the budget. The latest local installed-tarball consumer passed
-with 71,672/71,680 bytes gzip and Chromium execution. Final-source vNext
-289/289, lint, format, and performance bundle 6/6 passed. PR Quality's 89-gate
-result must be read on the final head; those focused checks are not a release
-pass.
+The first authorized live DeepSeek `deepseek-flash` evaluation exercised all
+12 synthetic J1–J3 cases through the browser host and renderer: 10/12 passed,
+24 provider requests, estimated spend US$0.0395754. J1 success and all
+ambiguity, unsupported, and adversarial cases passed; J2 success and J3
+success exposed gaps. Worktree corrections and diagnostic evidence are now
+present, so successful live J2/J3 proof is still pending. Do not treat the
+10/12 run as acceptance of the live-model gate.
 
-Current blockers are the final exact-source PR Quality result, accepted `main`
-and its required Quality, explicit authorization and real-provider evidence for
-the paid 12-case model evaluation, exact-source RC/stable registry evidence,
-site image and ZIP registry evidence, platform promotion, live smoke, and
-rollback proof. `RELEASED_VERIFIED` is not assigned. The product task owns only
+The first run used 24 requests. Targeted J2 diagnostics then used 2, 2, and
+4 confirmed requests; one interrupted browser diagnostic is conservatively
+counted as up to 4. The pre-freeze cumulative ceiling is therefore 36/60.
+Set `AELIQO_LIVE_REQUEST_LIMIT=24` for the next complete corpus run so even
+its worst case cannot exceed the approved aggregate ceiling. Reported cost
+remains an estimate, not a provider invoice.
+
+Registry preflight found `0.5.0-rc.2` and `0.5.0` available for all five
+packages. No merge to `main`, publication of these versions, image publication,
+or deployment has occurred. Remaining gates are corrected exact-source PR
+Quality, accepted `main` and its push Quality, successful live-model evidence,
+RC/stable registry consumers, image and ZIP proof, platform promotion, live
+smoke, and rollback proof. `RELEASED_VERIFIED` is not assigned. Aeliqo owns
 this repository; the platform task owns shared admission and promotion.
 
 ## 2026-09-24 0.5.0 closure in progress

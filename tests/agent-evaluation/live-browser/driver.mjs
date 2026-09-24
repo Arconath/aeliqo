@@ -23,6 +23,9 @@ function bridge(page, journey) {
 
 function modelPort(plan, providerModels, observation, totals) {
   const profile = plan.model;
+  const requestLimit = Number(process.env.AELIQO_LIVE_REQUEST_LIMIT ?? plan.maxRequests);
+  if (!Number.isSafeInteger(requestLimit) || requestLimit < 1 || requestLimit > plan.maxRequests)
+    throw new Error('The live request limit is outside the approved plan.');
   const credential = process.env[profile.credentialEnvironment];
   if (credential === undefined) throw new Error('The approved model credential is unavailable.');
   const port = createOpenAICompatibleToolModel({
@@ -40,6 +43,7 @@ function modelPort(plan, providerModels, observation, totals) {
   return {
     estimateInputTokens: port.estimateInputTokens,
     async complete(request, options) {
+      if (totals.requests >= requestLimit) throw new Error('The cumulative live request limit has been reached.');
       observation.requests++;
       totals.requests++;
       const result = await port.complete(request, options);
@@ -69,7 +73,11 @@ function safeReceipt(result) {
     toolCalls: result.value.toolCalls,
     inputTokens: result.value.inputTokens,
     outputTokens: result.value.outputTokens,
-    receiptStates: result.value.receipts.map((item) => ({ operation: item.operation, state: item.state })),
+    receiptStates: result.value.receipts.map((item) => ({
+      operation: item.operation,
+      state: item.state,
+      diagnosticCodes: item.diagnostics.map((diagnostic) => diagnostic.code),
+    })),
     ...(result.value.textDraft === undefined ? {} : { textDraft: result.value.textDraft }),
   };
 }

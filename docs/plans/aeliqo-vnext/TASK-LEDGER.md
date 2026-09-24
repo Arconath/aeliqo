@@ -4,33 +4,39 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 
 ## Current 0.5 candidate — PR #31 (2026-09-24)
 
-The current source is the clean head of `codex/aeliqo-0.5-site-docs` in
-[PR #31](https://github.com/Arconath/aeliqo/pull/31). Read its `headSha` and
-the matching Quality report; earlier SHA-specific tables and checkpoints below
-are historical evidence, not the candidate's current release state.
+PR #31 head `46c6aa69bbc06d2685405138554d997955a82662` passed Quality run
+`35911405421` at 89/89 with unchanged source. Later worktree changes address
+scope teardown and live J2/J3 harness findings, so this is no longer the
+current exact source; a new SHA and PR Quality run are required before merge.
+Earlier SHA-specific tables and checkpoints below remain historical evidence.
 
-F02/T10 scope and API, F06/F09/T18 J1–J3 runtime and presentation, F10/F11/T17
-public playground and docs, and T14/T15 trusted model runner have integrated
-source and focused verification. The installed core tarball consumer passed
-after a bundle-size correction at 71,672/71,680 bytes gzip; vNext 289/289,
-lint, format, and performance bundle 6/6 passed. F13/T20–T21 and A41/A45–A50
-remain release-gated: the final-head 89-gate PR Quality, accepted `main` Quality,
-authorized real-model evaluation, exact-source registry packages, immutable
-site image, platform cutover, live smoke, and rollback evidence are still
-required. No paid provider call or 0.5 stable publication is claimed. The
-older 80/88 report is interrupted and does not count as a pass.
+The first authorized live DeepSeek `deepseek-flash` run exercised 12 J1–J3
+cases and passed 10/12 with 24 provider requests and estimated spend
+US$0.0395754. J2 success and J3 success exposed gaps; corresponding fixes are
+applied in the worktree, and final successful live proof is pending. The
+other success and negative/adversarial cases passed. The 10/12 result does not
+close A41. Registry preflight found `0.5.0-rc.2` and `0.5.0` available for all
+five packages. The initial run used 24 requests; three J2 diagnostics used
+2, 2, and 4, and one interrupted diagnostic is budgeted at up to 4. The
+conservative tally is 36/60, leaving a strict 24-request cap for the final
+corpus run. No merge, publication, image build/publication, or deployment
+has occurred. F13/T20–T21 and A41/A45–A50 remain release-gated; do not mark
+`RELEASED_VERIFIED`. The older 80/88 report is interrupted and does not count
+as a pass.
 
 ## 2026-09-24 0.5 closure overlay
 
 The integrated correction checkpoint below records pre-freeze source
 evidence. F02/T10, F06/F09/T18, F10/F11/T17, and T14/T15 have focused local
 verification recorded in `07-EXECUTION-STATE.md`, including the new 89th
-offline J1–J3 quality gate. A41 live model evidence is blocked at zero paid
-requests pending its separate authorization. F13/T20–T21 release evidence is
-open until one candidate SHA passes PR and main Quality, exact registry and
-image proofs, platform cutover, live smoke, and rollback qualification. The
-read-only registry preflight found `0.5.0-rc.2` and stable `0.5.0` available
-for all five package names; availability is not publication evidence.
+offline J1–J3 quality gate. A41 has a first live run (10/12, 24 requests,
+estimated US$0.0395754); J2/J3 success fixes are applied in the worktree and
+successful live proof remains open. F13/T20–T21 release evidence is open until one
+candidate SHA passes PR and main Quality, exact registry and image proofs,
+platform cutover, live smoke, and rollback qualification. The read-only
+registry preflight found `0.5.0-rc.2` and stable `0.5.0` available for all
+five package names; availability is not publication evidence. No merge,
+publication, image, or deployment has occurred.
 
 The starting source for the current correction is clean branch
 `codex/aeliqo-0.5-site-docs` at

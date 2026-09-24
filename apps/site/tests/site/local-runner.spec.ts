@@ -1,4 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { request as httpRequest } from 'node:http';
+import { createServer as createTcpServer } from 'node:net';
 import { fileURLToPath } from 'node:url';
 import { connectMcpHttpClient, connectMcpStdioClient } from '../../../../packages/agent/dist/mcp/index.js';
 
@@ -93,4 +97,91 @@ test('the local runner rejects untrusted origins and invalid MCP credentials', a
     data: { padding: 'x'.repeat(260_000) },
   });
   expect(oversizedMcp.status()).toBe(413);
+});
+
+test('the local runner reserves one prompt before reading the request body', async () => {
+  const listener = createTcpServer();
+  listener.listen(0, '127.0.0.1');
+  await once(listener, 'listening');
+  const address = listener.address();
+  if (address === null || typeof address === 'string') throw new Error('No test port was assigned.');
+  const port = address.port;
+  const listenerClosed = once(listener, 'close');
+  listener.close();
+  await listenerClosed;
+
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) if (key.startsWith('AELIQO_MODEL_')) delete env[key];
+  Object.assign(env, {
+    AELIQO_PLAYGROUND_PORT: String(port),
+    AELIQO_MODEL_BASE_URL: 'http://127.0.0.1:9/v1/',
+    AELIQO_MODEL: 'mock-model',
+    AELIQO_MODEL_PROTOCOL: 'openai-compatible-chat',
+    AELIQO_MODEL_AUTH_SCHEME: 'none',
+    AELIQO_MODEL_CAPABILITIES: 'tool-calls,usage',
+    AELIQO_ALLOW_INSECURE_MODEL_HTTP: '1',
+  });
+  const server = spawn(process.execPath, [fileURLToPath(new URL('../../runner/server.mjs', import.meta.url))], {
+    env,
+    stdio: 'ignore',
+  });
+  const serverExited = once(server, 'exit');
+  const base = `http://127.0.0.1:${port}`;
+  const streamController = new AbortController();
+  let first: ReturnType<typeof httpRequest> | undefined;
+  try {
+    let session: Response | undefined;
+    for (let attempt = 0; attempt < 40 && session === undefined; attempt += 1) {
+      try {
+        session = await fetch(`${base}/api/aeliqo/session`, { headers: { accept: 'application/json' } });
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+    expect(session?.status).toBe(200);
+    const cookie = session?.headers.get('set-cookie')?.split(';')[0];
+    if (cookie === undefined) throw new Error('No local session cookie was issued.');
+    const stream = await fetch(`${base}/api/aeliqo/events`, {
+      headers: { cookie },
+      signal: streamController.signal,
+    });
+    expect(stream.status).toBe(200);
+    await stream.body?.getReader().read();
+
+    const firstRequest = httpRequest(`${base}/api/aeliqo/prompt`, {
+      method: 'POST',
+      headers: { cookie, accept: 'application/json', 'content-type': 'application/json', 'content-length': '2' },
+    });
+    first = firstRequest;
+    const firstResponse = new Promise<number>((resolve, reject) => {
+      firstRequest.on('response', (response) => {
+        response.resume();
+        response.on('end', () => resolve(response.statusCode ?? 0));
+      });
+      firstRequest.on('error', reject);
+    }).catch(() => 0);
+    firstRequest.write('{');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const second = await fetch(`${base}/api/aeliqo/prompt`, {
+      method: 'POST',
+      headers: { cookie, accept: 'application/json', 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: 'synthetic request' }),
+      signal: AbortSignal.timeout(2_000),
+    });
+    expect(second.status).toBe(429);
+    firstRequest.end('!');
+    expect(await firstResponse).toBe(400);
+    const retry = await fetch(`${base}/api/aeliqo/prompt`, {
+      method: 'POST',
+      headers: { cookie, accept: 'application/json', 'content-type': 'application/json' },
+      body: '{!',
+    });
+    expect(retry.status).toBe(400);
+  } finally {
+    first?.destroy();
+    streamController.abort();
+    server.kill('SIGKILL');
+    await serverExited;
+  }
 });

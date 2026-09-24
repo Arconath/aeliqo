@@ -25,6 +25,22 @@ it('keeps scope construction inert and attach lifecycle idempotent', async () =>
   await f.dispose();
 });
 
+it('notifies ordinary subscribers after fencing an externally disposed active scope', async () => {
+  const f = await createScopeFixture();
+  await f.activate('acme');
+  const events: string[] = [];
+  expect(f.scope.subscribeFence).toBeDefined();
+  if (f.scope.subscribeFence === undefined) throw new Error('Scope fence subscription is missing.');
+  f.scope.subscribeFence(() => events.push('fenced'));
+  f.scope.subscribe(() => events.push(f.scope.getSnapshot().status));
+
+  f.scope.dispose();
+
+  expect(f.scope.getSnapshot()).toMatchObject({ status: 'disposed', active: false, selector: null });
+  expect(events).toEqual(['fenced', 'disposed']);
+  await f.dispose();
+});
+
 it('restarts initial resolution after the last attachment detaches', async () => {
   const f = await createScopeFixture();
   const delayed = f.host.deferResolve('acme');

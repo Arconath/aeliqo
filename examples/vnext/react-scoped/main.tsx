@@ -147,6 +147,7 @@ function App(): React.JSX.Element {
       </button>
       <button onClick={() => guard?.resolve({ status: 'discard' })}>Approve leave</button>
       <button onClick={() => fixture.scope.invalidate('revoked')}>Revoke scope</button>
+      <button onClick={() => fixture.scope.dispose()}>Dispose scope</button>
       <button onClick={() => setMounted(false)}>Unmount provider</button>
       <button onClick={() => setSurfaceId('react-orders-replacement')}>Replace surface ID</button>
       <button

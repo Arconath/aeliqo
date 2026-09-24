@@ -290,14 +290,12 @@ function clearActivePrompt(controller) {
   activePrompt = undefined;
 }
 
-async function executePrompt(request, response, current) {
+async function executePrompt(request, response, current, controller) {
   const body = await readJson(request, 8_000);
   if (!validPrompt(body)) {
     sendJson(response, 400, { error: 'invalid-prompt' });
     return;
   }
-  const controller = new AbortController();
-  activePrompt = controller;
   try {
     sendJson(response, 200, await runPrompt(body.prompt.trim(), current.broker, controller.signal));
   } catch (error) {
@@ -305,8 +303,6 @@ async function executePrompt(request, response, current) {
       error: 'model-run-failed',
       message: error instanceof Error ? error.message : 'The model run failed.',
     });
-  } finally {
-    clearActivePrompt(controller);
   }
 }
 
@@ -324,7 +320,13 @@ async function handlePromptRoute(request, response) {
     sendJson(response, 429, { error: 'prompt-already-running' });
     return;
   }
-  await executePrompt(request, response, current);
+  const controller = new AbortController();
+  activePrompt = controller;
+  try {
+    await executePrompt(request, response, current, controller);
+  } finally {
+    clearActivePrompt(controller);
+  }
 }
 
 function disposeSession(current) {

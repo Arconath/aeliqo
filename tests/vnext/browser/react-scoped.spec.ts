@@ -30,6 +30,16 @@ test('forced invalidation hides content and unmount leaves the injected scope un
   await expect(page.getByTestId('scope-status')).toHaveText('denied');
 });
 
+test('external scope disposal immediately hides the active React subtree', async ({ page }) => {
+  await page.goto('/react-scoped/');
+  await expect(page.getByTestId('selector')).toHaveText('acme');
+  await expect(page.getByRole('textbox', { name: 'Scoped draft' })).toBeVisible();
+  await page.getByRole('button', { name: 'Dispose scope' }).click();
+  await expect(page.getByRole('textbox', { name: 'Scoped draft' })).toHaveCount(0);
+  await expect(page.getByRole('status')).toContainText('scope has closed');
+  await expect(page.getByTestId('scope-status')).toHaveText('disposed');
+});
+
 test('replacing a surface ID in one activation retires its previous controller', async ({ page }) => {
   await page.goto('/react-scoped/');
   await expect(page.getByTestId('surface-phase')).toHaveText('ready');

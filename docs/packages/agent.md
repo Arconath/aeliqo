@@ -25,6 +25,22 @@ Region. Protected actions still require host policy and user confirmation.
 Agent proposals cannot add a resource, action, permission, renderer, endpoint,
 or executable code.
 
+A trusted `context.read()` adapter may add `customIntents` and `patterns` to
+each routable resource in `aeliqo_context`. A custom intent entry contains its
+registered version reference and JSON input schema. A pattern entry contains
+its registered version reference, matching intent reference, and output roles.
+Expose only entries that the paired render port can compile and resolve; this
+metadata grants no new capability.
+
+For a time-bounded resource, the trusted adapter may also provide
+`queryConstraint` with a plain-language interpretation, the exact
+`requiredFilter`, and an optional `supportedPeriod`. This lets a model use the
+host's approved local-day boundary without guessing the current date. The host
+must validate proposals against those constraints before rendering. The J2
+attendance example verifies a proposed period, lowers it to a civil-day
+filter, and rejects alternate filters or periods; the agent package does not
+apply those rules automatically.
+
 ## Optional integrations
 
 | Subpath | Responsibility |

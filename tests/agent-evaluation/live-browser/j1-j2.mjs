@@ -112,6 +112,14 @@ export async function openJ1(target) {
 }
 
 export async function openJ2(target) {
+  const fixedFilter = attendanceDayFilter(period, '2026-09-06');
+  const supportedPeriod = {
+    from: period.from,
+    toExclusive: '2026-09-06T00:00:00+07:00',
+    timezone: period.timezone,
+    calendar: period.calendar,
+    interpretation: 'September 1–5, 2026 are complete local days in Asia/Jakarta.',
+  };
   const functions = createQueryFunctionRegistry({ version: '2' });
   if (!functions.ok) throw new Error(functions.diagnostics[0]?.message ?? 'No query registry.');
   const resource = attendanceResource(functions.value.digest);
@@ -156,7 +164,6 @@ export async function openJ2(target) {
   const mounted = app.mount({ target, regionId: 'live-attendance', resourceId: 'attendance' });
   if (!mounted.ok) throw new Error(mounted.diagnostics[0]?.message ?? 'J2 mount failed.');
   const render = async ({ intent, signal }) => {
-    const fixedFilter = attendanceDayFilter(period, '2026-09-06');
     if (
       intent.kind !== 'analyze' ||
       intent.resource !== 'attendance' ||
@@ -166,6 +173,10 @@ export async function openJ2(target) {
       intent.time.grain !== 'day' ||
       intent.time.calendar !== 'gregorian' ||
       intent.time.timezone !== 'Asia/Jakarta' ||
+      (intent.period !== undefined &&
+        Object.entries(supportedPeriod).some(
+          ([key, value]) => key !== 'interpretation' && intent.period[key] !== value,
+        )) ||
       (intent.filter !== undefined && JSON.stringify(intent.filter) !== JSON.stringify(fixedFilter))
     )
       return {
@@ -176,7 +187,8 @@ export async function openJ2(target) {
           { code: 'live.j2-invalid', message: 'Only the registered daily rate is supported.', retryable: false },
         ],
       };
-    const bounded = { ...intent, filter: fixedFilter };
+    const { period: _period, ...withoutPeriod } = intent;
+    const bounded = { ...withoutPeriod, filter: fixedFilter };
     return app.render({ regionId: 'live-attendance', intent: bounded, signal });
   };
   const connected = createAppToolEndpoint({
@@ -186,7 +198,28 @@ export async function openJ2(target) {
     transport: 'byok',
     expiresAt: Date.now() + 300_000,
     render: { render },
-    context: { read: () => app.runtime.contexts('live-attendance') },
+    context: {
+      read() {
+        const contexts = app.runtime.contexts('live-attendance');
+        if (!contexts.ok) return contexts;
+        return {
+          ok: true,
+          value: contexts.value.map((context) =>
+            context.resource.id === 'attendance'
+              ? {
+                  ...context,
+                  queryConstraint: {
+                    interpretation:
+                      'September 1–5, 2026 are complete local days. September 6 is the exclusive as-of day in Asia/Jakarta.',
+                    requiredFilter: fixedFilter,
+                    supportedPeriod,
+                  },
+                }
+              : context,
+          ),
+        };
+      },
+    },
   });
   if (!connected.ok) throw new Error(connected.diagnostics[0]?.message ?? 'J2 pairing failed.');
   return {

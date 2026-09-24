@@ -37,7 +37,41 @@ test('the agent endpoint reaches actual J1–J3 renderers and retains DOM after 
     const discovered = await page.evaluate(() => window.liveHost.discover());
     expect(discovered.ok).toBe(true);
     const context = await page.evaluate(() => window.liveHost.invoke('aeliqo_context', {}, 'offline-context'));
-    expect(context).toMatchObject({ ok: true, value: { state: 'accepted' } });
+    expect(context, `${journey}: ${JSON.stringify(context)}`).toMatchObject({ ok: true, value: { state: 'accepted' } });
+    if (journey === 'J2')
+      expect(context.value.value.resources[0]).toMatchObject({
+        queryConstraint: {
+          supportedPeriod: {
+            from: '2026-09-01T00:00:00+07:00',
+            toExclusive: '2026-09-06T00:00:00+07:00',
+            interpretation: expect.any(String),
+          },
+          requiredFilter: {
+            op: 'and',
+            predicates: [
+              { field: 'day', comparison: 'gte', value: '2026-09-01' },
+              { field: 'day', comparison: 'lt', value: '2026-09-06' },
+            ],
+          },
+        },
+      });
+    if (journey === 'J3')
+      expect(context.value.value.resources[0]).toMatchObject({
+        resource: { id: 'attendance' },
+        customIntents: [
+          {
+            ref: { id: 'attendance.overview', revision: '1' },
+            inputSchema: { properties: { team: { const: 'Engineering' } }, required: ['team'] },
+          },
+        ],
+        patterns: [
+          {
+            ref: { id: 'attendance.overview-pattern', revision: '1' },
+            intent: { id: 'attendance.overview', revision: '1' },
+            outputs: ['summary', 'trend', 'breakdown'],
+          },
+        ],
+      });
     const rendered = await page.evaluate(
       (value) => window.liveHost.invoke('aeliqo_render', value, 'offline-render'),
       intents[journey],
@@ -132,4 +166,40 @@ test('J2 rejects a model-supplied alternate period instead of silently replacing
   );
   expect(result).toMatchObject({ ok: true, value: { state: 'failed' } });
   await expect(page.locator('#journey-region aeliqo-chart')).toHaveCount(0);
+});
+
+test('J2 lowers the approved local-day period from the model to the bounded civil filter', async ({ page }) => {
+  await page.goto('/tests/agent-evaluation/live-browser/browser.html');
+  await page.evaluate(() => window.liveHost.open('J2'));
+  const proposed = {
+    ...intents.J2,
+    dimensions: ['day'],
+    filter: {
+      op: 'and',
+      predicates: [
+        { op: 'compare', field: 'day', comparison: 'gte', value: '2026-09-01' },
+        { op: 'compare', field: 'day', comparison: 'lt', value: '2026-09-06' },
+      ],
+    },
+    period: {
+      from: '2026-09-01T00:00:00+07:00',
+      toExclusive: '2026-09-06T00:00:00+07:00',
+      calendar: 'gregorian',
+      timezone: 'Asia/Jakarta',
+      interpretation: 'September 1–5 are complete local days',
+    },
+    sort: [{ field: 'day', direction: 'asc' }],
+  };
+  const rendered = await page.evaluate(
+    (value) => window.liveHost.invoke('aeliqo_render', value, 'approved-period'),
+    proposed,
+  );
+  expect(rendered, JSON.stringify(rendered)).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
+  await expect(page.locator('#journey-region aeliqo-chart')).toBeVisible();
+  const wrong = { ...proposed, period: { ...proposed.period, toExclusive: '2026-09-07T00:00:00+07:00' } };
+  const denied = await page.evaluate(
+    (value) => window.liveHost.invoke('aeliqo_render', value, 'alternate-period'),
+    wrong,
+  );
+  expect(denied).toMatchObject({ ok: true, value: { state: 'failed' } });
 });

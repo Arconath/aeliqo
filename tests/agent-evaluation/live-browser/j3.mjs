@@ -1,3 +1,4 @@
+import { toJSONSchema } from 'zod';
 import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import { createPresentationRegistry, resolvePresentation } from '@aeliqo/core/presentation';
 import { createAeliqoRuntime, createLocalDataBinding } from '@aeliqo/runtime';
@@ -6,9 +7,9 @@ import { createAppToolEndpoint } from '@aeliqo/agent/app';
 import {
   REGION,
   GOAL,
-  PATTERN,
   METRIC,
   REF,
+  ROLES,
   feature,
   goalRegistry,
   overviewPattern,
@@ -31,7 +32,7 @@ function resultBindings(receipt) {
   return { descriptors, results };
 }
 
-function presentationRegistry(descriptors, results) {
+function presentationRegistry(descriptors, results, pattern) {
   const registered = createAeliqoPresentationRegistry({
     data: results.map((result, index) => ({ result: descriptors[index], rows: result.rows, columns: result.columns })),
     visualizations: results.map((result, index) => ({
@@ -42,14 +43,12 @@ function presentationRegistry(descriptors, results) {
     resolveEntity: () => feature.id,
   });
   if (!registered.ok) throw new Error(registered.diagnostics[0]?.message ?? 'J3 presentation registry failed.');
-  const registry = createPresentationRegistry(registered.value.manifests, registered.value.mappings, [
-    overviewPattern(),
-  ]);
+  const registry = createPresentationRegistry(registered.value.manifests, registered.value.mappings, [pattern]);
   if (!registry.ok) throw new Error(registry.diagnostics[0]?.message ?? 'J3 pattern registry failed.');
   return registry.value;
 }
 
-function resolveOverview(receipt, descriptors, registry, target) {
+function resolveOverview(receipt, descriptors, registry, target, pattern) {
   const current = receipt.region.readSet;
   if (current === undefined) throw new Error('J3 read set is missing.');
   const { dataRevision: _dataRevision, ...preconditions } = current;
@@ -66,7 +65,7 @@ function resolveOverview(receipt, descriptors, registry, target) {
         mode: 'composable',
         agentAllowed: true,
         allowedRepresentations: Object.values(REF).map((ref) => ref.id),
-        allowedPatterns: [PATTERN.id],
+        allowedPatterns: [pattern.ref.id],
         composition: { allowWithoutPreset: false, maxNodes: 4, maxExpansions: 16 },
         requiredOperations: [],
         tokenProfile: { id: 'tokens.default', revision: '1' },
@@ -107,6 +106,8 @@ function resolveOverview(receipt, descriptors, registry, target) {
 }
 
 export async function openJ3(target) {
+  const intents = goalRegistry();
+  const pattern = overviewPattern();
   const functions = createQueryFunctionRegistry({ version: '2' });
   if (!functions.ok) throw new Error(functions.diagnostics[0]?.message ?? 'No query registry.');
   const binding = createLocalDataBinding({
@@ -134,7 +135,7 @@ export async function openJ3(target) {
   const runtime = createAeliqoRuntime({
     runtimeId: 'live-j3-runtime',
     resources: [{ resource: feature.resource, data: binding.service }],
-    intents: goalRegistry(),
+    intents,
     authority: {
       read: () => ({
         ok: true,
@@ -179,8 +180,8 @@ export async function openJ3(target) {
     const receipt = await runtime.render({ regionId: REGION, intent, signal });
     if (receipt.status !== 'committed') return receipt;
     const { descriptors, results } = resultBindings(receipt);
-    const registry = presentationRegistry(descriptors, results);
-    const decision = resolveOverview(receipt, descriptors, registry, target);
+    const registry = presentationRegistry(descriptors, results, pattern);
+    const decision = resolveOverview(receipt, descriptors, registry, target, pattern);
     const committed = await runtime.commitPresentation({
       regionId: REGION,
       requestId: receipt.requestId,
@@ -208,7 +209,27 @@ export async function openJ3(target) {
     transport: 'byok',
     expiresAt: Date.now() + 300_000,
     render: { render },
-    context: { read: () => runtime.contexts(REGION) },
+    context: {
+      read() {
+        const contexts = runtime.contexts(REGION);
+        if (!contexts.ok) return contexts;
+        return {
+          ok: true,
+          value: contexts.value.map((context) =>
+            context.resource.id === feature.id
+              ? {
+                  ...context,
+                  customIntents: intents.definitions.map((definition) => ({
+                    ref: definition.ref,
+                    inputSchema: JSON.parse(JSON.stringify(toJSONSchema(definition.schema))),
+                  })),
+                  patterns: [{ ref: pattern.ref, intent: GOAL, outputs: [...ROLES] }],
+                }
+              : context,
+          ),
+        };
+      },
+    },
   });
   if (!connected.ok) throw new Error(connected.diagnostics[0]?.message ?? 'J3 pairing failed.');
   return {
