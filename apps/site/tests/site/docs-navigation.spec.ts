@@ -37,6 +37,7 @@ test('each component page exposes the complete component menu and identifies its
 
 const ADOPTION_ROUTES = [
   '/start/',
+  '/start/registered-app/',
   '/start/existing-app/',
   '/start/frameworks/',
   '/guides/resources/',
@@ -58,7 +59,13 @@ test('documentation information architecture exposes distinct adoption routes', 
   await page.goto('/docs/');
   for (const route of ADOPTION_ROUTES)
     await expect(page.locator(`.docs-sidebar a[href="${route}"]`).first()).toBeVisible();
-  for (const route of ['/start/', '/start/existing-app/', '/start/what-is-aeliqo/', '/playground/']) {
+  for (const route of [
+    '/start/',
+    '/start/registered-app/',
+    '/start/existing-app/',
+    '/start/what-is-aeliqo/',
+    '/playground/',
+  ]) {
     await expect(page.locator(`.reading a[href="${route}"]`).first()).toBeVisible();
   }
 });

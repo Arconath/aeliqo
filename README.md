@@ -12,8 +12,8 @@ cannot supply HTML, executable code, permissions, or an unregistered view.
 
 ## Quick start
 
-After `0.5.0` is published to npm, install the packages used by a browser
-application at the same exact version:
+The stable `0.5.0` packages are available on npm. For a browser app using
+Aeliqo's Web Components, install these packages at the same exact version:
 
 ```sh
 npm install --save-exact \
@@ -22,17 +22,15 @@ npm install --save-exact \
   @aeliqo/web@0.5.0
 ```
 
-The complete [quickstart](https://docs.aeliqo.com/start/) defines a resource,
-connects a bounded local data source and trusted authority adapter, mounts a
-Region, and renders an intent. It uses the same source that the documentation
-build typechecks.
+The [local React quickstart](https://docs.aeliqo.com/start/) renders and filters
+an array without a model or backend. The
+[registered app tutorial](https://docs.aeliqo.com/start/registered-app/)
+connects application-owned data and authority to a Region.
 
-The breaking `0.5.0` line is distributed through the release workflow. Before
-its registry publication, use this repository's locked source checkout for
-the 0.5 examples. `0.4.2` remains available for older applications. Never mix
-package versions in one application.
+The breaking `0.5.0` line is the current release. `0.4.2` remains available
+for older applications. Never mix package versions in one application.
 
-The 0.5.0 source also has a small React path for a complete local array:
+For React, the local surface API renders a complete application-owned array:
 
 ```tsx
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
@@ -43,10 +41,9 @@ export function People({ rows }: { rows: readonly { id: string; name: string }[]
 }
 ```
 
-This API is described in the [React package guide](docs/packages/react.md).
-It is absent from `0.4.2` and the historical `0.5.0-rc.1`, which was published
-from an earlier source revision. Check the exact registry version before
-installing the newer path.
+The [local React quickstart](https://docs.aeliqo.com/start/) shows the full
+setup and how to run this example. The API is described in the
+[React package guide](docs/packages/react.md).
 
 The common application entry points are:
 
