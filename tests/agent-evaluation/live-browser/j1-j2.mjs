@@ -40,7 +40,7 @@ function attendanceResource(digest) {
       {
         id: 'attendance.rate',
         revision: '1',
-        label: 'Attendance rate',
+        label: 'Tingkat kehadiran',
         explanation: 'Present eligible employee-days divided by eligible employee-days; approved leave excluded.',
         output: { value: 'float', nullable: true },
         implementation: {
@@ -112,6 +112,7 @@ export async function openJ1(target) {
 }
 
 export async function openJ2(target) {
+  target.ownerDocument.documentElement.lang = 'id-ID';
   const fixedFilter = attendanceDayFilter(period, '2026-09-06');
   const supportedPeriod = {
     from: period.from,
@@ -163,7 +164,12 @@ export async function openJ2(target) {
   });
   const mounted = app.mount({ target, regionId: 'live-attendance', resourceId: 'attendance' });
   if (!mounted.ok) throw new Error(mounted.diagnostics[0]?.message ?? 'J2 mount failed.');
+  const periodLabel = target.ownerDocument.createElement('p');
+  periodLabel.textContent = 'Periode 1–5 September 2026 (Asia/Jakarta); tanggal tanpa data tidak dihitung nol.';
+  periodLabel.dataset.testid = 'approved-period';
+  target.prepend(periodLabel);
   const render = async ({ intent, signal }) => {
+    // The host owns the visible as-of period. Omission uses that period; an explicit mismatch is rejected.
     if (
       intent.kind !== 'analyze' ||
       intent.resource !== 'attendance' ||

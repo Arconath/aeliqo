@@ -2,6 +2,24 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## 2026-09-24 active correction overlay — PR #31
+
+A41 is open. Clean `0e79f69` yielded 12/12 under the old live scorer, but the
+retained J2 DOM was in English although the prompt requested Indonesian output.
+An independent review rejected that as full acceptance. The current worktree
+adds the Indonesian chart/host path, exact J2 displayed rates and period to
+the scorer, J1/J3 result checks, and model tool-argument traces. It must
+become a new clean source candidate and pass its own PR Quality and live gate.
+Its focused live-offline Node/browser, SSR, web build, lint, docs artifact,
+site build/test, catalog examples, component accessibility, and three-browser
+J1–J3 visual checks pass; they do not replace exact-source Quality.
+The prior PR Quality run `35954283291` was cancelled. The conservative live
+request count is 108/108 authorized; no further paid call is authorized.
+A02, A21, A39, A43–A44 retain their focused evidence but need new-source
+Quality. A45–A50 remain release-gated. No merge, RC/stable publication, image
+publication, or 0.5 production cutover has occurred. Do not assign
+`RELEASED_VERIFIED`.
+
 ## 2026-09-24 release-candidate checkpoint — PR #31
 
 PR #31 previously had head `4662b25d87521f853093f7de3d24e72962387664`.

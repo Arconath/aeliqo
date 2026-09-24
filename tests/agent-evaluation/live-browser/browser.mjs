@@ -11,6 +11,7 @@ window.liveHost = Object.freeze({
     current?.close();
     current = undefined;
     target.replaceChildren();
+    document.documentElement.lang = 'en';
     target.removeAttribute('data-needs');
     target.removeAttribute('data-presentation');
     if (journey === 'J1') current = await openJ1(target);
@@ -50,12 +51,26 @@ window.liveHost = Object.freeze({
       scan(target);
       return total;
     };
+    const chartRows = [];
+    const collectCharts = (node) => {
+      if (node instanceof Element && node.localName === 'aeliqo-chart') {
+        chartRows.push(
+          [...(node.shadowRoot?.querySelectorAll('tbody tr') ?? [])].map((row) =>
+            [...row.children].map((cell) => cell.textContent?.trim() ?? ''),
+          ),
+        );
+      }
+      if (node.shadowRoot) collectCharts(node.shadowRoot);
+      for (const child of node.childNodes) collectCharts(child);
+    };
+    collectCharts(target);
     return {
       text: text.join(' '),
       needs: target.dataset.needs ?? null,
       presentation: target.dataset.presentation ?? null,
       tableCount: count('aeliqo-table'),
       chartCount: count('aeliqo-chart'),
+      chartRows,
     };
   },
   close() {

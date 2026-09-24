@@ -83,8 +83,16 @@ test('the agent endpoint reaches actual J1–J3 renderers and retains DOM after 
     const selector = journey === 'J2' ? 'aeliqo-chart' : 'aeliqo-table';
     await expect(page.locator(`#journey-region ${selector}`).first()).toBeVisible();
     const before = await page.locator(`#journey-region ${selector}`).count();
-    if (journey === 'J3')
+    if (journey === 'J3') {
       await expect(page.locator('#journey-region')).toHaveAttribute('data-needs', 'summary,trend,breakdown');
+      const snapshot = await page.evaluate(() => window.liveHost.snapshot());
+      expect(snapshot.chartRows).toEqual([
+        [
+          ['2026-09-01', '1'],
+          ['2026-09-02', '1'],
+        ],
+      ]);
+    }
     const invalid = await page.evaluate(() =>
       window.liveHost.invoke('aeliqo_render', { version: '1', kind: 'browse', resource: 'secret' }, 'offline-invalid'),
     );
@@ -196,6 +204,21 @@ test('J2 lowers the approved local-day period from the model to the bounded civi
   );
   expect(rendered, JSON.stringify(rendered)).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
   await expect(page.locator('#journey-region aeliqo-chart')).toBeVisible();
+  await expect(page.locator('[data-testid="approved-period"]')).toContainText('Periode 1–5 September 2026');
+  await expect(page.locator('#journey-region aeliqo-chart')).toHaveAttribute('lang', 'id-ID');
+  const snapshot = await page.evaluate(() => window.liveHost.snapshot());
+  expect(snapshot.text).toContain('Tren');
+  expect(snapshot.text).toContain('Tingkat kehadiran');
+  expect(snapshot.text).toContain('Lihat tabel data');
+  expect(snapshot.text).toMatch(/2026-09-01 1 2026-09-02 0[.,]5 2026-09-03 1/u);
+  expect(snapshot.text).not.toMatch(/2026-09-0[4-6]/u);
+  expect(snapshot.chartRows).toEqual([
+    [
+      ['2026-09-01', '1'],
+      ['2026-09-02', '0.5'],
+      ['2026-09-03', '1'],
+    ],
+  ]);
   const wrong = { ...proposed, period: { ...proposed.period, toExclusive: '2026-09-07T00:00:00+07:00' } };
   const denied = await page.evaluate(
     (value) => window.liveHost.invoke('aeliqo_render', value, 'alternate-period'),

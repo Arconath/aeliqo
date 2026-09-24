@@ -28,6 +28,102 @@ test('negative trial needs a real identified model call and a no-commit stop', (
   assert.equal(identified.identityQualified, true);
 });
 
+test('a J2 live success must show Indonesian copy and the exact bounded daily rates', () => {
+  const testCase = {
+    id: 'J2-success-id',
+    journey: 'J2',
+    kind: 'success-id',
+    expectation: { commit: true, representation: 'trend', evidence: '2026-09-01' },
+  };
+  const base = {
+    receipt: { stop: 'renderer-ready', modelRequests: 2 },
+    before: { text: '', tableCount: 0, chartCount: 0 },
+    providerRequests: 2,
+    providerModels: ['deepseek-flash', 'deepseek-flash'],
+    expectedReportedModel: 'deepseek-flash',
+  };
+  const english = scoreCase(testCase, {
+    ...base,
+    after: {
+      text: 'Trend Attendance rate View data table 2026-09-01 1 2026-09-02 0.5 2026-09-03 1',
+      chartCount: 1,
+      chartRows: [
+        [
+          ['2026-09-01', '1'],
+          ['2026-09-02', '0.5'],
+          ['2026-09-03', '1'],
+        ],
+      ],
+    },
+  });
+  assert.equal(english.correct, false);
+  const wrongRate = scoreCase(testCase, {
+    ...base,
+    after: {
+      text: 'Tren Tingkat kehadiran Lihat tabel data 2026-09-01 1 2026-09-02 1 2026-09-03 1',
+      chartCount: 1,
+      chartRows: [
+        [
+          ['2026-09-01', '1'],
+          ['2026-09-02', '1'],
+          ['2026-09-03', '1'],
+        ],
+      ],
+    },
+  });
+  assert.equal(wrongRate.correct, false);
+  const exact = scoreCase(testCase, {
+    ...base,
+    after: {
+      text: 'Tren Periode 1–5 September 2026 Tingkat kehadiran Lihat tabel data 2026-09-01 1 2026-09-02 0.5 2026-09-03 1',
+      chartCount: 1,
+      chartRows: [
+        [
+          ['2026-09-01', '1'],
+          ['2026-09-02', '0.5'],
+          ['2026-09-03', '1'],
+        ],
+      ],
+    },
+  });
+  assert.equal(exact.correct, true);
+});
+
+test('a J1 or J3 render cannot pass with a wrong scope or extra person', () => {
+  const base = {
+    receipt: { stop: 'renderer-ready', modelRequests: 1 },
+    before: { text: '', tableCount: 0, chartCount: 0 },
+    providerRequests: 1,
+    providerModels: ['deepseek-flash'],
+    expectedReportedModel: 'deepseek-flash',
+  };
+  const j1 = { id: 'J1-success-id', expectation: { commit: true, representation: 'table', evidence: 'Jakarta' } };
+  assert.equal(
+    scoreCase(j1, {
+      ...base,
+      after: { text: 'Ada Chen Jakarta Sam Rivera Lisbon', tableCount: 1, chartCount: 0 },
+    }).correct,
+    false,
+  );
+  const j3 = {
+    id: 'J3-success-id',
+    expectation: { commit: true, representation: 'workspace', evidence: 'summary,trend,breakdown' },
+  };
+  assert.equal(
+    scoreCase(j3, {
+      ...base,
+      after: {
+        text: 'Present employees 3 Ada 1 Sam 1 Lee 1',
+        needs: 'summary,trend,breakdown',
+        presentation: 'registered',
+        tableCount: 1,
+        chartCount: 1,
+      },
+    }).correct,
+    false,
+  );
+});
+
 test('dry run records the exact corpus digest and makes no provider or browser call', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'aeliqo-live-journeys-'));
   const source = new URL('./j1-j3-corpus.json', import.meta.url);

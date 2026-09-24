@@ -114,6 +114,10 @@ the authority for compilation, query bounds, and rendering.
   key in the browser or sends browser requests directly to the provider.
   Exported 0.5 source projects are enabled only in a site image whose
   matching packages passed an exact-version registry install and build check.
+- Region trend charts pass the validated presentation locale to their chart.
+  The low-level chart uses Indonesian controls, scope text, and accessible
+  labels when its host sets `lang="id"` or `lang="id-ID"`; application titles
+  and series names remain host-owned.
 
 ## 0.4.2
 

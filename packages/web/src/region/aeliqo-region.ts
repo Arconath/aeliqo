@@ -30,14 +30,14 @@ import {
 import { renderNavigationFeedbackNode } from './navigation-feedback-renderer.js';
 import { renderInputNode } from './input-renderer.js';
 import { renderFoundationNode } from './foundation-renderer.js';
-import type { InteractionPayload, InteractionState } from '@aeliqo/core';
+import type { InteractionPayload, InteractionState, Result } from '@aeliqo/core';
 import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import type { PropertyValues } from 'lit';
 import { AELIQO_WEB_VERSION } from '../version.js';
 import { aeliqoThemeStyles } from '../styles/theme.js';
-import { scopeText } from '../data/shared.js';
+import { dataStatusMessage, materializedDataStatus, scopeText } from '../data/shared.js';
 import '../elements/aeliqo-table.js';
 import '../elements/aeliqo-chart.js';
 import { stableTableRowKey } from '../elements/aeliqo-table.js';
@@ -49,6 +49,21 @@ import type {
   AeliqoSemanticInteractionRequest,
   AeliqoViewDefinition,
 } from './types.js';
+
+function localizedTrendSummary(
+  bound: AeliqoRegionResult | undefined,
+  result: Result | undefined,
+  locale: string | undefined,
+): string {
+  if (!/^id(?:-|$)/i.test(locale ?? '')) return trendSummary(bound, result);
+  if (bound === undefined) return 'Data tidak tersedia.';
+  if (result === undefined) return '';
+  return dataStatusMessage(materializedDataStatus(result), undefined, locale) ?? '';
+}
+
+function trendTitle(value: unknown, locale: string | undefined): string {
+  return text(value, /^id(?:-|$)/i.test(locale ?? '') ? 'Tren' : 'Trend');
+}
 
 /**
  * One controlled renderer for a validated presentation. It consumes only
@@ -320,6 +335,7 @@ export class AeliqoRegionElement extends LitElement {
     values: Record<string, unknown>,
   ): TemplateResult {
     const bound = resultFor(resolved, this.results);
+    const locale = this.presentation?.environment.locale;
     const labelField = text(values.labelField);
     const seriesBy = Array.isArray(values.seriesBy)
       ? values.seriesBy.flatMap((value) => (typeof value === 'string' ? [value] : []))
@@ -383,9 +399,10 @@ export class AeliqoRegionElement extends LitElement {
     return html`<aeliqo-chart
       data-aeliqo-node-id=${resolved.node.id}
       data-aeliqo-theme="inherit"
-      .title=${text(values.title, 'Trend')}
-      .summary=${trendSummary(bound, resolved.result)}
-      .scope=${scopeText(bound?.scope) ?? ''}
+      lang=${locale ?? ''}
+      .title=${trendTitle(values.title, locale)}
+      .summary=${localizedTrendSummary(bound, resolved.result, locale)}
+      .scope=${scopeText(bound?.scope, locale) ?? ''}
       .series=${series}
       .points=${series[0]?.points ?? []}
     ></aeliqo-chart>`;

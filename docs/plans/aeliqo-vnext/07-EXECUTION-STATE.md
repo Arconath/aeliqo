@@ -1,5 +1,41 @@
 # Aeliqo vNext execution state
 
+## 2026-09-24 J2 live-result correction — current PR #31 worktree
+
+The last pushed clean source was `0e79f69cf43d873610ba71ccc6252b8118a4b6f6`.
+Its DeepSeek `deepseek-flash` run used the approved 24 additional requests and
+reported 12/12 under the earlier scorer (`artifacts/agent-evaluation/live-journeys/0e79f69/report.json`,
+source digest `7993d41343a5356ebecc2c8be60bae7eefcf3c11e1e523532c8fde7edefba9e2`,
+estimated US$0.0386559, unchanged source). Independent review found that J2
+rendered English chart labels despite the corpus prompt explicitly requesting
+Indonesian output. Its 12/12 score therefore remains historical diagnostic
+evidence, not full A41 qualification. The conservative approved call count is
+108/108. No further paid call is authorized yet.
+
+The corrective worktree passes the host's Indonesian locale to the region
+chart, shows the approved 1–5 September Jakarta period, and uses an Indonesian
+meaning label. The live scorer now requires the visible language, exact
+rendered daily rows, registered J3 child output, and bounded J1 identity; it
+rejects the old J2 report. The live driver records bounded model-submitted
+tool arguments and receipt states for diagnosis. Focused live-offline checks
+passed (10 Node tests, 4 browser tests), as did the web build, SSR, lint,
+docs artifact (126 pages and 71 components), site build, and site tests
+including 24 visual baselines. Catalog examples passed 3/3, component
+accessibility passed 12/12, and J1–J3 visual journeys passed 27/27 across
+Chromium, Firefox, and WebKit at 360, 768, and 1440 pixels. These are
+dirty-source focused checks; they do not qualify the release. PR Quality run
+`35954283291` was cancelled because it applies only to the superseded source.
+
+The J2 host owns its approved as-of period: an omitted model period uses the
+visible host period and fixed query filter, while an explicit alternate period
+is rejected. The live gate qualifies the rendered outcome and boundary, not
+independent date arithmetic by the model.
+
+The next clean corrected commit, new exact-source PR Quality, fresh authorized
+live run, accepted-main push Quality, registry publications, image, platform
+promotion, live smoke, and rollback proof remain required. `RELEASED_VERIFIED`
+is not assigned.
+
 ## 2026-09-24 release-candidate checkpoint — PR #31
 
 PR #31 previously contained clean source

@@ -22,6 +22,52 @@ function modelMatches(configured, approved) {
   );
 }
 
+function exactJourneyResult(testCase, after) {
+  const text = after.text ?? '';
+  const chartRows = JSON.stringify(after.chartRows);
+  switch (testCase.id) {
+    case 'J1-success-id':
+      return (
+        text.includes('Ada Chen') &&
+        text.includes('Jakarta') &&
+        !['Sam Rivera', 'Iman Putra', 'Lee Morgan'].some((name) => text.includes(name))
+      );
+    case 'J2-success-id':
+      return (
+        text.includes('Tren') &&
+        text.includes('Tingkat kehadiran') &&
+        text.includes('Lihat tabel data') &&
+        text.includes('Periode 1–5 September 2026') &&
+        chartRows ===
+          JSON.stringify([
+            [
+              ['2026-09-01', '1'],
+              ['2026-09-02', '0.5'],
+              ['2026-09-03', '1'],
+            ],
+          ]) &&
+        !/2026-09-0[4-6]/u.test(text)
+      );
+    case 'J3-success-id':
+      return (
+        text.includes('Present employees 2') &&
+        text.includes('Ada 1 Sam 1') &&
+        !text.includes('Lee') &&
+        chartRows ===
+          JSON.stringify([
+            [
+              ['2026-09-01', '1'],
+              ['2026-09-02', '1'],
+            ],
+          ]) &&
+        after.needs === 'summary,trend,breakdown' &&
+        after.presentation === 'registered'
+      );
+    default:
+      return false;
+  }
+}
+
 export function scoreCase(testCase, observation) {
   const { receipt, before, after, providerModels, providerRequests } = observation;
   const identityQualified =
@@ -42,7 +88,7 @@ export function scoreCase(testCase, observation) {
     after.text.includes(testCase.expectation.evidence) ||
     after.needs === testCase.expectation.evidence;
   const correct = testCase.expectation.commit
-    ? committed && representationReady && evidenceReady
+    ? committed && representationReady && evidenceReady && exactJourneyResult(testCase, after)
     : receipt.stop === 'no-commit' && unchanged;
   return { correct, identityQualified, committed, unchanged, representationReady, evidenceReady };
 }
@@ -96,6 +142,7 @@ export async function runLiveJourneyEvaluation({
             status: score.correct && score.identityQualified ? 'passed' : 'failed',
             score,
             result: observation.receipt,
+            toolTrace: observation.toolTrace ?? [],
             providerRequests: observation.providerRequests,
             observedUsage: observation.observedUsage,
             providerModels: observation.providerModels,

@@ -19,6 +19,33 @@ import { AELIQO_WEB_VERSION } from '../version.js';
 export { alignAeliqoChartSeries, buildAeliqoChartDomain, buildAeliqoChartGeometry } from './aeliqo-chart-geometry.js';
 export type { AeliqoChartGeometry } from './aeliqo-chart-geometry.js';
 
+const chartCopy = {
+  en: {
+    title: 'Chart',
+    scope: 'Scope',
+    unit: 'Unit',
+    series: 'Series',
+    value: 'Value',
+    label: 'Label',
+    point: 'Point',
+    unavailable: 'Chart unavailable: values must be finite.',
+    gaps: 'Missing values are shown as gaps.',
+    dataTable: 'View data table',
+  },
+  id: {
+    title: 'Grafik',
+    scope: 'Cakupan',
+    unit: 'Satuan',
+    series: 'Seri',
+    value: 'Nilai',
+    label: 'Label',
+    point: 'Titik',
+    unavailable: 'Grafik tidak tersedia: nilai harus berupa bilangan hingga.',
+    gaps: 'Data yang hilang ditampilkan sebagai celah.',
+    dataTable: 'Lihat tabel data',
+  },
+} as const;
+
 export class AeliqoChartElement extends LitElement {
   static readonly aeliqoVersion = AELIQO_WEB_VERSION;
   static readonly properties = {
@@ -26,6 +53,7 @@ export class AeliqoChartElement extends LitElement {
     summary: { type: String },
     unit: { type: String },
     scope: { type: String },
+    lang: { type: String },
     points: { attribute: false },
     series: { attribute: false },
   };
@@ -38,6 +66,15 @@ export class AeliqoChartElement extends LitElement {
   series: readonly AeliqoChartSeries[] = [];
   private chartWidth = CHART_WIDTH;
   private sizeObserver?: ResizeObserver;
+
+  private get copy(): typeof chartCopy.en | typeof chartCopy.id {
+    const locale = this.lang || this.closest?.('[lang]')?.getAttribute('lang') || '';
+    return /^id(?:-|$)/i.test(locale) ? chartCopy.id : chartCopy.en;
+  }
+
+  private get displayTitle(): string {
+    return this.title === 'Chart' ? this.copy.title : this.title;
+  }
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -82,33 +119,34 @@ export class AeliqoChartElement extends LitElement {
   }
 
   private accessibleName(series: readonly AeliqoChartSeries[], hasInvalidPoints: boolean, hasGaps: boolean): string {
-    const parts = [this.title, this.summary];
-    if (this.scope) parts.push(`Scope: ${this.scope}.`);
-    if (series.length > 0) parts.push(`Series: ${series.map((item) => item.label).join(', ')}.`);
-    if (hasInvalidPoints) parts.push('Chart unavailable: values must be finite.');
-    if (hasGaps) parts.push('Missing values are shown as gaps.');
+    const copy = this.copy;
+    const parts = [this.displayTitle, this.summary];
+    if (this.scope) parts.push(`${copy.scope}: ${this.scope}.`);
+    if (series.length > 0) parts.push(`${copy.series}: ${series.map((item) => item.label).join(', ')}.`);
+    if (hasInvalidPoints) parts.push(copy.unavailable);
+    if (hasGaps) parts.push(copy.gaps);
     return parts.filter((part) => part.length > 0).join(' ');
   }
 
   private renderCaption() {
     return html`<figcaption>
-      <strong>${this.title}</strong>
+      <strong>${this.displayTitle}</strong>
       ${this.summary ? html`<span part="summary">${this.summary}</span>` : nothing}
-      ${this.unit ? html`<span part="unit">Unit: ${this.unit}</span>` : nothing}
-      ${this.scope ? html`<span part="scope">Scope: ${this.scope}</span>` : nothing}
+      ${this.unit ? html`<span part="unit">${this.copy.unit}: ${this.unit}</span>` : nothing}
+      ${this.scope ? html`<span part="scope">${this.copy.scope}: ${this.scope}</span>` : nothing}
     </figcaption>`;
   }
 
   private renderFeedback(hasInvalidPoints: boolean, hasGaps: boolean) {
     return html`
-      ${hasInvalidPoints ? html`<p part="error" role="status">Chart unavailable: values must be finite.</p>` : nothing}
-      ${hasGaps && !hasInvalidPoints ? html`<p part="gap" role="status">Missing values are shown as gaps.</p>` : nothing}
+      ${hasInvalidPoints ? html`<p part="error" role="status">${this.copy.unavailable}</p>` : nothing}
+      ${hasGaps && !hasInvalidPoints ? html`<p part="gap" role="status">${this.copy.gaps}</p>` : nothing}
     `;
   }
 
   private renderLegend(series: readonly AeliqoChartSeries[]) {
     if (series.length === 0) return nothing;
-    return html`<ul part="legend" aria-label="Series">
+    return html`<ul part="legend" aria-label=${this.copy.series}>
       ${series.map(
         (item, index) =>
           html`<li>
@@ -121,14 +159,14 @@ export class AeliqoChartElement extends LitElement {
 
   private renderDataTable(series: readonly AeliqoChartSeries[], aligned: readonly AeliqoChartSeries[]) {
     return html`<details part="data">
-      <summary>View data table</summary>
+      <summary>${this.copy.dataTable}</summary>
       <table>
         <caption>
-          ${this.title}${this.unit ? ` (${this.unit})` : ''}
+          ${this.displayTitle}${this.unit ? ` (${this.unit})` : ''}
         </caption>
         <thead>
           <tr>
-            <th scope="col">Label</th>
+            <th scope="col">${this.copy.label}</th>
             ${series.map((item) => html`<th scope="col">${item.label}${item.unit ? ` (${item.unit})` : nothing}</th>`)}
           </tr>
         </thead>
@@ -147,7 +185,7 @@ export class AeliqoChartElement extends LitElement {
 
   private resolvedSeries(): readonly AeliqoChartSeries[] {
     if (this.series.length > 0) return this.series;
-    return [{ id: 'value', label: 'Value', ...(this.unit ? { unit: this.unit } : {}), points: this.points }];
+    return [{ id: 'value', label: this.copy.value, ...(this.unit ? { unit: this.unit } : {}), points: this.points }];
   }
 
   private tableLabels(series: readonly AeliqoChartSeries[]): readonly string[] {
@@ -155,7 +193,8 @@ export class AeliqoChartElement extends LitElement {
     return Array.from(
       { length },
       (_, index) =>
-        series.find((item) => item.points[index] !== undefined)?.points[index]?.label ?? `Point ${index + 1}`,
+        series.find((item) => item.points[index] !== undefined)?.points[index]?.label ??
+        `${this.copy.point} ${index + 1}`,
     );
   }
 
@@ -179,8 +218,11 @@ export class AeliqoChartElement extends LitElement {
         viewBox=${`0 0 ${this.chartWidth} ${CHART_HEIGHT}`}
         preserveAspectRatio="xMinYMin meet"
       >
-        <title>Data chart</title>
-        <desc>Use the data table below to explore the values.</desc>
+        ${
+          this.copy === chartCopy.id
+            ? svg`<title>Grafik data</title><desc>Gunakan tabel data di bawah untuk menelusuri nilainya.</desc>`
+            : svg`<title>Data chart</title><desc>Use the data table below to explore the values.</desc>`
+        }
         ${yTicks.map((tick) => svg`<line class="gridline" vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${tick.position} x2=${this.chartWidth - PLOT_RIGHT} y2=${tick.position}></line>`)}
         <line class="axis" vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${PLOT_TOP} x2=${PLOT_LEFT} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
         <line class="axis" vector-effect="non-scaling-stroke" x1=${PLOT_LEFT} y1=${PLOT_TOP + PLOT_HEIGHT} x2=${this.chartWidth - PLOT_RIGHT} y2=${PLOT_TOP + PLOT_HEIGHT}></line>
