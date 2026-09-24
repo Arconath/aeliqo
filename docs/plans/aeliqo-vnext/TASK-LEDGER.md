@@ -2,11 +2,13 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
-## Current 0.5 candidate — PR #31 (2026-09-24)
+## 2026-09-24 release-candidate checkpoint — PR #31
 
-PR #31 head `4662b25d87521f853093f7de3d24e72962387664` has Quality run
-`35949889987` in progress; it is not a pass. Earlier run `35911405421`
-passed 89/89 only at `46c6aa6`. The clean `4662b25` source passed a full
+PR #31 previously had head `4662b25d87521f853093f7de3d24e72962387664`.
+Its Quality run `35949889987` had not completed when the following
+corrections were identified; it is not qualification of their commit.
+Earlier run `35911405421` passed 89/89 only at `46c6aa6`. The clean
+`4662b25` source passed a full
 12/12 live DeepSeek `deepseek-flash` J1–J3 corpus through the browser,
 provider and renderer: 24 requests, estimated US$0.0377736, unchanged source.
 Its report is `artifacts/agent-evaluation/live-journeys/4662b25/report.json`.
@@ -15,10 +17,10 @@ The earlier 10/12 run and diagnostics bring the conservative aggregate to
 
 Subsequent read-only audits exposed an exact React quickstart installed
 consumer gap (A02), a synthetic-server action proof gap (A39), and a narrow
-Playground title collision. Local changes add focused consumer/action tests
-and correct the letter spacing; focused checks and site build/test pass.
-These edits, including this ledger, require a new clean candidate and PR
-Quality before merge. The `4662b25` live report is a source-bound checkpoint,
+Playground title collision. The commit containing this ledger adds focused
+consumer/action tests and corrects the letter spacing; focused checks and
+site build/test pass. It requires its own exact-source PR Quality before
+merge. The `4662b25` live report is a source-bound checkpoint,
 not an exact-source report for the next candidate. Registry preflight found
 `0.5.0-rc.2` and `0.5.0` available for all five packages. No merge,
 publication, image publication, or deployment has occurred. F13/T20–T21 and

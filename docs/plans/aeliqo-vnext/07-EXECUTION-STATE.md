@@ -1,13 +1,15 @@
 # Aeliqo vNext execution state
 
-## Current 0.5 candidate — PR #31 (2026-09-24)
+## 2026-09-24 release-candidate checkpoint — PR #31
 
-PR #31 currently contains clean source
+PR #31 previously contained clean source
 `4662b25d87521f853093f7de3d24e72962387664`. Its GitHub Quality run
-`35949889987` is in progress; its successful policy job does not qualify the
-still-running functional matrix. Earlier run `35911405421` passed 89/89 at
-`46c6aa6`, a different SHA. The older `6c468f9` report at 80/88 remains
-an interrupted historical checkpoint.
+`35949889987` had only passed policy when these corrections were identified;
+that is not functional qualification. Earlier run `35911405421` passed 89/89
+at `46c6aa6`, a different SHA. The older `6c468f9` report at 80/88 remains
+an interrupted historical checkpoint. The commit containing this checkpoint
+must obtain its own exact-source PR Quality; use the PR run artifact for its
+source SHA and final result rather than interpreting an earlier SHA as current.
 
 The authorized full DeepSeek `deepseek-flash` evaluation at clean
 `4662b25` passed all 12 synthetic J1–J3 browser/provider/renderer cases.
@@ -25,15 +27,14 @@ this authorization.
 Read-only acceptance and UI audits then found a missing installed-package
 proof for the exact beginner React example, a missing loopback HTTP action
 confirmation proof, and colliding Playground title letters at narrow widths.
-Focused consumer/action tests and a one-line title-spacing correction are now
-local uncommitted changes. `pnpm site:build`, `pnpm site:test`,
+Focused consumer/action tests and a one-line title-spacing correction are
+included in the commit containing this checkpoint. `pnpm site:build`, `pnpm site:test`,
 `pnpm test:framework:consumers`, `pnpm test:vnext` (295/295), and focused
 action HTTP tests passed after these edits; independent visual inspection
 confirmed the corrected title at 360, 768, and 1440 pixels. These changes
-supersede the clean `4662b25` source for release, so both its running PR
-Quality and live-model report remain checkpoints, not qualification of the
-next candidate. Freeze a new SHA, finish focused review, and obtain new
-exact-source Quality before merge.
+supersede clean `4662b25` for release, so both its PR Quality and live-model
+report remain earlier-source checkpoints. Require a successful exact-source
+Quality run for the corrected PR head before merge.
 
 Registry preflight found `0.5.0-rc.2` and `0.5.0` available for all five
 packages. No merge to `main`, publication of these versions, image publication,
