@@ -82,9 +82,17 @@ test('the local runner pairs one browser Region with the three real MCP tools', 
 
 test('the local runner rejects untrusted origins and invalid MCP credentials', async ({ request, baseURL }) => {
   const rejectedOrigin = await request.get(`${baseURL}/api/aeliqo/session`, {
-    headers: { origin: 'https://attacker.example' },
+    headers: { origin: 'https://attacker.example', 'x-aeliqo-session-bootstrap': '1' },
   });
   expect(rejectedOrigin.status()).toBe(403);
+  const missingBootstrap = await request.get(`${baseURL}/api/aeliqo/session`, {
+    headers: { accept: 'application/json' },
+  });
+  expect(missingBootstrap.status()).toBe(403);
+  const rejectedFetchSite = await request.get(`${baseURL}/api/aeliqo/session`, {
+    headers: { accept: 'application/json', 'x-aeliqo-session-bootstrap': '1', 'sec-fetch-site': 'cross-site' },
+  });
+  expect(rejectedFetchSite.status()).toBe(403);
   const rejectedToken = await request.post(`${baseURL}/mcp`, {
     headers: { authorization: 'Bearer wrong-token', 'content-type': 'application/json' },
     data: {},
@@ -97,6 +105,31 @@ test('the local runner rejects untrusted origins and invalid MCP credentials', a
     data: { padding: 'x'.repeat(260_000) },
   });
   expect(oversizedMcp.status()).toBe(413);
+});
+
+test('a cross-site no-cors GET cannot replace the active local session', async ({ page, request, baseURL }) => {
+  if (baseURL === undefined) throw new Error('The local-runner test requires a configured base URL.');
+  const original = await request.get(`${baseURL}/api/aeliqo/session`, {
+    headers: { accept: 'application/json', 'x-aeliqo-session-bootstrap': '1' },
+  });
+  expect(original.status()).toBe(200);
+  const cookie = original.headers()['set-cookie']?.split(';')[0];
+  if (cookie === undefined) throw new Error('The local runner did not issue a session cookie.');
+
+  const attackerOrigin = baseURL.replace('127.0.0.1', 'localhost');
+  await page.goto(`${attackerOrigin}/playground/`);
+  const sessionURL = `${baseURL}/api/aeliqo/session`;
+  const blockedResponse = page.waitForResponse((response) => response.url() === sessionURL);
+  await page.evaluate(async (url) => {
+    await fetch(url, { mode: 'no-cors', headers: { accept: 'application/json' }, credentials: 'omit' });
+  }, sessionURL);
+  expect((await blockedResponse).status()).toBe(403);
+
+  const stillActive = await request.post(`${baseURL}/api/aeliqo/ack`, {
+    headers: { cookie, 'content-type': 'application/json' },
+    data: { id: 'no-pending-call', outcome: { ok: true } },
+  });
+  expect(stillActive.status()).toBe(400);
 });
 
 test('the local runner reserves one prompt before reading the request body', async () => {
@@ -133,7 +166,9 @@ test('the local runner reserves one prompt before reading the request body', asy
     let session: Response | undefined;
     for (let attempt = 0; attempt < 40 && session === undefined; attempt += 1) {
       try {
-        session = await fetch(`${base}/api/aeliqo/session`, { headers: { accept: 'application/json' } });
+        session = await fetch(`${base}/api/aeliqo/session`, {
+          headers: { accept: 'application/json', 'x-aeliqo-session-bootstrap': '1' },
+        });
       } catch {
         await new Promise((resolve) => setTimeout(resolve, 50));
       }

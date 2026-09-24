@@ -1,5 +1,34 @@
 # Aeliqo vNext execution state
 
+## 2026-09-24 local-runner boundary correction — release candidate pending
+
+Clean `e97b7e945f8224d9e5d835042f8473b8c02f2c14` passed the full
+12-case `deepseek-flash` J1–J3 corpus with 24 newly authorized requests,
+estimated US$0.040602, exact source digest
+`6e1c4aea26108ae38a2aa2e76e527f04891b49be1a936a54dea6a2c2d8963c0e`,
+and no source change during the run. Its clean local site suite, 71-component
+docs artifact, six installed bundle rows, five-tarball preflight, and local
+production image smoke passed. The conservative paid request count is now
+156/156 authorized; this evidence qualifies only the `e97b7e9` source.
+
+An independent trust-boundary audit then reproduced a cross-site, no-CORS
+browser GET with no `Origin` that replaced the active local-runner session.
+The session bootstrap now rejects non-same-origin browser Fetch Metadata
+before any session replacement; its browser regression verifies the prior
+session survives. The public attendance and workspace fixtures now keep raw
+receipts hidden while their user-readable status remains visible. Focused
+runner and Playground browser checks passed. PR Quality `35958649552` on
+`e97b7e9` was cancelled because these corrections supersede its source.
+
+The owner has authorized at most 24 additional `deepseek-flash` requests on
+the corrected final source, without fallback and under the same total US$1
+ceiling; none have been used. The corrected source needs a clean commit,
+exact-source PR Quality, and a full live model run within that authorization.
+Accepted-main push Quality, RC/stable registry proof, immutable
+image publication, platform promotion, public smoke, and rollback proof remain
+open. No merge or 0.5 publication/cutover has occurred. `RELEASED_VERIFIED`
+is not assigned.
+
 ## 2026-09-24 exact-source Quality blocker — PR #31
 
 PR Quality `35957164184` on clean source

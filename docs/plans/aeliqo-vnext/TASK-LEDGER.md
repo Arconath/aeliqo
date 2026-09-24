@@ -2,6 +2,21 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## 2026-09-24 active local-runner boundary overlay — PR #31
+
+Clean `e97b7e9` passed the 12/12 live DeepSeek corpus with 24/24 newly
+authorized requests and unchanged source, but it has been superseded by a
+confirmed local-runner session-reset correction and public fixture status
+polish. Its PR Quality `35958649552` was cancelled. The conservative paid
+count is 156/156; the owner has since authorized at most 24 more requests
+for the corrected final source under the same US$1 total ceiling, with no
+fallback. No request from that new limit has been used. A41
+needs evidence for the next exact source. A43–A44 and A50 have focused local
+proof but need exact-source PR Quality. A45–A48 remain release-gated. No
+merge, RC/stable publication, immutable image, platform promotion, or live
+0.5 cutover has occurred. See the first section of `07-EXECUTION-STATE.md`
+for the reproduction, focused fixes, and remaining evidence.
+
 ## 2026-09-24 active Quality blocker overlay — PR #31
 
 Clean `84b5115` PR Quality run `35957164184` failed at gate 27/89:

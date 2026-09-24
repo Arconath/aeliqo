@@ -64,6 +64,10 @@ the authority for compilation, query bounds, and rendering.
 - The optional model adapter restricts unauthenticated profiles to explicitly
   allowlisted loopback origins. Remote hosted connections require a
   server-owned credential profile.
+- The trusted local Playground runner rejects cross-site browser requests to
+  session bootstrap, including requests that omit `Origin`. The public
+  attendance and workspace journeys show a readable status while retaining
+  machine receipts in Inspect.
 - Remote data now uses the same validated `DataService`, ResultStore, and
   Region path as local data. Catalog capabilities declare metrics and stable
   snapshot or keyset pagination; cursors are partitioned by authority and pin

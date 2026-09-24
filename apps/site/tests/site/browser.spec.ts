@@ -31,6 +31,8 @@ test('public journeys show Jakarta people, daily attendance, and a composed work
   await expect(page.locator('aeliqo-table')).not.toContainText('Sam Rivera');
   await page.getByRole('button', { name: 'Daily attendance' }).click();
   await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
+  await expect(page.locator('[data-testid="attendance-status"]')).toBeHidden();
+  await expect(page.locator('#pg-status')).toContainText('Daily attendance is ready.');
   await expect(page.locator('[data-testid="period"]')).toContainText('Asia/Jakarta');
   await expect(page.locator('[data-testid="daily-values"]')).toContainText('2026-09-02: 0.5');
   await page.getByRole('button', { name: 'Compare attendance metrics' }).click();
@@ -46,6 +48,8 @@ test('public journeys show Jakarta people, daily attendance, and a composed work
   await page.getByRole('button', { name: 'Close inspector' }).click();
   await page.getByRole('button', { name: 'Analytical workspace' }).click();
   await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+  await expect(page.locator('[data-testid="goal-status"]')).toBeHidden();
+  await expect(page.locator('#pg-status')).toContainText('Analytical workspace is ready.');
   await expect(page.locator('[data-testid="goal-workspace"]')).toHaveAttribute('data-needs', 'summary,trend,breakdown');
   await page.getByRole('button', { name: 'Request anomaly' }).click();
   await expect(page.locator('[data-testid="goal-status"]')).toContainText('unsupported:intent.unknown-custom');

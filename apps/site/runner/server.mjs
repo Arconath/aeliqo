@@ -230,6 +230,15 @@ async function handleSessionRoute(request, response) {
     sendJson(response, 406, { error: 'json-accept-required' });
     return;
   }
+  if (request.headers['x-aeliqo-session-bootstrap'] !== '1') {
+    sendJson(response, 403, { error: 'session-bootstrap-required' });
+    return;
+  }
+  const fetchSite = request.headers['sec-fetch-site'];
+  if (fetchSite !== undefined && fetchSite !== 'same-origin' && fetchSite !== 'none') {
+    sendJson(response, 403, { error: 'forbidden-origin' });
+    return;
+  }
   const current = currentSession(request, true);
   sendJson(
     response,
