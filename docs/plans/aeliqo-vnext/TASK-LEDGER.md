@@ -2,6 +2,56 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## 2026-09-24 accepted-source and publication overlay — production accepted, rollback handoff open
+
+This is the current status; the earlier overlays and rows below are historical
+at their recorded source revisions. [PR #31](https://github.com/Arconath/aeliqo/pull/31)
+merged as main `4e8b0395b92eee699da4e25c3cd4991bc50b4a5e` with tree
+`955a7d1d228f9ea3f598253bd7b154f38ab4bdda`, equal to PR head
+`21afcca3fcaf8185477269385ad580030cf97567`.
+[PR Quality](https://github.com/Arconath/aeliqo/actions/runs/35963430858)
+and [main Quality](https://github.com/Arconath/aeliqo/actions/runs/35974446712)
+succeeded; main passed 89/89. A41's final tree-equivalent live DeepSeek
+[corpus receipt](evidence/deepseek-flash-j1-j3-21afcca.json)
+passed 12/12, reaching 180/180 authorized paid requests without a source
+change. No further paid run is required.
+
+A45 RC publication is evidenced by
+[run 35985377354](https://github.com/Arconath/aeliqo/actions/runs/35985377354):
+five verified npm `next` packages, annotated tag, and GitHub prerelease
+`v0.5.0-rc.2`. A46 stable publication is evidenced by
+[run 35988121627](https://github.com/Arconath/aeliqo/actions/runs/35988121627):
+five `latest` packages, 166 exports, source provenance, SBOM 59, and zero
+detected secrets. Annotated tag and
+[published GitHub stable release](https://github.com/Arconath/aeliqo/releases/tag/v0.5.0)
+exist. A47's immutable image is evidenced by
+[run 35988444181](https://github.com/Arconath/aeliqo/actions/runs/35988444181):
+`ghcr.io/arconath/aeliqo-web@sha256:cbd23c3ead42122ece905fdcfbe350a3fb5cd9a891135ecee141b02145ffd526`,
+OCI provenance, SBOM, zero severe scan findings, and passing exact-image local
+health/ready/version, 71-component docs sidebar/search, J1–J3 no-AI, and stable
+ZIP smoke. [Platform GitOps commit 2bb3d43](https://github.com/Arconath/platform-apps/commit/2bb3d439ae469ebcd9c9f6bb337dc516139b932b)
+pins the exact source/image and retained rollback image; its
+[validation run 35991285153](https://github.com/Arconath/platform-apps/actions/runs/35991285153)
+succeeded. Public apex/www/docs report 0.5.0 at the accepted SHA. A48's public
+browser [smoke receipt](evidence/public-acceptance-4e8b039.json) passed
+health/ready, 71 docs links/search, J1–J3 with zero model
+calls, and live ZIP download. The ZIP installed registry 0.5.0 packages in a
+clean consumer, built, and rendered its synthetic products.
+[Platform acceptance 1ffebc4](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a)
+records `deploymentVerified=true` at 2026-09-24 11:17:01 UTC for exact source,
+GitOps revision, apex/www health/readiness/version and routes. The platform
+operator reported Flux Ready/Healthy and 2/2 pods on the exact image digest.
+
+A48's public and official platform acceptance is complete. F13/T21 retain a
+handoff for platform preflight/review receipt, durable Flux pod readback, and
+rollback procedure qualification.
+The prior 0.4.2 image was pulled by its retained immutable digest and passed
+isolated health/ready/version/docs smoke; production rollback was not executed.
+`RELEASED_VERIFIED` is unset. A49 remains unclaimed: no human study or PMF
+evidence. Deprecation of `@aeliqo/devtools@0.3.0` is pending after verified
+cutover and npm security-key authentication. See the top of
+`07-EXECUTION-STATE.md` for the exact pending route and workflow checks.
+
 ## 2026-09-24 active local-runner boundary overlay — PR #31
 
 Clean `e97b7e9` passed the 12/12 live DeepSeek corpus with 24/24 newly

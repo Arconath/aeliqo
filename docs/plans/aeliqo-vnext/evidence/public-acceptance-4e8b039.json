@@ -1,0 +1,48 @@
+{
+  "kind": "public-production-browser-smoke",
+  "observedAt": "2026-09-24 11:15:59 UTC",
+  "platformGitOpsRevision": "2bb3d439ae469ebcd9c9f6bb337dc516139b932b",
+  "result": {
+    "checks": [
+      {
+        "status": 200,
+        "url": "https://aeliqo.com/version"
+      },
+      {
+        "status": 200,
+        "url": "https://docs.aeliqo.com/version"
+      },
+      {
+        "status": 200,
+        "url": "https://aeliqo.com/healthz"
+      },
+      {
+        "status": 200,
+        "url": "https://aeliqo.com/readyz"
+      },
+      {
+        "status": 200,
+        "url": "https://aeliqo.com/"
+      },
+      {
+        "status": 200,
+        "url": "https://docs.aeliqo.com/components/data.table/"
+      },
+      {
+        "status": 200,
+        "url": "https://docs.aeliqo.com/playground/"
+      }
+    ],
+    "expectedSha": "4e8b0395b92eee699da4e25c3cd4991bc50b4a5e",
+    "export": {
+      "bytes": 4513,
+      "filename": "aeliqo-products-example.zip",
+      "pinnedVersion": "0.5.0"
+    },
+    "modelCalls": 0,
+    "noAiJourneys": ["people", "attendance", "workspace"],
+    "status": "passed"
+  },
+  "schemaVersion": 1,
+  "siteImageDigest": "sha256:cbd23c3ead42122ece905fdcfbe350a3fb5cd9a891135ecee141b02145ffd526"
+}

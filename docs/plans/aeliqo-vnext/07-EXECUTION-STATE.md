@@ -1,5 +1,60 @@
 # Aeliqo vNext execution state
 
+## 2026-09-24 post-publication checkpoint — production accepted, rollback handoff pending
+
+This overlay supersedes the pre-merge and unpublished-candidate status below;
+those dated sections remain as source-bound history. [PR #31](https://github.com/Arconath/aeliqo/pull/31)
+merged into `main` as `4e8b0395b92eee699da4e25c3cd4991bc50b4a5e`.
+Its tree `955a7d1d228f9ea3f598253bd7b154f38ab4bdda` is identical to PR
+head `21afcca3fcaf8185477269385ad580030cf97567`. PR
+[Quality 35963430858](https://github.com/Arconath/aeliqo/actions/runs/35963430858)
+and accepted-main
+[Quality 35974446712](https://github.com/Arconath/aeliqo/actions/runs/35974446712)
+succeeded; the main run passed 89/89. The final tree-equivalent
+`deepseek-flash` J1–J3 [sanitized report](evidence/deepseek-flash-j1-j3-21afcca.json)
+passed 12/12 on `21afcca` with the unchanged
+source; the conservative paid count is 180/180 authorized requests. No further
+paid calls are needed or authorized by that count.
+
+The [0.5.0-rc.2 publication run](https://github.com/Arconath/aeliqo/actions/runs/35985377354)
+succeeded: all five `next` packages were verified, and annotated tag and
+GitHub prerelease `v0.5.0-rc.2` exist. The
+[stable 0.5.0 publication run](https://github.com/Arconath/aeliqo/actions/runs/35988121627)
+succeeded for all five `latest` packages with 166 exports, source provenance,
+59 SBOM components, and zero detected secrets. Annotated tag and
+[published GitHub stable release](https://github.com/Arconath/aeliqo/releases/tag/v0.5.0)
+exist at the accepted source. The
+[site image run](https://github.com/Arconath/aeliqo/actions/runs/35988444181)
+succeeded with OCI provenance, SBOM, and zero severe scan findings. Its immutable
+image is `ghcr.io/arconath/aeliqo-web@sha256:cbd23c3ead42122ece905fdcfbe350a3fb5cd9a891135ecee141b02145ffd526`.
+Local smoke against that exact image passed `/healthz`, `/readyz`, `/version`,
+the 71-page component docs sidebar/search, J1–J3 no-AI journeys, and stable ZIP
+export. [Platform GitOps commit 2bb3d43](https://github.com/Arconath/platform-apps/commit/2bb3d439ae469ebcd9c9f6bb337dc516139b932b)
+pins that exact source and digest, retains the prior 0.4.2 image in its release
+evidence, and passed [GitOps validation 35991285153](https://github.com/Arconath/platform-apps/actions/runs/35991285153).
+Public apex, www, and docs `/version` then reported the accepted SHA and 0.5.0.
+The public browser [smoke receipt](evidence/public-acceptance-4e8b039.json)
+passed health/ready, landing, 71 component links and
+search, J1–J3 without model calls, and a downloadable 0.5.0 ZIP. That live ZIP
+installed three exact 0.5.0 packages from npm in a clean consumer, built, and
+rendered its two synthetic products without browser errors.
+[Platform acceptance commit 1ffebc4](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a)
+records `deploymentVerified=true` at 2026-09-24 11:17:01 UTC with exact
+GitOps revision, apex/www HTTPS health/readiness/version, routes, and headers.
+The platform operator also reported Flux Ready/Healthy and 2/2 pods running
+the exact new image digest.
+
+Remaining evidence handoff: the platform promotion preflight/review receipt,
+durable Flux pod readback, and rollback procedure qualification. Both old and new
+GHCR manifest
+digests remain available. The retained 0.4.2 image also passed an isolated local
+pull and health/ready/version/docs smoke after cutover. A production rollback
+was not performed; platform recovery procedure evidence remains required.
+Record that handoff before setting `RELEASED_VERIFIED`. A49 human study
+and PMF remain unclaimed.
+Post-cutover `@aeliqo/devtools@0.3.0` deprecation is pending and requires npm
+security-key authentication.
+
 ## 2026-09-24 local-runner boundary correction — release candidate pending
 
 Clean `e97b7e945f8224d9e5d835042f8473b8c02f2c14` passed the full

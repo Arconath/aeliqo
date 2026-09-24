@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "rollback-candidate-qualification",
+  "recordedDate": "2026-09-24",
+  "platformAcceptance": "https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a",
+  "current": {
+    "sourceRevision": "4e8b0395b92eee699da4e25c3cd4991bc50b4a5e",
+    "imageDigest": "sha256:cbd23c3ead42122ece905fdcfbe350a3fb5cd9a891135ecee141b02145ffd526"
+  },
+  "previous": {
+    "sourceRevision": "9092d6cff454b81cd623a7a4be7621c6a750d9c7",
+    "sdkVersion": "0.4.2",
+    "imageDigest": "sha256:56d801a4a8c7ea181d2f04741e95eb9f2d507379a9a2c91f33a04885cbcf3159"
+  },
+  "checks": {
+    "previousReleasePinnedInPlatformEvidence": true,
+    "registryManifestSha256MatchesPreviousDigest": true,
+    "linuxAmd64PullSucceeded": true,
+    "isolatedContainerHealth": "ok",
+    "isolatedContainerReadiness": "ready",
+    "isolatedContainerVersionMatchesPreviousSource": true,
+    "isolatedContainerDocsComponentRouteStatus": 200,
+    "containerStoppedAfterSmoke": true
+  },
+  "productionRollbackExecuted": false,
+  "boundary": "This qualifies the retained immutable image as a runnable rollback candidate. Platform owns any reviewed GitOps reversal and subsequent public/Flux verification."
+}

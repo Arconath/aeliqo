@@ -14,6 +14,7 @@ test('legacy deprecation is exact, allowlisted, and points to the migration', ()
   );
   for (const lineage of LEGACY_LINEAGES) {
     assert.match(legacyDeprecationMessage(lineage), /removed in Aeliqo 0\.4/u);
+    assert.match(legacyDeprecationMessage(lineage), /five current Aeliqo packages/u);
     assert.match(legacyDeprecationMessage(lineage), new RegExp(MIGRATION_URL.replaceAll('.', '\\.')));
   }
   assert.throws(() => legacyDeprecationMessage({ ...LEGACY_LINEAGES[0] }), /not allowlisted/);

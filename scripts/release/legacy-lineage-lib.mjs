@@ -4,7 +4,7 @@ export const LEGACY_LINEAGES = Object.freeze([
   {
     name: '@aeliqo/devtools',
     version: '0.3.0',
-    replacement: 'the five Aeliqo 0.4 packages used by the application',
+    replacement: 'the five current Aeliqo packages documented at https://docs.aeliqo.com/reference/packages/',
     reason: 'Aeliqo Studio and @aeliqo/devtools were removed in Aeliqo 0.4',
   },
 ]);
