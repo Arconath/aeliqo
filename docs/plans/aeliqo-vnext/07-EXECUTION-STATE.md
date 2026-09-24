@@ -1,6 +1,6 @@
 # Aeliqo vNext execution state
 
-## 2026-09-24 post-publication checkpoint — production accepted, rollback handoff pending
+## 2026-09-24 post-publication checkpoint — RELEASED_VERIFIED
 
 This overlay supersedes the pre-merge and unpublished-candidate status below;
 those dated sections remain as source-bound history. [PR #31](https://github.com/Arconath/aeliqo/pull/31)
@@ -42,19 +42,21 @@ rendered its two synthetic products without browser errors; see the separate
 [Platform acceptance commit 1ffebc4](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a)
 records `deploymentVerified=true` at 2026-09-24 11:17:01 UTC with exact
 GitOps revision, apex/www HTTPS health/readiness/version, routes, and headers.
-The platform operator also reported Flux Ready/Healthy and 2/2 pods running
-the exact new image digest.
+The [durable workspace C138 receipt](https://github.com/Arconath/workspace/blob/c35cb83c60e276a21f7500fa39a497db17e000a6/docs/platform/cutover.json)
+records independent review, checksum-bound promotion preflight and
+recovery/rollback gates, Flux Ready/Healthy readback, and both ready pods' exact
+image IDs. The protected gate bundle SHA-256 is
+`1fc091f39b0cea1a0953a1d4510c8a74f68a72ca4db0fa96b958067ab9a7ef89`.
+Both old and new GHCR manifest digests remain available. The retained 0.4.2
+image also passed isolated local health/ready/version/docs smoke after cutover.
+The reviewed rollback route uses a normal Git revert of promotion commit
+`2bb3d43`, followed by Flux, pod image, and public endpoint readback. This
+qualifies rollback readiness; a production rollback was not executed.
 
-Remaining evidence handoff: the platform promotion preflight/review receipt,
-durable Flux pod readback, and rollback procedure qualification. Both old and new
-GHCR manifest
-digests remain available. The retained 0.4.2 image also passed an isolated local
-pull and health/ready/version/docs smoke after cutover. A production rollback
-was not performed; platform recovery procedure evidence remains required.
-Record that handoff before setting `RELEASED_VERIFIED`. A49 human study
-and PMF remain unclaimed.
-Post-cutover `@aeliqo/devtools@0.3.0` deprecation is pending and requires npm
-security-key authentication.
+The source, registry, live site, and rollback-readiness evidence match, so the
+0.5.0 release gate is `RELEASED_VERIFIED`. A49 human study and PMF remain
+unclaimed. Post-cutover `@aeliqo/devtools@0.3.0` deprecation remains a separate
+cleanup action pending npm owner authentication.
 
 ## 2026-09-24 local-runner boundary correction — release candidate pending
 

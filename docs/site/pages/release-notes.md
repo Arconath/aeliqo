@@ -21,6 +21,9 @@ Production was subsequently accepted at 2026-09-24 11:17 UTC in the
 The apex, www, and docs sites reported 0.5.0 at that source revision; the
 [stable GitHub release](https://github.com/Arconath/aeliqo/releases/tag/v0.5.0)
 was published after live verification.
+The [platform cutover receipt](https://github.com/Arconath/workspace/blob/c35cb83c60e276a21f7500fa39a497db17e000a6/docs/platform/cutover.json)
+records reviewed promotion gates, Flux and pod readback, and a qualified route
+back to the retained 0.4.2 image. No production rollback was executed.
 
 This is a breaking successor to `0.4.2`. The historical `0.5.0-rc.1` was
 published from an earlier source revision that lacks the local React path
