@@ -4,25 +4,27 @@ This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source imple
 
 ## Current 0.5 candidate — PR #31 (2026-09-24)
 
-PR #31 head `46c6aa69bbc06d2685405138554d997955a82662` passed Quality run
-`35911405421` at 89/89 with unchanged source. Later worktree changes address
-scope teardown and live J2/J3 harness findings, so this is no longer the
-current exact source; a new SHA and PR Quality run are required before merge.
-Earlier SHA-specific tables and checkpoints below remain historical evidence.
+PR #31 head `4662b25d87521f853093f7de3d24e72962387664` has Quality run
+`35949889987` in progress; it is not a pass. Earlier run `35911405421`
+passed 89/89 only at `46c6aa6`. The clean `4662b25` source passed a full
+12/12 live DeepSeek `deepseek-flash` J1–J3 corpus through the browser,
+provider and renderer: 24 requests, estimated US$0.0377736, unchanged source.
+Its report is `artifacts/agent-evaluation/live-journeys/4662b25/report.json`.
+The earlier 10/12 run and diagnostics bring the conservative aggregate to
+60/60 approved requests. No additional paid call is authorized.
 
-The first authorized live DeepSeek `deepseek-flash` run exercised 12 J1–J3
-cases and passed 10/12 with 24 provider requests and estimated spend
-US$0.0395754. J2 success and J3 success exposed gaps; corresponding fixes are
-applied in the worktree, and final successful live proof is pending. The
-other success and negative/adversarial cases passed. The 10/12 result does not
-close A41. Registry preflight found `0.5.0-rc.2` and `0.5.0` available for all
-five packages. The initial run used 24 requests; three J2 diagnostics used
-2, 2, and 4, and one interrupted diagnostic is budgeted at up to 4. The
-conservative tally is 36/60, leaving a strict 24-request cap for the final
-corpus run. No merge, publication, image build/publication, or deployment
-has occurred. F13/T20–T21 and A41/A45–A50 remain release-gated; do not mark
-`RELEASED_VERIFIED`. The older 80/88 report is interrupted and does not count
-as a pass.
+Subsequent read-only audits exposed an exact React quickstart installed
+consumer gap (A02), a synthetic-server action proof gap (A39), and a narrow
+Playground title collision. Local changes add focused consumer/action tests
+and correct the letter spacing; focused checks and site build/test pass.
+These edits, including this ledger, require a new clean candidate and PR
+Quality before merge. The `4662b25` live report is a source-bound checkpoint,
+not an exact-source report for the next candidate. Registry preflight found
+`0.5.0-rc.2` and `0.5.0` available for all five packages. No merge,
+publication, image publication, or deployment has occurred. F13/T20–T21 and
+A45–A50 remain release-gated; A41 must be reconciled with the final source
+without exceeding the approved paid limit. Do not mark `RELEASED_VERIFIED`.
+The older 80/88 report is interrupted and does not count as a pass.
 
 ## 2026-09-24 0.5 closure overlay
 
@@ -62,7 +64,7 @@ Starting source is `930ba212142caecf9a18df2d71adf343bdbf2986`; the current 0.5.0
 
 The inspected `/docs/*` redirects, 0.3 migration guide, and legacy deprecation script still have active consumers or cutover duties. Keep the prior production image, npm artifacts, and Git tags for rollback. Retire old UI surfaces only after a verified site cutover. The existing `0.5.0-rc.1` packages came from older source and cannot qualify this candidate. A41 paid evaluation, A45–A48 registry/image publication and deployment, and A49 human study remain separate from local implementation evidence.
 
-## Current-source reconciliation (2026-09-23)
+## Historical source reconciliation (2026-09-23)
 
 `4a31da6a862bc1bc7d06f791369f0753a80fdd39` was pushed to `main` after
 its unchanged-source local `pnpm check` passed 87/87. Independent A35 review
@@ -139,7 +141,7 @@ and typechecks the non-vacuous contract; T10/T12 execute the installed React
 and visible SSR DOM consumers, and T20 reruns them from packed artifacts. The
 requirement is runtime-verified locally; production runtime remains unverified.
 
-## Release state
+## Historical release state at the 2026-09-23 checkpoint
 
 - 0.5.0 newer source candidate built: locally qualified packed artifacts; no registry/image publication of this source.
 - Independently reviewed: T02–T06 task candidates plus the final read-only T21 review.
@@ -149,12 +151,14 @@ requirement is runtime-verified locally; production runtime remains unverified.
 - 0.5.0 deployed: no.
 - Runtime verified: focused T02 core behavior, T03 scoped surfaces, T04 guarded scope transitions, T05 bounded local binding, T06 remote/semantic execution, T16 security boundaries, T18 reference journeys, T19 performance, T20 clean packed consumers, and the final source-bound matrix. Production runtime remains unverified.
 
-## A01–A50 current-candidate evidence overlay
+## A01–A50 historical 2026-09-23 evidence overlay
 
 The A-case table in `03-ACCEPTANCE.md` preserves the handoff baseline state at
-`c0b4a64`. This overlay records what was actually exercised for the newer local
-candidate. “Bounded” means the named synthetic/local profile passed; it does
-not assert every environment or a live provider. The first full matrix report
+`c0b4a64`. This historical overlay records what was exercised for the
+2026-09-23 local candidate; its A21 and A41 rows predate the J3 discovery
+correction and the 12/12 live run recorded at the top of this ledger.
+“Bounded” means the named synthetic/local profile passed; it does not assert
+every environment or a live provider. The first full matrix report
 at `artifacts/product-ci/ci.json` was 87/87 for `58f13a9`, before subsequent
 review corrections. A final claim requires that report to be rerun with its
 `sourceRevision` equal to final `HEAD` and `sourceChangedDuringRun: false`.

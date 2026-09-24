@@ -2,32 +2,44 @@
 
 ## Current 0.5 candidate — PR #31 (2026-09-24)
 
-PR #31 head `46c6aa69bbc06d2685405138554d997955a82662` passed its GitHub
-Quality run `35911405421`: 89/89 gates, with `sourceChangedDuringRun: false`.
-That report qualifies only that PR head. Subsequent local changes to scope
-teardown and the live J2/J3 harness make the worktree dirty; they require a new
-source SHA, focused checks, review, and PR Quality before merge. The older
-`6c468f9` report at 80/88 remains an interrupted historical checkpoint.
+PR #31 currently contains clean source
+`4662b25d87521f853093f7de3d24e72962387664`. Its GitHub Quality run
+`35949889987` is in progress; its successful policy job does not qualify the
+still-running functional matrix. Earlier run `35911405421` passed 89/89 at
+`46c6aa6`, a different SHA. The older `6c468f9` report at 80/88 remains
+an interrupted historical checkpoint.
 
-The first authorized live DeepSeek `deepseek-flash` evaluation exercised all
-12 synthetic J1–J3 cases through the browser host and renderer: 10/12 passed,
-24 provider requests, estimated spend US$0.0395754. J1 success and all
-ambiguity, unsupported, and adversarial cases passed; J2 success and J3
-success exposed gaps. Worktree corrections and diagnostic evidence are now
-present, so successful live J2/J3 proof is still pending. Do not treat the
-10/12 run as acceptance of the live-model gate.
+The authorized full DeepSeek `deepseek-flash` evaluation at clean
+`4662b25` passed all 12 synthetic J1–J3 browser/provider/renderer cases.
+Its source-bound report is
+`artifacts/agent-evaluation/live-journeys/4662b25/report.json`: 24 provider
+requests, estimated US$0.0377736, unchanged source, corpus SHA256
+`512f1d5bff233c708fe9067ede55ff3f6666b6279391834a91c07d7b240c30e6`.
+J1/J2/J3 success rendered committed results; all nine ambiguity, unsupported
+and adversarial cases preserved the previous UI without a commit. The first
+full run (10/12), targeted diagnostics, and one interrupted diagnostic bring
+the conservative aggregate to 60/60 approved requests. These costs are
+estimates, not a provider invoice. Do not make further paid requests under
+this authorization.
 
-The first run used 24 requests. Targeted J2 diagnostics then used 2, 2, and
-4 confirmed requests; one interrupted browser diagnostic is conservatively
-counted as up to 4. The pre-freeze cumulative ceiling is therefore 36/60.
-Set `AELIQO_LIVE_REQUEST_LIMIT=24` for the next complete corpus run so even
-its worst case cannot exceed the approved aggregate ceiling. Reported cost
-remains an estimate, not a provider invoice.
+Read-only acceptance and UI audits then found a missing installed-package
+proof for the exact beginner React example, a missing loopback HTTP action
+confirmation proof, and colliding Playground title letters at narrow widths.
+Focused consumer/action tests and a one-line title-spacing correction are now
+local uncommitted changes. `pnpm site:build`, `pnpm site:test`,
+`pnpm test:framework:consumers`, `pnpm test:vnext` (295/295), and focused
+action HTTP tests passed after these edits; independent visual inspection
+confirmed the corrected title at 360, 768, and 1440 pixels. These changes
+supersede the clean `4662b25` source for release, so both its running PR
+Quality and live-model report remain checkpoints, not qualification of the
+next candidate. Freeze a new SHA, finish focused review, and obtain new
+exact-source Quality before merge.
 
 Registry preflight found `0.5.0-rc.2` and `0.5.0` available for all five
 packages. No merge to `main`, publication of these versions, image publication,
 or deployment has occurred. Remaining gates are corrected exact-source PR
-Quality, accepted `main` and its push Quality, successful live-model evidence,
+Quality, accepted `main` and its push Quality, reconciliation of live-model
+evidence with final source within approved paid limits,
 RC/stable registry consumers, image and ZIP proof, platform promotion, live
 smoke, and rollback proof. `RELEASED_VERIFIED` is not assigned. Aeliqo owns
 this repository; the platform task owns shared admission and promotion.

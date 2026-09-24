@@ -180,6 +180,7 @@ function createRegistry(backend: ActionBackend): ActionRegistry {
 
 export interface ActionFixtureHost {
   readonly readContext: (input: { readonly signal: AbortSignal }) => Outcome<TrustedActionContext>;
+  readonly approvePreview: (previewId: string) => void;
   readonly revokeExecution: () => void;
   readonly restoreExecution: () => void;
   readonly changeEntityRevision: (revision: string) => void;
@@ -199,8 +200,11 @@ export interface ActionFixture {
   readonly dispose: () => void;
 }
 
-export function createActionFixture(options: { readonly backend?: ActionBackend } = {}): ActionFixture {
+export function createActionFixture(
+  options: { readonly backend?: ActionBackend; readonly requireHostApproval?: boolean } = {},
+): ActionFixture {
   const backend = createBackend(options.backend);
+  const approvedPreviews = new Set<string>();
   let current: TrustedActionContext = {
     principalKey: 'principal-a',
     actorKey: 'actor-a',
@@ -216,6 +220,9 @@ export function createActionFixture(options: { readonly backend?: ActionBackend 
       signal.aborted
         ? { ok: false, diagnostics: [{ code: 'fixture.cancelled', message: 'Cancelled.', retryable: false }] }
         : asOutcome(current),
+    approvePreview: (previewId) => {
+      approvedPreviews.add(previewId);
+    },
     revokeExecution: () => {
       current = { ...current, confirmationEpoch: 'confirmation-revoked', grants: ['action.propose'] };
     },
@@ -235,15 +242,21 @@ export function createActionFixture(options: { readonly backend?: ActionBackend 
     registry,
     host: {
       readContext: host.readContext,
-      issueConfirmation: ({ context: confirmationContext }) =>
-        confirmationContext.grants.includes('action.execute')
+      issueConfirmation: ({ preview, context: confirmationContext }) => {
+        const approved = options.requireHostApproval !== true || approvedPreviews.delete(preview.id);
+        return confirmationContext.grants.includes('action.execute') && approved
           ? asOutcome(undefined)
           : {
               ok: false,
               diagnostics: [
-                { code: 'fixture.confirmation-denied', message: 'Execution is revoked.', retryable: false },
+                {
+                  code: 'fixture.confirmation-denied',
+                  message: 'Host approval or execution authority is missing.',
+                  retryable: false,
+                },
               ],
-            },
+            };
+      },
     },
   });
   let requestSequence = 0;
@@ -267,7 +280,11 @@ export function createActionFixture(options: { readonly backend?: ActionBackend 
     port,
     previewRefund,
     confirmAndExecute,
-    restart: () => createActionFixture({ backend }),
+    restart: () =>
+      createActionFixture({
+        backend,
+        ...(options.requireHostApproval === undefined ? {} : { requireHostApproval: options.requireHostApproval }),
+      }),
     dispose: () => port.dispose(),
   };
 }
