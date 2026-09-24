@@ -37,7 +37,8 @@ The public browser [smoke receipt](evidence/public-acceptance-4e8b039.json)
 passed health/ready, landing, 71 component links and
 search, J1–J3 without model calls, and a downloadable 0.5.0 ZIP. That live ZIP
 installed three exact 0.5.0 packages from npm in a clean consumer, built, and
-rendered its two synthetic products without browser errors.
+rendered its two synthetic products without browser errors; see the separate
+[consumer receipt](evidence/live-export-consumer-4e8b039.json).
 [Platform acceptance commit 1ffebc4](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a)
 records `deploymentVerified=true` at 2026-09-24 11:17:01 UTC with exact
 GitOps revision, apex/www HTTPS health/readiness/version, routes, and headers.

@@ -34,9 +34,10 @@ other hosted models or production workloads.
 
 The [public 0.5.0 browser receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/public-acceptance-4e8b039.json)
 records docs navigation/search, the no-AI People Jakarta, Daily attendance,
-and Analytical workspace journeys, and a downloadable ZIP. That ZIP installed
-the exact 0.5.0 packages from npm, built, and rendered its synthetic products
-in a clean consumer.
+and Analytical workspace journeys, and a downloadable ZIP. The separate
+[clean consumer receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/live-export-consumer-4e8b039.json)
+records installation of the exact 0.5.0 packages from npm, a successful build,
+and browser rendering of the ZIP's synthetic products.
 
 The items in this section describe the 0.5.0 source. For an existing
 0.4.2 integration, use the compatibility app/Region path described in

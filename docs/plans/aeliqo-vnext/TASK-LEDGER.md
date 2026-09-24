@@ -36,7 +36,9 @@ succeeded. Public apex/www/docs report 0.5.0 at the accepted SHA. A48's public
 browser [smoke receipt](evidence/public-acceptance-4e8b039.json) passed
 health/ready, 71 docs links/search, J1–J3 with zero model
 calls, and live ZIP download. The ZIP installed registry 0.5.0 packages in a
-clean consumer, built, and rendered its synthetic products.
+clean consumer, built, and rendered its synthetic products; the
+[consumer receipt](evidence/live-export-consumer-4e8b039.json) records those
+separate checks.
 [Platform acceptance 1ffebc4](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a)
 records `deploymentVerified=true` at 2026-09-24 11:17:01 UTC for exact source,
 GitOps revision, apex/www health/readiness/version and routes. The platform
