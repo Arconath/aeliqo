@@ -10,6 +10,7 @@
     "playground:local": "pnpm site:build && pnpm --dir apps/site start",
     "check": "python3 scripts/quality.py",
     "test:release-tooling": "node --test tests/release/*.test.mjs",
+    "test:release:public-live": "node scripts/release/public-live-smoke.mjs",
     "test:vnext": "pnpm build:runtime && vitest run --config tests/vnext/vitest.config.mjs && tsc -p tests/vnext/tsconfig.json --noEmit",
     "test:vnext:browser": "pnpm build:agent && pnpm build:platform && playwright test --config tests/vnext/playwright.config.mjs",
     "test:vnext:visual": "pnpm build:agent && pnpm build:platform && playwright test --config tests/vnext/visual.playwright.config.mjs",
