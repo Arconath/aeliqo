@@ -43,30 +43,19 @@ export function dataValueText(value: AeliqoDataValue | undefined, missing = '—
   return String(value);
 }
 
-const statusCopy: Record<'en' | 'id', Record<AeliqoDataStatus, string | undefined>> = {
-  en: {
-    loading: 'Loading…',
-    empty: 'No data to display.',
-    partial: 'Showing a partial result.',
-    stale: 'This result may be out of date.',
-    error: 'The data could not be loaded.',
-    unavailable: 'Value unavailable.',
-    ready: undefined,
-  },
-  id: {
-    loading: 'Memuat…',
-    empty: 'Tidak ada data untuk ditampilkan.',
-    partial: 'Menampilkan hasil sebagian.',
-    stale: 'Hasil ini mungkin sudah kedaluwarsa.',
-    error: 'Data tidak dapat dimuat.',
-    unavailable: 'Nilai tidak tersedia.',
-    ready: undefined,
-  },
+const statusCopy: Record<AeliqoDataStatus, readonly [string | undefined, string | undefined]> = {
+  loading: ['Loading…', 'Memuat…'],
+  empty: ['No data to display.', 'Tidak ada data untuk ditampilkan.'],
+  partial: ['Showing a partial result.', 'Menampilkan hasil sebagian.'],
+  stale: ['This result may be out of date.', 'Hasil ini mungkin sudah kedaluwarsa.'],
+  error: ['The data could not be loaded.', 'Data tidak dapat dimuat.'],
+  unavailable: ['Value unavailable.', 'Nilai tidak tersedia.'],
+  ready: [undefined, undefined],
 };
 
 export function dataStatusMessage(status: AeliqoDataStatus, message?: string, locale?: string): string | undefined {
   if (message !== undefined && message.length > 0) return message;
-  return statusCopy[/^id(?:-|$)/i.test(locale ?? '') ? 'id' : 'en'][status];
+  return statusCopy[status][/^id(?:-|$)/i.test(locale ?? '') ? 1 : 0];
 }
 
 function scopeCountText(scope: AeliqoDataScope, indonesian: boolean): string | undefined {

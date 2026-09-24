@@ -2,6 +2,21 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## 2026-09-24 active Quality blocker overlay — PR #31
+
+Clean `84b5115` PR Quality run `35957164184` failed at gate 27/89:
+the installed `region-table` bundle measured 164,231 gzip bytes against the
+163,840-byte limit. The first 26 gates passed; later gates were not run.
+The local reproduction matched the CI size exactly. A measured helper
+deduplication now passes the local installed-tarball gate at 163,688 bytes,
+152 bytes below the unchanged limit; all six bundle rows pass. Focused
+semantic checks, lint, and format pass. Fresh exact-source Quality is still
+required. A docs spot check found and corrected a false Trend recipe claim in
+the active worktree. A41 remains open: the `b3505e5` live result was 11/12
+and used the conservative 132/132 approved requests; further paid use awaits
+the pending bounded authorization. A43–A50 and publication/cutover remain
+gated. This overlay supersedes any earlier readiness wording below.
+
 ## 2026-09-24 active post-b350 overlay — PR #31
 
 A41 remains open. The clean `b3505e5` DeepSeek report is 11/12, not 12/12:

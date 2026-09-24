@@ -25,6 +25,7 @@ import { materializeVisualizationRows } from '../visualization/materialization.j
 import type { VisualizationDataset } from '../visualization/types.js';
 import { renderAeliqoVisualizationPresentationNode } from './visualization-renderer.js';
 import { nothing, type TemplateResult } from 'lit';
+import { canonicalValue as canonical, freezeValue as freeze, resultRefKey as refKey } from './registry-value.js';
 
 /** The twelve semantic visualization representations shipped by the web host. */
 export const AELIQO_VISUALIZATION_REFS = Object.freeze({
@@ -125,35 +126,6 @@ const fail = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
   diagnostics: [{ code: `web.visualization.presentation.${code}`, message, retryable: false }],
 });
-
-function refKey(ref: ResultRef): string {
-  return JSON.stringify([
-    ref.id,
-    ref.revision,
-    ref.sourceLineage ?? null,
-    ref.outputId,
-    ref.queryDigest,
-    ref.scopeDigest,
-  ]);
-}
-
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
-}
-
-function freeze<T>(value: T): T {
-  if (value !== null && typeof value === 'object') {
-    for (const child of Object.values(value as Record<string, unknown>)) freeze(child);
-    Object.freeze(value);
-  }
-  return value;
-}
 
 function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
   try {

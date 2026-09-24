@@ -1,5 +1,29 @@
 # Aeliqo vNext execution state
 
+## 2026-09-24 exact-source Quality blocker — PR #31
+
+PR Quality `35957164184` on clean source
+`84b51151335a6ea875e4d57d773aa0407283e14e` failed at gate 27/89.
+Its first 26 checks passed, but the installed-package `region-table` bundle
+was 164,231 bytes gzip against a 163,840-byte limit. The downloaded
+source-bound report is `artifacts/quality-evidence-84b/artifacts/product-ci/ci.json`;
+the performance report is under the same evidence directory. The same
+164,231-byte result reproduced locally, so the failure is a source-size
+regression rather than runner noise. The gate remains unchanged. A focused
+helper deduplication measured 163,688 bytes gzip from installed tarballs,
+543 bytes lower and 152 below the limit, with all six bundle rows passing and
+no forbidden modules. Semantic data, visualization, foundation, and
+navigation checks passed 84/84 in total; lint, format, and diff checks passed.
+These are worktree checks, so new full exact-source Quality is required.
+
+A read-only content spot check also found the Trend component page incorrectly
+said standard recipes never select Trend. The standard recipe does include
+Trend for eligible browse/analyze results. Its authored page is corrected in
+the active worktree; it needs a fresh docs artifact and final-source Quality.
+Neither this correction nor the performance work qualifies the release until
+committed and verified. The paid live gate remains open at 132/132 approved
+requests while a further bounded authorization is pending.
+
 ## 2026-09-24 post-b350 correction — active release candidate work
 
 Clean PR #31 source `b3505e57d1e973a92753fc98fbf04393ac5b9a58`

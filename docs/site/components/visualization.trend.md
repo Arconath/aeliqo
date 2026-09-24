@@ -13,8 +13,9 @@ contract: 'Temporal metric series, declared grain, gaps and exact accessible sum
 
 Trend plots an application-supplied temporal visualization against exact Result rows and declared field
 meanings. It preserves gaps rather than inventing points, and pairs the graphic with exact values in an
-accessible data table. Use this element directly or through a semantic binding; standard automatic
-recipes do not currently select it.
+accessible data table. Use it directly, through a semantic binding, or as an
+eligible standard recipe choice for browse and analyze results. The recipe
+requires a compatible time field, measure, and permitted renderer.
 
 ## When to use it
 

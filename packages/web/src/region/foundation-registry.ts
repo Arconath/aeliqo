@@ -1,6 +1,8 @@
 import { parseWireValue, type Outcome, type Scalar, type VersionRef } from '@aeliqo/core';
 import type { PresentationManifest, PresentationValues, ResolvedPresentationConfig } from '@aeliqo/core/presentation';
 import { AELIQO_FOUNDATION_MANIFESTS } from '../foundation/manifest.js';
+import { freezeValue as freeze } from './registry-value.js';
+import { bounded, ref, safeHref, uniqueRefs } from './navigation-feedback-support.js';
 
 /** Immutable application-owned bindings. Change the Experience revision when these change. */
 export interface AeliqoFoundationBindings {
@@ -24,20 +26,12 @@ export interface AeliqoFoundationBindings {
     readonly alt?: string;
   }[];
 }
-const uniqueRefs = (values: readonly VersionRef[]): VersionRef[] => [
-  ...new Map(values.map((value) => [JSON.stringify([value.id, value.revision]), value])).values(),
-];
 const fail = <T>(message: string): Outcome<T> => ({
   ok: false,
   diagnostics: [{ code: 'web.presentation.foundation-binding', message, retryable: false }],
 });
 const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
-const bounded = (value: unknown, max = 160): value is string =>
-  typeof value === 'string' && value.length > 0 && value.length <= max && !/[\u0000-\u001f\u007f]/u.test(value);
-function ref(value: unknown): value is VersionRef {
-  return record(value) && Object.keys(value).length === 2 && bounded(value.id) && bounded(value.revision);
-}
 function scalar(value: unknown): value is Scalar {
   return (
     value === null ||
@@ -58,24 +52,6 @@ function scalarRecord(value: unknown): value is Readonly<Record<string, Scalar>>
     Object.entries(value).every(([key, value]) => bounded(key) && scalar(value))
   );
 }
-function safeHref(value: unknown, image = false): value is string {
-  if (!bounded(value, 4096)) return false;
-  try {
-    return (image ? ['http:', 'https:'] : ['http:', 'https:', 'mailto:', 'tel:']).includes(
-      new URL(value, 'https://aeliqo.invalid').protocol,
-    );
-  } catch {
-    return false;
-  }
-}
-function freeze<T>(value: T): T {
-  if (value !== null && typeof value === 'object') {
-    for (const child of Object.values(value)) freeze(child);
-    Object.freeze(value);
-  }
-  return value;
-}
-
 type FoundationBindingKind = 'contents' | 'actions' | 'routes' | 'identities';
 
 const FOUNDATION_BINDING_KINDS: readonly FoundationBindingKind[] = ['contents', 'actions', 'routes', 'identities'];
