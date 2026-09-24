@@ -1,5 +1,43 @@
 # Aeliqo vNext execution state
 
+## 2026-09-24 post-b350 correction — active release candidate work
+
+Clean PR #31 source `b3505e57d1e973a92753fc98fbf04393ac5b9a58`
+passed local five-tarball preflight: all five `0.5.0-rc.2` archives were
+installed in a clean consumer, 166 exports were loaded, the package SBOM had
+59 components, and the package scan found no secret. Source digest was
+`878fe2e6c838febe9161cf316a42637bf54773b0098dc494d82770b2a986fe54`.
+Its exact-source PR Quality run `35956488851` was cancelled when the later
+source changes superseded it.
+
+The owner-approved `deepseek-flash` run on that clean digest completed 12
+cases using 24 requests (estimated US$0.0396426; no invoice). Eleven passed.
+J2 success failed safely with `live.j2-invalid`: the model proposed the
+correct approved period and filter but omitted `calendar` and `timezone` from
+its time bucket. The host had required those two fields even though its
+registered day field already fixes both values. The retained report is
+`artifacts/agent-evaluation/live-journeys/b3505e5/report.json`; it is
+diagnostic, not A41 acceptance. The conservative approved request count is
+now 132/132. A further 24-request authorization has been requested and must
+not be assumed before a new paid run.
+
+A browser regression now reproduces that exact J2 proposal, and the host
+fills omitted temporal metadata from its registered Jakarta day while still
+rejecting explicit conflicting metadata. Independent site review also found
+that Export on the three public journeys could download a different base
+scenario starter. The correction disables that misleading action on J1–J3,
+links to the matching source fixture, and leaves verified stable export for
+the four base scenarios. Focused agent evaluation passed 10 Node and 5 browser
+tests, including the reproduced live J2 proposal and rejection of conflicting
+metadata. Candidate and simulated stable Export browser checks passed; site
+typecheck, lint, format, and docs artifact checks passed (126 pages, 71
+components). Two docs navigation failures during concurrent source changes
+passed when rerun after the worktree stopped changing; final-source Quality
+must run the complete site matrix. These edits
+require a new clean source, independent review, PR Quality, accepted-main
+push Quality, registry and image proofs, platform promotion, live smoke, and
+rollback qualification. `RELEASED_VERIFIED` is not assigned.
+
 ## 2026-09-24 J2 live-result correction — current PR #31 worktree
 
 The last pushed clean source was `0e79f69cf43d873610ba71ccc6252b8118a4b6f6`.

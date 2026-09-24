@@ -92,6 +92,22 @@ function setError(message?: string): void {
   error.textContent = message ?? '';
 }
 
+function setExportAvailability(publicJourney: boolean): void {
+  const published = typeof __AELIQO_EXPORT_AVAILABLE__ !== 'undefined' && __AELIQO_EXPORT_AVAILABLE__;
+  exportButton.disabled = !published || publicJourney;
+  exportNote.hidden = published && !publicJourney;
+  if (exportNote.hidden) {
+    exportButton.removeAttribute('aria-describedby');
+    return;
+  }
+  exportButton.setAttribute('aria-describedby', 'pg-export-note');
+  if (!published) return;
+  const link = document.createElement('a');
+  link.href = '/examples/';
+  link.textContent = 'Run the matching 0.5 source fixture';
+  exportNote.replaceChildren('This journey has no matching project ZIP. ', link, ' instead.');
+}
+
 const actionReview = createActionReviewController({
   dialog: actionDialog,
   content: actionContent,
@@ -149,6 +165,7 @@ function resetSession(): void {
   connectionStatus.textContent = 'No local host detected. Without AI remains available.';
   connectionDot.dataset.state = 'disconnected';
   showStandardJourney();
+  setExportAvailability(false);
   prompt.value = '';
   updateComposer();
   setError();
@@ -187,6 +204,7 @@ function showFixtureJourney(kind: FixtureJourney): void {
   showConnection('No agent · synthetic journey', 'disconnected');
   setMode('without-ai');
   activeJourney = kind;
+  setExportAvailability(true);
   region.hidden = true;
   committedFilter.hidden = true;
   setError();
@@ -252,8 +270,9 @@ async function applyAgentReceipt(intent: Intent, receipt: WebRenderReceipt): Pro
   await applyReceipt(intent, receipt);
 }
 
-async function runIntent(intent: Intent, trigger?: HTMLButtonElement): Promise<void> {
+async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJourney = false): Promise<void> {
   showStandardJourney();
+  setExportAvailability(publicJourney);
   activeRequest?.abort();
   const controller = new AbortController();
   activeRequest = controller;
@@ -417,7 +436,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-journey
       scenario = findScenario('people');
       scenarioSelect.value = 'people';
       renderScenario();
-      void runIntent(jakartaPeopleIntent());
+      void runIntent(jakartaPeopleIntent(), undefined, true);
       return;
     }
     if (button.dataset.journey === 'attendance' || button.dataset.journey === 'workspace')
@@ -477,11 +496,7 @@ send.addEventListener('click', () => {
 resetSession();
 renderScenario();
 for (const control of bootControls) control.disabled = false;
-if (typeof __AELIQO_EXPORT_AVAILABLE__ === 'undefined' || !__AELIQO_EXPORT_AVAILABLE__) {
-  exportButton.disabled = true;
-  exportButton.setAttribute('aria-describedby', 'pg-export-note');
-  exportNote.hidden = false;
-}
+setExportAvailability(false);
 bootState.hidden = true;
 appRoot.removeAttribute('aria-busy');
 void runIntent(scenario.steps[0]!.intent());

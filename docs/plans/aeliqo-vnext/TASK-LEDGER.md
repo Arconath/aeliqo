@@ -2,6 +2,24 @@
 
 This ledger supplements `07-EXECUTION-STATE.md`. States distinguish source implementation from verification and release.
 
+## 2026-09-24 active post-b350 overlay — PR #31
+
+A41 remains open. The clean `b3505e5` DeepSeek report is 11/12, not 12/12:
+J2 success was rejected before render because the model omitted optional
+calendar and timezone fields that the registered Jakarta day already fixes.
+The report used 24 requests, estimated US$0.0396426, with unchanged source;
+the conservative authorized total is 132/132. A new 24-request authorization
+has been requested but is not yet granted. The correction now derives omitted
+metadata from the registered day, rejects explicit conflicts, and has a
+focused browser regression. A separate public-site review found and fixed a
+misleading Export action on the three new journeys: their source fixtures are
+linked, while the four base starter ZIPs remain exportable after stable
+registry verification. See the top of `07-EXECUTION-STATE.md` for exact SHA,
+report, and preflight evidence. PR Quality `35956488851` belongs to the
+superseded `b3505e5` source. A02/A21/A39/A43–A44 retain focused evidence but
+need final-source Quality; A45–A50 remain release-gated. No merge, RC/stable
+publication, image publication, or production cutover has occurred.
+
 ## 2026-09-24 active correction overlay — PR #31
 
 A41 is open. Clean `0e79f69` yielded 12/12 under the old live scorer, but the

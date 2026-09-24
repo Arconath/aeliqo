@@ -171,6 +171,7 @@ test('simulated WebMCP host registers the standard tools and renders through the
 });
 
 test('candidate playground does not offer a ZIP pinned to an unpublished release', async ({ page }) => {
+  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION === '0.5.0', 'Stable export is enabled.');
   await page.goto('/playground/');
   await page.locator('#pg-scenario').selectOption('knowledge');
   await expect(page.getByRole('button', { name: 'Export project' })).toBeDisabled();
@@ -180,6 +181,30 @@ test('candidate playground does not offer a ZIP pinned to an unpublished release
   await expect(page.getByRole('heading', { name: 'Run the 0.5 source' })).toBeVisible();
   await expect(page.locator('main')).toContainText('pnpm install --frozen-lockfile');
   await expect(page.locator('main')).toContainText('pnpm test:vnext:browser');
+});
+
+test('stable export follows the four base scenarios and never substitutes them for public journeys', async ({
+  page,
+}) => {
+  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION !== '0.5.0', 'Requires verified stable export.');
+  await page.goto('/playground/');
+  const exportButton = page.getByRole('button', { name: 'Export project' });
+  await expect(exportButton).toBeEnabled();
+  for (const journey of ['jakarta', 'attendance', 'workspace']) {
+    await page.locator(`[data-journey="${journey}"]`).click();
+    await expect(exportButton).toBeDisabled();
+    await expect(page.locator('#pg-export-note')).toContainText('no matching project ZIP');
+    await expect(page.locator('#pg-export-note a')).toHaveAttribute('href', '/examples/');
+    await page.locator('#pg-scenario').selectOption('products');
+    await expect(exportButton).toBeEnabled();
+    await expect(page.locator('#pg-export-note')).toBeHidden();
+  }
+  for (const scenario of ['people', 'products', 'support', 'knowledge']) {
+    await page.locator('#pg-scenario').selectOption(scenario);
+    const download = page.waitForEvent('download');
+    await exportButton.click();
+    expect((await download).suggestedFilename()).toBe(`aeliqo-${scenario}-example.zip`);
+  }
 });
 
 test('home, deep docs, search, and narrow playground remain navigable', async ({ page }) => {

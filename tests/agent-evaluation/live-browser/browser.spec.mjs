@@ -226,3 +226,46 @@ test('J2 lowers the approved local-day period from the model to the bounded civi
   );
   expect(denied).toMatchObject({ ok: true, value: { state: 'failed' } });
 });
+
+test('J2 fills omitted temporal metadata from its registered local-day field', async ({ page }) => {
+  await page.goto('/tests/agent-evaluation/live-browser/browser.html');
+  await page.evaluate(() => window.liveHost.open('J2'));
+  const proposed = {
+    ...intents.J2,
+    dimensions: ['day'],
+    time: { field: 'day', grain: 'day' },
+    filter: {
+      op: 'and',
+      predicates: [
+        { op: 'compare', field: 'day', comparison: 'gte', value: '2026-09-01' },
+        { op: 'compare', field: 'day', comparison: 'lt', value: '2026-09-06' },
+      ],
+    },
+    period: {
+      from: '2026-09-01T00:00:00+07:00',
+      toExclusive: '2026-09-06T00:00:00+07:00',
+      calendar: 'gregorian',
+      timezone: 'Asia/Jakarta',
+      interpretation: 'September 1–5, 2026 are complete local days in Asia/Jakarta.',
+    },
+  };
+  const rendered = await page.evaluate(
+    (value) => window.liveHost.invoke('aeliqo_render', value, 'inferred-temporal-metadata'),
+    proposed,
+  );
+  expect(rendered).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
+  const snapshot = await page.evaluate(() => window.liveHost.snapshot());
+  expect(snapshot.chartRows).toEqual([
+    [
+      ['2026-09-01', '1'],
+      ['2026-09-02', '0.5'],
+      ['2026-09-03', '1'],
+    ],
+  ]);
+  const wrong = { ...proposed, time: { ...proposed.time, timezone: 'UTC' } };
+  const denied = await page.evaluate(
+    (value) => window.liveHost.invoke('aeliqo_render', value, 'wrong-temporal-metadata'),
+    wrong,
+  );
+  expect(denied).toMatchObject({ ok: true, value: { state: 'failed' } });
+});

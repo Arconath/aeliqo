@@ -177,8 +177,8 @@ export async function openJ2(target) {
       intent.measures[0].id !== 'attendance.rate' ||
       intent.time?.field !== 'day' ||
       intent.time.grain !== 'day' ||
-      intent.time.calendar !== 'gregorian' ||
-      intent.time.timezone !== 'Asia/Jakarta' ||
+      (intent.time.calendar !== undefined && intent.time.calendar !== 'gregorian') ||
+      (intent.time.timezone !== undefined && intent.time.timezone !== 'Asia/Jakarta') ||
       (intent.period !== undefined &&
         Object.entries(supportedPeriod).some(
           ([key, value]) => key !== 'interpretation' && intent.period[key] !== value,
@@ -194,7 +194,11 @@ export async function openJ2(target) {
         ],
       };
     const { period: _period, ...withoutPeriod } = intent;
-    const bounded = { ...withoutPeriod, filter: fixedFilter };
+    const bounded = {
+      ...withoutPeriod,
+      time: { ...intent.time, calendar: 'gregorian', timezone: 'Asia/Jakarta' },
+      filter: fixedFilter,
+    };
     return app.render({ regionId: 'live-attendance', intent: bounded, signal });
   };
   const connected = createAppToolEndpoint({
