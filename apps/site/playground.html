@@ -1,18 +1,18 @@
 <header class="pg-intro" aria-labelledby="playground-title">
   <div>
     <p class="pg-kicker">Public runtime · synthetic data</p>
-    <h1 id="playground-title">Turn a task into a real interface.</h1>
-    <p class="pg-intro-dek">A small, honest tour of the Aeliqo contract.</p>
+    <h1 id="playground-title">See the interface take shape.</h1>
+    <p class="pg-intro-dek">A live path from intent to result to presentation.</p>
   </div>
   <div class="pg-intro-copy">
     <p>
-      Start with working employee data, then choose a structured task or connect your own agent. Every path uses the
-      same validated runtime.
+      Pick a task using synthetic data. See what the runtime accepts, evaluates, and shows. The default path needs no
+      account, API key, or AI provider.
     </p>
     <ol class="pg-intro-flow" aria-label="Playground flow">
-      <li><b>1</b><span>Choose a scenario</span></li>
-      <li><b>2</b><span>Choose a typed intent</span></li>
-      <li><b>3</b><span>Inspect the result</span></li>
+      <li><b>1</b><span>Choose a task</span></li>
+      <li><b>2</b><span>See the result</span></li>
+      <li><b>3</b><span>Inspect the view</span></li>
     </ol>
   </div>
 </header>
@@ -54,25 +54,37 @@
       </button>
     </div>
   </header>
+  <p id="pg-export-note" class="pg-export-note" hidden>
+    ZIP export is unavailable until the matching 0.5.0 packages are verified in the registry. Run the
+    <a href="/examples/">0.5 source examples from the matching checkout</a> instead.
+  </p>
 
   <div class="pg-workspace">
     <aside class="pg-request" aria-labelledby="pg-request-title">
       <div>
         <p class="pg-kicker" id="pg-mode-label">Without AI</p>
-        <h2 id="pg-request-title">Build a view</h2>
+        <h2 id="pg-request-title">Choose what to do</h2>
         <p id="pg-scenario-description"></p>
       </div>
       <section id="pg-guided" aria-labelledby="pg-guided-title">
         <h3 id="pg-guided-title">Pick a task</h3>
         <div id="pg-steps" class="pg-steps"></div>
         <p class="pg-note">
-          Each task sends a deterministic intent fixture. Nothing is guessed from free text in this mode.
+          Each task sends a predefined request through the real runtime. No model is called.
         </p>
+      </section>
+      <section class="pg-public-journeys" aria-labelledby="pg-journeys-title">
+        <h3 id="pg-journeys-title">Explore 0.5 journeys</h3>
+        <div class="pg-steps">
+          <button type="button" data-journey="jakarta"><strong>People in Jakarta</strong><span>Commit a location filter on the People view.</span></button>
+          <button type="button" data-journey="attendance"><strong>Daily attendance</strong><span>Inspect an approved rate, period, coverage, and metric choice.</span></button>
+          <button type="button" data-journey="workspace"><strong>Analytical workspace</strong><span>Render a registered summary, trend, and breakdown together.</span></button>
+        </div>
       </section>
       <details id="pg-manual" class="pg-structured">
         <summary>Run a structured intent</summary>
         <section aria-labelledby="pg-manual-title">
-          <h3 id="pg-manual-title">Application controlled input</h3>
+          <h3 id="pg-manual-title">Request from application code</h3>
           <label>Action<select id="pg-manual-step" data-playground-boot-control disabled></select></label>
           <button type="button" class="primary" id="pg-run-manual" data-playground-boot-control disabled>
             Apply intent
@@ -83,14 +95,13 @@
       <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
         <h3 id="pg-connected-title">Connect an agent</h3>
         <p>
-          MCP, WebMCP, and browser BYOK use the same validated Playground tools. Actions still require your
+          MCP, WebMCP, and a locally configured model use the same validated Playground tools. Actions still require your
           confirmation.
         </p>
         <label
           >Connection<select id="pg-connection-kind" data-playground-boot-control disabled>
             <option value="detect">Local Playground host</option>
             <option value="webmcp">WebMCP (experimental)</option>
-            <option value="deepseek">DeepSeek BYOK (direct from browser)</option>
           </select></label
         >
         <div id="pg-local-connection-controls">
@@ -101,44 +112,6 @@
           </ol>
           <button type="button" id="pg-connect" data-playground-boot-control disabled>Check local connection</button>
         </div>
-        <section id="pg-deepseek-controls" class="pg-deepseek" hidden aria-labelledby="pg-deepseek-title">
-          <h4 id="pg-deepseek-title">Use your DeepSeek key</h4>
-          <p class="pg-note">
-            Your browser sends the prompt, selected synthetic scenario context, available tool definitions, and any
-            bounded synthetic metadata returned by tools directly to DeepSeek using <code>deepseek-flash</code>.
-            DeepSeek bills usage to your account. Aeliqo does not receive or proxy your key. The fixed endpoint is
-            <code>https://api.deepseek.com/chat/completions</code>; custom endpoints are not supported.
-          </p>
-          <label class="pg-composer"
-            >DeepSeek API key<input
-              id="pg-deepseek-key"
-              type="password"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-              maxlength="1024"
-              placeholder="Paste your DeepSeek API key"
-              data-playground-boot-control
-              disabled
-            />
-          </label>
-          <label class="pg-byok-consent">
-            <input id="pg-deepseek-consent" type="checkbox" data-playground-boot-control disabled />
-            <span>
-              I understand that this Playground prompt and its synthetic scenario context go directly to DeepSeek, and
-              that any charges are billed to my DeepSeek account. I consent to connect.
-            </span>
-          </label>
-          <div class="pg-byok-actions">
-            <button type="button" class="primary" id="pg-deepseek-connect" data-playground-boot-control disabled>
-              Connect directly to DeepSeek
-            </button>
-            <button type="button" id="pg-deepseek-disconnect" hidden>Disconnect and clear key</button>
-          </div>
-          <p class="pg-note">
-            The key is held only in this page's memory and is cleared on disconnect, reset, or page close.
-          </p>
-        </section>
         <label class="pg-composer"
           >Prompt<textarea
             id="pg-prompt"
@@ -163,10 +136,37 @@
         </div>
         <span id="pg-view-badge" class="visually-hidden">Waiting for intent</span>
       </header>
-      <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to render the first view.</p>
+      <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to show the first view.</p>
+      <ol class="pg-journey" aria-label="Current runtime journey">
+        <li><small>01 · Intent</small><strong id="pg-journey-intent">Choose a task</strong><span>Registered request</span></li>
+        <li><small>02 · Result</small><strong id="pg-journey-result">Waiting</strong><span>Evaluated with app data</span></li>
+        <li><small>03 · View</small><strong id="pg-journey-view">Waiting</strong><span>Presentation chosen</span></li>
+      </ol>
       <p id="pg-result-definition" class="pg-result-definition" hidden></p>
+      <p id="pg-committed-filter" class="pg-result-definition" hidden></p>
       <div id="pg-error" class="pg-error" role="alert" hidden></div>
       <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
+      <section id="pg-attendance-journey" class="pg-fixture" hidden aria-label="Daily attendance journey">
+        <p data-testid="period">September 2026 · Asia/Jakarta · complete local days through 5 September only</p>
+        <p data-testid="metric-policy">Approved attendance rate: Present eligible employee-days / eligible employee-days. Approved leave is excluded from both counts.</p>
+        <p data-testid="coverage">4–5 September: no observations, so no points. 6 September: future at the fixed as-of; excluded. The full month is not complete.</p>
+        <p data-testid="attendance-status" role="status" hidden>Loading attendance</p>
+        <div id="attendance-host"></div>
+        <h3>Observed daily values</h3>
+        <ul data-testid="daily-values"></ul>
+        <button type="button" id="compare-metrics">Compare attendance metrics</button>
+        <div id="metric-choice" hidden><label for="attendance-metric">Attendance metric</label>
+          <select id="attendance-metric"><option value="attendance.rate">Attendance rate</option><option value="attendance.present">Present employee-days</option></select>
+          <button type="button" id="apply-metric">Show selected attendance metric</button></div>
+      </section>
+      <section id="pg-workspace-journey" class="pg-fixture" hidden aria-label="Analytical workspace journey">
+        <p>One registered goal with summary, daily trend, and employee breakdown.</p>
+        <p>Scope: synthetic attendance · Filter: Engineering · Observed days: 1–2 September 2026 · Presentation: registered workspace pattern.</p>
+        <button type="button" id="request-anomaly">Request anomaly</button>
+        <button type="button" id="fail-breakdown">Fail breakdown update</button>
+        <p data-testid="goal-status" role="status" hidden>Loading</p>
+        <div id="workspace" data-testid="goal-workspace"></div>
+      </section>
       <footer class="pg-evidence">
         <span><small>Data</small>Synthetic · local</span
         ><span><small>Model calls</small><strong id="pg-model-calls">0</strong></span

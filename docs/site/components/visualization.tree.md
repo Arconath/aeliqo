@@ -11,7 +11,9 @@ contract: 'Explicit hierarchy, cycle validation, stable expansion and equivalent
 
 ## Purpose
 
-Explicit hierarchy, cycle validation, stable expansion and equivalent text navigation.
+Tree presents a declared parent-child hierarchy from authorized rows. The bound geometry validates the
+hierarchy and limits graphic complexity; a structured data view keeps node labels and selection reachable
+when the graphic cannot be shown.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ The hierarchy viewport can scroll inside its host. Bound marks and keep parent l
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

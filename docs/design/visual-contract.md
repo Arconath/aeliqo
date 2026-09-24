@@ -1,8 +1,9 @@
 # Aeliqo visual contract
 
 This is the current visual direction for the public site and component library.
-It supersedes the proposal in the 0.3 work. The public site uses one fixed
-palette, while applications using Aeliqo may supply their own component tokens.
+It supersedes the proposal in the 0.3 work. The public site uses the same
+token palette in light and dark modes, while applications using Aeliqo may
+supply their own component tokens.
 
 ## Public site
 
@@ -12,8 +13,9 @@ the system sans-serif stack. Define spacing, type, color, borders, and radii as
 site tokens so the landing page, documentation, component previews, and
 playground share one visual system.
 
-The public site has no theme selector, persisted theme preference, or
-system-theme switching. Keep reading layouts quiet and legible. Keep the
+The public site offers light, dark, and system theme modes. A manual choice is
+stored locally and follows the selected mode across public routes. Theme
+changes do not change application data or the current playground intent. Keep reading layouts quiet and legible. Keep the
 playground canvas prominent, with scenario controls easy to find and the
 inspector available on demand. A consent notice must not cover the hero or the
 main task.

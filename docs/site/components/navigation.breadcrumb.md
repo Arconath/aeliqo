@@ -11,7 +11,7 @@ contract: 'Reversible context path; approved routes and current-location semanti
 
 ## Purpose
 
-Reversible context path; approved routes and current-location semantics.
+Show the application-supplied path to the current location as an ordered set of links. The last item marks the current page; the host supplies approved destinations rather than asking the component to infer routes.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Allow long path segments to wrap. Keep the current location clear when the host 
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

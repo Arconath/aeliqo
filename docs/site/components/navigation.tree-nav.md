@@ -11,7 +11,7 @@ contract: 'Hierarchical navigation with stable node identities, expansion and ke
 
 ## Purpose
 
-Hierarchical navigation with stable node identities, expansion and keyboard semantics.
+Show a bounded hierarchy of identified navigation nodes with tree keyboard semantics. The component validates node IDs and structure, tracks expanded branches locally, and emits selection or expansion events for the host to coordinate with routing.
 
 ## When to use it
 
@@ -36,6 +36,15 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+Node IDs must be unique, nonempty strings of at most 160 characters. Cycles,
+invalid node shapes, duplicate IDs, and more than 512 nodes produce a visible
+status message in place of the tree. `expandedIds` synchronizes the initial
+or externally updated expansion set; after an uncancelled expand event, this
+element also updates its local expansion state. After an uncancelled selection
+event it updates `selectedId`. The host should observe those events to keep
+routing and application state aligned, and can pass new props to reconcile
+the tree with an external navigation change.
 
 ## Keyboard, focus, and accessibility
 
@@ -68,6 +77,6 @@ Allow long node labels to wrap inside the tree. Keep the selected item and expan
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

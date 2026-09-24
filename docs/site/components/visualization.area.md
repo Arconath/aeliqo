@@ -11,7 +11,9 @@ contract: 'Temporal area/stack with compatible additive measures; reject mislead
 
 ## Purpose
 
-Temporal area/stack with compatible additive measures; reject misleading nonadditive stacking.
+Area shows how a quantitative series changes across ordered time values, with a filled shape that makes
+magnitude salient. The bound visualization must declare compatible additive measures before stacking; the
+component does not invent aggregation from raw rows.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ The plot and its data view stay in a scrollable viewport. Set dimensions from th
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

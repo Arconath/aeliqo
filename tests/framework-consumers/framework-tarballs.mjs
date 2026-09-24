@@ -174,6 +174,50 @@ assert.deepEqual(
 );
 await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 
+const quickstart = await readFile(join(root, 'docs/site/pages/quickstart.md'), 'utf8');
+const quickstartDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-quickstart-consumer-'));
+const codeFence = String.fromCharCode(96).repeat(3);
+await mkdir(join(quickstartDirectory, 'src'), { recursive: true });
+for (const [label, language, path] of [
+  ['package.json', 'json', 'package.json'],
+  ['tsconfig.json', 'json', 'tsconfig.json'],
+  ['index.html', 'html', 'index.html'],
+  ['src/main.tsx', 'tsx', 'src/main.tsx'],
+]) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = quickstart.match(
+    new RegExp(`\\*\\*${escaped}\\*\\*\\s*${codeFence}${language}\\n([\\s\\S]*?)\\n${codeFence}`, 'u'),
+  );
+  assert(match, `Quickstart ${label} example is missing`);
+  await writeFile(join(quickstartDirectory, path), `${match[1]}\n`);
+}
+const quickstartManifest = JSON.parse(await readFile(join(quickstartDirectory, 'package.json'), 'utf8'));
+for (const name of packageNames) assert.equal(quickstartManifest.dependencies[`@aeliqo/${name}`], RELEASE_VERSION);
+const quickstartSource = await readFile(join(quickstartDirectory, 'src/main.tsx'), 'utf8');
+assert.match(quickstartSource, /useDataSurface\(\{ data: rows, getRowId:/u);
+assert.doesNotMatch(quickstartSource, /AeliqoProvider|createAeliqoApp|factory|model|agent/u);
+for (const artifact of artifacts) quickstartManifest.dependencies[artifact.name] = `file:${artifact.path}`;
+await writeFile(join(quickstartDirectory, 'package.json'), `${JSON.stringify(quickstartManifest, null, 2)}\n`);
+run(['npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund'], quickstartDirectory);
+const quickstartLock = JSON.parse(await readFile(join(quickstartDirectory, 'package-lock.json'), 'utf8'));
+for (const artifact of artifacts) {
+  const installed = quickstartLock.packages[`node_modules/${artifact.name}`];
+  assert.equal(installed?.version, RELEASE_VERSION);
+  assert.equal(installed.integrity, artifact.integrity);
+}
+for (const [name, version] of Object.entries({
+  ...quickstartManifest.dependencies,
+  ...quickstartManifest.devDependencies,
+})) {
+  if (name.startsWith('@aeliqo/')) continue;
+  assert.equal(
+    quickstartLock.packages[`node_modules/${name}`]?.version,
+    version,
+    `${name} was not independently installed`,
+  );
+}
+run([join(quickstartDirectory, 'node_modules/.bin/tsc'), '--project', 'tsconfig.json'], quickstartDirectory);
+
 const wrappers = [
   'AeliqoButton',
   'AeliqoIconButton',
@@ -276,6 +320,7 @@ const input = <AeliqoTextField label="Person" value={detail.value} onValueChange
 const table = <AeliqoTable caption="People" columns={columns} rows={rows} />;
 const nativeViews = defineReactViews<{readonly kind: "browse"}, {readonly rows: readonly string[]}>([
   {id: "people.native", revision: "1", render: ({snapshot}) => <p>{snapshot.state.rows.length}</p>},
+  {id: "people.lazy", revision: "1", load: async () => ({snapshot}) => <p>{snapshot.state.rows.length}</p>},
 ]);
 void [input, table, nativeViews];
 `,
@@ -441,6 +486,8 @@ assert.match(input, /aeliqo-text-field/); assert.match(input, /SSR person/); ass
 assert.match(table, /aeliqo-table/); assert.match(table, /SSR people/); assert.match(table, /Ada/);
 const nativeViews = defineReactViews([{id: "people.native", revision: "1", render: () => null}]);
 assert.equal(nativeViews.resolve({id: "people.native", revision: "1"})?.ref.id, "people.native");
+const lazyViews = defineReactViews([{id: "people.lazy", revision: "1", load: async () => () => null}]);
+assert.equal(typeof lazyViews.resolve({id: "people.lazy", revision: "1"})?.load, "function");
 assert.throws(() => defineReactViews([{id: "people.native", revision: "1", render: () => null}, {id: "people.native", revision: "1", render: () => null}]));
 console.log(JSON.stringify({input: input.length, table: table.length, hasDeclarativeShadow: input.includes("shadowrootmode=\\\"open\\\"")}));
 `,
@@ -501,6 +548,9 @@ window.addEventListener("pagehide", () => { vanillaApp.dispose(); reactApp.dispo
 await writeFile(join(consumer, 'vite.config.mjs'), `export default {build: {target: "es2022"}};\n`);
 run([join(consumer, 'node_modules/.bin/vite'), 'build'], consumer);
 assert(await fileExists(join(consumer, 'dist', 'index.html')), 'Consumer build has no index.html');
+run([join(quickstartDirectory, 'node_modules/.bin/vite'), 'build', '--base', '/quickstart/'], quickstartDirectory);
+await cp(join(quickstartDirectory, 'dist'), join(consumer, 'dist', 'quickstart'), { recursive: true });
+assert(await fileExists(join(consumer, 'dist', 'quickstart', 'index.html')), 'Quickstart build has no index.html');
 
 const server = createServer(async (request, response) => {
   try {
@@ -561,6 +611,25 @@ try {
   assert.equal(await page.locator('#vue-input').locator('input').inputValue(), 'Noor');
   assert.deepEqual(browserErrors, []);
   await page.screenshot({ path: join(runDirectory, 'framework-consumer.png'), fullPage: true });
+  const origin = `http://127.0.0.1:${server.address().port}`;
+  const externalRequests = [];
+  page.on('request', (request) => {
+    if (new URL(request.url()).origin !== origin) externalRequests.push(request.url());
+  });
+  await page.goto(`${origin}/quickstart/index.html`);
+  await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
+  const minimal = page.locator('#root main');
+  assert.match(await minimal.textContent(), /Sam Rivera/u);
+  await minimal.getByRole('button', { name: 'Show Engineering' }).click();
+  await page.waitForFunction(() => {
+    const text = document.querySelector('#root main')?.textContent ?? '';
+    return text.includes('Sam Rivera') && !text.includes('Ada Chen');
+  });
+  await minimal.getByRole('button', { name: 'Show everyone' }).click();
+  await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
+  assert.deepEqual(externalRequests, [], 'Minimal local React app made a remote request');
+  assert.deepEqual(browserErrors, [], 'Minimal local React app raised a browser error');
+  await page.screenshot({ path: join(runDirectory, 'quickstart-local-react.png'), fullPage: true });
 } finally {
   await browser?.close();
   await new Promise((resolveServer) => server.close(resolveServer));
@@ -574,15 +643,17 @@ await writeFile(
       sourceDigest: before,
       passed: true,
       scope:
-        'Installed core/runtime/web/react tarballs; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
+        'Installed core/runtime/web/react tarballs; exact four-file minimal React quickstart mounts, filters, and restores local rows without a provider, factory, or remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
       artifacts: artifacts.map(({ entries, ...artifact }) => ({ ...artifact, entries })),
       consumerDirectory: consumer,
+      quickstartConsumerDirectory: quickstartDirectory,
       lock: { path: join(runDirectory, 'consumer-package-lock.json'), sha256: hash(lockBytes) },
       ssr: ssrReport,
       browser: {
         version: browserVersion,
         errors: browserErrors,
         screenshot: join(runDirectory, 'framework-consumer.png'),
+        quickstartScreenshot: join(runDirectory, 'quickstart-local-react.png'),
       },
       environment: {
         node: process.version,

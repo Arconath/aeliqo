@@ -6,6 +6,7 @@ import type {
   AeliqoNavigationFeedbackContent,
   AeliqoNavigationFeedbackRoute,
 } from './navigation-feedback-types.js';
+export { freezeValue as freeze } from './registry-value.js';
 
 export const MAX_ITEMS = 128;
 export const MAX_TREE_NODES = 512;
@@ -89,10 +90,12 @@ export function copyScalarRecord(value: Readonly<Record<string, Scalar>>): Reado
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyScalar(item)]));
 }
 
-export function safeHref(value: unknown): value is string {
+export function safeHref(value: unknown, image = false): value is string {
   if (!bounded(value, 4_096)) return false;
   try {
-    return ['http:', 'https:', 'mailto:', 'tel:'].includes(new URL(value, 'https://aeliqo.invalid').protocol);
+    return (image ? ['http:', 'https:'] : ['http:', 'https:', 'mailto:', 'tel:']).includes(
+      new URL(value, 'https://aeliqo.invalid').protocol,
+    );
   } catch {
     return false;
   }
@@ -101,14 +104,6 @@ export function safeHref(value: unknown): value is string {
 export function exactKeys(value: RecordValue, allowed: readonly string[]): boolean {
   const permitted = new Set(allowed);
   return Object.keys(value).every((key) => permitted.has(key));
-}
-
-export function freeze<T>(value: T): T {
-  if (value !== null && typeof value === 'object') {
-    for (const child of Object.values(value)) freeze(child);
-    Object.freeze(value);
-  }
-  return value;
 }
 
 export function uniqueRefs(values: readonly VersionRef[]): readonly VersionRef[] {

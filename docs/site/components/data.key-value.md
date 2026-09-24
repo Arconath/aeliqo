@@ -11,7 +11,9 @@ contract: 'Labeled facts with stable ordering, wrapping and semantic links.'
 
 ## Purpose
 
-Labeled facts with stable ordering, wrapping and semantic links.
+KeyValue renders an ordered set of application-supplied facts as a definition list. Each item can include
+a description or a safe link, and the component reports scope and loading or failure states without
+fetching facts itself.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ Allow definition-list labels and values to wrap in reading order. Keep each labe
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

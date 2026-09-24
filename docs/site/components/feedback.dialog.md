@@ -11,7 +11,7 @@ contract: 'Native-first modal semantics, focus containment/return and escape pol
 
 ## Purpose
 
-Native-first modal semantics, focus containment/return and escape policy.
+Place a labelled interruption in a native dialog and contain focus while modal. Escape and the close button use the configured dismissal policy and emit a close request; the host owns the consequential action inside it.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Keep modal actions reachable within the viewport. Let long content scroll withou
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

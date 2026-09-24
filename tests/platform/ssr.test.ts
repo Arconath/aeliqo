@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { html } from 'lit';
 import { renderAeliqo } from '../../packages/web/src/server.js';
+import { scopeText } from '../../packages/web/src/data/shared.js';
 
 describe('SSR boundary', () => {
   it('keeps browser-free imports and renders declarative shadow roots', async () => {
@@ -63,5 +64,33 @@ describe('SSR boundary', () => {
     expect(output).not.toContain('NaN');
     expect(output).not.toContain('Infinity');
     expect(output).toContain('points="56,150 624,18"');
+  });
+
+  it('renders Indonesian chart chrome and accessible text for an Indonesian host locale', async () => {
+    const output = await renderAeliqo(html`
+      <aeliqo-chart
+        lang="id-ID"
+        scope="2 dari 3 rekaman populasi dimuat"
+        .points=${[
+          { label: 'Jan', value: 4 },
+          { label: 'Feb', value: null },
+        ]}
+      ></aeliqo-chart>
+    `);
+
+    const visible = output.replace(/<!--.*?-->/gs, '');
+    expect(visible).toContain('<strong>Grafik</strong>');
+    expect(visible).toContain('Cakupan: 2 dari 3 rekaman populasi dimuat');
+    expect(visible).toContain('Lihat tabel data');
+    expect(visible).toContain('Nilai');
+    expect(visible).toContain('Data yang hilang ditampilkan sebagai celah.');
+    expect(visible).toContain('<title>Grafik data</title>');
+    expect(visible).not.toContain('View data table');
+  });
+
+  it('localizes scope metadata while preserving the host scope label', () => {
+    const scope = { kind: 'sample' as const, label: 'Wilayah Barat', loaded: 2, filteredTotal: 3 };
+    expect(scopeText(scope, 'id-ID')).toBe('Wilayah Barat; Sampel terbatas; 2 dari 3 rekaman yang cocok dimuat');
+    expect(scopeText(scope)).toBe('Wilayah Barat; Bounded sample; 2 of 3 matching records loaded');
   });
 });

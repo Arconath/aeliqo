@@ -3,6 +3,8 @@ import type { InteractionPayload } from '@aeliqo/core';
 import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { html, nothing, type TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
+import { record } from './navigation-feedback-support.js';
+import { text } from './element-helpers.js';
 
 type Node = ValidatedPresentation['nodes'][number];
 type ChildRenderer = (nodeId: string) => unknown;
@@ -16,14 +18,6 @@ interface RenderContext {
   readonly id: string;
 }
 const PAGE_OPERATION = { id: 'navigation.page', revision: '1' } as const;
-
-function record(value: unknown): Values | undefined {
-  return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Values) : undefined;
-}
-
-function text(value: unknown, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback;
-}
 
 function booleanValue(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback;

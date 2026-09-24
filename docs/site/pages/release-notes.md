@@ -2,23 +2,33 @@
 id: 'release-notes'
 path: '/ship/release-notes/'
 section: 'Ship'
-title: 'Aeliqo 0.4 release notes'
-description: 'The 0.4 release consolidates the public site, documents all components, and provides curated entry points across five packages.'
+title: 'Release notes'
+description: 'Aeliqo 0.5 changes, migration boundaries, and the prior 0.4.2 release.'
 ---
 
-## vNext source candidate (0.5.0)
+## Aeliqo 0.5.0
 
-The live stable line remains `0.4.2`. The vNext candidate is a breaking
-successor and has not reached stable publication or site deployment.
-`0.5.0-rc.1` is on npm's `next` tag for all five packages, but it was published
-from an earlier source revision that lacks the local React path described below.
-Do not use that RC as evidence for this newer candidate.
+<aeliqo-release-status></aeliqo-release-status>
+
+This is a breaking successor to `0.4.2`. The historical `0.5.0-rc.1` was
+published from an earlier source revision that lacks the local React path
+described below. Do not use that RC as evidence for this source.
+
+The items in this section describe the 0.5.0 source. For an existing
+0.4.2 integration, use the compatibility app/Region path described in
+the [React tutorial](/start/). The providerless local surface
+and scoped APIs below require matching 0.5 packages. Follow the
+[0.4.2 to 0.5 migration guide](/ship/migration-0.4/) for adoption boundaries.
+
+The agent context can expose host-registered custom intents, presentation
+patterns, and time-window constraints for a paired Region. The host remains
+the authority for compilation, query bounds, and rendering.
 
 - `@aeliqo/core/features` introduces immutable data and non-data feature
   definitions. Data features lower through the existing resource/catalog path;
   non-data features declare versioned intents, views, and bounded capability
   schemas without fabricating relational data.
-- `@aeliqo/runtime` adds unreleased scoped surface controllers with immutable
+- `@aeliqo/runtime` adds scoped surface controllers with immutable
   instance addresses, per-runtime reference-counted registration, internal and
   explicitly controlled host ownership, and real `DataService`/Region/Result
   integration. Capability bindings carry an address-independent typed initial
@@ -33,15 +43,13 @@ Do not use that RC as evidence for this newer candidate.
   Existing app/Region APIs remain the compatibility path.
 - Local implementation and acceptance evidence cover runtime, React, migration,
   compatibility, browser, documentation, performance, and packed-consumer
-  gates. This newer source candidate has not been published or deployed, and production
-  runtime remains unverified.
-- The unreleased runtime candidate now exposes one canonical
+  gates. Production workload behavior needs separate environment evidence.
+- The runtime now exposes one canonical
   `createLocalDataBinding` adapter under `@aeliqo/runtime/surfaces`. It lowers
   through the existing `LocalDataService`, ResultStore, and Region paths,
   validates bounded local shape and identity diagnostics, preserves controller
   addresses across explicit source revisions, and rejects same-revision or
-  catalog conflicts atomically. This newer source candidate remains unpublished and
-  undeployed.
+  catalog conflicts atomically.
 - The local React path can now use `useDataSurface({ data, getRowId })` with an
   owned providerless local controller. Its runtime source can accept an
   opt-in monotonic revision sequence for long-lived updates while rejecting
@@ -50,9 +58,16 @@ Do not use that RC as evidence for this newer candidate.
   adaptive selection requires trusted presentation evidence and uses the
   shared resolver; standalone view registration alone is not automatic
   eligibility.
+- Native React registrations now accept a trusted `load` function for a
+  route-split view. The adapter retains an authorized previous view during
+  loading and failure, exposes retry, and clears old content on target loss.
 - The optional model adapter restricts unauthenticated profiles to explicitly
   allowlisted loopback origins. Remote hosted connections require a
   server-owned credential profile.
+- The trusted local Playground runner rejects cross-site browser requests to
+  session bootstrap, including requests that omit `Origin`. The public
+  attendance and workspace journeys show a readable status while retaining
+  machine receipts in Inspect.
 - Remote data now uses the same validated `DataService`, ResultStore, and
   Region path as local data. Catalog capabilities declare metrics and stable
   snapshot or keyset pagination; cursors are partitioned by authority and pin
@@ -63,8 +78,7 @@ Do not use that RC as evidence for this newer candidate.
   cannot restart the query from the first page.
   Partial pages preserve unknown or estimated population metadata, and only a
   server-proven aggregate may claim complete global coverage. The localhost
-  protocol fixtures remain synthetic; this candidate is still unpublished and
-  undeployed.
+  protocol fixtures remain synthetic and do not prove a production backend.
 - Semantic aggregate plans now retain and revalidate their registered meaning
   binding. Semi-additive period-end selection is deterministic, ratios and
   variadic means keep their registered behavior, and nested/count aggregates
@@ -72,12 +86,42 @@ Do not use that RC as evidence for this newer candidate.
 - `@aeliqo/core` now provides bounded `inferLocalDataShape` diagnostics for
   declared or structurally inferred scalar fields; it does not infer authority,
   coverage, relationships, or business identity. The two helpers remain part
-  of the unpublished vNext candidate.
+  of the 0.5 source.
 - `@aeliqo/core/presentation` now exposes the pure `resolvePresentation`
   decision facade. It returns a validated `ready` plan, structured
   `needs-input` choices, or bounded `unsupported` reasons from supplied
   evidence only; target evidence is not authority, explicit view pins do not
   silently fall back, and preferred pins only influence deterministic ranking.
+- The advanced React path accepts `useSurface(feature, { id, bindings })`
+  under the nearest `AeliqoProvider` and active `AeliqoScope`. Controller
+  creation and the first request occur after React commit. `AeliqoScope`
+  gates children by the committed activation; a voluntary Save / Discard /
+  Stay transition keeps the old authorized subtree mounted while access
+  remains valid. Accepted A→B→A activations create new controllers, and old
+  callbacks retain their old address. Initial, denied, invalidated, and
+  disposed scopes show safe states. The factory and providerless local paths
+  remain available.
+- Registered presentation patterns can be discovered from the active
+  experience without an application-supplied placeholder plan. The synthetic
+  attendance workspace uses this path for its summary, daily trend, and
+  employee breakdown. The attendance example derives its civil-day query
+  bounds from the period shown to the user and explicitly rejects unsupported
+  timezone projections.
+- The paired agent context can expose host-registered custom intent schemas
+  and presentation pattern references for a routable resource. The live
+  attendance workspace publishes these refs from the compiler and pattern
+  used by its render path.
+- The public playground adds People Jakarta, Daily attendance, and Analytical
+  workspace journeys alongside People, Products, Support, and Knowledge.
+  Manual operation remains available without a model. Model prompts use a
+  configured same-origin local runner; the site no longer accepts a provider
+  key in the browser or sends browser requests directly to the provider.
+  Exported 0.5 source projects are enabled only in a site image whose
+  matching packages passed an exact-version registry install and build check.
+- Region trend charts pass the validated presentation locale to their chart.
+  The low-level chart uses Indonesian controls, scope text, and accessible
+  labels when its host sets `lang="id"` or `lang="id-ID"`; application titles
+  and series names remain host-owned.
 
 ## 0.4.2
 
@@ -106,8 +150,8 @@ Do not use that RC as evidence for this newer candidate.
 
 - Landing page, documentation, component reference, and playground run from the
   single `apps/site` application.
-- The site uses one fixed visual style. Component consumers can still supply
-  their own design tokens.
+- The site shares one token system across light, dark, and system modes.
+  Component consumers can still supply their own design tokens.
 - Every catalog component has an authored reference page and runnable preview.
 
 ## Packages

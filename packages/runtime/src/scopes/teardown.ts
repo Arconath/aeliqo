@@ -22,6 +22,7 @@ export class ScopeLifecycle {
 
   dispose(): void {
     this.fence();
+    this.notify();
     this.listeners.clear();
     this.fences.clear();
   }

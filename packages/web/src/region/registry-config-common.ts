@@ -3,16 +3,14 @@ import type { InteractionPort } from '@aeliqo/core/interaction';
 import type { PresentationValues, ResolvedPresentationConfig } from '@aeliqo/core/presentation';
 import type { AeliqoPresentationRegistryOptions } from './registry-contracts.js';
 import { MAX_ITEMS, MAX_LABEL } from './registry-contracts.js';
+import { fieldMap, object as record } from './data-registry-common.js';
 
 export const fail = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
   diagnostics: [{ code: `web.presentation.${code}`, message, retryable: false }],
 });
 
-export function record(value: unknown): Record<string, unknown> | undefined {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  return value as Record<string, unknown>;
-}
+export { record, fieldMap };
 
 export function text(value: unknown, field: string): Outcome<string> {
   if (!isBoundedText(value)) return fail('config', `${field} must be a bounded text value.`);
@@ -28,10 +26,6 @@ function isBoundedText(value: unknown): value is string {
 export function optionalText(values: Record<string, unknown>, key: string): Outcome<string | undefined> {
   if (!Object.hasOwn(values, key)) return { ok: true, value: undefined };
   return text(values[key], key);
-}
-
-export function fieldMap(result: Result): Map<string, Result['fields'][number]> {
-  return new Map(result.fields.map((field) => [field.id, field]));
 }
 
 function columnValue(

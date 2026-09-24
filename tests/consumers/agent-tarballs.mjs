@@ -207,12 +207,34 @@ export async function probe() {
   });
   const mounted = runtime.mount({ regionId: 'main', resourceId: 'people' });
   check(mounted.ok, 'runtime mount');
+  const contextMetadata = {
+    customIntents: [{ ref: { id: 'people.overview', revision: '1' }, inputSchema: { type: 'object' } }],
+    patterns: [{ ref: { id: 'people.overview-pattern', revision: '1' }, intent: { id: 'people.overview', revision: '1' }, outputs: ['summary'] }],
+    queryConstraint: {
+      interpretation: 'One approved local day.',
+      requiredFilter: { op: 'compare', field: 'team', comparison: 'eq', value: 'Platform' },
+      supportedPeriod: {
+        from: '2026-09-01T00:00:00+07:00',
+        toExclusive: '2026-09-02T00:00:00+07:00',
+        calendar: 'gregorian',
+        timezone: 'Asia/Jakarta',
+        interpretation: 'One approved local day.',
+      },
+    },
+  };
   const endpoint = createAppToolEndpoint({
     runtime,
     regionId: 'main',
     goalEpoch: 'goal-app',
     transport: 'manual',
     expiresAt: Date.now() + 60_000,
+    context: {
+      read() {
+        const current = runtime.contexts('main');
+        if (!current.ok) return current;
+        return { ok: true, value: current.value.map((resource) => ({ ...resource, ...contextMetadata })) };
+      },
+    },
   });
   check(endpoint.ok, 'app endpoint');
   const tools = await endpoint.value.discover();
@@ -223,6 +245,9 @@ export async function probe() {
   const context = await endpoint.value.invoke('aeliqo_context', {}, { requestId: 'context' });
   check(context.ok && context.value.state === 'accepted', 'context capability');
   check(context.value.value.activeResource === 'people', 'paired resource context');
+  check(JSON.stringify(context.value.value.resources[0].customIntents) === JSON.stringify(contextMetadata.customIntents), 'installed custom-intent metadata');
+  check(JSON.stringify(context.value.value.resources[0].patterns) === JSON.stringify(contextMetadata.patterns), 'installed pattern metadata');
+  check(JSON.stringify(context.value.value.resources[0].queryConstraint) === JSON.stringify(contextMetadata.queryConstraint), 'installed query-constraint metadata');
   check(!JSON.stringify(context).includes('principalKey'), 'private authority stays out of context');
   endpoint.value.close();
   runtime.dispose();

@@ -3,14 +3,14 @@ id: "app-api"
 path: "/reference/app-api/"
 section: "Reference"
 title: "Application API"
-description: "Lifecycle, ownership, outcomes, and extension points for the unreleased Aeliqo 0.5.0 application facade candidate."
+description: "Lifecycle, ownership, outcomes, and extension points for the Aeliqo 0.5.0 application facade."
 ---
 
 Import the application facade from `@aeliqo/web/app`. This entry point uses
 `@aeliqo/runtime`; component-only consumers can import the web package root.
-This page follows the current 0.5.0 candidate source. The stable npm release
-remains 0.4.2, so candidate API and behavior details here are not a guarantee
-of availability in the stable release.
+<aeliqo-release-status></aeliqo-release-status>
+
+This page follows the 0.5.0 source and its exact package version.
 
 <h2>createAeliqoApp</h2>
 

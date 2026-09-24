@@ -14,6 +14,7 @@
 .pg-intro h1 {
   max-width: 11ch;
   font-size: clamp(2.8rem, 4.8vw, 4.4rem);
+  letter-spacing: -0.035em;
   line-height: 0.98;
 }
 .pg-intro-dek {
@@ -234,6 +235,15 @@
   padding: 0.35rem 0.55rem;
   font-size: var(--type-compact);
 }
+.pg-export-note {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--surface);
+  font-size: var(--type-compact-readable);
+}
+.pg-export-note[hidden] { display: none; }
 .pg-workspace {
   display: grid;
   grid-template-columns: minmax(18.5rem, 0.3fr) minmax(0, 1fr);
@@ -331,53 +341,24 @@
   font-size: 0.76rem;
   line-height: 1.6;
 }
-.pg-deepseek {
+.pg-public-journeys {
+  border-block-start: 1px solid var(--line);
+  padding-block-start: var(--space-4);
+}
+.pg-fixture {
+  display: grid;
+  min-width: 0;
+  gap: 0.7rem;
+  padding: 1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  padding: 0.9rem;
-  background: var(--surface-raised);
+  background: var(--surface);
 }
-.pg-deepseek h4 {
-  margin: 0;
-  color: var(--text);
-  font-size: var(--type-label);
-}
-.pg-deepseek p {
-  margin: 0;
-}
-.pg-deepseek code {
-  overflow-wrap: anywhere;
-  color: var(--text);
-  font-size: 0.68rem;
-}
-.pg-byok-consent {
-  display: grid !important;
-  grid-template-columns: 1rem minmax(0, 1fr);
-  align-items: start;
-  gap: 0.65rem !important;
-  color: var(--text) !important;
-  font-size: var(--type-compact-readable) !important;
-  font-weight: var(--weight-regular) !important;
-  line-height: var(--line-body);
-}
-.pg-byok-consent input {
-  width: 1rem;
-  min-height: 1rem;
-  margin: 0.16rem 0 0;
-  padding: 0;
-  accent-color: var(--accent);
-}
-.pg-byok-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.pg-byok-actions button {
-  min-height: 2.5rem;
-}
-.pg-byok-actions button[hidden] {
-  display: none;
-}
+.pg-fixture[hidden] { display: none; }
+.pg-fixture p { margin: 0; line-height: var(--line-body); }
+.pg-fixture button { justify-self: start; }
+.pg-fixture #attendance-host, .pg-fixture #workspace { min-width: 0; min-height: 16rem; }
+.pg-fixture [data-testid='coverage'] { color: var(--muted); }
 .pg-composer textarea {
   resize: vertical;
 }

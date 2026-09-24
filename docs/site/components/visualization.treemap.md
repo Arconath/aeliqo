@@ -11,7 +11,9 @@ contract: 'Nonnegative additive hierarchy; area meaning and tiny-node access pre
 
 ## Purpose
 
-Nonnegative additive hierarchy; area meaning and tiny-node access preserved.
+Treemap sizes hierarchical marks from a declared nonnegative additive value. It needs valid parent-child
+relationships and an explicit leaf-value policy; a data view keeps small or omitted nodes and exact
+values reachable.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ The treemap viewport can scroll inside its host. Keep its accessible data view r
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

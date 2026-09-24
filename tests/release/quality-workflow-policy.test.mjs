@@ -109,10 +109,22 @@ test('repository exposes quality, package publication, and site image lanes', as
 
 test('image publication preserves same-source quality evidence after checkout', async () => {
   const imageWorkflow = await readFile(new URL('../../.github/workflows/site-release.yml', import.meta.url), 'utf8');
+  const imageScript = await readFile(
+    new URL('../../apps/site/scripts/ci/publish-production-image.sh', import.meta.url),
+    'utf8',
+  );
   const checkout = imageWorkflow.indexOf('- uses: actions/checkout@');
   const policy = imageWorkflow.indexOf('- name: Require owner-dispatched current main');
+  const stable = imageWorkflow.indexOf('- name: Verify matching stable registry packages');
   const publish = imageWorkflow.indexOf('- name: Publish, attest, and scan');
-  assert.ok(checkout >= 0 && checkout < policy && policy < publish);
+  assert.ok(checkout >= 0 && checkout < policy && policy < stable && stable < publish);
   assert.match(imageWorkflow, /artifacts\/site-release-policy/);
+  assert.match(imageWorkflow, /verify-approved-stable\.mjs/);
+  assert.match(imageWorkflow, /registry-consumer\.mjs --version "\$RELEASE_VERSION"/);
+  assert.match(imageWorkflow, /verify-export-registry\.mjs/);
+  assert.match(imageWorkflow, /AELIQO_EXPORT_VERIFIED_VERSION=\$RELEASE_VERSION/);
+  assert.match(imageScript, /test "\$AELIQO_EXPORT_VERIFIED_VERSION" = "\$release_version"/);
+  assert.match(imageScript, /--build-arg "AELIQO_EXPORT_VERIFIED_VERSION=\$AELIQO_EXPORT_VERIFIED_VERSION"/);
+  assert.match(imageScript, /export-consumer\.json/);
   assert.match(releaseWorkflow, /-f event=push -f status=success/);
 });

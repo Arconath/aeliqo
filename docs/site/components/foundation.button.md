@@ -11,9 +11,7 @@ contract: 'Trigger one explicit action; native button semantics; disabled and pe
 
 ## Purpose
 
-Trigger one explicit action with native button semantics. Set `pending` as soon as an asynchronous action is accepted
-and clear it only after the host reports an outcome. The component blocks immediate repeated activation, while the
-host-owned pending state protects the full request lifetime.
+Render a native button for one host-owned action. `disabled` and `pending` block activation; the component emits a cancellable action proposal, while the application performs the work and clears `pending` after its result.
 
 ## When to use it
 
@@ -70,6 +68,6 @@ Its target keeps the component minimum hit area. Give long action labels a full 
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

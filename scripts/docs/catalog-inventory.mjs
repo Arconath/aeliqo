@@ -28,6 +28,13 @@ function headingSet(source) {
   return new Set([...source.matchAll(/^## (.+)$/gmu)].map((match) => match[1]));
 }
 
+function repeatsCatalogContract(source, contract) {
+  const purpose = source.split(/^## Purpose\r?\n\r?\n/mu)[1]?.split(/^## /mu)[0];
+  if (purpose === undefined) return false;
+  const normalized = (value) => value.replace(/\s+/gu, ' ').trim();
+  return normalized(purpose) === normalized(contract);
+}
+
 function auditComponentPage(source, component) {
   const missingSections = [];
   const missingDirectives = [];
@@ -52,6 +59,7 @@ function auditComponentPage(source, component) {
   if (documentError !== undefined) issues.push(`documentation parser error: ${documentError}`);
   if (missingSections.length > 0) issues.push(`missing sections: ${missingSections.join(', ')}`);
   if (missingDirectives.length > 0) issues.push(`missing directives: ${missingDirectives.join(', ')}`);
+  if (repeatsCatalogContract(source, component.contract)) issues.push('Purpose repeats catalog contract');
   return { missingSections, missingDirectives, documentError, issues };
 }
 

@@ -11,7 +11,9 @@ contract: 'Selected entity facts including missing fields; record identity persi
 
 ## Purpose
 
-Selected entity facts including missing fields; record identity persists across views.
+Detail shows the fields of one application-supplied record as labeled facts. It can expose the record
+identity and uses a visible missing-value label, while selection and record lookup stay with the
+application.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ Long field values wrap within the detail region. Keep record identity visible wh
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

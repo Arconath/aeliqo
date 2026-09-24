@@ -11,7 +11,7 @@ contract: 'One selected option; native semantics or APG-equivalent keyboard beha
 
 ## Purpose
 
-One selected option; native semantics or APG-equivalent keyboard behavior.
+Present a bounded set of native radio options under one legend and submit one chosen value. Disabled options stay visible; the selected value is reflected from host state and change events are proposals.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Vertical orientation suits narrow forms. Let long option labels wrap without cha
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

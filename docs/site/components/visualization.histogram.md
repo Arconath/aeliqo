@@ -11,7 +11,9 @@ contract: 'Declared binning, count/density labeling and missing-population discl
 
 ## Purpose
 
-Declared binning, count/density labeling and missing-population disclosure.
+Histogram displays bins declared by the visualization spec, with count or density meaning attached to the
+plotted measure. Its scope text distinguishes delivered bins from the unknown coverage of source
+observations, so the chart does not imply that missing or outside-bin populations are counted.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ The plot and its data view stay in a scrollable viewport. Set dimensions from th
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

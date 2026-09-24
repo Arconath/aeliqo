@@ -1,8 +1,18 @@
-import { defineResource, type Intent } from '@aeliqo/core';
+import { defineResource, type Intent, type QuerySpec } from '@aeliqo/core';
 import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import { createLocalDataService, type AuthorizeRead } from '@aeliqo/runtime/data';
 import { createAeliqoApp, type WebRenderReceipt } from '@aeliqo/web/app';
 import { z } from 'zod';
+import { attendanceDayFilter } from './period.js';
+
+const visiblePeriod: NonNullable<QuerySpec['period']> = {
+  from: '2026-09-01T00:00:00+07:00',
+  toExclusive: '2026-10-01T00:00:00+07:00',
+  timezone: 'Asia/Jakarta',
+  calendar: 'gregorian',
+  interpretation: 'September 2026, through the last complete local day as of 6 September',
+};
+const asOfExclusiveDay = '2026-09-06';
 
 const records = [
   { id: 'ada-01', employee: 'Ada', day: '2026-09-01', present: 1, eligible: 1 },
@@ -185,13 +195,7 @@ async function show(
     resource: 'attendance',
     measures,
     time: { field: 'day', grain: 'day', calendar: 'gregorian', timezone: 'Asia/Jakarta' },
-    filter: {
-      op: 'and',
-      predicates: [
-        { op: 'compare', field: 'day', comparison: 'gte', value: '2026-09-01' },
-        { op: 'compare', field: 'day', comparison: 'lt', value: '2026-09-06' },
-      ],
-    },
+    filter: attendanceDayFilter(visiblePeriod, asOfExclusiveDay),
     preferredView: 'trend',
   };
   const receipt: WebRenderReceipt = await app.render({ regionId: 'attendance', intent });
@@ -219,4 +223,9 @@ document.querySelector('#apply-metric')!.addEventListener('click', () => {
   const selected = document.querySelector<HTMLSelectElement>('#attendance-metric')!.value;
   if (selected === 'attendance.rate' || selected === 'attendance.present') void show([ref(selected)]);
 });
-void show([ref('attendance.rate')]);
+export function restartAttendanceJourney(): void {
+  choice.hidden = true;
+  status.textContent = 'Loading';
+  void show([ref('attendance.rate')]);
+}
+restartAttendanceJourney();

@@ -91,7 +91,8 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
   'tree-nav': {
     fixture: 'A two-level report tree with the reports branch expanded and weekly selected.',
     props: ['nodes', 'expandedIds', 'selectedId', 'label'],
-    propsNotes: 'Node IDs are stable and expansion and selection are separate host state.',
+    propsNotes:
+      'Node IDs are stable. After an uncancelled event, the component updates its selected ID or local expanded set; the host can supply selectedId and expandedIds to synchronize external state.',
     states: ['ready', 'disabled'],
     keyboard: ['Tab', 'Arrow keys', 'Home and End', 'Enter', 'Space'],
     events: ['aeliqo-tree-nav-select', 'aeliqo-tree-nav-expand'],

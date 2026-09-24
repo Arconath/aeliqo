@@ -11,7 +11,9 @@ contract: 'Query state, collection, scoped result count and details with stale-r
 
 ## Purpose
 
-Query state, collection, scoped result count and details with stale-result protection.
+SearchResults ties a supplied card collection to the visible query and its revision. When the query
+revision differs from the result revision, it hides the outdated collection and shows refresh guidance;
+the application owns searching, counts, and selected detail.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ Keep query and revision state above results when detail moves below them. Show s
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

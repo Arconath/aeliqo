@@ -5,6 +5,7 @@ import { createAeliqoRuntime, createLocalDataBinding, type RuntimeCommittedRecei
 import { registerAeliqoElements } from '@aeliqo/web';
 import {
   createAeliqoPresentationRegistry,
+  type AeliqoPresentationRegistryOptions,
   type AeliqoRegionElement,
   type AeliqoRegionResult,
 } from '@aeliqo/web/region';
@@ -113,15 +114,20 @@ function registryForResults(
   descriptors: readonly Result[],
   results: readonly AeliqoRegionResult[],
 ): PresentationRegistry {
-  const registered = createAeliqoPresentationRegistry({
-    data: results.map((result, index) => ({ result: descriptors[index]!, rows: result.rows, columns: result.columns })),
+  const options: AeliqoPresentationRegistryOptions = {
+    data: results.map((result, index) => ({
+      result: descriptors[index]!,
+      rows: result.rows,
+      ...(result.columns === undefined ? {} : { columns: result.columns }),
+    })),
     visualizations: results.map((result, index) => ({
       result: descriptors[index]!,
       context: { results: [descriptors[index]!] },
       datasets: [{ result: result.ref, rows: result.rows }],
     })),
     resolveEntity: () => feature.id,
-  });
+  };
+  const registered = createAeliqoPresentationRegistry(options);
   if (!registered.ok) throw new Error(registered.diagnostics[0]!.message);
   const registry = createPresentationRegistry(registered.value.manifests, registered.value.mappings, [
     overviewPattern(),
@@ -164,7 +170,7 @@ function resolveOverview(
         agentAllowed: false,
         allowedRepresentations: Object.values(REF).map((ref) => ref.id),
         allowedPatterns: [PATTERN.id],
-        composition: { allowWithoutPreset: true, maxNodes: 4, maxExpansions: 8 },
+        composition: { allowWithoutPreset: false, maxNodes: 4, maxExpansions: 8 },
         requiredOperations: [],
         tokenProfile: { id: 'tokens.default', revision: '1' },
         extensionAllowlist: [],
@@ -186,24 +192,7 @@ function resolveOverview(
       },
       state: 'active',
     },
-    candidates: [
-      {
-        id: 'registered-overview',
-        source: 'pattern',
-        pattern: PATTERN,
-        plan: {
-          id: 'unused-pattern-plan',
-          revision: '1',
-          rootId: 'unused',
-          preconditions,
-          nodes: [],
-          links: [],
-          coverage: [],
-          stateTransfer: [],
-          diagnostics: [],
-        },
-      },
-    ],
+    candidates: [],
   });
   if (decision.status !== 'ready') throw new Error(decision.diagnostic.code);
   return { decision, preconditions };
@@ -259,6 +248,10 @@ document.querySelector('#fail-breakdown')!.addEventListener('click', () => {
       failBreakdown = false;
     });
 });
-void showOverview().catch((error: unknown) => {
-  status.textContent = `failed:${error instanceof Error ? error.message : String(error)}`;
-});
+export function restartWorkspaceGoalJourney(): void {
+  status.textContent = 'Loading';
+  void showOverview().catch((error: unknown) => {
+    status.textContent = `failed:${error instanceof Error ? error.message : String(error)}`;
+  });
+}
+restartWorkspaceGoalJourney();

@@ -11,7 +11,7 @@ contract: 'Present a category/status with text as well as color.'
 
 ## Purpose
 
-Present a category/status with text as well as color.
+Show a short category or status as visible text with a supporting tone. The component changes appearance but does not update the underlying status or announce a new application event.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Allow a row of badges to wrap when labels grow. Keep the status text visible; co
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

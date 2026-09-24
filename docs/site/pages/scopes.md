@@ -26,4 +26,4 @@ Call `invalidate('logout' | 'revoked' | 'expired' | 'external-switch')` when aut
 
 Changing a workspace from single to split or compare changes presentation, not tenancy. Child surfaces keep stable identities and one owner each. A proposed composition with a cross-scope child, cycle, duplicate owner, stale child revision, or exceeded depth/node/fan-out bound must be rejected. See [workspace composition](/guides/workspace/) for the presentation side and [permissions](/guides/permissions/) for the authority boundary.
 
-The public scope API is a candidate 0.5 contract. It does not make a client-supplied workspace selector trustworthy and does not replace host authentication or server authorization.
+The public 0.5 scope API does not make a client-supplied workspace selector trustworthy or replace host authentication and server authorization.

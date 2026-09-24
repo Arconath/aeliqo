@@ -100,8 +100,13 @@ rendering live under `@aeliqo/web/region`; server rendering lives under
 
 `<aeliqo-chart>` is the low-level series chart. It renders a responsive SVG
 with labeled axes and grid lines, plus a collapsible table with the exact
-values. Set `points` for one series or `series` for multiple series. The
-catalog visualizations such as `<aeliqo-trend>` provide semantic views for
+values. Set `points` for one series or `series` for multiple series.
+The chart uses English labels by default. Set `lang="id"` or an Indonesian locale
+such as `lang="id-ID"` for Indonesian chart controls and accessible labels;
+region trend charts use the validated presentation locale automatically.
+Application titles, series labels, and scope names remain host-authored.
+The scope annotation remains visible in either language. The catalog
+visualizations such as `<aeliqo-trend>` provide semantic views for
 registered resources and meanings.
 
 ## Styling and browser behavior

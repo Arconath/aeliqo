@@ -8,14 +8,56 @@ test('the public playground uses the app facade without AI and through structure
   await page.goto('/playground/');
   await expect(page.locator('#pg-boot')).toBeHidden();
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-journey-intent')).toHaveText('Browse people');
+  await expect(page.locator('#pg-journey-result')).toHaveText('Evaluated');
+  await expect(page.locator('#pg-journey-view')).toHaveText('Table');
+  await expect(page.locator('#pg-receipt-state')).toBeHidden();
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
   await page.getByText('Run a structured intent', { exact: true }).click();
   await page.locator('#pg-manual-step').selectOption('people-detail');
   await page.getByRole('button', { name: 'Apply intent' }).click();
   await expect(page.locator('aeliqo-detail')).toContainText('Ada Chen');
+  await expect(page.locator('#pg-journey-view')).toHaveText('Detail');
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.screenshot({ path: 'artifacts/site-browser/playground-desktop.png', fullPage: true });
   expect(errors).toEqual([]);
+});
+
+test('public journeys show Jakarta people, daily attendance, and a composed workspace without AI', async ({ page }) => {
+  await page.goto('/playground/');
+  await page.getByRole('button', { name: 'People in Jakarta' }).click();
+  await expect(page.locator('#pg-committed-filter')).toContainText('Jakarta');
+  await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
+  await expect(page.locator('aeliqo-table')).not.toContainText('Sam Rivera');
+  await page.getByRole('button', { name: 'Daily attendance' }).click();
+  await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
+  await expect(page.locator('[data-testid="attendance-status"]')).toBeHidden();
+  await expect(page.locator('#pg-status')).toContainText('Daily attendance is ready.');
+  await expect(page.locator('[data-testid="period"]')).toContainText('Asia/Jakarta');
+  await expect(page.locator('[data-testid="daily-values"]')).toContainText('2026-09-02: 0.5');
+  await page.getByRole('button', { name: 'Compare attendance metrics' }).click();
+  await expect(page.locator('#metric-choice')).toBeVisible();
+  await expect(page.locator('#pg-journey-result')).toHaveText('Needs a choice');
+  await expect(page.locator('#pg-journey-view')).toHaveText('Choose a metric');
+  await page.getByRole('button', { name: 'Inspect', exact: true }).click();
+  await page.locator('[data-inspector="intent"]').click();
+  await expect(page.locator('#pg-inspector-content')).toContainText('Analyze daily attendance');
+  await page.locator('[data-inspector="diagnostics"]').click();
+  await expect(page.locator('#pg-inspector-content')).toContainText('needs-input:web.recipe.needs-input.measure');
+  await expect(page.locator('#pg-inspector-content')).not.toContainText('Analyze daily attendance');
+  await page.getByRole('button', { name: 'Close inspector' }).click();
+  await page.getByRole('button', { name: 'Analytical workspace' }).click();
+  await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+  await expect(page.locator('[data-testid="goal-status"]')).toBeHidden();
+  await expect(page.locator('#pg-status')).toContainText('Analytical workspace is ready.');
+  await expect(page.locator('[data-testid="goal-workspace"]')).toHaveAttribute('data-needs', 'summary,trend,breakdown');
+  await page.getByRole('button', { name: 'Request anomaly' }).click();
+  await expect(page.locator('[data-testid="goal-status"]')).toContainText('unsupported:intent.unknown-custom');
+  await expect(page.locator('[data-testid="goal-workspace"]')).toContainText('Ada');
+  await page.getByRole('button', { name: 'Reset playground' }).click();
+  await page.getByRole('button', { name: 'Analytical workspace' }).click();
+  await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-model-calls')).toHaveText('0');
 });
 
 test('theme selection follows the system, updates mounted components, and persists an override', async ({ page }) => {
@@ -132,22 +174,41 @@ test('simulated WebMCP host registers the standard tools and renders through the
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
 });
 
-test('playground exports the selected scenario as an installable credential-free project archive', async ({ page }) => {
+test('candidate playground does not offer a ZIP pinned to an unpublished release', async ({ page }) => {
+  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION === '0.5.0', 'Stable export is enabled.');
   await page.goto('/playground/');
   await page.locator('#pg-scenario').selectOption('knowledge');
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export project' }).click();
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toBe('aeliqo-knowledge-example.zip');
-  const stream = await download.createReadStream();
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
-  const archive = Buffer.concat(chunks);
-  expect(archive.readUInt32LE(0)).toBe(0x04034b50);
-  expect(archive.includes(Buffer.from('src/main.ts'))).toBe(true);
-  expect(archive.includes(Buffer.from('createAeliqoApp'))).toBe(true);
-  expect(archive.toString('utf8')).not.toMatch(/api[_-]?key|bearer\s+[a-z0-9]/iu);
-  await expect(page.locator('#pg-status')).toContainText('installable Knowledge project');
+  await expect(page.getByRole('button', { name: 'Export project' })).toBeDisabled();
+  await expect(page.locator('#pg-export-note')).toContainText('0.5.0 packages');
+  await expect(page.locator('#pg-export-note a')).toHaveAttribute('href', '/examples/');
+  await page.locator('#pg-export-note a').click();
+  await expect(page.getByRole('heading', { name: 'Run the 0.5 source' })).toBeVisible();
+  await expect(page.locator('main')).toContainText('pnpm install --frozen-lockfile');
+  await expect(page.locator('main')).toContainText('pnpm test:vnext:browser');
+});
+
+test('stable export follows the four base scenarios and never substitutes them for public journeys', async ({
+  page,
+}) => {
+  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION !== '0.5.0', 'Requires verified stable export.');
+  await page.goto('/playground/');
+  const exportButton = page.getByRole('button', { name: 'Export project' });
+  await expect(exportButton).toBeEnabled();
+  for (const journey of ['jakarta', 'attendance', 'workspace']) {
+    await page.locator(`[data-journey="${journey}"]`).click();
+    await expect(exportButton).toBeDisabled();
+    await expect(page.locator('#pg-export-note')).toContainText('no matching project ZIP');
+    await expect(page.locator('#pg-export-note a')).toHaveAttribute('href', '/examples/');
+    await page.locator('#pg-scenario').selectOption('products');
+    await expect(exportButton).toBeEnabled();
+    await expect(page.locator('#pg-export-note')).toBeHidden();
+  }
+  for (const scenario of ['people', 'products', 'support', 'knowledge']) {
+    await page.locator('#pg-scenario').selectOption(scenario);
+    const download = page.waitForEvent('download');
+    await exportButton.click();
+    expect((await download).suggestedFilename()).toBe(`aeliqo-${scenario}-example.zip`);
+  }
 });
 
 test('home, deep docs, search, and narrow playground remain navigable', async ({ page }) => {
@@ -215,7 +276,7 @@ test('home proof uses the public adaptive facade and remains legible on narrow f
   await expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
   await page.locator('#team').selectOption('Engineering');
   await page.getByRole('button', { name: 'Apply filter', exact: true }).click();
-  await expect(page.locator('#demo-status')).toContainText('2 of 4 synthetic people in an exact Result');
+  await expect(page.locator('#demo-status')).toContainText('2 of 4 synthetic people matched');
   await expect(records).toContainText('Sam Rivera');
   await expect(records).not.toContainText('Ada Chen');
   await page.emulateMedia({ forcedColors: 'active' });
@@ -228,7 +289,7 @@ test('home proof uses the public adaptive facade and remains legible on narrow f
   expect(
     (await new AxeBuilder({ page }).include('main').analyze()).violations.filter(({ id }) => id === 'color-contrast'),
   ).toEqual([]);
-  await page.locator('details').filter({ hasText: 'View the complete integration' }).locator('summary').click();
+  await page.locator('details').filter({ hasText: 'View the runtime call' }).locator('summary').click();
   await expect(page.locator('#demo-source')).toContainText('createAeliqoApp');
   await expect(page.locator('#demo-source')).toContainText("kind: 'browse'");
   await expect(page.locator('#demo-source')).not.toContainText('createTaskEvaluator');

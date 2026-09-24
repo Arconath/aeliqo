@@ -48,23 +48,19 @@
       <section class="shell hero">
         <div class="hero-copy">
           <p class="eyebrow hero-status">OPEN-SOURCE TYPESCRIPT UI RUNTIME</p>
-          <h1>Adaptive interfaces. <em>With or without AI.</em></h1>
+          <h1>From intent to <em>a fitting interface.</em></h1>
           <p class="lead">
-            Your application registers data, actions, and views. Aeliqo validates each typed intent and selects a
-            fitting registered interface for the available space.
+            Start with a task. Aeliqo checks the request against what your app allows, evaluates the result, and
+            chooses a registered view for the available space. It works without an AI provider.
           </p>
           <div class="actions">
             <a class="primary" href="https://docs.aeliqo.com/playground/"
               >Try the playground <span aria-hidden="true">→</span></a
             >
-            <a class="secondary-action" href="https://docs.aeliqo.com/start/">Build the React quickstart</a>
-          </div>
-          <div class="install-command" aria-label="Install Aeliqo packages">
-            <span aria-hidden="true">$</span><code>pnpm add @aeliqo/core @aeliqo/runtime @aeliqo/web</code>
+            <a class="secondary-action" href="https://docs.aeliqo.com/start/">Read the React starter</a>
           </div>
           <p class="hero-note">
-            Manual authoring works without an agent.
-            <a href="https://docs.aeliqo.com/agents/">Agent connections are optional.</a>
+            {{AELIQO_RELEASE_NOTE}}
           </p>
         </div>
 
@@ -78,7 +74,7 @@
               <div>
                 <p class="eyebrow">PEOPLE / BROWSE</p>
                 <h2 id="demo-title">Filter the sample records</h2>
-                <p class="demo-lead">Change the team to run a registered intent through the Aeliqo runtime.</p>
+                <p class="demo-lead">Choose a team. The same request will produce a result and an adapted view.</p>
               </div>
               <div class="demo-controls">
                 <label for="team"
@@ -94,16 +90,14 @@
                 <button id="demo-manual" type="button">Reset</button>
               </div>
             </div>
-            <p class="caption demo-caption">Four synthetic people · No application API or model call</p>
+            <p class="caption demo-caption">Four synthetic people · Runs locally · Zero model calls</p>
             <div class="demo-stage">
               <ol class="demo-flow" aria-label="Runtime steps">
-                <li class="demo-flow-step" data-flow-step="records" aria-current="step"><span>01</span>Data</li>
+                <li class="demo-flow-step" data-flow-step="request" aria-current="step"><span>01</span>Intent</li>
                 <li class="demo-flow-arrow" aria-hidden="true">→</li>
-                <li class="demo-flow-step" data-flow-step="request"><span>02</span>Intent</li>
+                <li class="demo-flow-step" data-flow-step="result"><span>02</span>Validated result</li>
                 <li class="demo-flow-arrow" aria-hidden="true">→</li>
-                <li class="demo-flow-step" data-flow-step="result"><span>03</span>Result</li>
-                <li class="demo-flow-arrow" aria-hidden="true">→</li>
-                <li class="demo-flow-step" data-flow-step="view"><span>04</span>View</li>
+                <li class="demo-flow-step" data-flow-step="view"><span>03</span>Selected view</li>
               </ol>
               <div id="home-demo" role="region" aria-label="Synthetic people adaptive result" tabindex="0">
                 <noscript
@@ -112,7 +106,7 @@
               </div>
               <p class="caption" id="demo-status" role="status"></p>
               <details class="demo-source">
-                <summary>View the complete integration</summary>
+                <summary>View the runtime call</summary>
                 <pre tabindex="0"><code id="demo-source"></code></pre>
                 <button id="copy-demo" type="button">Copy source</button><span id="copy-status" role="status"></span>
               </details>

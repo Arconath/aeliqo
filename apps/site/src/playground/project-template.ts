@@ -148,7 +148,7 @@ export function projectFiles(scenario: ScenarioId, releaseVersion: string): read
     },
     {
       path: 'README.md',
-      content: `# ${resource.label} · Aeliqo ${releaseVersion}\n\nSynthetic project exported from the Aeliqo playground.\n\n\`\`\`sh\npnpm install\npnpm dev\n\`\`\`\n\nThe application works without an AI provider. Replace the local snapshot and authority adapter with application-owned implementations before using real data.\n`,
+      content: `# ${resource.label} · Aeliqo ${releaseVersion}\n\nSynthetic source project exported from the Aeliqo playground. Install requires the pinned ${releaseVersion} packages to be published to npm.\n\n\`\`\`sh\npnpm install\npnpm dev\n\`\`\`\n\nThe application works without an AI provider. Replace the local snapshot and authority adapter with application-owned implementations before using real data.\n`,
     },
   ]);
 }

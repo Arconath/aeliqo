@@ -2,7 +2,7 @@
 component: 'visualization.calendar-grid'
 title: 'CalendarGrid'
 family: 'visualization'
-contract: 'Calendar-aligned 2D values/events; locale week boundaries and noncolor exact values.'
+contract: 'Calendar-aligned values/events with an explicit week start and exact values beyond color.'
 ---
 
 ## Import and live example
@@ -11,7 +11,9 @@ contract: 'Calendar-aligned 2D values/events; locale week boundaries and noncolo
 
 ## Purpose
 
-Calendar-aligned 2D values/events; locale week boundaries and noncolor exact values.
+CalendarGrid places supplied dates into civil-day cells using the declared week start. Exact
+values remain in the data table, and unsupported calendar systems retain that data view instead of being
+drawn as a misleading Gregorian grid.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ The calendar grid has a narrow-width data layout. Check dates and values at 360p
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

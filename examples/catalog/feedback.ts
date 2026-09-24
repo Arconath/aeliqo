@@ -35,7 +35,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     props: ['label', 'content', 'open'],
     propsNotes:
       'The label names the trigger; content supplements it and is not the only place to put essential meaning.',
-    states: ['ready', 'disabled'],
+    states: ['ready'],
     keyboard: ['Tab', 'Enter or Space where trigger semantics apply', 'Escape dismisses the tooltip'],
     events: ['None; visibility follows focus/hover'],
     expectedOutcome: 'The explanation appears on focus or hover without stealing focus from the trigger.',
@@ -44,7 +44,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     fixture: 'One non-modal report-details popover opened beside its trigger.',
     props: ['label', 'content', 'open', 'modal', 'closeOnOutside'],
     propsNotes: 'The host controls open state and chooses modal behavior; the popover does not execute actions itself.',
-    states: ['ready', 'disabled'],
+    states: ['ready'],
     keyboard: ['Tab', 'Enter or Space', 'Escape', 'focus returns to trigger'],
     events: ['aeliqo-popover-close'],
     expectedOutcome: 'The bounded surface exposes a labelled dialog boundary and emits a close request when dismissed.',
@@ -54,7 +54,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     props: ['heading', 'open', 'modal', 'closeOnEscape'],
     propsNotes:
       'The host decides when to open and what the slotted action means; the dialog only owns focus and dismissal mechanics.',
-    states: ['ready', 'disabled'],
+    states: ['ready'],
     keyboard: ['Tab focus trap', 'Escape', 'Enter on slotted action', 'focus returns to trigger'],
     events: ['aeliqo-dialog-close'],
     expectedOutcome: 'The modal announces its heading, traps focus while open, and emits a cancellable close request.',
@@ -64,7 +64,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     props: ['heading', 'open', 'mode', 'side'],
     propsNotes:
       'Inline mode participates in layout; modal mode is chosen by the host when a separate focus boundary is needed.',
-    states: ['ready', 'disabled'],
+    states: ['ready'],
     keyboard: ['Tab', 'Escape where modal', 'focus returns to trigger'],
     events: ['aeliqo-drawer-close'],
     expectedOutcome: 'The detail surface adapts to inline or overlay mode and emits a close request.',
@@ -74,7 +74,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     props: ['message', 'tone', 'open', 'duration', 'dismissible'],
     propsNotes:
       'Keep essential information outside transient notifications; duration zero makes this fixture reviewable.',
-    states: ['ready', 'pending', 'error'],
+    states: ['ready'],
     keyboard: ['Tab to dismiss', 'Enter or Space', 'Escape where host handles it'],
     events: ['aeliqo-toast-dismiss'],
     expectedOutcome: 'The status is announced as transient feedback and can be dismissed by the user.',
@@ -83,7 +83,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     fixture: 'One warning alert with an inspect action and optional dismissal.',
     props: ['heading', 'message', 'tone', 'actionLabel', 'dismissible', 'open'],
     propsNotes: 'The message remains visible; action and dismiss requests are handed to the host.',
-    states: ['ready', 'error', 'pending'],
+    states: ['ready'],
     keyboard: ['Tab', 'Enter or Space on action', 'Escape where host handles it'],
     events: ['aeliqo-alert-action', 'aeliqo-alert-dismiss'],
     expectedOutcome: 'The warning is exposed as an alert with separately typed action and dismissal requests.',
@@ -93,7 +93,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     props: ['label', 'value', 'max'],
     propsNotes:
       'Leave value absent for an indeterminate operation; the host owns the operation and completion meaning.',
-    states: ['ready', 'pending', 'error'],
+    states: ['ready', 'pending'],
     keyboard: ['Not focusable by default'],
     events: ['None; status is conveyed by progress semantics'],
     expectedOutcome: 'Progress exposes the current bounded value and accessible label without claiming completion.',
@@ -103,7 +103,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     props: ['label', 'lines', 'variant', 'animated'],
     propsNotes:
       'Skeleton is a temporary visual placeholder; it must be replaced by an explicit ready, empty, or error result.',
-    states: ['loading', 'ready', 'error'],
+    states: ['loading'],
     keyboard: ['Not focusable'],
     events: ['None; placeholder has no action'],
     expectedOutcome: 'The loading placeholder communicates pending content without inventing data.',

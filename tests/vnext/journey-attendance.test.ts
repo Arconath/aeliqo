@@ -5,6 +5,7 @@ import { resolvePresentation } from '../../packages/core/src/presentation/index.
 import type { Catalog, MeaningDefinition, QuerySpec } from '../../packages/core/src/contracts/types.js';
 import type { QuerySource } from '../../packages/core/src/query/types.js';
 import { twoMetricTrendFixture } from './fixtures/presentation.js';
+import { attendanceDayFilter } from '../../examples/vnext/attendance/period.js';
 
 // Synthetic employee/day observations. A scheduled day is eligible unless approved
 // leave removes it; an observation missing from the complete source is unknown,
@@ -97,7 +98,7 @@ const catalog: Catalog = {
   capabilities: [],
 };
 
-const period: QuerySpec['period'] = {
+const period: NonNullable<QuerySpec['period']> = {
   from: '2026-09-01T00:00:00+07:00',
   toExclusive: '2026-10-01T00:00:00+07:00',
   timezone: 'Asia/Jakarta',
@@ -114,21 +115,18 @@ const query: QuerySpec = {
   population: { kind: 'all-authorized' },
   order: [{ field: 'day', direction: 'asc', nulls: 'last' }],
   timeBucket: { field: 'day', grain: 'day', calendar: 'gregorian', timezone: 'Asia/Jakarta' },
-  // Host-supplied civil-day bounds from the visible period and fixed as-of.
-  where: {
-    op: 'and',
-    predicates: [
-      { op: 'compare', field: 'day', comparison: 'gte', value: '2026-09-01' },
-      { op: 'compare', field: 'day', comparison: 'lt', value: '2026-09-06' },
-    ],
-  },
+  // Host projection of the visible instant period onto supported civil days.
+  where: attendanceDayFilter(period, '2026-09-06'),
 };
 
-function source(complete: boolean): QuerySource {
+function source(
+  complete: boolean,
+  rows: readonly { id: string; employee: string; day: string; present: number; eligible: number }[] = raw,
+): QuerySource {
   return {
     revision: 'attendance-source-1',
     catalogRevision: catalog.revision,
-    relations: { attendance: { entity: 'attendance', complete, rows: raw } },
+    relations: { attendance: { entity: 'attendance', complete, rows } },
   };
 }
 
@@ -231,6 +229,102 @@ describe('J2 synthetic attendance acceptance (A17–A19)', () => {
     expect(complete.ok, JSON.stringify(complete)).toBe(true);
     if (complete.ok)
       expect(complete.value.rows.map((row) => row.day)).toEqual(['2026-09-01', '2026-09-02', '2026-09-03']);
+  });
+
+  it('includes the first civil day and excludes the half-open month end', () => {
+    const engine = planner();
+    const planned = engine.plan({
+      ...query,
+      where: attendanceDayFilter(period, '2026-10-01'),
+    });
+    expect(planned.ok, JSON.stringify(planned)).toBe(true);
+    if (!planned.ok) return;
+    const result = engine.evaluate(
+      planned.value,
+      source(true, [
+        { id: 'before', employee: 'Ada', day: '2026-08-31', present: 1, eligible: 1 },
+        { id: 'start', employee: 'Ada', day: '2026-09-01', present: 1, eligible: 1 },
+        { id: 'last', employee: 'Ada', day: '2026-09-30', present: 1, eligible: 1 },
+        { id: 'end', employee: 'Ada', day: '2026-10-01', present: 1, eligible: 1 },
+      ]),
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        rows: [
+          { day: '2026-09-01', 'attendance.rate': 1 },
+          { day: '2026-09-30', 'attendance.rate': 1 },
+        ],
+      },
+    });
+  });
+
+  it('derives query bounds from the visible period and rejects an unsupported civil-time projection', () => {
+    expect(attendanceDayFilter(period, '2026-09-06')).toEqual(query.where);
+    const narrower = { ...period, from: '2026-09-02T00:00:00+07:00' };
+    expect(attendanceDayFilter(narrower, '2026-09-06')).toMatchObject({
+      predicates: [{ value: '2026-09-02' }, { value: '2026-09-06' }],
+    });
+    expect(() => attendanceDayFilter({ ...period, timezone: 'America/New_York' }, '2026-09-06')).toThrow(
+      'supported Jakarta civil-day period',
+    );
+  });
+
+  it('keeps New York DST transition days civil, with missing and future coverage explicit', () => {
+    const newYorkCatalog: Catalog = {
+      ...catalog,
+      entities: catalog.entities.map((entity) => ({
+        ...entity,
+        fields: entity.fields.map((field) =>
+          field.id === 'day'
+            ? {
+                ...field,
+                type: {
+                  ...field.type,
+                  temporal: { calendar: 'gregorian', timezone: 'America/New_York', grain: 'day' },
+                },
+              }
+            : field,
+        ),
+      })),
+    };
+    const engine = createQueryPlanner({ catalog: newYorkCatalog, registry });
+    expect(engine.ok, JSON.stringify(engine)).toBe(true);
+    if (!engine.ok) return;
+    const newYorkQuery: QuerySpec = {
+      ...query,
+      timeBucket: { field: 'day', grain: 'day', calendar: 'gregorian', timezone: 'America/New_York' },
+      where: {
+        op: 'and',
+        predicates: [
+          { op: 'compare', field: 'day', comparison: 'gte', value: '2026-03-08' },
+          { op: 'compare', field: 'day', comparison: 'lt', value: '2026-03-11' },
+        ],
+      },
+    };
+    const planned = engine.value.plan(newYorkQuery);
+    expect(planned.ok, JSON.stringify(planned)).toBe(true);
+    if (!planned.ok) return;
+    const rows = [
+      { id: 'before', employee: 'Ada', day: '2026-03-07', present: 1, eligible: 1 },
+      { id: 'spring-forward', employee: 'Ada', day: '2026-03-08', present: 1, eligible: 1 },
+      { id: 'after', employee: 'Ada', day: '2026-03-09', present: 0, eligible: 1 },
+      // 10 March is missing; 11 March lies beyond the exclusive upper bound.
+      { id: 'future', employee: 'Ada', day: '2026-03-11', present: 1, eligible: 1 },
+    ];
+    expect(engine.value.evaluate(planned.value, source(false, rows))).toMatchObject({
+      ok: false,
+      diagnostics: [{ code: 'query.incomplete-input' }],
+    });
+    expect(engine.value.evaluate(planned.value, source(true, rows))).toMatchObject({
+      ok: true,
+      value: {
+        rows: [
+          { day: '2026-03-08', 'attendance.rate': 1 },
+          { day: '2026-03-09', 'attendance.rate': 0 },
+        ],
+      },
+    });
   });
 
   it('requires an approved meaning and preserves structured metric clarification for an ambiguous trend', () => {

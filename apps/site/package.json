@@ -15,7 +15,7 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tests/site/tsconfig.json",
     "build": "pnpm --workspace-root build:platform && pnpm --workspace-root build:agent && tsc -p tsconfig.json && vite build",
     "test": "pnpm test:unit",
-    "test:unit": "node --test runner/broker.test.mjs && vitest run --config tests/site/vitest.config.mjs && pnpm typecheck",
+    "test:unit": "node --test runner/*.test.mjs && vitest run --config tests/site/vitest.config.mjs && pnpm typecheck",
     "test:browser": "pnpm build && playwright test --config tests/site/playwright.config.mjs",
     "test:byok": "playwright test --config tests/site/byok.playwright.config.mjs",
     "test:local-runner": "playwright test --config tests/site/local-runner.playwright.config.mjs",

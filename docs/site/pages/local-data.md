@@ -9,10 +9,11 @@ description: 'Evaluate canonical queries over a bounded, application-owned snaps
 <p class="lead">Use local data for synthetic demos, offline tools, tests, and records the application already has permission to expose.</p>
 <h2>Start with React</h2>
 
-The newer 0.5.0 source candidate supports this API when built and installed
-from that source; the published `0.5.0-rc.1` came from an earlier revision and
-does not include it. For a small complete dataset already owned by your
-application, no model, factory, catalog, or remote grant is needed:
+The 0.5.0 release line supports this API; the historical `0.5.0-rc.1` came
+from an earlier revision and does not include it. For a small complete dataset already owned by your
+application, no model, factory, catalog, or remote grant is needed. The
+[React quickstart](/start/) gives all four files for a copyable app; its central
+component is:
 
 ```tsx
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
@@ -33,7 +34,7 @@ starts its source-backed controller after commit. Invalid updates report a
 diagnostic and retain the last authorized result.
 <h2>Use an owned local surface</h2>
 
-The unreleased 0.5.0 candidate includes a providerless path for a bounded
+The 0.5.0 source includes a providerless path for a bounded
 array already supplied by the application. `createLocalDataSurface` owns its
 local runtime and scope; call it only from committed UI lifecycle or from an
 imperative application owner. The `getRowId` callback must select one actual

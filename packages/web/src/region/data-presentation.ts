@@ -27,6 +27,7 @@ import {
   type AeliqoValidatedBinding,
 } from './data-registry.js';
 import { renderAeliqoDataNode, type AeliqoDataHostRequestHandler } from './data-renderer.js';
+import { canonicalValue as canonical, freezeValue as freeze, resultRefKey as refKey } from './registry-value.js';
 
 /** The operation identities shared by the existing canonical region registry. */
 export const AELIQO_DATA_PRESENTATION_OPERATIONS = Object.freeze({
@@ -80,34 +81,12 @@ const fail = <T>(code: string, message: string): Outcome<T> => ({
   diagnostics: [{ code: `web.data.presentation.${code}`, message, retryable: false }],
 });
 
-function refKey(ref: ResultRef): string {
-  return JSON.stringify([
-    ref.id,
-    ref.revision,
-    ref.sourceLineage ?? null,
-    ref.outputId,
-    ref.queryDigest,
-    ref.scopeDigest,
-  ]);
-}
-
 function versionKey(ref: VersionRef): string {
   return JSON.stringify([ref.id, ref.revision]);
 }
 
 function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
   return left !== undefined && refKey(left) === refKey(right);
-}
-
-/** Stable comparison protects against an equivalent descriptor using another key order. */
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
 }
 
 function sameResult(left: Result, right: Result): boolean {
@@ -118,14 +97,6 @@ function sameRows(left: AeliqoValidatedBinding, right: AeliqoValidatedBinding): 
   // Materialization order is presentation state; content changes require a new
   // authorized snapshot. Identity uniqueness is checked before this comparison.
   return canonical(left.rows.map(canonical).sort()) === canonical(right.rows.map(canonical).sort());
-}
-
-function freeze<T>(value: T): T {
-  if (value !== null && typeof value === 'object') {
-    for (const child of Object.values(value as Record<string, unknown>)) freeze(child);
-    Object.freeze(value);
-  }
-  return value;
 }
 
 function bindingEntries(input: AeliqoAuthorizedDataBindings): readonly (readonly [string, AeliqoDataBinding])[] {

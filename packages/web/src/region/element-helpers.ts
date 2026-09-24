@@ -5,17 +5,8 @@ import { validateAeliqoDataBinding } from './data-registry.js';
 import type { AeliqoRegionResult } from './types.js';
 import type { AeliqoInputChangeDetail } from '../input/events.js';
 import type { AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionDetail } from '../types.js';
-
-export function refKey(ref: ResultRef): string {
-  return JSON.stringify([
-    ref.id,
-    ref.revision,
-    ref.sourceLineage ?? null,
-    ref.outputId,
-    ref.queryDigest,
-    ref.scopeDigest,
-  ]);
-}
+import { resultRefKey as refKey } from './registry-value.js';
+export { refKey };
 
 export function record(value: unknown): Record<string, unknown> | undefined {
   return value !== null && typeof value === 'object' && !Array.isArray(value)

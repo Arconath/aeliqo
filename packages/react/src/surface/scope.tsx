@@ -9,10 +9,26 @@ export interface AeliqoScopeProps extends PropsWithChildren {
   readonly scope: ScopeController;
 }
 
+function inactiveMessage(status: ScopeSnapshot['status']): string {
+  if (status === 'denied') return 'This scope is no longer available.';
+  if (status === 'disposed') return 'This scope has closed.';
+  return 'Resolving scope…';
+}
+
 /** Makes one host-created scope available to React descendants. */
 export function AeliqoScope({ scope, children }: AeliqoScopeProps): React.JSX.Element {
   useEffect(() => scope.attach(), [scope]);
-  return <AeliqoScopeContext.Provider value={scope}>{children}</AeliqoScopeContext.Provider>;
+  const subscribe = useCallback((listener: () => void) => scope.subscribe(listener), [scope]);
+  const snapshot = useCallback(() => scope.getSnapshot(), [scope]);
+  const state = useStoreSelector(subscribe, snapshot, (current) => current);
+  if (state.status !== 'active' || !state.active || state.selector === null) {
+    return <p role="status">{inactiveMessage(state.status)}</p>;
+  }
+  return (
+    <AeliqoScopeContext.Provider value={scope}>
+      <React.Fragment key={`${state.scopeInstanceId}:${state.activationEpoch}`}>{children}</React.Fragment>
+    </AeliqoScopeContext.Provider>
+  );
 }
 
 export function useAeliqoScope(): ScopeController {

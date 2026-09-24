@@ -19,9 +19,9 @@ The host supplies each resource's data adapter and a fresh authority response.
 Identity, grants, policy revisions, and read context stay with the host. An
 intent cannot grant itself access.
 
-## Scoped surfaces (vNext candidate)
+## Scoped surfaces (0.5)
 
-The 0.5.0 source-candidate surface API adds live instances without changing the existing
+The 0.5.0 surface API adds live instances without changing the existing
 app/Region compatibility path. A host creates an explicit local read-only scope
 and may create multiple controllers from one immutable feature definition:
 
@@ -304,7 +304,7 @@ Target evidence is not authority. Hosts must still authorize the scope and
 surface and must not mark an old A-B-A address active. The resolver chooses a
 validated plan only; the controller remains the sole publication boundary.
 
-## Application scopes (vNext candidate)
+## Application scopes (0.5)
 
 `createScope` coordinates a trusted host-owned workspace or account selection.
 A selector is only an address presented to the host: it never grants data or

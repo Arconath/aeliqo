@@ -11,9 +11,10 @@ contract: 'Native table first; separate interactive-grid mode; sorting, paging, 
 
 ## Purpose
 
-Render precise row and column relationships with a native table by default. Sorting, paging, selection, and virtual
-window events are requests: the application applies them to its data source, then updates the table rows, Result
-evidence, and controlled state. Interactive grid mode is an explicit choice for cell-style navigation.
+Table keeps row and column relationships explicit with a native table by default; interactive grid mode
+is a separate choice for cell navigation. Sorting, paging, selection, and virtual-window events are
+requests. The application updates rows, Result evidence, and controlled state after handling each
+request.
 
 ## When to use it
 
@@ -70,6 +71,6 @@ Use the table’s bounded page or virtualization controls with wide data. Keep a
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

@@ -22,7 +22,10 @@ export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<Playgr
         };
   }
   try {
-    const response = await fetch('/api/aeliqo/session', { headers: { accept: 'application/json' }, cache: 'no-store' });
+    const response = await fetch('/api/aeliqo/session', {
+      headers: { accept: 'application/json', 'x-aeliqo-session-bootstrap': '1' },
+      cache: 'no-store',
+    });
     if (!response.ok)
       return {
         state: 'unavailable',

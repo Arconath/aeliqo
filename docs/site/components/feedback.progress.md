@@ -11,7 +11,7 @@ contract: 'Determinate or unknown progress honestly; no invented completion perc
 
 ## Purpose
 
-Determinate or unknown progress honestly; no invented completion percentages.
+Describe an ongoing operation with native progress semantics. A bounded value reports determinate progress; an absent value stays indeterminate, so the component never invents a completion percentage.
 
 ## When to use it
 
@@ -36,6 +36,11 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+With no finite `value`, the component renders an indeterminate progressbar.
+For determinate progress, it clamps the displayed value to the range from zero
+to `max`; an invalid or nonpositive `max` falls back to 100. The host should
+report completion only when the underlying operation actually finishes.
 
 ## Keyboard, focus, and accessibility
 
@@ -68,6 +73,6 @@ The bar follows its host width while the label remains readable. Do not use colo
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

@@ -3,13 +3,12 @@ id: 'byok'
 path: '/agents/byok/'
 section: 'Connect agents'
 title: 'Bring your own model'
-description: 'Connect a provider through a trusted local host or an explicitly opted-in direct browser session.'
+description: 'Connect a provider through a trusted local host while keeping credentials outside the browser.'
 ---
 
-BYOK connects a user's own provider account to Aeliqo's bounded tool loop.
-The local runner keeps the key in a trusted host process. The hosted Playground
-also offers a direct browser connection to DeepSeek; the browser sends requests
-straight to DeepSeek and Aeliqo does not receive or proxy the key.
+BYOK connects a user's own provider account to Aeliqo's bounded tool loop. The
+local runner keeps the key in a trusted host process. The public Playground has
+no browser provider-key field and does not send requests directly to a model.
 
 ## Configure the local runner
 
@@ -49,53 +48,19 @@ The local runner pairs one browser Region with an expiring session. Disconnect
 and reset cancel pending work and release the pairing. See [agent recovery](/agents/recovery/)
 and [data boundaries](/concepts/safety/) for failure handling.
 
-## Use DeepSeek from the hosted Playground
+## Prompt from the local host
 
-In **Connect AI**, select **DeepSeek BYOK (direct from browser)**. Read the
-disclosure, opt in, and enter your own DeepSeek API key. The Playground uses the
-fixed `https://api.deepseek.com/chat/completions` endpoint and the
-`deepseek-flash` model; it does not accept a custom base URL or use an Aeliqo
-provider key.
+In **Connect AI**, select **Local Playground host** and check the connection.
+The host sets a short-lived, HttpOnly session cookie. The browser pairs its
+current Region over a same-origin event stream, and the prompt is sent to the
+same-origin runner. The runner owns provider configuration and credentials.
+The browser receives bounded tool calls, validates them against its current
+Region, and reports the resulting receipt. A failed proposal does not commit
+an unsupported UI change.
 
-The connection indicator uses five explicit states:
-
-| State | Meaning |
-| --- | --- |
-| Configured | The browser accepted the local key and created a bounded connection; no provider response has succeeded yet |
-| Connecting | Setup or a connection transition is in progress |
-| Verified | DeepSeek returned a valid provider response during the current connection |
-| Failed | Authentication, network, timeout, or response validation failed; the existing configuration may be retried |
-| Disconnected | The connection is closed and the browser-held key is cleared |
-
-Entering a key does not prove that it is valid. The first prompt performs
-provider verification. A failed or malformed response never changes the state
-to verified and never commits a UI update.
-
-The key is held in the password field until connection, then only in a
-short-lived browser memory closure. It is cleared on disconnect, reset, or page
-close. It is not written to `localStorage`, `sessionStorage`, cookies, URLs,
-telemetry, logs, or Aeliqo requests. The browser request omits cookies, does
-not follow redirects, and is limited to four provider requests, four tool calls, 45 seconds, 1,024
-output tokens per request, and 32 KiB request and response bodies.
-
-The prompt, selected synthetic scenario context, tool definitions, and bounded
-synthetic metadata returned by the tools are sent directly to DeepSeek. DeepSeek
-charges usage to the account that owns the key. Playground records remain in
-the browser; model-generated intents still pass through Aeliqo's dispatcher,
-and actions still require the existing user confirmation.
-
-The browser tests intercept the provider boundary and verify opt-in, request
-limits, direct CORS requests, authorization-header placement, omission of
-cookies and referrers, key non-persistence, valid and invalid response handling,
-timeouts through the bounded model loop, cancellation on page close, reset,
-disconnect, and sanitization of provider failures. They use placeholder keys
-and never make a paid provider call.
-
-The production image serves static files and does not include the local runner,
-a model endpoint, or an Aeliqo provider key. The local runner remains a
-loopback-only development option. If you build a separate shared gateway for
-server-held credentials, authenticate and isolate each user, authorize tool
-calls against that user's data, and set per-user rate, concurrency, token, cost,
-time, and payload limits. Add origin and CSRF checks, require user approval for
-writes, and define prompt and record retention. Keep model output as validated
-intents; never render generated HTML or execute generated code.
+The static production site does not run a model. The local runner is a
+loopback development option. A shared server deployment needs authenticated
+users, scoped sessions, origin and CSRF checks, rate and cost limits, and an
+explicit retention policy before it can accept model requests. Keep model
+output as validated intents; never render generated HTML or execute generated
+code.

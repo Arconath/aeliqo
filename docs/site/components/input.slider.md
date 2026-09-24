@@ -11,7 +11,7 @@ contract: 'Bounded quantity with keyboard and text alternative; steps and units 
 
 ## Purpose
 
-Bounded quantity with keyboard and text alternative; steps and units are declared.
+Edit one bounded numeric quantity with a native range control and a visible value and unit. The component applies `min`, `max`, and `step` to user changes; the host interprets the quantity and accepts its proposal.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Give the track its own row in narrow forms. Keep its numeric label and unit visi
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

@@ -11,7 +11,7 @@ contract: 'Preserve native scrolling, focus visibility, zoom and platform afford
 
 ## Purpose
 
-Preserve native scrolling, focus visibility, zoom and platform affordances.
+Wrap long content in a native scroll viewport with an application-supplied label. Its `axis` and `tabIndex` determine which directions scroll and whether keyboard users can enter the region; child focus order remains intact.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Bound its height only when independent scrolling is needed. Keep enough visible 
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

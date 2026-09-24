@@ -1071,7 +1071,7 @@ describe('0.3 standard recipes', () => {
     const resource = defineResource({
       id: 'people',
       revision: 'catalog-1',
-      label: 'person',
+      label: 'People',
       schema: z.object({ id: z.string(), name: z.string(), active: z.boolean() }),
       identity: ['id'],
       presentation: { allowedViews: ['table'] },
@@ -1098,6 +1098,10 @@ describe('0.3 standard recipes', () => {
     const bindings = createFormBindings(resource, intent, task, { values: {}, entityRevision: 'new' });
     expect(bindings.ok).toBe(true);
     if (!bindings.ok) return;
+    expect(bindings.value.inputs[0]?.config).toEqual({
+      label: 'Create a record in People',
+      submitLabel: 'Create record',
+    });
     const formCurrent = { ...current, taskRevision: '1', results: [] };
     const plan = standardFormRecipe.build({
       intent,

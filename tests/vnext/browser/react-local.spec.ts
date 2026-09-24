@@ -49,6 +49,27 @@ test('same-reference mutations require and respect an explicit version signal', 
   await expect(page.getByTestId('surface-address')).toHaveText(address ?? '');
 });
 
+test('keeps the same local surface updating beyond the old revision budget', async ({ page }) => {
+  await page.goto('/react-local/');
+  await expect(page.getByTestId('source-state')).toHaveText('ready:2');
+  const address = await page.getByTestId('surface-address').textContent();
+  let revision = Number(await page.getByTestId('surface-revision').textContent());
+
+  for (let update = 0; update < 260; update++) {
+    await page.getByRole('button', { name: 'Update people' }).click();
+    await expect
+      .poll(async () => Number(await page.getByTestId('surface-revision').textContent()))
+      .toBeGreaterThan(revision);
+    await expect(page.getByTestId('source-state')).toHaveText('ready:1');
+    revision = Number(await page.getByTestId('surface-revision').textContent());
+  }
+
+  await page.getByRole('button', { name: 'Restore people' }).click();
+  await expect(page.getByRole('table')).toContainText('Sam Rivera');
+  await expect(page.getByTestId('surface-address')).toHaveText(address ?? '');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
 test('clearing local data keeps the same controller and shows an empty state', async ({ page }) => {
   await page.goto('/react-local/');
   await expect(page.getByRole('table')).toContainText('Sam Rivera');

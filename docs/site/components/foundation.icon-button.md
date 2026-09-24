@@ -11,7 +11,7 @@ contract: 'Named compact action with minimum target area; icon alone is never it
 
 ## Purpose
 
-Named compact action with minimum target area; icon alone is never its accessible name.
+Give a compact icon action a native button target and a text-based accessible name from `label`. The icon slot is visual content; the host handles the emitted action and owns any pending state.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ The icon target keeps its minimum hit area. Separate adjacent actions so their t
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

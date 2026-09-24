@@ -211,7 +211,17 @@ async function loadComponentGenerationData() {
   return { declarations, componentSources, canonicalById, canonicalExamples, projectTemplates };
 }
 
-async function buildAuthoredPageEntries(authoredPages, projectTemplates) {
+const releaseStatusMarker = '<aeliqo-release-status></aeliqo-release-status>';
+
+function renderReleaseStatus(body, releaseStatus) {
+  const message =
+    releaseStatus === 'stable'
+      ? 'Aeliqo 0.5.0 is the published stable release. Install all Aeliqo packages at the same exact version; 0.4.2 remains available for older integrations.'
+      : 'Aeliqo 0.5.0 is a source candidate. The published stable line is 0.4.2; install the 0.5.0 packages only after registry publication.';
+  return body.replaceAll(releaseStatusMarker, `<p class="release-status-note">${message}</p>`);
+}
+
+async function buildAuthoredPageEntries(authoredPages, projectTemplates, releaseStatus) {
   const pages = [];
   for (const page of authoredPages) {
     const path = canonicalDocsPath(page.path);
@@ -220,10 +230,19 @@ async function buildAuthoredPageEntries(authoredPages, projectTemplates) {
     pages.push({
       ...page,
       path,
-      body: hydrateProjectMarkup(await hydrateSourceMarkup(markup), projectTemplates),
+      body: renderReleaseStatus(
+        hydrateProjectMarkup(await hydrateSourceMarkup(markup), projectTemplates),
+        releaseStatus,
+      ),
     });
   }
   return pages;
+}
+
+function componentLevel(component) {
+  if (component.surfaces.includes('adaptive')) return 'Standard adaptive recipe';
+  if (component.surfaces.includes('semantic')) return 'Semantic binding';
+  return 'No built-in semantic binding';
 }
 
 function componentCatalogPage(components) {
@@ -233,14 +252,17 @@ function componentCatalogPage(components) {
     title: 'Component catalog',
     section: 'Components',
     description: `${components.length} owned components, grouped by purpose.`,
-    body: `<p class="lead">Start with the component that serves the task. Each entry links to the actual generated public declaration.</p>${[
+    body: `<p class="lead">Start with the component that serves the task. Every catalog entry works as a standalone web element. Semantic binding is available where the host has a registered adapter; automatic adaptation is limited to standard recipes with compatible task, data, bindings, and policy.</p><p>Each component page shows these three integration levels alongside its live example and generated API facts.</p>${[
       ...new Set(components.map((component) => component.family)),
     ]
       .map(
         (family) =>
           `<h2 id="${family}">${family[0].toUpperCase() + family.slice(1)}</h2><ul class="component-links">${components
             .filter((component) => component.family === family)
-            .map((component) => `<li><a href="/components/${component.id}/">${component.name}</a></li>`)
+            .map(
+              (component) =>
+                `<li><a href="/components/${component.id}/"><strong>${component.name}</strong><small>${componentLevel(component)}</small></a></li>`,
+            )
             .join('')}</ul>`,
       )
       .join('')}`,
@@ -275,7 +297,9 @@ function searchPage(searchable) {
   };
 }
 
-export async function buildPublicPages() {
+export async function buildPublicPages({ releaseStatus = 'candidate' } = {}) {
+  if (releaseStatus !== 'candidate' && releaseStatus !== 'stable')
+    throw new Error('Public documentation release status must be candidate or stable.');
   const authoredPages = await loadAuthoredPages();
   assertAuthoredPageParity(authoredPages);
   const components = await loadPublicComponents();
@@ -288,7 +312,7 @@ export async function buildPublicPages() {
     declarations: generationData.declarations,
   });
   if (!inventory.ok) throw new Error(formatCatalogInventoryReport(inventory));
-  const pages = await buildAuthoredPageEntries(authoredPages, generationData.projectTemplates);
+  const pages = await buildAuthoredPageEntries(authoredPages, generationData.projectTemplates, releaseStatus);
   pages.push(componentCatalogPage(components));
   pages.push(...(await buildComponentPages(components, generationData)));
   pages.push(searchPage(pages));

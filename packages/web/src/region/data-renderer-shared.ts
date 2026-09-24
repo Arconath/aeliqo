@@ -3,6 +3,7 @@ import { materializedDataStatus } from '../data/shared.js';
 import type { AeliqoDataStatus } from '../data/types.js';
 import type { AeliqoDataResolvedNode } from './data-registry.js';
 import type { AeliqoDataHostRequestHandler, AeliqoDataRenderContext } from './data-renderer-types.js';
+import { resultRefKey as refKey } from './registry-value.js';
 
 const RESULT_REF_KEYS = ['id', 'revision', 'sourceLineage', 'outputId', 'queryDigest', 'scopeDigest'] as const;
 
@@ -80,17 +81,6 @@ export function eventType(event: Event): string | undefined {
 }
 
 export const text = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
-
-function refKey(ref: ResultRef): string {
-  return JSON.stringify([
-    ref.id,
-    ref.revision,
-    ref.sourceLineage ?? null,
-    ref.outputId,
-    ref.queryDigest,
-    ref.scopeDigest,
-  ]);
-}
 
 export function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
   try {

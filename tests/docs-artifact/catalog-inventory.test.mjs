@@ -45,3 +45,19 @@ test('inventory failures name the exact component and missing section', async ()
   assert.match(report, /foundation\.button: missing runnable example/u);
   assert.match(report, /foundation\.button: missing generated declaration AeliqoButtonElement/u);
 });
+
+test('inventory rejects a Purpose section copied from the catalog contract', async () => {
+  const inputs = await readCatalogInventoryInputs(root);
+  const examples = await loadCanonicalExamples();
+  const component = inputs.components.find(({ id }) => id === 'data.metric');
+  assert.ok(component);
+  const pageContents = new Map(inputs.pageContents);
+  const source = pageContents.get(`${component.id}.md`);
+  pageContents.set(
+    `${component.id}.md`,
+    source.replace(/(## Purpose\r?\n\r?\n)[\s\S]*?(?=\r?\n## When to use it)/u, `$1${component.contract}\n`),
+  );
+  const audit = auditCatalogInventory({ ...inputs, examples, pageContents });
+  assert.equal(audit.ok, false);
+  assert.match(formatCatalogInventoryReport(audit), /data\.metric: Purpose repeats catalog contract/u);
+});

@@ -19,16 +19,24 @@ export function createContextCapability(
     invoke(): AgentCapabilityHandlerResult<AgentJsonValue> {
       const active = options.runtime.context(options.regionId);
       if (!active.ok) return { state: 'denied', diagnostics: active.diagnostics };
-      const current = options.context?.read() ?? { ok: true as const, value: [active.value] };
+      const current: ReturnType<NonNullable<AppToolEndpointOptions['context']>['read']> = options.context?.read() ?? {
+        ok: true,
+        value: [active.value],
+      };
       if (!current.ok) return { state: 'denied', diagnostics: current.diagnostics };
-      const resources = current.value.map(({ resource, intents, fields, meanings, views, actions }) => ({
-        resource,
-        intents,
-        fields,
-        meanings,
-        views,
-        actions,
-      }));
+      const resources = current.value.map(
+        ({ resource, intents, fields, meanings, views, actions, customIntents, patterns, queryConstraint }) => ({
+          resource,
+          intents,
+          fields,
+          meanings,
+          views,
+          actions,
+          ...(customIntents === undefined ? {} : { customIntents }),
+          ...(patterns === undefined ? {} : { patterns }),
+          ...(queryConstraint === undefined ? {} : { queryConstraint }),
+        }),
+      );
       const result = wire({ activeResource: active.value.resource.id, resources });
       if (result.ok) return { state: 'accepted', value: result.value };
       return { state: 'failed', diagnostics: result.diagnostics };

@@ -11,9 +11,7 @@ contract: 'Named panels with stable selection; automatic activation only when la
 
 ## Purpose
 
-Named panels with stable selection. The default activation mode is automatic, so arrow-key focus also selects a
-panel. Set `activation="manual"` when selecting a panel starts work that is not immediate; users then move focus with
-the arrow keys and activate with Enter or Space.
+Connect named tabs to panels with one selected value. Automatic activation selects as arrow-key focus moves; `activation='manual'` waits for Enter or Space, which is useful when changing panels starts costly work.
 
 ## When to use it
 
@@ -70,6 +68,6 @@ Keep each tab label distinct at narrow widths. Ensure the selected state and key
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

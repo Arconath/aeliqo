@@ -2,6 +2,11 @@ name: Deploy production
 
 on:
   workflow_dispatch:
+    inputs:
+      stable_publish_run_id:
+        description: Successful same-SHA 0.5.0 stable package publication run
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -45,6 +50,45 @@ jobs:
         with:
           node-version: '24.20.0'
           package-manager-cache: false
+      - name: Verify matching stable registry packages and source provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
+          STABLE_RUN_ID: ${{ inputs.stable_publish_run_id }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$STABLE_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          RELEASE_VERSION="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
+          gh api "repos/$GH_REPO/actions/runs/$STABLE_RUN_ID" > artifacts/site-release-policy/stable-run.json
+          jq -e --arg sha "$SOURCE_SHA" '
+            .head_sha == $sha and .head_branch == "main" and
+            .event == "workflow_dispatch" and .status == "completed" and
+            .conclusion == "success" and .path == ".github/workflows/release-publish.yml"
+          ' artifacts/site-release-policy/stable-run.json >/dev/null
+          mkdir -p artifacts/approved-stable
+          gh run download "$STABLE_RUN_ID" --repo "$GH_REPO" \
+            --name "aeliqo-npm-publication-$RELEASE_VERSION-$SOURCE_SHA" --dir artifacts/approved-stable
+          APPROVED_DIR=artifacts/approved-stable/release-candidate
+          node scripts/release/verify-approved-stable.mjs \
+            --candidate "$APPROVED_DIR/manifest.json" \
+            --publication "$APPROVED_DIR/publication.json" \
+            --consumer "$APPROVED_DIR/registry-consumer.json" --source "$SOURCE_SHA"
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          node scripts/release/registry-consumer.mjs --version "$RELEASE_VERSION" \
+            --expected-candidate "$APPROVED_DIR/manifest.json" \
+            --require-provenance-source "$SOURCE_SHA" \
+            --output artifacts/site-release-policy/registry-consumer.json
+          node scripts/release/verify-approved-stable.mjs \
+            --candidate "$APPROVED_DIR/manifest.json" \
+            --publication "$APPROVED_DIR/publication.json" \
+            --consumer artifacts/site-release-policy/registry-consumer.json --source "$SOURCE_SHA"
+          node --experimental-strip-types scripts/release/verify-export-registry.mjs \
+            --version "$RELEASE_VERSION" --source "$SOURCE_SHA" \
+            --output artifacts/site-release-policy/export-consumer.json
+          echo "AELIQO_EXPORT_VERIFIED_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
       - name: Publish, attest, and scan the immutable site image
         env:
           GH_TOKEN: ${{ github.token }}
@@ -52,6 +96,7 @@ jobs:
           GH_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
           GH_REPO: ${{ github.repository }}
           SOURCE_SHA: ${{ github.sha }}
+          AELIQO_EXPORT_VERIFIED_VERSION: ${{ env.AELIQO_EXPORT_VERIFIED_VERSION }}
         run: apps/site/scripts/ci/publish-production-image.sh
       - name: Upload immutable image identity, provenance, SBOM, and vulnerability report
         if: always()

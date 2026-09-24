@@ -143,9 +143,9 @@ function processCandidate(state: CompositionState, input: unknown, index: number
 }
 
 function processExplicitCandidates(state: CompositionState): void {
-  for (let index = 0; index < (state.request.candidates ?? []).length; index += 1) {
-    processCandidate(state, state.request.candidates![index], index);
-    if (state.budgetBlocked) break;
+  const candidates = state.request.candidates ?? [];
+  for (let index = 0; index < candidates.length && !state.budgetBlocked; index += 1) {
+    processCandidate(state, candidates[index], index);
   }
 }
 
@@ -302,7 +302,6 @@ function searchRegisteredChoices(
   choices: RegisteredChoices,
   suggest: ReturnType<typeof suggestionFor>,
 ): void {
-  if (state.budgetBlocked) return;
   if (required.length === 0) searchQuerylessNeeds(state, choices, suggest);
   else if (required.length === 1 && choices.leavesByNeed[0]!.length > 0) searchSingleNeed(state, choices, suggest);
   else if (required.length > 1 && choices.layouts.length > 0 && choices.leavesByNeed.every((list) => list.length > 0))
@@ -311,35 +310,29 @@ function searchRegisteredChoices(
 }
 
 function searchRegistered(state: CompositionState, required: readonly Task['needs'][number][]): void {
+  for (const pattern of state.registry.patterns ?? []) {
+    if (state.prepared.constraints.allowedPatterns.includes(pattern.ref.id))
+      processPatternCandidate(state, pattern, pattern.ref.id);
+    if (state.budgetBlocked) break;
+  }
+  if (state.budgetBlocked) return;
+  if (state.best !== undefined && !state.prepared.constraints.allowWithoutPreset) return;
   const choices = registeredChoices(state, required);
   const suggest = suggestionFor();
   searchRegisteredChoices(state, required, choices, suggest);
 }
 
-function finishAtExpansionLimit(state: CompositionState): Outcome<PresentationComposition> {
-  const presentation = state.best?.presentation;
-  return {
-    ok: true,
-    value: freezePresentation({
-      status: 'search-exhausted',
-      ...(presentation === undefined ? {} : { presentation }),
-      ...(state.best === undefined ? {} : { selectedCandidate: state.best.label }),
-      expansions: state.expansions,
-      rejected: state.rejected,
-    }),
-  };
-}
-
 function finishComposition(state: CompositionState): Outcome<PresentationComposition> {
   const presentation = state.best?.presentation;
-  let status: PresentationComposition['status'] = presentation === undefined ? 'conflict' : 'composed';
+  let status: PresentationComposition['status'] = 'conflict';
+  if (presentation !== undefined) status = 'composed';
   if (state.budgetBlocked) status = 'search-exhausted';
   return {
     ok: true,
     value: freezePresentation({
       status,
       ...(presentation === undefined ? {} : { presentation }),
-      ...(state.best === undefined ? {} : { selectedCandidate: state.best.label }),
+      ...(presentation === undefined ? {} : { selectedCandidate: state.best!.label }),
       expansions: state.expansions,
       rejected: state.rejected,
     }),
@@ -359,7 +352,7 @@ export function composePresentation(
   const required = requiredNeeds(state);
   if (!required.ok) return required;
   if (request.searchRegistered === false) return finishComposition(state);
-  if (state.expansions >= state.prepared.constraints.maxExpansions) return finishAtExpansionLimit(state);
-  searchRegistered(state, required.value);
+  if (state.expansions >= state.prepared.constraints.maxExpansions) state.budgetBlocked = true;
+  else searchRegistered(state, required.value);
   return finishComposition(state);
 }

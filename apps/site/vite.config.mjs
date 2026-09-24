@@ -11,7 +11,10 @@ export default defineConfig(async () => {
   return {
     root: generatedRoot,
     publicDir: generatedPublic,
-    define: { __AELIQO_RELEASE_VERSION__: JSON.stringify(RELEASE_VERSION) },
+    define: {
+      __AELIQO_RELEASE_VERSION__: JSON.stringify(RELEASE_VERSION),
+      __AELIQO_EXPORT_AVAILABLE__: JSON.stringify(process.env.AELIQO_EXPORT_VERIFIED_VERSION === RELEASE_VERSION),
+    },
     resolve: {
       dedupe: ['@aeliqo/agent', '@aeliqo/core', '@aeliqo/runtime', '@aeliqo/web'],
       alias: {

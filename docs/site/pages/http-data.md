@@ -30,16 +30,27 @@ with a different name.
 
 <h2>Run the localhost reference</h2>
 
-`examples/reference-host` is the runnable source for this guide. It starts a
-real Node HTTP server, adapts requests through `createDataHttpHandler`, consumes
-them through `createHttpDataService`, compares local and remote result
-descriptors and rows, and closes the listener after every run:
+From the repository root, install its locked workspace dependencies first,
+then run the synthetic reference:
 
 ```sh
+pnpm install --frozen-lockfile
 pnpm --filter @aeliqo/reference-host test
 ```
 
-The fixtures are synthetic and make no paid model calls. Copy the transport
-wiring, not its permissive demo authentication: production hosts must derive
-principal and authorization from their own trusted session.
+`examples/reference-host/server.mjs` starts a real Node HTTP server and wraps
+`createDataHttpHandler` in the host's HTTP adapter. `verify.mjs` calls it via
+`createHttpDataService`, checks local and remote rows plus descriptor fields,
+then closes the listener. The executable path includes a `plan`, streamed
+`execute` events, and a completion event; a successful HTTP response alone is
+not evidence that a query was authorized or complete.
+
+To inspect the server separately, run
+`pnpm --filter @aeliqo/reference-host start`. It prints its loopback URL and
+uses synthetic commerce data; stop it with Ctrl+C. The test command is the
+repeatable check because it also exercises the client and cleanup. The fixture
+uses permissive synthetic authentication and makes no paid model calls.
+Production hosts must derive the principal and authorization from their own
+trusted session, use their own private source adapter, and map failures to
+explicit diagnostics. Do not copy the fixture's permissive authentication.
 <nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/guides/permissions/"><span>Authority adapter</span><small>Unify evaluator, Region, action, and agent context.</small><b aria-hidden="true">→</b></a><a href="/ship/"><span>Production checks</span><small>Verify source isolation and failure handling.</small><b aria-hidden="true">→</b></a></nav>

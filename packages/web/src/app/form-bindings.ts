@@ -169,8 +169,8 @@ function formBinding(
   values: Readonly<Record<string, Scalar>>,
 ): AeliqoInputBinding {
   const creating = intent.kind === 'create';
-  const label = creating ? `Create ${resource.label}` : `Edit ${resource.label}`;
-  const submitLabel = creating ? `Create ${resource.label}` : `Save ${resource.label}`;
+  const label = creating ? `Create a record in ${resource.label}` : `Edit a record in ${resource.label}`;
+  const submitLabel = creating ? 'Create record' : 'Save changes';
   return {
     id: 'form',
     ref: AELIQO_INPUT_REFS.form,

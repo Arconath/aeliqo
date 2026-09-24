@@ -11,7 +11,7 @@ contract: 'Resize adjacent regions by pointer and keyboard while respecting mini
 
 ## Purpose
 
-Resize adjacent regions by pointer and keyboard while respecting minimum task requirements.
+Arrange two slotted panes around a resizable separator with bounded `min`, `max`, and `step` values. Pointer and keyboard changes emit a position proposal; use `position` for controlled layout or `defaultPosition` for initial local state.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Set pane limits so each side stays useful. On phones, use vertical orientation i
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

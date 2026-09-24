@@ -1,7 +1,7 @@
 import type { QuerySpec } from '@aeliqo/core';
 import type { DataRecord } from '@aeliqo/runtime/data';
 import { createResultStore } from '@aeliqo/runtime/results';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { createRemotePeopleFixture } from './fixtures/remote.js';
 import { createPeopleFixture } from './fixtures/people.js';
 
@@ -40,6 +40,7 @@ it('does not treat a remote page as the full population', async () => {
   const f = await createRemotePeopleFixture({ logicalRows: 1_000_000, pageSize: 25, aggregate: false });
   const result = await f.surface.request(f.globalCountIntent);
   expect(result.status).toBe('unsupported');
+  expect(f.server.observedRequests.some((request) => request.kind === 'execute')).toBe(false);
   expect(f.server.observedRequests.some((r) => r.kind === 'fetch-all')).toBe(false);
   await f.dispose();
 });
@@ -60,6 +61,13 @@ it('keeps remote pages bounded, ordered, partial, and cursor-repeatable', async 
     expect(described.value.catalog.capabilities[0]?.metrics).toEqual([]);
   }
   const first = await f.requestPage();
+  expect(f.server.observedRequests.filter((request) => request.kind === 'plan').at(-1)?.query).toMatchObject({
+    entity: 'people',
+    fields: ['id', 'name', 'team'],
+    measures: [],
+    page: { size: 25 },
+    order: [{ field: 'id', direction: 'asc', nulls: 'last' }],
+  });
   expect(first.rows).toHaveLength(25);
   expect(first.loaded).toBe(25);
   expect(rowId(first.rows[0])).toBe('tenant-a-person-0000001');
@@ -549,6 +557,14 @@ it('publishes a complete aggregate only when the remote server proves it', async
   const f = await createRemotePeopleFixture({ logicalRows: 1_000_000, pageSize: 25, aggregate: true });
   const result = await f.surface.request(f.globalCountIntent);
   expect(result.status).toBe('committed');
+  const aggregatePlan = f.server.observedRequests.filter((request) => request.kind === 'plan').at(-1);
+  expect(aggregatePlan?.query).toMatchObject({
+    entity: 'people',
+    measures: [{ id: 'people.global-count', revision: '1' }],
+  });
+  expect(f.server.observedRequests.filter((request) => request.kind === 'execute').at(-1)?.query).toEqual(
+    aggregatePlan?.query,
+  );
   const state = f.surface.getSnapshot().state;
   expect(state.loaded).toBe(1);
   expect(state.count).toBe(1_000_000);
@@ -556,6 +572,11 @@ it('publishes a complete aggregate only when the remote server proves it', async
   expect(state.coverage).toMatchObject({ kind: 'complete' });
   const page = await f.surface.request({ kind: 'browse', resource: 'people', page: { size: 25 } });
   expect(page.status).toBe('committed');
+  expect(f.server.observedRequests.filter((request) => request.kind === 'plan').at(-1)?.query).toMatchObject({
+    entity: 'people',
+    measures: [],
+    page: { size: 25 },
+  });
   expect(f.surface.getSnapshot().state.population?.kind).toBe('unknown');
   expect(f.surface.getSnapshot().state.coverage?.kind).toBe('partial');
   await f.dispose();
@@ -610,9 +631,51 @@ it('returns structured capability gaps instead of emulating unsupported remote q
     });
     expect(outcome.ok, name).toBe(false);
     if (!outcome.ok) expect(outcome.diagnostics[0]?.code).toBe(code);
+    expect(f.server.observedRequests.filter((request) => request.kind === 'plan').at(-1)?.query, name).toEqual(query);
   }
+  expect(f.server.observedRequests.some((request) => request.kind === 'execute')).toBe(false);
   expect(f.server.observedRequests.some((request) => request.kind === 'fetch-all')).toBe(false);
   await f.dispose();
+});
+
+it('fences a remote surface request while a source adapter ignores cancellation', async () => {
+  let signalStarted!: () => void;
+  let releaseExecution!: () => void;
+  const started = new Promise<void>((resolve) => {
+    signalStarted = resolve;
+  });
+  const release = new Promise<void>((resolve) => {
+    releaseExecution = resolve;
+  });
+  const controller = new AbortController();
+  const f = await createRemotePeopleFixture({
+    logicalRows: 100,
+    pageSize: 10,
+    aggregate: false,
+    executionGate: { started: signalStarted, release, wasCancelled: () => controller.signal.aborted },
+  });
+  const before = f.surface.getSnapshot();
+  const pending = f.surface.request(
+    { kind: 'browse', resource: 'people', page: { size: 10 } },
+    { signal: controller.signal },
+  );
+  try {
+    await started;
+    controller.abort();
+    expect((await pending).status).toBe('cancelled');
+    releaseExecution();
+    await vi.waitFor(() => expect(f.server.lateDescriptors).toHaveLength(1));
+    expect(f.server.lateDescriptors[0]).toMatchObject({
+      counts: { loaded: 10 },
+      coverage: { kind: 'partial' },
+    });
+    await vi.waitFor(() => expect(f.server.cancelledRequests).toHaveLength(1));
+    expect(f.surface.getSnapshot().revision).toBe(before.revision);
+    expect(f.surface.getSnapshot().state.rows).toEqual([]);
+  } finally {
+    releaseExecution();
+    await f.dispose();
+  }
 });
 
 it('keeps local and HTTP surfaces on the same committed ResultStore path', async () => {

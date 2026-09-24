@@ -43,38 +43,48 @@ export function dataValueText(value: AeliqoDataValue | undefined, missing = '—
   return String(value);
 }
 
-export function dataStatusMessage(status: AeliqoDataStatus, message?: string): string | undefined {
+const statusCopy: Record<AeliqoDataStatus, readonly [string | undefined, string | undefined]> = {
+  loading: ['Loading…', 'Memuat…'],
+  empty: ['No data to display.', 'Tidak ada data untuk ditampilkan.'],
+  partial: ['Showing a partial result.', 'Menampilkan hasil sebagian.'],
+  stale: ['This result may be out of date.', 'Hasil ini mungkin sudah kedaluwarsa.'],
+  error: ['The data could not be loaded.', 'Data tidak dapat dimuat.'],
+  unavailable: ['Value unavailable.', 'Nilai tidak tersedia.'],
+  ready: [undefined, undefined],
+};
+
+export function dataStatusMessage(status: AeliqoDataStatus, message?: string, locale?: string): string | undefined {
   if (message !== undefined && message.length > 0) return message;
-  switch (status) {
-    case 'loading':
-      return 'Loading…';
-    case 'empty':
-      return 'No data to display.';
-    case 'partial':
-      return 'Showing a partial result.';
-    case 'stale':
-      return 'This result may be out of date.';
-    case 'error':
-      return 'The data could not be loaded.';
-    case 'unavailable':
-      return 'Value unavailable.';
-    case 'ready':
-      return undefined;
-  }
+  return statusCopy[status][/^id(?:-|$)/i.test(locale ?? '') ? 1 : 0];
 }
 
-export function scopeText(scope: AeliqoDataScope | undefined): string | undefined {
-  if (scope === undefined) return undefined;
-  const parts: string[] = [];
-  if (scope.label) parts.push(scope.label);
-  if (scope.kind === 'sample') parts.push('Bounded sample');
-  if (scope.kind === 'unknown') parts.push('Scope unknown');
+function scopeCountText(scope: AeliqoDataScope, indonesian: boolean): string | undefined {
   const total = scope.filteredTotal ?? scope.populationTotal;
   const population = scope.filteredTotal === undefined ? 'population' : 'matching';
-  if (scope.loaded !== undefined && total !== undefined)
-    parts.push(`${scope.loaded.toLocaleString()} of ${total.toLocaleString()} ${population} records loaded`);
-  else if (scope.loaded !== undefined) parts.push(`${scope.loaded.toLocaleString()} loaded records`);
-  else if (total !== undefined) parts.push(`${total.toLocaleString()} ${population} records`);
+  if (scope.loaded !== undefined && total !== undefined) {
+    if (indonesian)
+      return `${scope.loaded.toLocaleString('id-ID')} dari ${total.toLocaleString('id-ID')} rekaman ${scope.filteredTotal === undefined ? 'populasi' : 'yang cocok'} dimuat`;
+    return `${scope.loaded.toLocaleString()} of ${total.toLocaleString()} ${population} records loaded`;
+  }
+  if (scope.loaded !== undefined)
+    return indonesian
+      ? `${scope.loaded.toLocaleString('id-ID')} rekaman dimuat`
+      : `${scope.loaded.toLocaleString()} loaded records`;
+  if (total === undefined) return undefined;
+  return indonesian
+    ? `${total.toLocaleString('id-ID')} rekaman ${scope.filteredTotal === undefined ? 'populasi' : 'yang cocok'}`
+    : `${total.toLocaleString()} ${population} records`;
+}
+
+export function scopeText(scope: AeliqoDataScope | undefined, locale?: string): string | undefined {
+  if (scope === undefined) return undefined;
+  const indonesian = /^id(?:-|$)/i.test(locale ?? '');
+  const parts: string[] = [];
+  if (scope.label) parts.push(scope.label);
+  if (scope.kind === 'sample') parts.push(indonesian ? 'Sampel terbatas' : 'Bounded sample');
+  if (scope.kind === 'unknown') parts.push(indonesian ? 'Cakupan tidak diketahui' : 'Scope unknown');
+  const count = scopeCountText(scope, indonesian);
+  if (count !== undefined) parts.push(count);
   return parts.length === 0 ? undefined : parts.join('; ');
 }
 

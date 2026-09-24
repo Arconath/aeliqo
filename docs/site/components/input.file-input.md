@@ -11,7 +11,7 @@ contract: 'Native file selection; host owns upload and validation; no file bytes
 
 ## Purpose
 
-Native file selection; host owns upload and validation; no file bytes enter agent by default.
+Open the native file picker and expose selected file metadata for host review. The component checks configured count and size limits, but the application owns file bytes, upload, and server validation.
 
 ## When to use it
 
@@ -36,6 +36,12 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+`maxFiles` and `maxBytes` mark a selected set invalid when its file count or
+combined byte size exceeds the configured bound; the metadata event still
+reports that selection. They are not upload quotas or server-side validation.
+An application must check file content and size again before storing anything.
+`accept` and `capture` are browser picker hints, not proof of type or origin.
 
 ## Keyboard, focus, and accessibility
 
@@ -68,6 +74,6 @@ Keep file type and size limits in visible helper text. Let long file names wrap 
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

@@ -11,7 +11,7 @@ contract: 'Explicit/debounced query policy; composition input is not submitted m
 
 ## Purpose
 
-Explicit/debounced query policy; composition input is not submitted mid-IME.
+Add an explicit query-commit policy to a text field. Enter or `submitQuery()` emits a search request; `queryOnInput` can debounce typing, while IME composition suppresses premature requests.
 
 ## When to use it
 
@@ -36,6 +36,12 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+The default `queryOnInput` value is false. When enabled, `debounceMs` is
+clamped to 0–10,000 milliseconds (250 by default); a host-driven value change
+or disconnection cancels a pending timer. The component emits a query
+proposal, never performs the search or decides whether zero results means
+empty data, a denied source, or a failed request.
 
 ## Keyboard, focus, and accessibility
 
@@ -68,6 +74,6 @@ Let the query field use the available row width. Keep search policy and empty fe
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

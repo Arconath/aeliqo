@@ -11,7 +11,7 @@ contract: 'Navigate to an application-approved destination; preserve browser ope
 
 ## Purpose
 
-Navigate to an application-approved destination; preserve browser open-in-new-tab behavior.
+Render an application-supplied destination with native link behavior, including keyboard activation and browser navigation. The host must approve `href` and `target`; a cancellable link event lets it intercept activation when needed.
 
 ## When to use it
 
@@ -36,6 +36,11 @@ Relevant states:
 {{aeliqo:states}}
 
 {{aeliqo:outcome}}
+
+If `href` is empty or fails the component's URL check, it renders text rather
+than a navigable anchor. `disabled` also renders noninteractive text. For an
+approved `_blank` destination, the anchor includes `noopener noreferrer`;
+the host still decides which destinations users may open.
 
 ## Keyboard, focus, and accessibility
 
@@ -68,6 +73,6 @@ The label follows inline text flow and can wrap. Avoid fixed-width wrappers that
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

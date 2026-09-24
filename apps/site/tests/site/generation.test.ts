@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { access, mkdir, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -32,5 +32,17 @@ describe('static page generation', () => {
 
     await expect(access(staleSource)).rejects.toThrow();
     await expect(access(stalePublic)).rejects.toThrow();
+
+    const catalog = JSON.parse(await readFile(resolve(repositoryRoot, '../../catalog/components.json'), 'utf8'));
+    const ids: string[] = catalog.components.map(({ id }: { id: string }) => id);
+    for (const id of ids) {
+      const html = await readFile(join(generatedRoot, 'docs/components', id, 'index.html'), 'utf8');
+      const navigation = html.match(/<nav aria-label="Documentation">([\s\S]*?)<\/nav>/u)?.[1];
+      expect(navigation, `Missing documentation navigation for ${id}`).toBeDefined();
+      expect(navigation).toContain('class="docs-component-menu" role="group" aria-label="Component pages"');
+      expect(navigation?.match(/<a href="\/components\/[^"/]+\/"/gu)).toHaveLength(ids.length);
+      expect(navigation).toContain(`<a href="/components/${id}/" aria-current="page">`);
+      for (const catalogId of ids) expect(navigation).toContain(`href="/components/${catalogId}/"`);
+    }
   });
 });

@@ -11,7 +11,9 @@ contract: 'One validated value or aggregate with units, scope and unavailable st
 
 ## Purpose
 
-One validated value or aggregate with units, scope and unavailable state.
+Metric presents one application-supplied value with a label, optional unit, description, and scope. It
+formats numeric values with the chosen locale; a missing value becomes an unavailable state instead of an
+invented zero.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ Let long labels and formatted values wrap instead of clipping. Keep the unit vis
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

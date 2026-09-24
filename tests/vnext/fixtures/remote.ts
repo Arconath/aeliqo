@@ -123,6 +123,7 @@ const CURSOR_SECRET = 'remote-people-cursor-secret-v1';
 export interface RemoteRequestObservation {
   readonly kind: string;
   readonly principal?: string;
+  readonly query?: QuerySpec;
 }
 
 export interface RemoteResultStoreBeginObservation extends ResultBeginInput {
@@ -147,6 +148,7 @@ export interface RemotePeopleFixture {
     readonly origin: string;
     readonly observedRequests: readonly RemoteRequestObservation[];
     readonly cancelledRequests: readonly string[];
+    readonly lateDescriptors: readonly RemoteDescriptor[];
     readonly resultStoreBegins: readonly RemoteResultStoreBeginObservation[];
     readonly insertLeadingRow: () => void;
     readonly dispose: () => Promise<void>;
@@ -182,6 +184,12 @@ export interface RemotePeopleFixtureOptions {
   readonly sameAuthorityLabels?: boolean;
   readonly cursorTtlMs?: number;
   readonly estimatedPopulation?: boolean;
+  /** Test barrier that deliberately does not listen for cancellation. */
+  readonly executionGate?: {
+    readonly started: () => void;
+    readonly release: Promise<void>;
+    readonly wasCancelled: () => boolean;
+  };
 }
 
 function createRemoteFeature(aggregate: boolean, schemaRevision: string, meaning: MeaningDefinition) {
@@ -350,8 +358,17 @@ function cursorTtl(options: RemotePeopleFixtureOptions): number {
   return value;
 }
 
-function observe(observations: RemoteRequestObservation[], kind: string, principal: RemotePrincipal | undefined): void {
-  observations.push({ kind, ...(principal === undefined ? {} : { principal: principal.key }) });
+function observe(
+  observations: RemoteRequestObservation[],
+  kind: string,
+  principal: RemotePrincipal | undefined,
+  query?: QuerySpec,
+): void {
+  observations.push({
+    kind,
+    ...(principal === undefined ? {} : { principal: principal.key }),
+    ...(query === undefined ? {} : { query }),
+  });
 }
 
 function catalogFor(
@@ -819,6 +836,7 @@ function remoteService(
   options: RemotePeopleFixtureOptions,
   observations: RemoteRequestObservation[],
   cancellations: string[],
+  lateDescriptors: RemoteDescriptor[],
   meaning: MeaningDefinition,
   mutation: RemoteMutationState,
 ): DataService {
@@ -867,7 +885,7 @@ function remoteService(
     },
     async plan(request: PlanRequest, context: ReadContext = {}): Promise<Outcome<PlanAcceptance>> {
       const principal = principalFrom(context);
-      observe(observations, 'plan', principal);
+      observe(observations, 'plan', principal, request.query);
       if (principal === undefined) return failed('data.denied', 'The authenticated principal is not recognized.');
       if (request.catalogRevision !== catalog.revision)
         return failed('data.stale-catalog', 'The plan must pin the current catalog revision.');
@@ -935,7 +953,7 @@ function remoteService(
     },
     async *execute(request: AcceptedQuery, context: ReadContext = {}): AsyncGenerator<ResultEvent> {
       const principal = principalFrom(context);
-      observe(observations, 'execute', principal);
+      observe(observations, 'execute', principal, request.query);
       if (principal === undefined) {
         yield {
           kind: 'error',
@@ -993,7 +1011,11 @@ function remoteService(
         return;
       }
       try {
-        await waitForCancellation(context.signal, 20);
+        if (options.executionGate !== undefined) {
+          options.executionGate.started();
+          await options.executionGate.release;
+        }
+        await waitForCancellation(options.executionGate === undefined ? context.signal : undefined, 20);
         const mode = options.pagination ?? 'snapshot';
         if (options.mutateDuringExecution === true) insertLeadingRow(mutation);
         const materializedSourceRevision = sourceRevisionFor(principal, options, mutation);
@@ -1043,8 +1065,9 @@ function remoteService(
           meaning,
           aggregatePopulation,
         );
+        if (options.executionGate?.wasCancelled()) lateDescriptors.push(first.descriptor);
         yield first;
-        await waitForCancellation(context.signal, 50);
+        await waitForCancellation(options.executionGate === undefined ? context.signal : undefined, 50);
         if (rows.length > 0) yield { kind: 'batch', result: first.descriptor.ref, sequence: 0, rows };
         const next =
           !aggregateResult && window.hasMore
@@ -1199,6 +1222,7 @@ export async function createRemotePeopleFixture(options: RemotePeopleFixtureOpti
   const feature = createRemoteFeature(options.aggregate, schemaRevisionFor(options), meaning);
   const observations: RemoteRequestObservation[] = [];
   const cancellations: string[] = [];
+  const lateDescriptors: RemoteDescriptor[] = [];
   const resultStoreBegins: RemoteResultStoreBeginObservation[] = [];
   const authorityReads: string[] = [];
   const sharedScopeDigest = options.sameAuthorityLabels === true ? 'remote-scope-shared' : undefined;
@@ -1226,7 +1250,7 @@ export async function createRemotePeopleFixture(options: RemotePeopleFixtureOpti
       },
     ],
   ]);
-  const service = remoteService(feature, options, observations, cancellations, meaning, mutation);
+  const service = remoteService(feature, options, observations, cancellations, lateDescriptors, meaning, mutation);
   const handler = createDataHttpHandler({
     service,
     authenticate: (request) => {
@@ -1485,6 +1509,9 @@ export async function createRemotePeopleFixture(options: RemotePeopleFixtureOpti
     },
     get cancelledRequests() {
       return Object.freeze(cancellations.slice());
+    },
+    get lateDescriptors() {
+      return Object.freeze(lateDescriptors.slice());
     },
     get resultStoreBegins() {
       return Object.freeze(resultStoreBegins.slice());

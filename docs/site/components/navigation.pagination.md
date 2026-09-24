@@ -11,7 +11,7 @@ contract: 'Stable cursor/page scope; loaded rows are not misrepresented as globa
 
 ## Purpose
 
-Stable cursor/page scope; loaded rows are not misrepresented as global selection.
+Show the current page and available previous or next directions from host-supplied page information. Activating a control requests a page change; it does not fetch rows or claim that an unknown total is complete.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Keep page controls large enough to operate. Use the host to reduce the number of
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

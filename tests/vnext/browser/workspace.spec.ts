@@ -8,7 +8,7 @@ test('J3 registered overview evaluates one three-need Task and renders its selec
   await expect(workspace).toHaveAttribute('data-task-id', 'attendance-overview-task');
   await expect(workspace).toHaveAttribute('data-needs', 'summary,trend,breakdown');
   await expect(workspace).toHaveAttribute('data-outputs', 'summary,trend,breakdown');
-  await expect(workspace).toHaveAttribute('data-selected-candidate', 'registered-overview');
+  await expect(workspace).toHaveAttribute('data-selected-candidate', 'registered');
   await expect(workspace).toHaveAttribute('data-plan-nodes', 'workspace,summary,trend,breakdown');
   await expect(workspace).toHaveAttribute('data-node-results', 'summary:summary,trend:trend,breakdown:breakdown');
   await expect(workspace).toHaveAttribute('data-scope', 'attendance-scope');

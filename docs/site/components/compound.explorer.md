@@ -11,7 +11,9 @@ contract: 'Filter plus collection plus selected detail using shared parameter/se
 
 ## Purpose
 
-Filter plus collection plus selected detail using shared parameter/selection state.
+Explorer places FilterBuilder, RecordList, and Detail in one bounded layout. The application supplies the
+rows, selected key, and detail record; filter and selection events are forwarded as proposals rather than
+changing host data silently.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ Stack filters, records, and detail in reading order on narrow hosts. Preserve th
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

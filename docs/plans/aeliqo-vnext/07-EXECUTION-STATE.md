@@ -1,6 +1,289 @@
 # Aeliqo vNext execution state
 
+## 2026-09-24 local-runner boundary correction — release candidate pending
+
+Clean `e97b7e945f8224d9e5d835042f8473b8c02f2c14` passed the full
+12-case `deepseek-flash` J1–J3 corpus with 24 newly authorized requests,
+estimated US$0.040602, exact source digest
+`6e1c4aea26108ae38a2aa2e76e527f04891b49be1a936a54dea6a2c2d8963c0e`,
+and no source change during the run. Its clean local site suite, 71-component
+docs artifact, six installed bundle rows, five-tarball preflight, and local
+production image smoke passed. The conservative paid request count is now
+156/156 authorized; this evidence qualifies only the `e97b7e9` source.
+
+An independent trust-boundary audit then reproduced a cross-site, no-CORS
+browser GET with no `Origin` that replaced the active local-runner session.
+The session bootstrap now rejects non-same-origin browser Fetch Metadata
+before any session replacement; its browser regression verifies the prior
+session survives. The public attendance and workspace fixtures now keep raw
+receipts hidden while their user-readable status remains visible. Focused
+runner and Playground browser checks passed. PR Quality `35958649552` on
+`e97b7e9` was cancelled because these corrections supersede its source.
+
+The owner has authorized at most 24 additional `deepseek-flash` requests on
+the corrected final source, without fallback and under the same total US$1
+ceiling; none have been used. The corrected source needs a clean commit,
+exact-source PR Quality, and a full live model run within that authorization.
+Accepted-main push Quality, RC/stable registry proof, immutable
+image publication, platform promotion, public smoke, and rollback proof remain
+open. No merge or 0.5 publication/cutover has occurred. `RELEASED_VERIFIED`
+is not assigned.
+
+## 2026-09-24 exact-source Quality blocker — PR #31
+
+PR Quality `35957164184` on clean source
+`84b51151335a6ea875e4d57d773aa0407283e14e` failed at gate 27/89.
+Its first 26 checks passed, but the installed-package `region-table` bundle
+was 164,231 bytes gzip against a 163,840-byte limit. The downloaded
+source-bound report is `artifacts/quality-evidence-84b/artifacts/product-ci/ci.json`;
+the performance report is under the same evidence directory. The same
+164,231-byte result reproduced locally, so the failure is a source-size
+regression rather than runner noise. The gate remains unchanged. A focused
+helper deduplication measured 163,688 bytes gzip from installed tarballs,
+543 bytes lower and 152 below the limit, with all six bundle rows passing and
+no forbidden modules. Semantic data, visualization, foundation, and
+navigation checks passed 84/84 in total; lint, format, and diff checks passed.
+These are worktree checks, so new full exact-source Quality is required.
+
+A read-only content spot check also found the Trend component page incorrectly
+said standard recipes never select Trend. The standard recipe does include
+Trend for eligible browse/analyze results. Its authored page is corrected in
+the active worktree; it needs a fresh docs artifact and final-source Quality.
+Neither this correction nor the performance work qualifies the release until
+committed and verified. The paid live gate remains open at 132/132 approved
+requests while a further bounded authorization is pending.
+
+## 2026-09-24 post-b350 correction — active release candidate work
+
+Clean PR #31 source `b3505e57d1e973a92753fc98fbf04393ac5b9a58`
+passed local five-tarball preflight: all five `0.5.0-rc.2` archives were
+installed in a clean consumer, 166 exports were loaded, the package SBOM had
+59 components, and the package scan found no secret. Source digest was
+`878fe2e6c838febe9161cf316a42637bf54773b0098dc494d82770b2a986fe54`.
+Its exact-source PR Quality run `35956488851` was cancelled when the later
+source changes superseded it.
+
+The owner-approved `deepseek-flash` run on that clean digest completed 12
+cases using 24 requests (estimated US$0.0396426; no invoice). Eleven passed.
+J2 success failed safely with `live.j2-invalid`: the model proposed the
+correct approved period and filter but omitted `calendar` and `timezone` from
+its time bucket. The host had required those two fields even though its
+registered day field already fixes both values. The retained report is
+`artifacts/agent-evaluation/live-journeys/b3505e5/report.json`; it is
+diagnostic, not A41 acceptance. The conservative approved request count is
+now 132/132. A further 24-request authorization has been requested and must
+not be assumed before a new paid run.
+
+A browser regression now reproduces that exact J2 proposal, and the host
+fills omitted temporal metadata from its registered Jakarta day while still
+rejecting explicit conflicting metadata. Independent site review also found
+that Export on the three public journeys could download a different base
+scenario starter. The correction disables that misleading action on J1–J3,
+links to the matching source fixture, and leaves verified stable export for
+the four base scenarios. Focused agent evaluation passed 10 Node and 5 browser
+tests, including the reproduced live J2 proposal and rejection of conflicting
+metadata. Candidate and simulated stable Export browser checks passed; site
+typecheck, lint, format, and docs artifact checks passed (126 pages, 71
+components). Two docs navigation failures during concurrent source changes
+passed when rerun after the worktree stopped changing; final-source Quality
+must run the complete site matrix. These edits
+require a new clean source, independent review, PR Quality, accepted-main
+push Quality, registry and image proofs, platform promotion, live smoke, and
+rollback qualification. `RELEASED_VERIFIED` is not assigned.
+
+## 2026-09-24 J2 live-result correction — current PR #31 worktree
+
+The last pushed clean source was `0e79f69cf43d873610ba71ccc6252b8118a4b6f6`.
+Its DeepSeek `deepseek-flash` run used the approved 24 additional requests and
+reported 12/12 under the earlier scorer (`artifacts/agent-evaluation/live-journeys/0e79f69/report.json`,
+source digest `7993d41343a5356ebecc2c8be60bae7eefcf3c11e1e523532c8fde7edefba9e2`,
+estimated US$0.0386559, unchanged source). Independent review found that J2
+rendered English chart labels despite the corpus prompt explicitly requesting
+Indonesian output. Its 12/12 score therefore remains historical diagnostic
+evidence, not full A41 qualification. The conservative approved call count is
+108/108. No further paid call is authorized yet.
+
+The corrective worktree passes the host's Indonesian locale to the region
+chart, shows the approved 1–5 September Jakarta period, and uses an Indonesian
+meaning label. The live scorer now requires the visible language, exact
+rendered daily rows, registered J3 child output, and bounded J1 identity; it
+rejects the old J2 report. The live driver records bounded model-submitted
+tool arguments and receipt states for diagnosis. Focused live-offline checks
+passed (10 Node tests, 4 browser tests), as did the web build, SSR, lint,
+docs artifact (126 pages and 71 components), site build, and site tests
+including 24 visual baselines. Catalog examples passed 3/3, component
+accessibility passed 12/12, and J1–J3 visual journeys passed 27/27 across
+Chromium, Firefox, and WebKit at 360, 768, and 1440 pixels. These are
+dirty-source focused checks; they do not qualify the release. PR Quality run
+`35954283291` was cancelled because it applies only to the superseded source.
+
+The J2 host owns its approved as-of period: an omitted model period uses the
+visible host period and fixed query filter, while an explicit alternate period
+is rejected. The live gate qualifies the rendered outcome and boundary, not
+independent date arithmetic by the model.
+
+The next clean corrected commit, new exact-source PR Quality, fresh authorized
+live run, accepted-main push Quality, registry publications, image, platform
+promotion, live smoke, and rollback proof remain required. `RELEASED_VERIFIED`
+is not assigned.
+
+## 2026-09-24 release-candidate checkpoint — PR #31
+
+PR #31 previously contained clean source
+`4662b25d87521f853093f7de3d24e72962387664`. Its GitHub Quality run
+`35949889987` had only passed policy when these corrections were identified;
+that is not functional qualification. Earlier run `35911405421` passed 89/89
+at `46c6aa6`, a different SHA. The older `6c468f9` report at 80/88 remains
+an interrupted historical checkpoint. The commit containing this checkpoint
+must obtain its own exact-source PR Quality; use the PR run artifact for its
+source SHA and final result rather than interpreting an earlier SHA as current.
+
+The authorized full DeepSeek `deepseek-flash` evaluation at clean
+`4662b25` passed all 12 synthetic J1–J3 browser/provider/renderer cases.
+Its source-bound report is
+`artifacts/agent-evaluation/live-journeys/4662b25/report.json`: 24 provider
+requests, estimated US$0.0377736, unchanged source, corpus SHA256
+`512f1d5bff233c708fe9067ede55ff3f6666b6279391834a91c07d7b240c30e6`.
+J1/J2/J3 success rendered committed results; all nine ambiguity, unsupported
+and adversarial cases preserved the previous UI without a commit. The first
+full run (10/12), targeted diagnostics, and one interrupted diagnostic bring
+the conservative aggregate to 60/60 approved requests. These costs are
+estimates, not a provider invoice. Do not make further paid requests under
+this authorization.
+
+Read-only acceptance and UI audits then found a missing installed-package
+proof for the exact beginner React example, a missing loopback HTTP action
+confirmation proof, and colliding Playground title letters at narrow widths.
+Focused consumer/action tests and a one-line title-spacing correction are
+included in the commit containing this checkpoint. `pnpm site:build`, `pnpm site:test`,
+`pnpm test:framework:consumers`, `pnpm test:vnext` (295/295), and focused
+action HTTP tests passed after these edits; independent visual inspection
+confirmed the corrected title at 360, 768, and 1440 pixels. These changes
+supersede clean `4662b25` for release, so both its PR Quality and live-model
+report remain earlier-source checkpoints. Require a successful exact-source
+Quality run for the corrected PR head before merge.
+
+Registry preflight found `0.5.0-rc.2` and `0.5.0` available for all five
+packages. No merge to `main`, publication of these versions, image publication,
+or deployment has occurred. Remaining gates are corrected exact-source PR
+Quality, accepted `main` and its push Quality, reconciliation of live-model
+evidence with final source within approved paid limits,
+RC/stable registry consumers, image and ZIP proof, platform promotion, live
+smoke, and rollback proof. `RELEASED_VERIFIED` is not assigned. Aeliqo owns
+this repository; the platform task owns shared admission and promotion.
+
+## 2026-09-24 0.5.0 closure in progress
+
+### Integrated correction checkpoint (pre-freeze evidence, 2026-09-24)
+
+- React scope children now follow committed authorization, including initial,
+  denied, revocation, dirty voluntary transition, and A→B→A epochs. The scoped
+  `useSurface(feature, { id, bindings })` path uses the host runtime and nearest
+  active scope; the existing factory path remains. J2 query bounds derive from
+  the visible Asia/Jakarta period. J3 discovers its registered pattern with an
+  empty candidate list and preserves the three distinct child Results.
+- The public playground contains People Jakarta, Daily attendance, and
+  Analytical workspace alongside four earlier scenarios. The reviewed
+  clarification, reset, inspector, and committed-filter feedback defects were
+  corrected. Browser provider-key input and direct provider transport were
+  removed. The local runner requires an explicit trusted model profile.
+- A 12-case J1–J3 live evaluation corpus, real browser host, scorer, and
+  request/spend preflight exist. The approved DeepSeek example is deliberately
+  `authorized: false`; its dry report has zero provider requests and zero
+  spend. Live model quality is still unverified. Current official peak prices
+  used for reservation are $0.30 per million cache-miss input tokens and $1.20
+  per million output tokens; the full 48-request reservation is $0.576.
+- The site-release workflow now requires successful exact-source stable npm
+  publication, a fresh five-package registry/provenance consumer, current
+  `latest` dist-tags, and installation/build of all four exported ZIP projects
+  before enabling export in the immutable image. A stable-build simulation
+  generated release-aware public copy; it did not publish an image.
+- Fresh pre-freeze checks passed: `pnpm site:test` (including 24 visual
+  baseline cases), `pnpm test:docs-artifact` (126 pages, 71 components),
+  `pnpm test:catalog-examples` (3/3), `pnpm test:release-tooling` (31/31),
+  `pnpm test:vnext` (289/289), `pnpm test:vnext:browser` (61/61),
+  `pnpm test:vnext:visual` (27/27 across Chromium, Firefox, WebKit),
+  `pnpm test:agent-evaluation:host` (28/28),
+  `pnpm test:agent-evaluation:live-offline` (7 Node and 3 browser),
+  `pnpm test:framework:consumers`, `pnpm test:performance:bundles` (6/6),
+  `pnpm lint`, and `pnpm format:check`. Source edits after an individual check
+  still require the PR Quality matrix on the final commit. Read-only npm
+  preflight found all five `0.5.0-rc.2` and `0.5.0` versions available.
+- The acceptance matrix now has 89 gates, including the offline J1–J3 model
+  host. The prior 80/88 interrupted report remains historical. Open gates:
+  independent final diff review, one frozen candidate commit, PR Quality,
+  required push Quality on accepted `main`, separately authorized paid live
+  evaluation, owner publication, image proof, platform promotion, live smoke,
+  and rollback evidence. `RELEASED_VERIFIED` is not assigned.
+
+- Accepted starting source for this correction is clean branch
+  `codex/aeliqo-0.5-site-docs` at
+  `6c468f909e3a5d7699ef844a0589e12feb7b7afe`. The earlier paragraph
+  below records the historical `930ba21` worktree before that source was
+  committed; it is not the current candidate state.
+- `artifacts/product-ci/ci.json` still reports `running` at `6c468f9` with
+  80 completed of 88 scheduled gates after an interrupted run. It is not a
+  pass and cannot be resumed as an unchanged-source qualification. No 0.5
+  stable package or site from this source is published.
+- The source correction targets the authorized React scope boundary
+  and scoped hook, trusted local model runner, three public journeys, live
+  AI evidence, truthful export/docs, and exact-source release gates. J2 civil
+  bounds now derive from its displayed period. J3 resolves its registered
+  pattern with an empty candidate list and commits three distinct child
+  views. Focused J2/J3 Vitest 35/35, runtime presentation 58/58, and J2/J3
+  Chromium browser 12/12 passed in this dirty worktree; these are not release
+  qualification.
+- After integration and independent review, make one source candidate commit,
+  run the full Quality matrix against that unchanged commit, and reconcile
+  the A01–A50 evidence. The platform task owns shared deployment state.
+
+### Release operator continuation (planned; no release command run here)
+
+The product operator owns the Aeliqo repository's Quality, package publish,
+and site image workflows. The platform operator owns shared GitOps admission,
+`production-deploy.py prepare`, promotion preflight, and rollback execution
+from current `platform-apps/main`. No product task should push platform state.
+
+1. Review the candidate source and independent findings, then freeze one
+   source commit on the approved single PR branch. Require its PR
+   Quality report. Merge only through required checks; record accepted `main`
+   SHA and its successful push Quality run. An interrupted or different-SHA
+   `artifacts/product-ci/ci.json` cannot satisfy this gate.
+2. Recheck npm availability. Owner-dispatch `release-publish.yml` for the next
+   available 0.5 RC from accepted `main`, verify its five installed packages,
+   then owner-dispatch matching stable `0.5.0` from the same SHA using that RC
+   evidence. Keep each workflow's candidate manifest, publication record,
+   registry consumer report, package integrity, and provenance.
+3. Owner-dispatch `site-release.yml` on the same `main` SHA with the successful
+   stable publication run ID in `stable_publish_run_id`. Its gate downloads the
+   exact-source publication artifact, reinstalls five packages from npm,
+   verifies source-bound provenance, and only then enables ZIP export for the
+   immutable site image. Record Quality run, site-release run, image digest,
+   SBOM/scan/provenance, and image route/health smoke. A missing artifact or
+   mismatched version/source keeps export disabled and blocks image publish.
+4. Give the platform operator the accepted SHA, run IDs, verified image digest,
+   ephemeral qualification, and prior image digest. Platform prepares and
+   preflights promotion before cutover. After cutover verify `/healthz`,
+   `/readyz`, `/version`, landing, docs, search, catalog, playground, ZIP
+   registry install, and manual J1–J3. Keep the prior image for rollback;
+   repair an already published npm version with a patch rather than unpublish.
+
+These are procedures, not evidence that publication, deployment, human
+usability, or rollback has occurred. `RELEASED_VERIFIED` remains closed until
+source, registry, image, live site, and rollback evidence all match.
+
+## 2026-09-24 local 0.5.0 site and documentation correction
+
+- Starting source: clean `main` at `930ba212142caecf9a18df2d71adf343bdbf2986`. The worktree now contains local 0.5.0 candidate edits; none of the earlier exact-source matrix reports qualify these edits. Do not publish, deploy, or promote from this dirty state.
+- Product shape remains five packages plus one public site. The playground now presents intent, validated result, and rendered view as a readable journey; manual use stays available without AI. Schema-derived create/edit forms use collection-safe labels. The action review retains completion until explicit Done, fences a rapid second click, and restores focus to the initiating control in Chromium, Firefox, and WebKit focused browser checks. The disconnected and BYOK paths retain honest status text.
+- All 71 component pages now expose a grouped component sidebar with the current page and family visible, plus a compact mobile toggle and keyboard focus treatment. Catalog maturity derives from registered representations/recipes: 71 standalone web elements, 63 with semantic binding, and 6 with a standard adaptive recipe. Purpose text was reviewed for every component; source-backed failure, state, and accessibility details were corrected where needed. Public agent, HTTP, SSR, workspace, custom-view, form, migration, and release pages were expanded against actual contracts.
+- Current dirty-source checks: `pnpm site:test` passed, including site build/typecheck, browser, BYOK, local runner, all documentation navigation/previews, responsive/layout, server/provenance, and 24 visual-baseline cases; `pnpm test:docs-artifact` passed with 126 pages, 71 components, 12 Node tests, Vitest and TypeScript; `pnpm test:catalog-examples` passed 3/3; `pnpm lint` and `pnpm format:check` passed. The dedicated docs browser suite passed 13/13, including all 71 routes and mobile keyboard/a11y checks. The first `pnpm test:visual` batch passed 639/639 catalog cases across Chromium, Firefox, and WebKit; the remaining duplicate dirty-source batches were intentionally stopped so the required clean-source `pnpm check` can run the complete visual matrix once. Independent read-only final diff review found no concrete blocker; `git diff --check` passed.
+- These checks establish local behavior for the edited surfaces, not release qualification. Next: create one accepted clean candidate commit, run `pnpm check` on that unchanged commit (including the complete three-engine visual matrix), then verify exact-source packed packages/image and owner-controlled release gates. Paid model evaluation, publication, merge, and deployment retain separate authorization; the older 0.4.2 site/image and npm artifacts remain rollback assets.
+
 ## 2026-09-23 current-main candidate continuation
+
+- Pushed `main` commit `4a31da6a862bc1bc7d06f791369f0753a80fdd39` passed the unchanged-source local 87/87 `pnpm check`. Its GitHub Quality run `35848925683` is source-bound to that SHA, not to later edits. A post-push A35 review found missing native React lazy-view recovery. Commit `f1dc737` added a trusted `load` registration, eligible prior-view retention, and retry. Browser tests cover context/portal/controlled-input continuity, loader failure and retry, prior-view deregistration, and equivalent registry rebuilds. Focused vNext 283/283, vNext browser 54/54, installed framework consumer, site build/test, docs artifact, lint, format, and bundle 6/6 passed for that checkpoint. A later review found duplicate initial lazy loads in React StrictMode; a new browser regression failed 2 versus 1 before the loader correction and passed afterward. Synthetic remote query/cancellation and no-agent disconnect evidence was also strengthened. Publication qualification depends on a clean exact-source full matrix for the corrected source.
+- After `b4ee986`, the resumed exact-source matrix was intentionally stopped after 27 passing gates when a read-only UI/docs audit found two missing acceptance artifacts. The following source adds a complete four-file no-AI React starter (extracted snippet typechecks), 260 sequential local React updates on one surface, a held native loader unmount/listener check, civil-date boundary and DST rejection tests, and a canonical 27-case J1–J3 three-engine screenshot-capture/keyboard/axe gate at 360/768/1440 pixels. Focused React browser 18/18, attendance 7/7, civil weekly 6/6, capture/axe/keyboard 27/27, and docs artifact 10/10 passed. These focused checks do not qualify release; use the final exact-source matrix artifact for that claim. Representative screenshots were reviewed without finding clipping or overlap, but there is no approved pixel baseline or automated visual comparison. Human assistive-technology use and full non-UTC instant-period evaluation are not claimed.
 
 - A later clean `pnpm check` passed 87/87 at `122ab40a7eaf0faf08e069e6778bbf402564489e`: `artifacts/product-ci/ci.json` recorded that exact `sourceRevision`, `status: passed`, and `sourceChangedDuringRun: false`. Chromium, Firefox, WebKit, vNext browser, and bundle gates all passed. Subsequent J3 browser integration and public-doc corrections changed the source, so this is a checkpoint rather than qualification of the next candidate commit.
 - The integrated J3 fixture now compiles one registered summary/trend/breakdown goal, evaluates three Results, offers one bounded registered pattern, commits the selected plan, and renders all three in one Region. Browser tests assert real child DOM, identities, narrow/wide layout, and retention after unknown-goal and mandatory breakdown failures. Focused vNext 281/281, browser 50/50, bundle 6/6 at the unchanged 163,835/163,840-byte `region-table` cap, TypeScript, lint, format, and Knip passed. The host supplies the pattern candidate; empty-candidate discovery and live model behavior are unproved. Scope isolation comes from separate scope/security suites, not this fixed-principal fixture.
@@ -40,30 +323,30 @@ Updated: 2026-09-20 (final-v3 implementation and acceptance checkpoint).
 
 Planning pack: final-v3 validated from the supplied ZIP and pristine temporary extraction, then installed under this directory. The repository remote, protected-main policy, release workflows, pinned toolchain, exports, 71-component catalog, current docs, and quality matrix were observed locally. The vNext harness, strict typecheck, focused implementation suites, and final clean-source acceptance are recorded in the source-bound artifacts under `artifacts/`; planning-pack validation remains separate from product evidence.
 
-| Task | State                    | Evidence                                                                                                                                                                                                                                                                                                 |
-| ---- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| T00  | verified                 | `BASELINE.md`, integrity evidence, harness, baseline checkpoints, and the final unchanged-source 87/87 matrix recorded by `artifacts/product-ci/ci.json`                                                                                                                                             |
-| T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim                                                                                                                                             |
-| T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published                                                                                                                                                 |
-| T03  | implemented-and-verified | Accepted source `4422b0d`; scoped instances, authority-fenced controlled ownership, typed safe denial/intent, exactly-once publication, bounded lifecycle, 34/34 vNext, regressions, and installed runtime consumer pass; not published                                                                  |
-| T04  | implemented-and-verified | Accepted source `f2c5389`; two-phase acceptance/commit, terminal-state and truthful-receipt reentrancy checks, real parent/child/peer isolation, 61/61 focused, 95/95 vNext, regressions, and installed runtime consumer pass; not published                                                             |
-| T05  | implemented-and-verified | Accepted source `867192f`; bounded local binding and inference, atomic schema-validated updates, pre-commit source fencing, 47/47 focused, 129/129 vNext, full data/query/semantics/evaluation/Region/Result regressions, installed core/runtime consumers, site and visual gates; not published         |
-| T06  | implemented-and-verified | Accepted source `22b6950`; real HTTP protocol fixture, explicit unsupported/coverage behavior, snapshot/live cursor fencing, authoritative aggregate/lineage proof, semantic expected-value fixtures, 178/178 vNext, regressions, installed core/runtime consumers, site and visual gates; not published |
-| T07  | implemented-and-verified | Accepted source `1e4fa2f`; deterministic owned-input resolver, bounded candidate IDs, pins/eligibility/clarification, candidate isolation, cancellation rollback, hostile Proxy/accessor rejection, 204/204 vNext, 52/52 adaptation, browser/consumer/site/performance evidence; not published                       |
-| T08  | implemented-and-verified | Accepted source `61ab509`; registered bar analysis, identity-scoped comparison split, adaptive table/cards, exact ResultRef lineage isolation through data/visualization/plot boundaries, browser/SSR/docs/consumer evidence, and independent review; not published |
-| T09  | implemented-and-verified | Source `756dbf6`; real runtime coordinating surface, registered custom layout/selection intents, validated bounded single/split/compare plans, immutable child addresses, renderer-failure retention, cancellation, unknown-intent rejection, 4/4 focused workspace tests, and strict vNext typecheck. Browser focus/resize/draft evidence remains T10/T13; not published or deployed. |
-| T10  | implemented-and-verified | Source `42d0c5b` plus test/config corrections `5e00232` and `ce00be0`; native React/headless bindings, effect-owned lifecycle, SSR-safe views, 5/5 React tests, 13/13 vNext browser tests, strict TypeScript, and packed framework consumer evidence; not published. |
-| T11  | implemented-and-verified | Source `b3f0aa8`; real host action confirmation and non-data job capability/progress/cancel/output references; 8/8 focused tests, strict TypeScript, and runtime build; not published. |
-| T12  | implemented-and-verified | Source `617a7ed` plus race correction `ce00be0`; request-scoped SSR/static island, no-JS useful DOM, principal isolation, slow hydration, rapid navigation, RTL/theme and browser evidence 13/13; not published. |
-| T13  | implemented-and-verified | Source `d452c77`; adaptive focus/draft/resize/RTL/reduced-motion behavior, keyboard clarification, partial/unsupported/cancelled/denied recovery, and automated accessibility scan; focused 5/5, vNext browser 22/22, a11y 12/12; three-engine visual gate is recorded by the clean final matrix. |
-| T14  | implemented-and-verified | Sources `a1db42d` and `aa1ef45`; explicit scope/target browser bridge, bounded metadata, actual SurfaceController/renderer receipts, scope rebind and continuation reset; focused 6/6, agent 116/116, strict TypeScript and agent build; not published. |
-| T15  | implemented-and-verified | Source `2f8df85`; explicit no-auth allowlist, bearer/custom-header profiles, correlation/malformed/oversize/retry/rate/timeout/cancel/streaming tests and local HTTP fixture; focused 7/7, protocol 11/11, agents 116/116; no paid call. |
+| Task | State                    | Evidence                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T00  | verified                 | `BASELINE.md`, integrity evidence, harness, baseline checkpoints, and the final unchanged-source 87/87 matrix recorded by `artifacts/product-ci/ci.json`                                                                                                                                                                                                                                                   |
+| T01  | design-contract-verified | ADR 012 plus local/advanced/negative declaration consumers; strict TypeScript and ten non-vacuous negative cases pass; no runtime or installed-package claim                                                                                                                                                                                                                                               |
+| T02  | implemented-and-verified | Real `@aeliqo/core/features` implementation, docs/export map, regressions, installed tarball/Vite/Chromium consumer, and full matrix pass; not published                                                                                                                                                                                                                                                   |
+| T03  | implemented-and-verified | Accepted source `4422b0d`; scoped instances, authority-fenced controlled ownership, typed safe denial/intent, exactly-once publication, bounded lifecycle, 34/34 vNext, regressions, and installed runtime consumer pass; not published                                                                                                                                                                    |
+| T04  | implemented-and-verified | Accepted source `f2c5389`; two-phase acceptance/commit, terminal-state and truthful-receipt reentrancy checks, real parent/child/peer isolation, 61/61 focused, 95/95 vNext, regressions, and installed runtime consumer pass; not published                                                                                                                                                               |
+| T05  | implemented-and-verified | Accepted source `867192f`; bounded local binding and inference, atomic schema-validated updates, pre-commit source fencing, 47/47 focused, 129/129 vNext, full data/query/semantics/evaluation/Region/Result regressions, installed core/runtime consumers, site and visual gates; not published                                                                                                           |
+| T06  | implemented-and-verified | Accepted source `22b6950`; real HTTP protocol fixture, explicit unsupported/coverage behavior, snapshot/live cursor fencing, authoritative aggregate/lineage proof, semantic expected-value fixtures, 178/178 vNext, regressions, installed core/runtime consumers, site and visual gates; not published                                                                                                   |
+| T07  | implemented-and-verified | Accepted source `1e4fa2f`; deterministic owned-input resolver, bounded candidate IDs, pins/eligibility/clarification, candidate isolation, cancellation rollback, hostile Proxy/accessor rejection, 204/204 vNext, 52/52 adaptation, browser/consumer/site/performance evidence; not published                                                                                                             |
+| T08  | implemented-and-verified | Accepted source `61ab509`; registered bar analysis, identity-scoped comparison split, adaptive table/cards, exact ResultRef lineage isolation through data/visualization/plot boundaries, browser/SSR/docs/consumer evidence, and independent review; not published                                                                                                                                        |
+| T09  | implemented-and-verified | Source `756dbf6`; real runtime coordinating surface, registered custom layout/selection intents, validated bounded single/split/compare plans, immutable child addresses, renderer-failure retention, cancellation, unknown-intent rejection, 4/4 focused workspace tests, and strict vNext typecheck. Browser focus/resize/draft evidence remains T10/T13; not published or deployed.                     |
+| T10  | implemented-and-verified | Source `42d0c5b` plus test/config corrections `5e00232` and `ce00be0`; native React/headless bindings, effect-owned lifecycle, SSR-safe views, 5/5 React tests, 13/13 vNext browser tests, strict TypeScript, and packed framework consumer evidence; not published.                                                                                                                                       |
+| T11  | implemented-and-verified | Source `b3f0aa8`; real host action confirmation and non-data job capability/progress/cancel/output references; 8/8 focused tests, strict TypeScript, and runtime build; not published.                                                                                                                                                                                                                     |
+| T12  | implemented-and-verified | Source `617a7ed` plus race correction `ce00be0`; request-scoped SSR/static island, no-JS useful DOM, principal isolation, slow hydration, rapid navigation, RTL/theme and browser evidence 13/13; not published.                                                                                                                                                                                           |
+| T13  | implemented-and-verified | Source `d452c77`; adaptive focus/draft/resize/RTL/reduced-motion behavior, keyboard clarification, partial/unsupported/cancelled/denied recovery, and automated accessibility scan; focused 5/5, vNext browser 22/22, a11y 12/12; three-engine visual gate is recorded by the clean final matrix.                                                                                                          |
+| T14  | implemented-and-verified | Sources `a1db42d` and `aa1ef45`; explicit scope/target browser bridge, bounded metadata, actual SurfaceController/renderer receipts, scope rebind and continuation reset; focused 6/6, agent 116/116, strict TypeScript and agent build; not published.                                                                                                                                                    |
+| T15  | implemented-and-verified | Source `2f8df85`; explicit no-auth allowlist, bearer/custom-header profiles, correlation/malformed/oversize/retry/rate/timeout/cancel/streaming tests and local HTTP fixture; focused 7/7, protocol 11/11, agents 116/116; no paid call.                                                                                                                                                                   |
 | T16  | implemented-and-verified | Source `b79ab59`; real security and trust-boundary fixtures for cross-tenant requests/cursors, ResultStore principal cache/revoke/TTL, origin/CSRF/redirect/SSR escaping, forged target/getter payloads, stale action confirmation, bounded agent quotas, and endpoint expiry; security 14/14, focused vNext security/local-data 45/45, boundaries 4/4, auth-retention 1000/1000, strict vNext TypeScript. |
-| T17  | implemented-and-verified | Sources `b64e043` and `733ed14`; source-driven 71-ID page/example/export inventory, public-doc wording checks, and docs artifact verification; inventory 71/71 and docs artifact 10/10; not published. |
-| T18  | implemented-and-verified | Sources `52b2bfe` and `adef0f3`; public island, consumer manual/agent parity through real scoped bridge, enterprise independent remote transport/approval/revocation, and non-data job flows; Vitest remote 1/1 and Chromium/Firefox/WebKit 4/4 each; not published. |
-| T19  | implemented-and-verified | Sources `6fd4901`/`d9cd85a` plus the final source-bound run; module-scale 10/100/1000 with five active surfaces and 5×100 interactions/tier; every tier remains below the 100ms p95 budget, bundle gate 6/6 remains within the 163840-byte region-table cap, and runtime/browser/heap checks are green. |
-| T20  | implemented-and-verified | At this historical checkpoint, breaking 0.5.0 was unpublished and stable was 0.4.2; the packed five-package report under `artifacts/t20-qualification/` proved legacy/vNext/no-agent consumers and release tooling 31/31. The later `0.5.0-rc.1` publication from older source is recorded above. |
-| T21  | final-review-gated        | Independent review and the final 87-gate source-bound matrix are recorded before handoff; release readiness remains local-only and publication/deployment gates remain closed. |
+| T17  | implemented-and-verified | Sources `b64e043` and `733ed14`; source-driven 71-ID page/example/export inventory, public-doc wording checks, and docs artifact verification; inventory 71/71 and docs artifact 10/10; not published.                                                                                                                                                                                                     |
+| T18  | implemented-and-verified | Sources `52b2bfe` and `adef0f3`; public island, consumer manual/agent parity through real scoped bridge, enterprise independent remote transport/approval/revocation, and non-data job flows; Vitest remote 1/1 and Chromium/Firefox/WebKit 4/4 each; not published.                                                                                                                                       |
+| T19  | implemented-and-verified | Sources `6fd4901`/`d9cd85a` plus the final source-bound run; module-scale 10/100/1000 with five active surfaces and 5×100 interactions/tier; every tier remains below the 100ms p95 budget, bundle gate 6/6 remains within the 163840-byte region-table cap, and runtime/browser/heap checks are green.                                                                                                    |
+| T20  | implemented-and-verified | At this historical checkpoint, breaking 0.5.0 was unpublished and stable was 0.4.2; the packed five-package report under `artifacts/t20-qualification/` proved legacy/vNext/no-agent consumers and release tooling 31/31. The later `0.5.0-rc.1` publication from older source is recorded above.                                                                                                          |
+| T21  | final-review-gated       | Independent review and the final 87-gate source-bound matrix are recorded before handoff; release readiness remains local-only and publication/deployment gates remain closed.                                                                                                                                                                                                                             |
 
 ## Next executable action
 

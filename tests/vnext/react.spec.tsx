@@ -93,6 +93,27 @@ it('renders a registered native React view from a real headless surface snapshot
   fixture.dispose();
 });
 
+it('registers a retryable lazy native view without invoking its loader during definition', async () => {
+  let loads = 0;
+  const views = defineReactViews<Intent, PeopleSurfaceState>([
+    {
+      id: 'people.lazy',
+      revision: '1',
+      load: async () => {
+        loads += 1;
+        return PeopleNativeView;
+      },
+    },
+  ]);
+
+  expect(loads).toBe(0);
+  const definition = views.resolve({ id: 'people.lazy', revision: '1' });
+  expect(definition).toBeDefined();
+  if (definition === undefined || definition.load === undefined) throw new Error('Lazy view was not registered.');
+  expect(await definition.load()).toBe(PeopleNativeView);
+  expect(loads).toBe(1);
+});
+
 it('does not render an unqualified host-selected view and reports an unknown fixed view explicitly', async () => {
   const fixture = createPeopleFixture();
   const surface = fixture.runtime.createSurface({
@@ -287,8 +308,81 @@ it('keeps an injected scope inert during server rendering and never disposes it'
     </AeliqoScope>,
   );
 
-  expect(html).toBe('<span>host child</span>');
+  expect(html).not.toContain('host child');
+  expect(html).toContain('scope');
   expect(fixture.scope.getSnapshot()).toMatchObject({ status: 'idle', active: false });
+  await fixture.dispose();
+});
+
+it('keeps the active subtree on A while a voluntary leave guard is pending and hides it after revocation', async () => {
+  const fixture = await createScopeFixture();
+  await fixture.activate('acme');
+  const render = () =>
+    renderToStaticMarkup(
+      <AeliqoScope scope={fixture.scope}>
+        <span>private {fixture.scope.getSnapshot().selector?.id}</span>
+      </AeliqoScope>,
+    );
+  const guard = fixture.host.deferGuard();
+  fixture.host.setDirty(true);
+  const leaving = fixture.scope.requestChange({ kind: 'workspace', id: 'globex' });
+  await guard.started;
+
+  expect(render()).toContain('private acme');
+  expect(render()).not.toContain('private globex');
+  guard.resolve({ status: 'stay' });
+  await leaving;
+  fixture.scope.invalidate('logout');
+  expect(render()).not.toContain('private acme');
+  await fixture.dispose();
+});
+
+it('does not server-render scoped children after initial denial or disposal', async () => {
+  const denied = await createScopeFixture();
+  denied.host.deny('acme');
+  const deniedState = new Promise<void>((resolve) => {
+    const unsubscribe = denied.scope.subscribe(() => {
+      if (denied.scope.getSnapshot().status !== 'denied') return;
+      unsubscribe();
+      resolve();
+    });
+  });
+  const detach = denied.scope.attach();
+  await deniedState;
+  const render = () =>
+    renderToStaticMarkup(
+      <AeliqoScope scope={denied.scope}>
+        <span>private data</span>
+      </AeliqoScope>,
+    );
+  expect(render()).toContain('no longer available');
+  expect(render()).not.toContain('private data');
+  detach();
+  denied.scope.dispose();
+  expect(render()).toContain('scope has closed');
+  expect(render()).not.toContain('private data');
+  await denied.dispose();
+});
+
+it('defers a scoped declarative surface and its data request during server rendering', async () => {
+  const fixture = await createScopeFixture();
+  await fixture.activate('acme');
+  const bindings = fixture.bindingsFor('acme');
+  function Orders(): React.JSX.Element {
+    const surface = useSurface(fixture.feature, { id: 'react-orders', bindings });
+    return <p>{surface === undefined ? 'pending scoped surface' : 'unexpected controller'}</p>;
+  }
+
+  const html = renderToStaticMarkup(
+    <AeliqoProvider runtime={fixture.runtime}>
+      <AeliqoScope scope={fixture.scope}>
+        <Orders />
+      </AeliqoScope>
+    </AeliqoProvider>,
+  );
+
+  expect(html).toContain('pending scoped surface');
+  expect(fixture.source.callsFor('acme')).toBe(0);
   await fixture.dispose();
 });
 
@@ -430,6 +524,7 @@ it('rejects a declared local SSR identity that disagrees with getRowId', () => {
 
 it('rejects an implicit local authority inside an application-owned scope', async () => {
   const fixture = await createScopeFixture();
+  await fixture.activate('acme');
   function ScopedLocal(): React.JSX.Element {
     const surface = useDataSurface({ data: [{ id: 'ada', name: 'Ada Chen' }], getRowId: (row) => row.id });
     return <AdaptiveSurface surface={surface} />;

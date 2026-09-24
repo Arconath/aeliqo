@@ -33,6 +33,21 @@ test('public docs artifact binds exact source, packages, API metadata, and runna
     assert.match(page.body, /data-example-code=/u, `Missing complete source for ${page.component}`);
     assert.match(page.body, /@aeliqo\/web\//u, `Missing public web package import for ${page.component}`);
     assert.match(page.body, /registerAeliqoElements\(\)/u, `Missing registration example for ${page.component}`);
+    assert.match(page.body, /aria-label="Integration levels"/u, `Missing adoption levels for ${page.component}`);
+    assert.match(page.body, /<strong>Standalone<\/strong>/u);
+    assert.match(page.body, /<strong>Semantic binding<\/strong>/u);
+    assert.match(page.body, /<strong>Automatic adaptation<\/strong>/u);
+  }
+  const catalogPage = artifact.pages.find((page) => page.path === '/docs/components/');
+  assert.ok(catalogPage);
+  assert.doesNotMatch(catalogPage.body, /Standalone only/u);
+  for (const id of activeCatalogIds.filter((component) => component.startsWith('compound.'))) {
+    const start = catalogPage.body.indexOf(`href="/components/${id}/"`);
+    assert.ok(start >= 0, `Missing catalog entry for ${id}`);
+    assert.match(
+      catalogPage.body.slice(start, catalogPage.body.indexOf('</a>', start)),
+      /No built-in semantic binding/u,
+    );
   }
   assert.match(
     artifact.pages.find((page) => page.path === '/docs/components/foundation.button/').body,

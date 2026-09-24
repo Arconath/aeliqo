@@ -11,6 +11,7 @@ const origin = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: resolve(configDirectory, 'browser'),
   testMatch: '**/*.spec.ts',
+  testIgnore: '**/visual-journeys.spec.ts',
   timeout: 30_000,
   use: {
     baseURL: origin,

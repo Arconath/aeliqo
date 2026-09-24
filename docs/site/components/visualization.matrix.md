@@ -11,7 +11,9 @@ contract: 'Entity-feature comparison preserving row/column association and usefu
 
 ## Purpose
 
-Entity-feature comparison preserving row/column association and useful comparison at narrow width.
+Matrix preserves row-to-column associations in a tabular view of supplied Result fields. Exact values and
+selection remain available in the data table, including when the layout narrows; it does not infer a time
+axis or aggregate the cells.
 
 ## When to use it
 
@@ -19,7 +21,7 @@ Entity-feature comparison preserving row/column association and useful compariso
 
 ## When to use a different component
 
-Use Heatmap when color encodes a value across two categories. Matrix keeps temporal dimensions and values in table form.
+Use Heatmap when color encodes a value across two categories. Matrix keeps supplied rows, columns, and exact values in table form.
 
 ## Properties and defaults
 
@@ -68,6 +70,6 @@ Temporal columns may need horizontal scrolling. Keep row identity visible and le
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

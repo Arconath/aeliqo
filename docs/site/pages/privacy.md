@@ -18,7 +18,7 @@ If production analytics are enabled, the site asks before loading them. Aggregat
 
 ## Connected agents
 
-The local runner keeps a BYOK key in the user-run host process. The hosted Playground also offers an explicitly opted-in DeepSeek connection: the browser sends the key, prompt, selected synthetic scenario context, and bounded tool metadata directly to DeepSeek. Aeliqo does not proxy that request or receive the key. The browser keeps the key in memory for the connection and clears it on disconnect, reset, or page close. DeepSeek may process the submitted content and charge the key owner's account. See [BYOK](/agents/byok/) for limits and failure behavior. MCP integrations use the host configured by their operator, which must disclose provider egress and protect credentials. Native WebMCP follows browser capability and policy.
+The local runner keeps a BYOK key in the user-run host process. The public Playground has no browser provider-key field and makes no direct model request. A prompt entered after pairing with the local runner goes to that same-origin host, which owns provider egress and credentials. See [BYOK](/agents/byok/) for setup and failure behavior. MCP integrations use the host configured by their operator, which must disclose provider egress and protect credentials. Native WebMCP follows browser capability and policy.
 
 ## External links
 

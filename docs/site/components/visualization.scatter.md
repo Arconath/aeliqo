@@ -11,7 +11,9 @@ contract: 'Two quantitative axes, declared units, stable point selection and non
 
 ## Purpose
 
-Two quantitative axes, declared units, stable point selection and noncausal interpretation.
+Scatter positions each supplied record using two declared quantitative axes. Its point selection refers
+to a stable Result identity, while the exact data table preserves values that are hard to read from the
+plot. Proximity is a visual relationship, not evidence of causation.
 
 ## When to use it
 
@@ -68,6 +70,6 @@ The plot and its data view stay in a scrollable viewport. Set dimensions from th
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

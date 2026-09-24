@@ -16,6 +16,7 @@ import type {
   AeliqoVisualizationPresentationRenderContext,
   AeliqoVisualizationRegistryOptions,
 } from './visualization-registry.js';
+import { canonicalValue as canonical, resultRefKey as refKey } from './registry-value.js';
 
 type CoreNode = ValidatedPresentation['nodes'][number];
 type VisualizationView = VisualizationSpec['view'];
@@ -32,25 +33,6 @@ type VisualizationElementRenderer = (
   onSelect: (event: Event) => void,
 ) => TemplateResult;
 
-function refKey(ref: ResultRef): string {
-  return JSON.stringify([
-    ref.id,
-    ref.revision,
-    ref.sourceLineage ?? null,
-    ref.outputId,
-    ref.queryDigest,
-    ref.scopeDigest,
-  ]);
-}
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
-}
 function sameRef(left: ResultRef | undefined, right: ResultRef): boolean {
   try {
     return left !== undefined && refKey(left) === refKey(right);

@@ -11,7 +11,7 @@ contract: 'Provide consistent bounded chrome; never impose dashboard cards on ev
 
 ## Purpose
 
-Provide consistent bounded chrome; never impose dashboard cards on every control.
+Group slotted content in a labelled section with a chosen surface tone. The wrapper adds visual containment and optional section labelling; it does not turn child content into an action or a data card.
 
 ## When to use it
 
@@ -68,6 +68,6 @@ Surface follows the width of its parent and adds no columns. Put layout breakpoi
 
 ## Version
 
-This page documents the unreleased 0.5.0 candidate source. The stable npm
-release remains 0.4.2; candidate API and behavior details here are not a
-guarantee of availability in the stable release.
+This page documents the 0.5.0 component contract. Keep every installed
+Aeliqo package on the same exact version and check the release status
+before installing from the registry.

@@ -17,9 +17,12 @@ function SourceProbe({
 }): React.JSX.Element {
   const snapshot = useSurfaceState(surface, (current) => current);
   return (
-    <output data-testid="source-state">
-      {snapshot.phase}:{snapshot.state.rows.length}
-    </output>
+    <>
+      <output data-testid="source-state">
+        {snapshot.phase}:{snapshot.state.rows.length}
+      </output>
+      <output data-testid="surface-revision">{snapshot.revision}</output>
+    </>
   );
 }
 
