@@ -10,6 +10,8 @@ import type {
   SurfaceRequest,
   SurfaceSnapshot,
 } from '@aeliqo/runtime';
+import type { OperationGrant } from '@aeliqo/core/agent';
+import { isRecord, strictId as validId } from '../guards.js';
 import type {
   AgentSurfaceRenderResult,
   AgentSurfaceTarget,
@@ -27,13 +29,7 @@ export function diagnostic(code: string, message: string): Diagnostic {
   return { code, message, retryable: false };
 }
 
-export function validId(value: unknown): value is string {
-  return typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/u.test(value);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
+export { validId };
 
 function freeze<T>(value: T): T {
   if (value === null || typeof value !== 'object') return value;
@@ -163,6 +159,31 @@ function parseRender(input: unknown): Outcome<RenderInput> {
   return { ok: true, value: { targetId, intent: checked.value as AgentJsonValue } };
 }
 
+/** Operations this endpoint's registered tools and transport can ever exercise. */
+const SCOPED_OPERATIONS: readonly OperationGrant[] = Object.freeze(['catalog.read', 'experience.commit']);
+
+/**
+ * The grant set the pairing can legitimately request: the two operations its
+ * registered tools use, plus `model.egress` on transports that expose tool
+ * metadata or run a model loop. Manual pairings never carry model egress.
+ */
+function requestedGrants(transport: ScopedSurfaceEndpointOptions['transport']): readonly OperationGrant[] {
+  return transport === 'manual' ? SCOPED_OPERATIONS : Object.freeze([...SCOPED_OPERATIONS, 'model.egress']);
+}
+
+/**
+ * Effective authority is always the intersection of the caller's delegated
+ * grant ceiling (`options.grants`) and the operations this endpoint can
+ * request. A broader request is clamped, never unioned; without a declared
+ * ceiling the pairing is limited to the endpoint's own least-privilege set.
+ */
+function scopedGrants(options: ScopedSurfaceEndpointOptions): readonly OperationGrant[] {
+  const requested = requestedGrants(options.transport);
+  if (options.grants === undefined) return requested;
+  const delegated = new Set<OperationGrant>(options.grants);
+  return Object.freeze(requested.filter((grant) => delegated.has(grant)));
+}
+
 function scopeAuthority(
   options: ScopedSurfaceEndpointOptions,
   targets: ReadonlyMap<string, AgentSurfaceTarget>,
@@ -170,7 +191,7 @@ function scopeAuthority(
   readonly principalKey: string;
   readonly regionId: string;
   readonly goalEpoch: string;
-  readonly grants: readonly ['catalog.read', 'task.evaluate', 'experience.commit', 'model.egress'];
+  readonly grants: readonly OperationGrant[];
 }> {
   const snapshot = options.scope.getSnapshot();
   if (!snapshot.active || snapshot.status === 'denied' || snapshot.status === 'disposed')
@@ -186,7 +207,7 @@ function scopeAuthority(
       principalKey,
       regionId: options.sessionId,
       goalEpoch: options.goalEpoch,
-      grants: ['catalog.read', 'task.evaluate', 'experience.commit', 'model.egress'],
+      grants: scopedGrants(options),
     },
   };
 }
@@ -386,6 +407,7 @@ function validEndpointOptions(options: ScopedSurfaceEndpointOptions): boolean {
   return (
     options !== null &&
     typeof options === 'object' &&
+    (options.grants === undefined || Array.isArray(options.grants)) &&
     validId(options.sessionId) &&
     validId(options.goalEpoch) &&
     Number.isFinite(options.expiresAt) &&

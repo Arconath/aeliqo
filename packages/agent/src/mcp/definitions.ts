@@ -3,6 +3,7 @@ import type { OperationGrant } from '@aeliqo/core/agent';
 import type { AgentToolDefinition, AgentToolInputSchema } from '../protocol/types.js';
 import type { StandardSchemaWithJSON, Tool } from './types.js';
 import { AELIQO_MCP_TOOL_META } from './types.js';
+import { localSchemaReferences, strictId } from '../guards.js';
 import { ADAPTER_VERSION, boundedWire, failure, isRecord, safeJson, validId, validText } from './shared.js';
 import type { Outcome, VersionRef } from '@aeliqo/core';
 
@@ -14,15 +15,6 @@ interface ToolMetadata {
 
 function cloneSchema(schema: AgentToolInputSchema): Record<string, unknown> {
   return JSON.parse(JSON.stringify(schema)) as Record<string, unknown>;
-}
-
-function localSchemaReferences(value: unknown): boolean {
-  if (value === null || typeof value !== 'object') return true;
-  if (Array.isArray(value)) return value.every(localSchemaReferences);
-  return Object.entries(value).every(
-    ([key, child]) =>
-      (key !== '$ref' || (typeof child === 'string' && child.startsWith('#'))) && localSchemaReferences(child),
-  );
 }
 
 function inputSchema(value: unknown): Outcome<AgentToolInputSchema> {
@@ -57,7 +49,7 @@ function normalizeMetadata(value: unknown): Outcome<ToolMetadata> {
 }
 
 function toolName(tool: Tool): Outcome<string> {
-  if (!isRecord(tool) || !validId(tool.name) || !/^[A-Za-z0-9_-]{1,64}$/u.test(tool.name))
+  if (!isRecord(tool) || !strictId(tool.name))
     return failure('agent.mcp.tool', 'The MCP server returned a malformed tool name.');
   return { ok: true, value: tool.name };
 }

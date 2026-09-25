@@ -1,4 +1,5 @@
 import { parseWireValue, WIRE_LIMITS, type MeaningDefinition, type Outcome, type VersionRef } from '@aeliqo/core';
+import { boundedId as validId, isRecord } from '../guards.js';
 import type {
   AgentCapabilityContext,
   AgentCapabilityHandlerResult,
@@ -20,19 +21,8 @@ function failure<T>(code: string, message: string, path?: readonly (string | num
   };
 }
 
-function validId(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= WIRE_LIMITS.id &&
-    !/[\s\u0000-\u001f\u007f]/u.test(value)
-  );
-}
-
 function asRecord(value: unknown): Record<string, unknown> | undefined {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
+  return isRecord(value) ? value : undefined;
 }
 
 function proposalMeaning(object: Record<string, unknown>): Record<string, unknown> | undefined {

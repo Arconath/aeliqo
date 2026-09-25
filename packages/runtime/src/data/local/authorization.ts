@@ -111,7 +111,7 @@ interface Deadline {
   readonly cleanup: () => void;
 }
 
-export function makeDeadline(context: ReadContext, milliseconds: number): Deadline {
+function makeDeadline(context: ReadContext, milliseconds: number): Deadline {
   const controller = new AbortController();
   let timedOut = false;
   const onParentAbort = () => controller.abort();
@@ -249,7 +249,30 @@ function awaitAuthorization(
   });
 }
 
-export async function authorizeWithDeadline(
+/**
+ * Await one host/expensive operation under a fresh linked deadline. The
+ * expired callback supplies the outcome when no budget remains; a lapsed
+ * deadline that was not a caller abort fails with `data.budget`.
+ */
+export async function awaitBoundedResult<T>(
+  context: ReadContext,
+  milliseconds: number,
+  expired: () => Outcome<T>,
+  timeoutMessage: string,
+  run: (signal: AbortSignal) => Promise<Outcome<T>>,
+): Promise<Outcome<T>> {
+  if (milliseconds <= 0) return expired();
+  const deadline = makeDeadline(context, milliseconds);
+  try {
+    const result = await run(deadline.signal);
+    if (deadline.timedOut() && !context.signal?.aborted) return failure('data.budget', timeoutMessage);
+    return result;
+  } finally {
+    deadline.cleanup();
+  }
+}
+
+export function authorizeWithDeadline(
   authorize: AuthorizeRead | undefined,
   operation: 'describe' | 'plan' | 'execute',
   requestId: string,
@@ -258,23 +281,13 @@ export async function authorizeWithDeadline(
   milliseconds: number,
   query?: QuerySpec,
 ): Promise<Outcome<ReadGrant>> {
-  if (milliseconds <= 0) return expiredAuthorization(context);
-  const deadline = makeDeadline(context, milliseconds);
-  try {
-    const result = await authorizeResult(
-      authorize,
-      operation,
-      requestId,
-      target,
-      { ...context, signal: deadline.signal },
-      query,
-    );
-    if (deadline.timedOut() && !context.signal?.aborted)
-      return failure('data.budget', 'Authorization exceeded the effective time budget.');
-    return result;
-  } finally {
-    deadline.cleanup();
-  }
+  return awaitBoundedResult(
+    context,
+    milliseconds,
+    () => expiredAuthorization(context),
+    'Authorization exceeded the effective time budget.',
+    (signal) => authorizeResult(authorize, operation, requestId, target, { ...context, signal }, query),
+  );
 }
 
 function expiredAuthorization(context: ReadContext): Outcome<ReadGrant> {
@@ -292,27 +305,25 @@ async function digest(value: unknown, prefix: string): Promise<string> {
   return `${prefix}-${encoded}`;
 }
 
-export async function digestWithDeadline(
+export function digestWithDeadline(
   value: unknown,
   prefix: string,
   context: ReadContext,
   milliseconds: number,
 ): Promise<Outcome<string>> {
-  if (milliseconds <= 0) return expiredDigest(context);
-  const deadline = makeDeadline(context, milliseconds);
-  try {
-    const result = await resolveValueWithAbort(
-      digest(value, prefix),
-      deadline.signal,
-      'data.crypto',
-      'WebCrypto SHA-256 is required for immutable ADC identities.',
-    );
-    if (deadline.timedOut() && !context.signal?.aborted)
-      return failure('data.budget', 'The ADC operation exceeded the effective time budget.');
-    return result;
-  } finally {
-    deadline.cleanup();
-  }
+  return awaitBoundedResult(
+    context,
+    milliseconds,
+    () => expiredDigest(context),
+    'The ADC operation exceeded the effective time budget.',
+    (signal) =>
+      resolveValueWithAbort(
+        digest(value, prefix),
+        signal,
+        'data.crypto',
+        'WebCrypto SHA-256 is required for immutable ADC identities.',
+      ),
+  );
 }
 
 function expiredDigest(context: ReadContext): Outcome<string> {

@@ -71,11 +71,14 @@ function evaluateNonAggregateCall(
   return evaluateCall(state, signature, arguments_, types);
 }
 
+const DIVIDE_SIGNATURES: Readonly<Record<NonNullable<FunctionSignature['zeroDenominator']>, string>> = {
+  error: 'core.divide.error',
+  unknown: 'core.divide.unknown',
+  null: 'core.divide.null',
+};
+
 function resolveDivision(state: EvalState, policy: FunctionSignature['zeroDenominator']): Outcome<FunctionSignature> {
-  let id: string;
-  if (policy === 'error') id = 'core.divide.error';
-  else if (policy === 'unknown') id = 'core.divide.unknown';
-  else id = 'core.divide.null';
+  const id = DIVIDE_SIGNATURES[policy ?? 'null'];
   const candidate = state.registry.resolve({ id, revision: '1' });
   if (candidate === undefined) return failure('query.function', `Function ${id}@1 is not registered.`);
   return trustedLocalSignature(candidate);

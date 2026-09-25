@@ -1,5 +1,6 @@
 import { parseWireValue, WIRE_LIMITS } from '@aeliqo/core';
 import type { AgentCapabilityReceipt, AgentCapabilityState } from '../capabilities/types.js';
+import { isRecord, strictId } from '../guards.js';
 import { isToolModelContinuation } from './continuation.js';
 import type { ToolModelBudget, ToolModelLoopOptions, ToolModelLoopOutcome, ToolModelResponse } from './types.js';
 
@@ -31,9 +32,6 @@ export const fail = (code: string, message: string): ToolModelLoopOutcome => ({
 
 export const integer = (value: unknown, min: number, max: number): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= min && value <= max;
-
-const identifier = (value: unknown): value is string =>
-  typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/u.test(value);
 
 export const bytes = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).byteLength;
 
@@ -98,7 +96,7 @@ function validPositiveState(state: unknown): boolean {
 }
 
 function validIdentity(options: ToolModelLoopOptions): boolean {
-  return identifier(options.requestId) && (options.goal === 'chat' || options.goal === 'experience');
+  return strictId(options.requestId) && (options.goal === 'chat' || options.goal === 'experience');
 }
 
 function validPrompt(options: ToolModelLoopOptions): boolean {
@@ -162,8 +160,8 @@ interface ResponseInput {
 }
 
 function responseInput(input: unknown): ResponseInput | undefined {
-  if (input === null || Array.isArray(input) || typeof input !== 'object') return undefined;
-  const candidate = input as ToolModelResponse;
+  if (!isRecord(input)) return undefined;
+  const candidate = input as unknown as ToolModelResponse;
   if (candidate.continuation !== undefined && !isToolModelContinuation(candidate.continuation)) return undefined;
   const { continuation, ...wireInput } = candidate;
   return { wireInput, ...(continuation === undefined ? {} : { continuation }) };
@@ -183,7 +181,7 @@ function validCalls(response: ToolModelResponse): boolean {
   if (!Array.isArray(response.calls) || response.calls.length > 8) return false;
   const ids = new Set<string>();
   for (const call of response.calls) {
-    if (!call || !identifier(call.id) || !identifier(call.name) || ids.has(call.id) || !Object.hasOwn(call, 'input'))
+    if (!call || !strictId(call.id) || !strictId(call.name) || ids.has(call.id) || !Object.hasOwn(call, 'input'))
       return false;
     ids.add(call.id);
   }
@@ -198,7 +196,7 @@ function checkedResponse(wireInput: object, limit: number, continuationBytes: nu
   const checked = parseWireValue(wireInput);
   if (!checked.ok) return undefined;
   if (bytes(checked.value) + continuationBytes > limit) return undefined;
-  if (checked.value === null || Array.isArray(checked.value) || typeof checked.value !== 'object') return undefined;
+  if (!isRecord(checked.value)) return undefined;
   const candidate = checked.value as unknown as ToolModelResponse;
   if (!validResponseText(candidate) || !validCalls(candidate) || !validUsage(candidate)) return undefined;
   return snapshot(candidate);

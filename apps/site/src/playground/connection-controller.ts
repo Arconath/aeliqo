@@ -1,11 +1,9 @@
+import { isRecord } from './guards.js';
+
 export type PlaygroundConnection =
   | { readonly state: 'connected'; readonly kind: 'local'; readonly label: string; readonly modelConfigured: boolean }
   | { readonly state: 'available'; readonly kind: 'webmcp'; readonly label: string }
   | { readonly state: 'unavailable'; readonly kind: 'local' | 'webmcp'; readonly label: string };
-
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<PlaygroundConnection> {
   if (kind === 'webmcp') {

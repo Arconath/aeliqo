@@ -108,6 +108,12 @@ function invalidCandidate(): PresentationResolverCandidate {
   return { id: 'legacy.invalid', source: 'explicit', plan: {} as PresentationPlan };
 }
 
+/**
+ * Legacy candidate keys intentionally serialize undefined-valued properties as
+ * `null` and `-0` as `0`: the emitted `legacy.*` candidate ids are observable
+ * composition output, so this form stays JSON-compatible rather than adopting
+ * the ../canonical.js evidence encoding.
+ */
 function canonicalCandidate(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'null';
   if (Array.isArray(value)) return `[${value.map(canonicalCandidate).join(',')}]`;

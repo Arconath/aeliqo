@@ -16,6 +16,7 @@ import type {
   AgentCapabilityTransport,
   AgentJsonValue,
 } from './types.js';
+import { isRecord } from '../guards.js';
 import { diagnostic, failure, validId, validText } from './dispatcher-common.js';
 
 const FAILED_STATES = new Set<AgentCapabilityState>([
@@ -50,10 +51,6 @@ const STABLE_PINS = [
   'experienceRevision',
   'functionRegistryDigest',
 ] as const;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function validDiagnosticPath(path: unknown): boolean {
   if (path === undefined) return true;

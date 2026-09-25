@@ -63,17 +63,7 @@ export function frozen<T>(value: T): T {
   return Object.freeze(value);
 }
 
-export function canonical(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
-  if (typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const record = value as Record<string, unknown>;
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`)
-    .join(',')}}`;
-}
+export { canonicalJson as canonical } from '../canonical.js';
 
 export function bytes(value: string): number {
   return new TextEncoder().encode(value).byteLength;
@@ -383,12 +373,20 @@ export function copyDiagnostics(value: readonly Diagnostic[]): readonly [ActionF
 export function normalizeDispatch(value: unknown): ActionDispatchResult | undefined {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const record = value as Record<string, unknown>;
-  if (record.state === 'completed' && Object.hasOwn(record, 'output'))
-    return { state: 'completed', output: record.output };
-  if (record.state === 'ambiguous' && validText(record.reason)) return { state: 'ambiguous', reason: record.reason };
-  if (record.state === 'rejected' && Array.isArray(record.diagnostics) && record.diagnostics.length > 0)
-    return { state: 'rejected', diagnostics: copyDiagnostics(record.diagnostics as Diagnostic[]) };
-  return undefined;
+  switch (record.state) {
+    case 'completed':
+      if (Object.hasOwn(record, 'output')) return { state: 'completed', output: record.output };
+      return undefined;
+    case 'ambiguous':
+      if (validText(record.reason)) return { state: 'ambiguous', reason: record.reason };
+      return undefined;
+    case 'rejected':
+      if (Array.isArray(record.diagnostics) && record.diagnostics.length > 0)
+        return { state: 'rejected', diagnostics: copyDiagnostics(record.diagnostics as Diagnostic[]) };
+      return undefined;
+    default:
+      return undefined;
+  }
 }
 
 export function bounded(value: number, minimum: number, maximum: number, name: string): number {

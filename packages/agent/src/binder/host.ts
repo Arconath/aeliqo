@@ -9,6 +9,7 @@ import {
 import type { OperationGrant } from '@aeliqo/core/agent';
 import { createQueryPlanner, type QueryLimits } from '@aeliqo/core/query';
 import type { AgentBindingDecision, AgentHostContext } from '../binder-types.js';
+import { isRecord } from '../guards.js';
 import { failure, validId } from './common.js';
 import { normalizeDecision } from './decision.js';
 import type { NormalizedHostContext } from './types.js';
@@ -19,7 +20,7 @@ interface HostPins {
 }
 
 function hostObject(value: unknown): value is AgentHostContext {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+  return isRecord(value);
 }
 
 function validHostIdentity(value: AgentHostContext): boolean {

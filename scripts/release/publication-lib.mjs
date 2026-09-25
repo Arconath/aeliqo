@@ -111,6 +111,22 @@ export function classifyRegistryPackageResponse(status, payload, name, tag = 'ne
   };
 }
 
+export async function fetchRegistryJson(url, { timeoutMs = 20_000, strictJson = false } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      redirect: 'error',
+      signal: controller.signal,
+      headers: { accept: 'application/json' },
+    });
+    const payload = strictJson ? await response.json() : await response.json().catch(() => undefined);
+    return { status: response.status, payload };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function assertRegistryVersionAvailable(name, version, state) {
   if (state.unpublishedVersions.includes(version)) {
     throw new Error(`${name}@${version} was previously unpublished and npm will not accept that version again`);
@@ -241,38 +257,37 @@ export function assertTagMayAdvance({ name, tag, desiredVersion, currentVersion,
   throw new Error(`Refusing to move ${name} dist-tag ${tag} from ${currentVersion} to ${desiredVersion}`);
 }
 
-function assertApprovedCandidate(candidate, version, sourceRevision) {
-  assertCandidateIdentity(candidate, { tag: 'next' });
+function assertRecordIdentity(record, version, sourceRevision, message) {
   if (
-    candidate?.schema !== 'aeliqo.release-candidate.v1' ||
-    candidate.version !== version ||
-    candidate.sourceRevision !== sourceRevision
+    record?.schema !== 'aeliqo.release-candidate.v1' ||
+    record.version !== version ||
+    record.sourceRevision !== sourceRevision
   ) {
-    throw new Error('Approved RC candidate identity does not match the selected predecessor');
+    throw new Error(message);
   }
 }
 
-function assertApprovedPublication(publication, version, sourceRevision) {
+function assertPublication(publication, tag, version, sourceRevision, message) {
   if (
     publication?.schema !== 'aeliqo.npm-publication.v2' ||
     publication.version !== version ||
     publication.sourceRevision !== sourceRevision ||
-    publication.tag !== 'next' ||
+    publication.tag !== tag ||
     publication.mode !== 'trusted-publishing' ||
     typeof publication.completedAt !== 'string'
   ) {
-    throw new Error('Approved RC publication record is incomplete or was not created by trusted publishing');
+    throw new Error(message);
   }
 }
 
-function assertApprovedConsumer(consumer, version, sourceRevision) {
+function assertConsumerRecord(consumer, version, sourceRevision, message) {
   if (
     consumer?.schema !== 'aeliqo.registry-consumer.v2' ||
     consumer.version !== version ||
     consumer.expectedSourceRevision !== sourceRevision ||
     consumer.provenanceVerified !== true
   ) {
-    throw new Error('Approved RC consumer record lacks source-bound provenance verification');
+    throw new Error(message);
   }
 }
 
@@ -298,43 +313,42 @@ function assertApprovedPackageIntegrity(candidate, publication, consumer) {
 }
 
 export function assertApprovedRc({ candidate, publication, consumer, version, sourceRevision }) {
-  assertApprovedCandidate(candidate, version, sourceRevision);
-  assertApprovedPublication(publication, version, sourceRevision);
-  assertApprovedConsumer(consumer, version, sourceRevision);
+  assertCandidateIdentity(candidate, { tag: 'next' });
+  assertRecordIdentity(
+    candidate,
+    version,
+    sourceRevision,
+    'Approved RC candidate identity does not match the selected predecessor',
+  );
+  assertPublication(
+    publication,
+    'next',
+    version,
+    sourceRevision,
+    'Approved RC publication record is incomplete or was not created by trusted publishing',
+  );
+  assertConsumerRecord(
+    consumer,
+    version,
+    sourceRevision,
+    'Approved RC consumer record lacks source-bound provenance verification',
+  );
   assertApprovedPackageLists(publication, consumer);
   assertApprovedPackageIntegrity(candidate, publication, consumer);
 }
 
-function assertStablePublication(candidate, publication, version, sourceRevision) {
-  if (
-    candidate?.schema !== 'aeliqo.release-candidate.v1' ||
-    candidate.version !== version ||
-    candidate.sourceRevision !== sourceRevision ||
-    publication?.schema !== 'aeliqo.npm-publication.v2' ||
-    publication.version !== version ||
-    publication.sourceRevision !== sourceRevision ||
-    publication.tag !== 'latest' ||
-    publication.mode !== 'trusted-publishing' ||
-    typeof publication.completedAt !== 'string'
-  )
-    throw new Error('Stable publication needs an exact-source candidate and trusted latest publish');
-}
-
-function assertStableConsumer(consumer, version, sourceRevision) {
-  if (
-    consumer?.schema !== 'aeliqo.registry-consumer.v2' ||
-    consumer.version !== version ||
-    consumer.expectedSourceRevision !== sourceRevision ||
-    consumer.provenanceVerified !== true
-  )
-    throw new Error('Stable publication needs exact-source registry consumer proof');
-}
-
 /** Require one exact stable publication and installed consumer from this source. */
 export function assertApprovedStable({ candidate, publication, consumer, version, sourceRevision }) {
+  const publicationMessage = 'Stable publication needs an exact-source candidate and trusted latest publish';
   assertCandidateIdentity(candidate, { tag: 'latest' });
-  assertStablePublication(candidate, publication, version, sourceRevision);
-  assertStableConsumer(consumer, version, sourceRevision);
+  assertRecordIdentity(candidate, version, sourceRevision, publicationMessage);
+  assertPublication(publication, 'latest', version, sourceRevision, publicationMessage);
+  assertConsumerRecord(
+    consumer,
+    version,
+    sourceRevision,
+    'Stable publication needs exact-source registry consumer proof',
+  );
   assertApprovedPackageLists(publication, consumer);
   assertApprovedPackageIntegrity(candidate, publication, consumer);
   if (publication.packages.some((item) => item.distTag !== 'latest'))

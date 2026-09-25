@@ -1,14 +1,7 @@
 import { marked } from 'marked';
 import { routeById } from '../../docs/public-site/routes.mjs';
 import { documentedEvents, listenerExample, propertyDescription } from './component-doc-copy.mjs';
-
-function escape(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}
+import { escape, hasExactKeys } from './docs-lib.mjs';
 
 const escapeMarkdown = (value) =>
   String(value)
@@ -54,33 +47,37 @@ function splitFrontmatter(source, message) {
   return { frontmatter: match[1], body: match[2] };
 }
 
-function parseComponentMetadata(frontmatter, componentId) {
+function frontmatterScalar(field, scalar, { label, quoted }) {
+  if (scalar.startsWith("'") && scalar.endsWith("'")) return scalar.slice(1, -1).replaceAll("''", "'");
+  if (!quoted && !scalar.startsWith('"')) return scalar;
+  try {
+    return JSON.parse(scalar);
+  } catch {
+    throw new Error(
+      quoted
+        ? `Public page metadata must use quoted string values in ${label}`
+        : `Malformed quoted frontmatter string in ${label}: ${field}`,
+    );
+  }
+}
+
+function parseFrontmatter(frontmatter, { label, scalars }) {
+  const context = { label, quoted: scalars === 'quoted' };
   const values = Object.create(null);
   for (const line of frontmatter.split(/\r?\n/u)) {
     const field = line.match(/^([a-z]+): (.+)$/u);
     if (!field || field[1] === undefined || field[2] === undefined || Object.hasOwn(values, field[1]))
-      throw new Error(`Malformed component documentation frontmatter in ${componentId}`);
-    const scalar = field[2];
-    if (scalar.startsWith("'") && scalar.endsWith("'")) {
-      values[field[1]] = scalar.slice(1, -1).replaceAll("''", "'");
-      continue;
-    }
-    if (scalar.startsWith('"')) {
-      try {
-        values[field[1]] = JSON.parse(scalar);
-        continue;
-      } catch {
-        throw new Error(`Malformed quoted frontmatter string in ${componentId}: ${field[1]}`);
-      }
-    }
-    values[field[1]] = scalar;
+      throw new Error(
+        `Malformed ${context.quoted ? 'public page' : 'component documentation'} frontmatter in ${label}`,
+      );
+    values[field[1]] = frontmatterScalar(field[1], field[2], context);
   }
   return values;
 }
 
 function assertComponentMetadata(values, component) {
   const expected = ['component', 'contract', 'family', 'title'];
-  if (JSON.stringify(Object.keys(values).sort()) !== JSON.stringify(expected))
+  if (!hasExactKeys(values, expected))
     throw new Error(`Unexpected component documentation metadata in ${component.id}`);
   if (
     values.component !== component.id ||
@@ -113,34 +110,16 @@ function assertComponentDirectives(body, componentId) {
 
 export function parseComponentDocument(source, component) {
   const frontmatter = splitFrontmatter(source, `Component documentation needs YAML frontmatter: ${component.id}`);
-  const metadata = parseComponentMetadata(frontmatter.frontmatter, component.id);
+  const metadata = parseFrontmatter(frontmatter.frontmatter, { label: component.id, scalars: 'verbatim' });
   assertComponentMetadata(metadata, component);
   assertComponentHeadings(frontmatter.body, component.id);
   assertComponentDirectives(frontmatter.body, component.id);
   return frontmatter.body;
 }
 
-function parsePageMetadata(frontmatter, filePath) {
-  const metadata = Object.create(null);
-  for (const line of frontmatter.split(/\r?\n/u)) {
-    const field = line.match(/^([a-z]+): (.+)$/u);
-    if (!field || field[1] === undefined || field[2] === undefined || Object.hasOwn(metadata, field[1]))
-      throw new Error(`Malformed public page frontmatter in ${filePath}`);
-    try {
-      const scalar = field[2];
-      metadata[field[1]] =
-        scalar.startsWith("'") && scalar.endsWith("'") ? scalar.slice(1, -1).replaceAll("''", "'") : JSON.parse(scalar);
-    } catch {
-      throw new Error(`Public page metadata must use quoted string values in ${filePath}`);
-    }
-  }
-  return metadata;
-}
-
 function assertPageMetadata(metadata, filePath) {
   const required = ['description', 'id', 'path', 'section', 'title'];
-  if (JSON.stringify(Object.keys(metadata).sort()) !== JSON.stringify(required))
-    throw new Error(`Unexpected public page metadata fields in ${filePath}`);
+  if (!hasExactKeys(metadata, required)) throw new Error(`Unexpected public page metadata fields in ${filePath}`);
   for (const key of required) {
     if (typeof metadata[key] !== 'string' || metadata[key] === '')
       throw new Error(`Public page metadata ${key} must be a non-empty string in ${filePath}`);
@@ -152,7 +131,7 @@ function assertPageMetadata(metadata, filePath) {
 
 export function parseAuthoredPage(source, filePath) {
   const page = splitFrontmatter(source, `Public page needs YAML frontmatter: ${filePath}`);
-  const metadata = parsePageMetadata(page.frontmatter, filePath);
+  const metadata = parseFrontmatter(page.frontmatter, { label: filePath, scalars: 'quoted' });
   assertPageMetadata(metadata, filePath);
   const body = String(marked.parse(page.body, { gfm: true, async: false })).trim();
   if (!body) throw new Error(`Public page has no content: ${filePath}`);

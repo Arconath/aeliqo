@@ -145,12 +145,20 @@ function registerEntity(entity: CatalogEntity | undefined, index: number, indexe
   return undefined;
 }
 
-function indexEntities(catalog: Catalog, indexes: CatalogIndexes): ValidationFailure {
-  for (let index = 0; index < catalog.entities.length; index += 1) {
-    const failure = registerEntity(catalog.entities[index], index, indexes);
+function indexEach<T>(
+  items: readonly T[],
+  indexes: CatalogIndexes,
+  visit: (item: T, index: number, indexes: CatalogIndexes) => ValidationFailure,
+): ValidationFailure {
+  for (let index = 0; index < items.length; index += 1) {
+    const failure = visit(items[index]!, index, indexes);
     if (failure !== undefined) return failure;
   }
   return undefined;
+}
+
+function indexEntities(catalog: Catalog, indexes: CatalogIndexes): ValidationFailure {
+  return indexEach(catalog.entities, indexes, registerEntity);
 }
 
 function validateRelationship(
@@ -190,11 +198,7 @@ function validateRelationship(
 }
 
 function indexRelationships(catalog: Catalog, indexes: CatalogIndexes): ValidationFailure {
-  for (let index = 0; index < catalog.relationships.length; index += 1) {
-    const failure = validateRelationship(catalog.relationships[index], index, indexes);
-    if (failure !== undefined) return failure;
-  }
-  return undefined;
+  return indexEach(catalog.relationships, indexes, validateRelationship);
 }
 
 function indexMeanings(catalog: Catalog, indexes: CatalogIndexes): ValidationFailure {
@@ -253,11 +257,7 @@ function validateCapability(capability: CatalogCapability, index: number, indexe
 }
 
 function indexCapabilities(catalog: Catalog, indexes: CatalogIndexes): ValidationFailure {
-  for (let index = 0; index < catalog.capabilities.length; index += 1) {
-    const failure = validateCapability(catalog.capabilities[index]!, index, indexes);
-    if (failure !== undefined) return failure;
-  }
-  return undefined;
+  return indexEach(catalog.capabilities, indexes, validateCapability);
 }
 
 function createCatalogIndexValue(catalog: Catalog, indexes: CatalogIndexes): CatalogIndex {

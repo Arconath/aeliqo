@@ -51,6 +51,13 @@ function workspaceValue(section: InspectorSection, panel: HTMLElement, intent: s
   }
 }
 
+const values: Readonly<
+  Record<FixtureJourney, (section: InspectorSection, panel: HTMLElement, intent: string, view: string) => unknown>
+> = {
+  attendance: attendanceValue,
+  workspace: workspaceValue,
+};
+
 export function fixtureEvidence(
   kind: FixtureJourney,
   section: InspectorSection,
@@ -61,9 +68,5 @@ export function fixtureEvidence(
   readonly summary: string;
   readonly value: unknown;
 } {
-  return {
-    summary: summaries[section],
-    value:
-      kind === 'attendance' ? attendanceValue(section, panel, intent, view) : workspaceValue(section, panel, intent),
-  };
+  return { summary: summaries[section], value: values[kind](section, panel, intent, view) };
 }

@@ -6,6 +6,7 @@ import {
   type Outcome,
   type VersionRef,
 } from '@aeliqo/core';
+import { canonicalJson } from '../canonical.js';
 import { createTypedAuthoring, createFunctionRegistry } from '@aeliqo/core/expressions';
 import type { DefineMetricInput, FunctionRegistry, TypedAuthoring } from '@aeliqo/core/expressions';
 import { validateMeaning } from '@aeliqo/core/semantics';
@@ -31,14 +32,7 @@ function outcomeCast<T>(outcome: Outcome<unknown>): Outcome<T> {
 
 /** Stable object ordering is used only for equality and local registry identities. */
 export function canonicalMeaning(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value !== 'object') return JSON.stringify(value) ?? 'undefined';
-  if (Array.isArray(value)) return `[${value.map(canonicalMeaning).join(',')}]`;
-  const record = value as Record<string, unknown>;
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonicalMeaning(record[key])}`)
-    .join(',')}}`;
+  return canonicalJson(value);
 }
 
 /** A bounded, deterministic digest for UI/cache identity. Equality also checks canonical contents. */

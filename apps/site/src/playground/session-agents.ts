@@ -2,6 +2,7 @@ import { parseIntent, type Intent, type Outcome } from '@aeliqo/core';
 import type { AgentModelToolEndpoint, AgentToolTransport } from '@aeliqo/agent/protocol';
 import type { WebMcpAdapter, WebMcpEvidence } from '@aeliqo/agent/webmcp';
 import { createAeliqoApp, type WebRenderReceipt } from '@aeliqo/web/app';
+import { failure } from './guards.js';
 
 type PlaygroundApp = ReturnType<typeof createAeliqoApp>;
 type PlaygroundRender = (target: HTMLElement, intent: Intent, signal?: AbortSignal) => Promise<WebRenderReceipt>;
@@ -21,10 +22,6 @@ interface AgentConnectionOptions {
   readonly render: PlaygroundRender;
   readonly onAgentRender?: (intent: Intent, receipt: WebRenderReceipt) => void | Promise<void>;
   readonly state: AgentConnectionState;
-}
-
-function failure<T>(code: string, message: string): Outcome<T> {
-  return { ok: false, diagnostics: [{ code, message, retryable: false }] };
 }
 
 function syncEgress(state: AgentConnectionState): void {

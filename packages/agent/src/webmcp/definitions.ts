@@ -1,6 +1,7 @@
 import { parseWireValue, type Outcome } from '@aeliqo/core';
 import type { AgentToolDefinition, AgentToolInputSchema } from '../protocol/types.js';
 import type { WebMcpToolAnnotations } from './types.js';
+import { boundedText, isRecord, localSchemaReferences } from '../guards.js';
 
 const MAX_REFERENCE = 256;
 const MAX_DESCRIPTION = 4096;
@@ -23,34 +24,15 @@ function failure<T>(code: string, message: string): Outcome<T> {
   return { ok: false, diagnostics: [{ code, message, retryable: false }] };
 }
 
-function validText(value: unknown, maximum: number): value is string {
-  return (
-    typeof value === 'string' && value.length > 0 && value.length <= maximum && !/[\u0000-\u001f\u007f]/u.test(value)
-  );
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
 function validCapability(value: unknown): value is { readonly id: string; readonly revision: string } {
-  if (!isObject(value)) return false;
-  return validText(value.id, MAX_REFERENCE) && validText(value.revision, MAX_REFERENCE);
-}
-
-function validSchemaReferences(value: unknown): boolean {
-  if (value === null || typeof value !== 'object') return true;
-  if (Array.isArray(value)) return value.every(validSchemaReferences);
-  return Object.entries(value).every(
-    ([key, child]) =>
-      (key !== '$ref' || (typeof child === 'string' && child.startsWith('#'))) && validSchemaReferences(child),
-  );
+  if (!isRecord(value)) return false;
+  return boundedText(value.id, MAX_REFERENCE) && boundedText(value.revision, MAX_REFERENCE);
 }
 
 function normalizeSchema(value: unknown): Outcome<AgentToolInputSchema> {
-  if (!isObject(value)) return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid input schema.');
+  if (!isRecord(value)) return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid input schema.');
   const schema = parseWireValue(value);
-  if (!schema.ok || !isObject(schema.value) || schema.value.type !== 'object' || !validSchemaReferences(schema.value))
+  if (!schema.ok || !isRecord(schema.value) || schema.value.type !== 'object' || !localSchemaReferences(schema.value))
     return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid input schema.');
   return { ok: true, value: schema.value as AgentToolInputSchema };
 }
@@ -73,10 +55,10 @@ function freezeDefinition(input: AgentToolDefinition): AgentToolDefinition {
 }
 
 function normalizeDefinition(candidate: unknown, names: ReadonlySet<string>): Outcome<AgentToolDefinition> {
-  if (!isObject(candidate)) return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid definition.');
+  if (!isRecord(candidate)) return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid definition.');
   if (typeof candidate.name !== 'string' || !TOOL_NAME.test(candidate.name) || names.has(candidate.name))
     return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid definition.');
-  if (!validText(candidate.description, MAX_DESCRIPTION) || !validCapability(candidate.capability))
+  if (!boundedText(candidate.description, MAX_DESCRIPTION) || !validCapability(candidate.capability))
     return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid definition.');
   if (typeof candidate.operation !== 'string' || !OPERATIONS.has(candidate.operation))
     return failure('agent.webmcp.discovery', 'Tool discovery returned an invalid definition.');

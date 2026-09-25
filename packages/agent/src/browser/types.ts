@@ -1,4 +1,5 @@
 import type { Outcome } from '@aeliqo/core';
+import type { OperationGrant } from '@aeliqo/core/agent';
 import type {
   ScopeController,
   SurfaceAddress,
@@ -54,6 +55,12 @@ export interface ScopedSurfaceEndpointOptions {
   readonly goalEpoch: string;
   readonly targets: readonly AgentSurfaceTarget[];
   readonly transport: AgentToolTransport;
+  /**
+   * Host-delegated grant ceiling for this pairing. Effective authority is the
+   * intersection of these grants and the operations the endpoint's registered
+   * tools actually require; a broader request is clamped, never unioned.
+   */
+  readonly grants?: readonly OperationGrant[];
   readonly expiresAt: number;
   readonly now?: () => number;
   readonly maxPending?: number;

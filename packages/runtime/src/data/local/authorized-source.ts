@@ -3,7 +3,7 @@ import type { QuerySource } from '@aeliqo/core/query';
 import type { DataRecord, QueryBudget, ReadContext, ReadGrant } from '../types.js';
 import type { StoredSnapshot } from './source.js';
 import type { StoredPlan } from './service-state.js';
-import { makeDeadline, resolveValueWithAbort } from './authorization.js';
+import { awaitBoundedResult, resolveValueWithAbort } from './authorization.js';
 import { failure } from './shared.js';
 
 const ROW_AUTHORIZATION_ERROR = 'The host row policy could not authorize the requested row.';
@@ -93,12 +93,13 @@ async function authorizeRow(
   if (!active.ok) return active;
   if (grant.rowPolicy === undefined) return { ok: true, value: true };
   const remaining = budget.maxMilliseconds - (workNow() - startedAt);
-  if (remaining <= 0) return failure('data.budget', ROW_TIME_BUDGET_ERROR);
-  const deadline = makeDeadline(context, remaining);
-  const permission = await evaluateRowPolicy(grant, entityId, row, query, context, deadline.signal);
-  const timedOut = deadline.timedOut();
-  deadline.cleanup();
-  if (timedOut && !context.signal?.aborted) return failure('data.budget', ROW_TIME_BUDGET_ERROR);
+  const permission = await awaitBoundedResult(
+    context,
+    remaining,
+    () => failure('data.budget', ROW_TIME_BUDGET_ERROR),
+    ROW_TIME_BUDGET_ERROR,
+    (signal) => evaluateRowPolicy(grant, entityId, row, query, context, signal),
+  );
   if (!permission.ok) return permission;
   if (typeof permission.value !== 'boolean') return failure('data.denied', ROW_AUTHORIZATION_ERROR);
   if (!current())

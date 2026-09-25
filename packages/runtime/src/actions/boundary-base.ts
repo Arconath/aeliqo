@@ -238,16 +238,22 @@ export class ActionPortBase {
 
   protected async readContext(signal: AbortSignal | undefined): Promise<ActionOutcome<TrustedActionContext>> {
     const host = await this.callHost((hostSignal) => this.host.readContext({ signal: hostSignal }), signal);
-    if (host.state !== 'completed') {
-      if (host.state === 'lifecycle') return this.lifecycle();
-      if (host.state === 'cancelled') return this.outcome('action.cancelled', 'The action context read was cancelled.');
-      if (host.state === 'budget') return this.outcome('action.budget', 'The host callback budget is full.');
-      return this.outcome('action.budget', 'The action context read exceeded its bounded time budget.');
+    if (host.state === 'completed') {
+      const outcome = normalizeOutcome<unknown>(host.value);
+      if (outcome === undefined || !outcome.ok)
+        return this.outcome('action.denied', 'The host action context could not be authenticated.');
+      return context(outcome.value);
     }
-    const outcome = normalizeOutcome<unknown>(host.value);
-    if (outcome === undefined || !outcome.ok)
-      return this.outcome('action.denied', 'The host action context could not be authenticated.');
-    return context(outcome.value);
+    switch (host.state) {
+      case 'lifecycle':
+        return this.lifecycle();
+      case 'cancelled':
+        return this.outcome('action.cancelled', 'The action context read was cancelled.');
+      case 'budget':
+        return this.outcome('action.budget', 'The host callback budget is full.');
+      default:
+        return this.outcome('action.budget', 'The action context read exceeded its bounded time budget.');
+    }
   }
 
   protected normalizedInput(registration: ActionRegistration, input: ActionPayload): ActionOutcome<ActionPayload> {

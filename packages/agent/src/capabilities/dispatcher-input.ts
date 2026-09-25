@@ -8,6 +8,7 @@ import {
 } from '@aeliqo/core';
 import type { OperationGrant } from '@aeliqo/core/agent';
 import type { AgentCapabilityAuthority, AgentCapabilityRequest, AgentJsonValue } from './types.js';
+import { isRecord } from '../guards.js';
 import { containsAuthorityClaim, failure, normalizeTransport, utf8Bytes, validId } from './dispatcher-common.js';
 
 const MAX_METADATA_BYTES = 64 * 1024;
@@ -22,10 +23,6 @@ const REQUEST_FIELDS = new Set([
   'metadata',
   'transport',
 ]);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function normalizeRef(input: unknown): Outcome<VersionRef> {
   if (!isRecord(input) || !validId(input.id) || !validId(input.revision))

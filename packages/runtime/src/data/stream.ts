@@ -113,12 +113,17 @@ class ResultStreamValidator {
     if (this.terminalEvent !== undefined)
       fail('data.stream-terminal', 'A result stream continued after its terminal event.');
     const event = this.parseEvent(line);
-    if (event.kind === 'error') return this.acceptError(event);
-    if (event.kind === 'descriptor') return this.acceptDescriptor(event);
-    this.checkResultReference(event.result);
-    this.acceptDataEvent(event);
-    if (event.kind === 'complete') this.terminalEvent = event;
-    return event;
+    switch (event.kind) {
+      case 'error':
+        return this.acceptError(event);
+      case 'descriptor':
+        return this.acceptDescriptor(event);
+      default:
+        this.checkResultReference(event.result);
+        this.acceptDataEvent(event);
+        if (event.kind === 'complete') this.terminalEvent = event;
+        return event;
+    }
   }
 
   get terminal(): TerminalResultEvent | undefined {

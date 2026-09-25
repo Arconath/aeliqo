@@ -1,6 +1,7 @@
 import { parseContract, parseWireValue, type Outcome } from '@aeliqo/core';
 import type { OperationGrant } from '@aeliqo/core/agent';
 import type { AgentJsonValue } from '../capabilities/types.js';
+import { boundedId, isRecord } from '../guards.js';
 
 export const failure = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
@@ -8,13 +9,11 @@ export const failure = <T>(code: string, message: string): Outcome<T> => ({
 });
 
 export function record(value: unknown): value is Readonly<Record<string, AgentJsonValue>> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+  return isRecord(value);
 }
 
 export function bounded(value: unknown): value is string {
-  return (
-    typeof value === 'string' && value.length > 0 && value.length <= 160 && !/[\s\u0000-\u001f\u007f]/u.test(value)
-  );
+  return boundedId(value);
 }
 
 export function grants(values: readonly string[]): readonly OperationGrant[] {

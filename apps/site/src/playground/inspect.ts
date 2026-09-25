@@ -53,20 +53,28 @@ function presentationEvidence(receipt: NonNullable<PlaygroundEvidence['receipt']
   };
 }
 
-export function evidenceFor(
-  evidence: PlaygroundEvidence,
-  section: InspectorSection,
-): { readonly summary: string; readonly value: unknown } {
-  if (section === 'intent') return { summary: intentSummary, value: evidence.intent ?? {} };
-  if (section === 'diagnostics') return { summary: diagnosticSummary, value: evidence.receipt?.diagnostics ?? [] };
-  const receipt = evidence.receipt;
-  if (receipt === undefined) return { summary: 'Run an intent to inspect this stage.', value: {} };
-  switch (section) {
-    case 'task':
-      return taskEvidence(receipt);
-    case 'result':
-      return resultEvidence(receipt);
-    case 'presentation':
-      return presentationEvidence(receipt);
-  }
+interface EvidenceSection {
+  readonly summary: string;
+  readonly value: unknown;
+}
+
+const EVIDENCE_SECTIONS: Readonly<Record<InspectorSection, (evidence: PlaygroundEvidence) => EvidenceSection>> = {
+  intent: (evidence) => ({ summary: intentSummary, value: evidence.intent ?? {} }),
+  diagnostics: (evidence) => ({ summary: diagnosticSummary, value: evidence.receipt?.diagnostics ?? [] }),
+  task: (evidence) =>
+    evidence.receipt === undefined
+      ? { summary: 'Run an intent to inspect this stage.', value: {} }
+      : taskEvidence(evidence.receipt),
+  result: (evidence) =>
+    evidence.receipt === undefined
+      ? { summary: 'Run an intent to inspect this stage.', value: {} }
+      : resultEvidence(evidence.receipt),
+  presentation: (evidence) =>
+    evidence.receipt === undefined
+      ? { summary: 'Run an intent to inspect this stage.', value: {} }
+      : presentationEvidence(evidence.receipt),
+};
+
+export function evidenceFor(evidence: PlaygroundEvidence, section: InspectorSection): EvidenceSection {
+  return EVIDENCE_SECTIONS[section](evidence);
 }
