@@ -17,7 +17,7 @@ description: 'Run and test a local People surface in React without an account, m
 
 <aeliqo-release-status></aeliqo-release-status>
 
-This tutorial targets the stable `0.5.0` release. Keep installed Aeliqo
+This tutorial targets the stable `0.5.1` release. Keep installed Aeliqo
 packages on exactly the same version.
 
 <span id="create-the-project"></span>
@@ -38,10 +38,10 @@ application-owned rows and makes no model or remote data request.
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aeliqo/core": "0.5.0",
-    "@aeliqo/runtime": "0.5.0",
-    "@aeliqo/web": "0.5.0",
-    "@aeliqo/react": "0.5.0",
+    "@aeliqo/core": "0.5.1",
+    "@aeliqo/runtime": "0.5.1",
+    "@aeliqo/web": "0.5.1",
+    "@aeliqo/react": "0.5.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -77,8 +77,15 @@ application-owned rows and makes no model or remote data request.
 ```html
 <!doctype html>
 <html lang="en">
-  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>People</title></head>
-  <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>People</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
 ```
 
@@ -97,20 +104,29 @@ const initial: Person[] = [
 
 function People() {
   const [rows, setRows] = useState(initial);
-  const surface = useDataSurface({ data: rows, getRowId: row => row.id });
+  const surface = useDataSurface({ data: rows, getRowId: (row) => row.id });
 
-  return <main>
-    <h1>People</h1>
-    <button type="button" onClick={() => setRows(
-      current => current.filter(person => person.team === 'Engineering')
-    )}>Show Engineering</button>
-    <button type="button" onClick={() => setRows(initial)}>Show everyone</button>
-    <AdaptiveSurface surface={surface} />
-  </main>;
+  return (
+    <main>
+      <h1>People</h1>
+      <button
+        type="button"
+        onClick={() => setRows((current) => current.filter((person) => person.team === 'Engineering'))}
+      >
+        Show Engineering
+      </button>
+      <button type="button" onClick={() => setRows(initial)}>
+        Show everyone
+      </button>
+      <AdaptiveSurface surface={surface} />
+    </main>
+  );
 }
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode><People /></StrictMode>
+  <StrictMode>
+    <People />
+  </StrictMode>,
 );
 ```
 

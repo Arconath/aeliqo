@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { componentCatalog } from '../shared/catalog.js';
+import { RELEASE_VERSION } from '../../../../scripts/release/metadata.mjs';
 
 test('the public playground uses the app facade without AI and through structured intents', async ({ page }) => {
   const errors: string[] = [];
@@ -175,11 +176,11 @@ test('simulated WebMCP host registers the standard tools and renders through the
 });
 
 test('candidate playground does not offer a ZIP pinned to an unpublished release', async ({ page }) => {
-  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION === '0.5.0', 'Stable export is enabled.');
+  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION === RELEASE_VERSION, 'Stable export is enabled.');
   await page.goto('/playground/');
   await page.locator('#pg-scenario').selectOption('knowledge');
   await expect(page.getByRole('button', { name: 'Export project' })).toBeDisabled();
-  await expect(page.locator('#pg-export-note')).toContainText('0.5.0 packages');
+  await expect(page.locator('#pg-export-note')).toContainText('matching Aeliqo packages');
   await expect(page.locator('#pg-export-note a')).toHaveAttribute('href', '/examples/');
   await page.locator('#pg-export-note a').click();
   await expect(page.getByRole('heading', { name: 'Run the 0.5 source' })).toBeVisible();
@@ -190,7 +191,7 @@ test('candidate playground does not offer a ZIP pinned to an unpublished release
 test('stable export follows the four base scenarios and never substitutes them for public journeys', async ({
   page,
 }) => {
-  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION !== '0.5.0', 'Requires verified stable export.');
+  test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION !== RELEASE_VERSION, 'Requires verified stable export.');
   await page.goto('/playground/');
   const exportButton = page.getByRole('button', { name: 'Export project' });
   await expect(exportButton).toBeEnabled();

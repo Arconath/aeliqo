@@ -6,6 +6,13 @@ title: 'Release notes'
 description: 'Aeliqo 0.5 changes, migration boundaries, and the prior 0.4.2 release.'
 ---
 
+## Aeliqo 0.5.1
+
+This patch release keeps the 0.5 API and runtime contract intact while shipping
+the clearer local React quickstart, the registered People app tutorial, the
+public 0.5 playground journeys, and a polished documentation shell. Install all
+five packages at exactly `0.5.1` when using this release.
+
 ## Aeliqo 0.5.0
 
 All five `0.5.0-rc.2` packages and matching stable `0.5.0` packages were
