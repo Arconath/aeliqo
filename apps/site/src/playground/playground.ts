@@ -1,19 +1,16 @@
 import type { Intent } from '@aeliqo/core';
 import type { WebRenderReceipt } from '@aeliqo/web/app';
 import { createActionReviewController } from './action-review.js';
-import { checkConnection, sendLocalPrompt } from './connection-controller.js';
+import { createConnectionFlow } from './connection-flow.js';
 import { evidenceFor, selectedView, viewLabel, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
 import { fixtureEvidence } from './fixture-inspector.js';
 import { createFixtureJourneys, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
-import { createJourneyTracker } from './journey.js';
-import { connectLocalHost, type LocalHostConnection } from './local-host.js';
+import { createJourneyTracker, journeyStagesFor } from './journey.js';
 import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId } from './scenarios.js';
 import { findScenario, labelIntent, renderScenarioControls } from './scenario-controls.js';
 import { createPlaygroundSession, type PlaygroundSession } from './session.js';
 
 type Mode = 'without-ai' | 'connected';
-type ConnectionCheck = Awaited<ReturnType<typeof checkConnection>>;
-type LocalPromptReceipt = Awaited<ReturnType<typeof sendLocalPrompt>>;
 const modeLabels: Readonly<Record<Mode, string>> = {
   'without-ai': 'Without AI',
   connected: 'Connect AI',
@@ -75,11 +72,20 @@ let activeRequest: AbortController | undefined;
 let session: PlaygroundSession;
 let last: PlaygroundEvidence = {};
 let inspectorSection: InspectorSection = 'intent';
-let connection: 'none' | 'local' | 'webmcp' = 'none';
-let modelCallCount = 0;
-let localHost: LocalHostConnection | undefined;
-let localModelReady = false;
 let activeJourney: 'standard' | FixtureJourney = 'standard';
+
+const connectionFlow = createConnectionFlow(
+  {
+    kind: connectionKind,
+    status: connectionStatus,
+    label: connectionLabel,
+    dot: connectionDot,
+    prompt,
+    send,
+    modelCalls,
+  },
+  () => session,
+);
 
 function stringify(value: unknown): string {
   try {
@@ -122,14 +128,6 @@ const actionReview = createActionReviewController({
   setError,
 });
 
-function updateComposer(): void {
-  const ready = connection === 'local' && localModelReady;
-  prompt.disabled = !ready;
-  send.disabled = !ready;
-  send.textContent = 'Send to local agent';
-  prompt.placeholder = ready ? 'Describe the interface you want' : 'Available after a connection is ready';
-}
-
 function renderInspector(): void {
   if (activeJourney !== 'standard') {
     const panel = activeJourney === 'attendance' ? attendancePanel : workspacePanel;
@@ -151,25 +149,15 @@ function renderInspector(): void {
 
 function resetSession(): void {
   activeRequest?.abort();
-  localHost?.close();
-  localHost = undefined;
   session?.dispose();
   regionHost.replaceChildren();
   session = createPlaygroundSession(actionReview.handle, applyAgentReceipt);
   last = {};
   actionReview.reset();
-  connection = 'none';
-  localModelReady = false;
-  connectionKind.value = 'detect';
-  modelCallCount = 0;
-  modelCalls.textContent = '0';
-  connectionLabel.textContent = 'No agent · manual runtime';
-  connectionStatus.textContent = 'No local host detected. Without AI remains available.';
-  connectionDot.dataset.state = 'disconnected';
+  connectionFlow.reset();
   showStandardJourney();
   setExportAvailability(false);
   prompt.value = '';
-  updateComposer();
   setError();
   status.textContent = 'Session reset. Choose a task.';
   journeyIntent.textContent = 'Choose a task';
@@ -198,13 +186,8 @@ function showStandardJourney(): void {
 
 function showFixtureJourney(kind: FixtureJourney): void {
   activeRequest?.abort();
-  localHost?.close();
-  localHost = undefined;
-  session.disconnectWebMcp();
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  showConnection('No agent · synthetic journey', 'disconnected');
+  connectionFlow.disconnect();
+  connectionFlow.show('No agent · synthetic journey', 'disconnected');
   setMode('without-ai');
   activeJourney = kind;
   setExportAvailability(true);
@@ -236,10 +219,7 @@ const fixtureJourneys = createFixtureJourneys({
     journeyView.textContent = state.view;
     viewBadge.textContent = state.view;
     status.textContent = state.status;
-    if (state.receipt === 'renderer-ready') setJourney('done', 'done', 'done');
-    else if (state.receipt === 'pending' || state.receipt.startsWith('needs-input:'))
-      setJourney('done', 'active', 'pending');
-    else setJourney('done', 'failed', 'pending');
+    setJourney(...journeyStagesFor(state.receipt));
   },
   onError() {
     setError('The synthetic journey could not load. Reload the page to retry.');
@@ -257,23 +237,33 @@ async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<
   resultTitle.textContent = activeStep?.label ?? `${scenario.label} result`;
   resultDefinition.textContent = activeStep?.definition ?? '';
   resultDefinition.hidden = activeStep?.definition === undefined;
-  if (receipt.status === 'renderer-ready') {
-    committedFilter.hidden = intent.id !== 'people-jakarta';
-    committedFilter.textContent =
-      intent.id === 'people-jakarta' ? 'Committed filter · Location: Jakarta · Scope: synthetic People' : '';
-    journeyResult.textContent = 'Evaluated';
-    journeyView.textContent = viewLabel(selectedView(receipt));
-    setJourney('done', 'done', 'done');
-    status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
-  } else {
-    const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
-    journeyResult.textContent = 'Could not complete';
-    journeyView.textContent = 'No new view';
-    setJourney('done', 'failed', 'pending');
-    status.textContent = message;
-    setError(message);
+  switch (receipt.status) {
+    case 'renderer-ready':
+      applyReadyReceipt(intent, receipt);
+      break;
+    default:
+      applyFailedReceipt(receipt);
   }
   renderInspector();
+}
+
+function applyReadyReceipt(intent: Intent, receipt: WebRenderReceipt): void {
+  committedFilter.hidden = intent.id !== 'people-jakarta';
+  committedFilter.textContent =
+    intent.id === 'people-jakarta' ? 'Committed filter · Location: Jakarta · Scope: synthetic People' : '';
+  journeyResult.textContent = 'Evaluated';
+  journeyView.textContent = viewLabel(selectedView(receipt));
+  setJourney('done', 'done', 'done');
+  status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
+}
+
+function applyFailedReceipt(receipt: WebRenderReceipt): void {
+  const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
+  journeyResult.textContent = 'Could not complete';
+  journeyView.textContent = 'No new view';
+  setJourney('done', 'failed', 'pending');
+  status.textContent = message;
+  setError(message);
 }
 
 async function applyAgentReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<void> {
@@ -321,114 +311,25 @@ function setMode(next: Mode): void {
   modeLabel.textContent = modeLabels[mode];
 }
 
+const MODES = ['without-ai', 'connected'] as const satisfies readonly Mode[];
+const INSPECTOR_SECTIONS = [
+  'intent',
+  'task',
+  'result',
+  'presentation',
+  'diagnostics',
+] as const satisfies readonly InspectorSection[];
+
 function modeFrom(value: string | undefined): Mode | undefined {
-  return value === 'without-ai' || value === 'connected' ? value : undefined;
+  return MODES.find((candidate) => candidate === value);
 }
 
 function inspectorFrom(value: string | undefined): InspectorSection | undefined {
-  return value === 'intent' ||
-    value === 'task' ||
-    value === 'result' ||
-    value === 'presentation' ||
-    value === 'diagnostics'
-    ? value
-    : undefined;
+  return INSPECTOR_SECTIONS.find((candidate) => candidate === value);
 }
 
-function showConnection(label: string, state: string): void {
-  connectionStatus.textContent = label;
-  connectionLabel.textContent = label;
-  connectionDot.dataset.state = state;
-}
-
-function changeConnectionKind(): void {
-  if (connection === 'local' && connectionKind.value !== 'detect') {
-    localHost?.close();
-    localHost = undefined;
-    localModelReady = false;
-    connection = 'none';
-    showConnection('The local agent connection was closed.', 'disconnected');
-  }
-  if (connection === 'webmcp' && connectionKind.value !== 'webmcp') {
-    session.disconnectWebMcp();
-    connection = 'none';
-    showConnection('The WebMCP connection was closed.', 'disconnected');
-  }
-  updateComposer();
-}
-
-async function registerWebMcpConnection(): Promise<void> {
-  const registered = await session.connectWebMcp();
-  if (registered.ok) {
-    connection = 'webmcp';
-    localModelReady = false;
-    updateComposer();
-    showConnection(`Native WebMCP registered ${registered.value.registrations} tools (experimental).`, 'connected');
-    return;
-  }
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  showConnection(registered.diagnostics[0]?.message ?? 'WebMCP registration failed safely.', 'unavailable');
-}
-
-async function pairDetectedLocalHost(result: Extract<ConnectionCheck, { readonly state: 'connected' }>): Promise<void> {
-  try {
-    localHost = await connectLocalHost(session);
-    connection = 'local';
-    localModelReady = result.modelConfigured;
-    updateComposer();
-    showConnection(result.label, 'connected');
-  } catch (cause) {
-    connection = 'none';
-    localModelReady = false;
-    updateComposer();
-    const label = cause instanceof Error ? cause.message : 'The local host pairing failed safely.';
-    showConnection(label, 'unavailable');
-  }
-}
-
-async function applyConnectionCheck(kind: 'webmcp' | 'detect', result: ConnectionCheck): Promise<void> {
-  if (kind === 'webmcp' && result.state === 'available') {
-    await registerWebMcpConnection();
-    return;
-  }
-  if (result.state === 'connected') {
-    await pairDetectedLocalHost(result);
-    return;
-  }
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  showConnection(result.label, result.state);
-}
-
-function promptStatus(receipt: LocalPromptReceipt): string {
-  if (receipt.stop === 'renderer-ready') {
-    const unit = receipt.toolCalls === 1 ? 'tool call' : 'tool calls';
-    return `The local agent completed ${receipt.toolCalls} validated ${unit}.`;
-  }
-  if (receipt.stop === 'no-commit' && receipt.message !== undefined)
-    return `No validated UI change was made. Agent draft: ${receipt.message}`;
-  return `The local agent stopped as ${receipt.stop}; no unsupported claim is shown as success.`;
-}
-
-async function submitLocalPrompt(): Promise<void> {
-  const value = prompt.value.trim();
-  if (connection !== 'local' || value.length === 0) return;
-  const controller = new AbortController();
-  connectionStatus.textContent = 'Waiting for the local agent proposal…';
-  send.disabled = true;
-  try {
-    const receipt = await sendLocalPrompt(value, controller.signal);
-    modelCallCount += receipt.modelRequests;
-    modelCalls.textContent = String(modelCallCount);
-    connectionStatus.textContent = promptStatus(receipt);
-  } catch {
-    connectionStatus.textContent = 'The local agent request failed. No UI change was committed.';
-  } finally {
-    send.disabled = connection !== 'local';
-  }
+function isFixtureJourney(value: string | undefined): value is FixtureJourney {
+  return value === 'attendance' || value === 'workspace';
 }
 
 for (const item of PLAYGROUND_SCENARIOS) {
@@ -452,8 +353,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-journey
       void runIntent(jakartaPeopleIntent(), undefined, true);
       return;
     }
-    if (button.dataset.journey === 'attendance' || button.dataset.journey === 'workspace')
-      showFixtureJourney(button.dataset.journey);
+    if (isFixtureJourney(button.dataset.journey)) showFixtureJourney(button.dataset.journey);
   });
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
   button.addEventListener('click', () => {
@@ -490,21 +390,9 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-inspect
       candidate.setAttribute('aria-pressed', String(candidate === button));
     renderInspector();
   });
-required<HTMLButtonElement>('#pg-connect').addEventListener('click', async () => {
-  localHost?.close();
-  localHost = undefined;
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  connectionStatus.textContent = 'Checking capability…';
-  const kind = connectionKind.value === 'webmcp' ? 'webmcp' : 'detect';
-  const result = await checkConnection(kind);
-  await applyConnectionCheck(kind, result);
-});
-connectionKind.addEventListener('change', changeConnectionKind);
-send.addEventListener('click', () => {
-  void submitLocalPrompt();
-});
+required<HTMLButtonElement>('#pg-connect').addEventListener('click', () => void connectionFlow.connect());
+connectionKind.addEventListener('change', () => connectionFlow.changeKind());
+send.addEventListener('click', () => void connectionFlow.submitPrompt());
 
 resetSession();
 renderScenario();
@@ -515,12 +403,8 @@ appRoot.removeAttribute('aria-busy');
 void runIntent(scenario.steps[0]!.intent());
 window.addEventListener('pagehide', () => {
   activeRequest?.abort();
-  localHost?.close();
-  localHost = undefined;
+  connectionFlow.close();
   session.dispose();
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
 });
 
 export type { ScenarioId };
