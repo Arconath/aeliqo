@@ -1,11 +1,12 @@
 import * as z from 'zod/mini';
 import { semanticTypeSchema } from '../contracts/schemas.js';
+import { NUMERIC_TYPE_VALUES } from '../contracts/scalars.js';
 import type { SemanticType } from '../contracts/types.js';
 import type { TypedExpression } from '../expressions/types.js';
 import { semanticFailure } from './errors.js';
 
 export function isNumericType(type: SemanticType): boolean {
-  return type.value === 'integer' || type.value === 'float' || type.value === 'decimal';
+  return NUMERIC_TYPE_VALUES.has(type.value);
 }
 
 export function grainOf(type: SemanticType): readonly string[] {

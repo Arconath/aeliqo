@@ -10,6 +10,7 @@ export const event = <T>(type: string, detail: T, cancelable = true): CustomEven
 export const MAX_COMPARISON_KEYS = 32;
 export const MAX_COMPARISON_METRICS = 64;
 export const MAX_BREAKDOWN_GROUPS = 100;
+const BUTTON_INPUT_TYPES: ReadonlySet<string> = new Set(['submit', 'reset', 'button', 'image']);
 export const bounded = <T>(items: readonly T[], maximum: number): readonly T[] => items.slice(0, maximum);
 
 export function tableCell(value: Scalar | undefined): TableCell {
@@ -126,7 +127,7 @@ export function compoundControls(host: HTMLElement): readonly CompoundControl[] 
 
 function ignoredWireControl(control: CompoundControl, name: string): boolean {
   if (!name || isDisabledControl(control) || control instanceof HTMLButtonElement) return true;
-  if (control instanceof HTMLInputElement && ['submit', 'reset', 'button', 'image'].includes(control.type)) return true;
+  if (control instanceof HTMLInputElement && BUTTON_INPUT_TYPES.has(control.type)) return true;
   return control instanceof HTMLInputElement && ['checkbox', 'radio'].includes(control.type) && !control.checked;
 }
 

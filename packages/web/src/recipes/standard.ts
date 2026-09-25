@@ -9,7 +9,7 @@ import { AELIQO_DATA_CONFIG_SCHEMAS, AELIQO_DATA_REFS } from '../region/data-reg
 import { AELIQO_VISUALIZATION_CONFIG_SCHEMAS, AELIQO_VISUALIZATION_REFS } from '../region/visualization-registry.js';
 import { defineRecipe } from './define.js';
 import { comparisonSplitPlan } from './standard-comparison.js';
-import { barConfig, dataColumns, requestedFields } from './standard-data.js';
+import { barConfig, dataColumns, measureField, requestedFields, temporalField } from './standard-data.js';
 import { trendConfig } from './standard-trend.js';
 import type { RecipeContext, RecipeDefinition, StandardRecipeIntent } from './types.js';
 import { standardFormRecipe } from './standard-form.js';
@@ -343,8 +343,8 @@ function clarificationChoices(context: RecipeContext, kind: 'measure' | 'time') 
   if (context.result === undefined) return [];
   const requested = requestedFields(context);
   const compatible = context.result.fields.filter((field) => {
-    if (kind === 'time') return field.type.value === 'date' || field.type.value === 'instant';
-    return field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value);
+    if (kind === 'time') return temporalField(field);
+    return measureField(field);
   });
   return compatible
     .filter((field) => requested.has(field.id))

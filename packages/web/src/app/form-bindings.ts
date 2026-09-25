@@ -32,11 +32,18 @@ function isJsonObject(value: unknown): value is Readonly<Record<string, Readonly
   );
 }
 
-function fieldRef(value: ResourceDefinition['entity']['fields'][number]['type']['value']): AeliqoInputRef {
-  if (value === 'boolean') return AELIQO_INPUT_REFS.checkbox;
-  if (value === 'integer' || value === 'float' || value === 'decimal') return AELIQO_INPUT_REFS.numberField;
-  if (value === 'date') return AELIQO_INPUT_REFS.dateField;
-  return AELIQO_INPUT_REFS.textField;
+type FieldTypeValue = ResourceDefinition['entity']['fields'][number]['type']['value'];
+
+const FIELD_REFS: Readonly<Partial<Record<FieldTypeValue, AeliqoInputRef>>> = {
+  boolean: AELIQO_INPUT_REFS.checkbox,
+  integer: AELIQO_INPUT_REFS.numberField,
+  float: AELIQO_INPUT_REFS.numberField,
+  decimal: AELIQO_INPUT_REFS.numberField,
+  date: AELIQO_INPUT_REFS.dateField,
+};
+
+function fieldRef(value: FieldTypeValue): AeliqoInputRef {
+  return FIELD_REFS[value] ?? AELIQO_INPUT_REFS.textField;
 }
 
 function defaultConfig(ref: AeliqoInputRef, value: Scalar | undefined): Record<string, unknown> {

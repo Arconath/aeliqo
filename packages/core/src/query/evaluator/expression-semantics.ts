@@ -1,5 +1,6 @@
 import type { Expression, SemanticType } from '../../contracts/types.js';
 import type { FunctionOutput, FunctionRegistry, FunctionSignature } from '../../expressions/types.js';
+import { isFractionalOperation } from '../../expressions/standard-signatures.js';
 import type { QueryField, QuerySchema } from '../types.js';
 
 export function sourceField(
@@ -26,7 +27,7 @@ function compoundValueType(
     !('value' in signature.output) && signature.output.kind === 'numeric' && signature.output.forceFloat === true;
   const forcesFloat =
     outputForcesFloat ||
-    ['divide', 'ratio-of-sums', 'mean-of-rates'].includes(signature.operation) ||
+    isFractionalOperation(signature.operation) ||
     arguments_.some((argument) => argument?.value === 'float');
   if (forcesFloat) return 'float';
   if (arguments_.some((argument) => argument?.value === 'decimal')) return 'decimal';

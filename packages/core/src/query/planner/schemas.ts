@@ -11,7 +11,17 @@ import type {
   TimeBucketSpec,
   WindowSpec,
 } from '../types.js';
-import { failure, findField, relationKey, roleForType, safeId, safePositive, unsupported } from './shared.js';
+import { isAggregateOperation } from '../../expressions/standard-signatures.js';
+import {
+  BUCKET_GRAINS,
+  failure,
+  findField,
+  relationKey,
+  roleForType,
+  safeId,
+  safePositive,
+  unsupported,
+} from './shared.js';
 import { resolveExpression, type ResolvedExpression } from './expressions.js';
 import type { CatalogRelationship } from './shared.js';
 
@@ -127,7 +137,7 @@ function validateIsoWeekStart(item: TimeBucketSpec): QueryOutcome<void> {
 }
 
 function supportedTimeGrain(item: TimeBucketSpec): QueryOutcome<void> {
-  if (!['day', 'week', 'month', 'quarter', 'year'].includes(item.grain))
+  if (!BUCKET_GRAINS.has(item.grain))
     return unsupported(
       'temporal-grain',
       'The requested temporal grain is not in the bounded evaluator subset.',
@@ -353,12 +363,8 @@ function containsAggregate(expression: Expression, registry: FunctionRegistry): 
   if (expression.kind !== 'call') return false;
   const signature = registry.resolve(expression.function);
   if (signature === undefined) return false;
-  if (['aggregate', 'ratio-of-sums', 'mean-of-rates'].includes(signature.operation)) return true;
+  if (isAggregateOperation(signature.operation)) return true;
   return expression.arguments.some((argument) => containsAggregate(argument, registry));
-}
-
-function isAggregateOperation(value: string | undefined): boolean {
-  return value === 'aggregate' || value === 'ratio-of-sums' || value === 'mean-of-rates';
 }
 
 export function aggregateSchema(

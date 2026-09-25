@@ -254,33 +254,35 @@ function buildManifest(
   });
 }
 
+const ADAPTIVE_QUALITY: Readonly<
+  Partial<Record<DataManifestComponent, (environment: PresentationEnvironment) => Outcome<PresentationQuality>>>
+> = {
+  cardCollection: (environment) => {
+    const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 640;
+    return {
+      ok: true,
+      value: {
+        taskFit: narrow ? 90 : 75,
+        informationDensity: narrow ? 70 : 60,
+        interactionEffort: narrow ? 5 : 10,
+        legibilityPenalty: 0,
+      },
+    };
+  },
+  recordList: () => ({
+    ok: true,
+    value: { taskFit: 80, informationDensity: 55, interactionEffort: 5, legibilityPenalty: 0 },
+  }),
+  detail: () => ({
+    ok: true,
+    value: { taskFit: 95, informationDensity: 70, interactionEffort: 5, legibilityPenalty: 0 },
+  }),
+};
+
 function adaptiveQuality(
   component: DataManifestComponent,
 ): ((environment: PresentationEnvironment) => Outcome<PresentationQuality>) | undefined {
-  if (component === 'cardCollection')
-    return (environment) => {
-      const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 640;
-      return {
-        ok: true,
-        value: {
-          taskFit: narrow ? 90 : 75,
-          informationDensity: narrow ? 70 : 60,
-          interactionEffort: narrow ? 5 : 10,
-          legibilityPenalty: 0,
-        },
-      };
-    };
-  if (component === 'recordList')
-    return () => ({
-      ok: true,
-      value: { taskFit: 80, informationDensity: 55, interactionEffort: 5, legibilityPenalty: 0 },
-    });
-  if (component === 'detail')
-    return () => ({
-      ok: true,
-      value: { taskFit: 95, informationDensity: 70, interactionEffort: 5, legibilityPenalty: 0 },
-    });
-  return undefined;
+  return ADAPTIVE_QUALITY[component];
 }
 
 /** Build the eight canonical data manifests that complement the existing data.table@1 manifest. */

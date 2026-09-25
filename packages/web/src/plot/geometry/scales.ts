@@ -11,6 +11,8 @@ export interface PrimaryScales {
   readonly colorAt: (value: Scalar) => string | undefined;
 }
 
+const ZERO_BASED_FAMILIES: ReadonlySet<string> = new Set(['bar', 'area', 'histogram']);
+
 export interface VerticalLayout {
   readonly y: PlotScale;
   readonly size?: PlotScale;
@@ -148,7 +150,7 @@ export function createVerticalLayout(
       : [...projection.domains.y];
   domain.push(...stackValues);
   const y = makePlotScale(encoding.y, yType, domain, [height - 48, 24]);
-  const needsZero = ['bar', 'area', 'histogram'].includes(family ?? '') || unit.mark === 'bar' || unit.mark === 'area';
+  const needsZero = ZERO_BASED_FAMILIES.has(family ?? '') || unit.mark === 'bar' || unit.mark === 'area';
   const zeroY = needsZero ? y.at(quantitativeZero(yType)) : undefined;
   if (needsZero && zeroY === undefined)
     return { kind: 'data-only', reason: 'The quantitative scale cannot represent its required zero baseline.' };

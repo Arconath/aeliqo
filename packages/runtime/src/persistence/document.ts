@@ -5,6 +5,7 @@ import type { RegionDocument, RegionDocumentInput, RegionPersistence } from './t
 import type { RegionHistoryEntry, RegionOutcome, RegionReadSet, RegionSnapshot } from '../regions/types.js';
 
 const VERSION = '1' as const;
+const HISTORY_KINDS: ReadonlySet<string> = new Set(['commit', 'data', 'revoke']);
 const failure = <T>(code: string, message: string): RegionOutcome<T> => ({
   ok: false,
   diagnostics: [{ code, message, retryable: false } as Diagnostic],
@@ -124,11 +125,7 @@ function validChangedResults(value: unknown, scopeDigest: string): boolean {
 }
 
 function validHistoryIdentity(record: Record<string, unknown>): boolean {
-  return (
-    ['commit', 'data', 'revoke'].includes(String(record.kind)) &&
-    validId(record.taskRevision) &&
-    validId(record.regionRevision)
-  );
+  return HISTORY_KINDS.has(String(record.kind)) && validId(record.taskRevision) && validId(record.regionRevision);
 }
 
 function validHistoryClock(record: Record<string, unknown>): boolean {

@@ -4,6 +4,8 @@ import type { Outcome, ResultCell } from './internal-types.js';
 import { failure, isKnownCoverage, lineageDigest, sameRef, sameRefParts } from './store-utils.js';
 import type { ResultBatch, ResultCacheKey, ResultEvent } from './types.js';
 
+const COVERAGE_KINDS: ReadonlySet<Result['coverage']['kind']> = new Set(['unknown', 'complete', 'partial', 'sample']);
+
 function matchesAcceptedRevision(descriptor: Result, key: ResultCacheKey): boolean {
   if (descriptor.ref.revision === key.sourceRevision) return true;
   if (descriptor.consistency.kind !== 'mixed' || descriptor.consistency.sourceLineage !== key.sourceLineage)
@@ -82,12 +84,7 @@ function validateDescriptorCoverage(descriptor: Result): Outcome<void> {
       'data.result-population',
       'The result population count and coverage refer to different populations.',
     );
-  if (
-    coverage.kind !== 'unknown' &&
-    coverage.kind !== 'complete' &&
-    coverage.kind !== 'partial' &&
-    coverage.kind !== 'sample'
-  )
+  if (!COVERAGE_KINDS.has(coverage.kind))
     return failure('data.result-coverage', 'The result descriptor has an invalid coverage state.');
   return { ok: true, value: undefined };
 }

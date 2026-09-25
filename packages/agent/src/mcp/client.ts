@@ -250,8 +250,10 @@ function validateHttpUrlIdentity(url: URL): void {
     throw new TypeError('The MCP HTTP endpoint must not contain credentials or a fragment.');
 }
 
+const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['127.0.0.1', 'localhost', '[::1]']);
+
 function loopbackHostname(hostname: string): boolean {
-  return hostname === '127.0.0.1' || hostname === 'localhost' || hostname === '[::1]';
+  return LOOPBACK_HOSTS.has(hostname);
 }
 
 function validateHttpProtocol(url: URL, policy: McpHttpClientOptions['policy']): void {

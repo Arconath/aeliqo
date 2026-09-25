@@ -224,18 +224,23 @@ export class AeliqoTreeNavElement extends AeliqoFoundationElement {
   private keydown(event: KeyboardEvent, flat: FlatNode, index: number): void {
     if (event.target instanceof HTMLButtonElement) return;
     const node = flat.node;
-    if (event.key === 'ArrowRight') return this.handleArrowRight(event, node);
-    if (event.key === 'ArrowLeft') return this.handleArrowLeft(event, flat.parentId, node);
-    if (this.isVerticalNavigationKey(event.key)) {
-      const next = focusIndexForKey(event.key, index, this.flatVisible().length - 1);
-      if (next !== undefined) this.focusVisibleIndex(event, next);
-      return;
+    switch (event.key) {
+      case 'ArrowRight':
+        return this.handleArrowRight(event, node);
+      case 'ArrowLeft':
+        return this.handleArrowLeft(event, flat.parentId, node);
+      case 'ArrowDown':
+      case 'ArrowUp':
+      case 'Home':
+      case 'End': {
+        const next = focusIndexForKey(event.key, index, this.flatVisible().length - 1);
+        if (next !== undefined) this.focusVisibleIndex(event, next);
+        return;
+      }
+      case 'Enter':
+      case ' ':
+        this.selectFromKeyboard(event, node);
     }
-    if (event.key === 'Enter' || event.key === ' ') this.selectFromKeyboard(event, node);
-  }
-
-  private isVerticalNavigationKey(key: string): boolean {
-    return key === 'ArrowDown' || key === 'ArrowUp' || key === 'Home' || key === 'End';
   }
 
   private handleArrowRight(event: KeyboardEvent, node: AeliqoTreeNavNode): void {

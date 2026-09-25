@@ -2,6 +2,17 @@
 import { WIRE_LIMITS } from './limits.js';
 import type { Outcome, Scalar, SemanticType } from './types.js';
 
+export const SCALAR_TYPE_VALUES: ReadonlySet<SemanticType['value']> = new Set([
+  'text',
+  'boolean',
+  'integer',
+  'float',
+  'decimal',
+  'date',
+  'instant',
+]);
+export const NUMERIC_TYPE_VALUES: ReadonlySet<SemanticType['value']> = new Set(['integer', 'float', 'decimal']);
+
 const bad = (): Outcome<never> => ({
   ok: false,
   diagnostics: [
@@ -72,7 +83,7 @@ function validScalarType(type: SemanticType): boolean {
     type !== null &&
     typeof type === 'object' &&
     typeof type.nullable === 'boolean' &&
-    ['text', 'boolean', 'integer', 'float', 'decimal', 'date', 'instant'].includes(type.value)
+    SCALAR_TYPE_VALUES.has(type.value)
   );
 }
 
@@ -143,33 +154,37 @@ export function compareScalars(left: unknown, right: unknown, type: SemanticType
   const b = validateScalar(right, type);
   if (!b.ok) return b;
   if (a.value === null || b.value === null) return { ok: true, value: null };
-  if (type.value === 'decimal') {
-    const l = decimalParts((a.value as { decimal: string }).decimal);
-    const r = decimalParts((b.value as { decimal: string }).decimal);
-    const scale = Math.max(l.scale, r.scale);
-    return {
-      ok: true,
-      value: ordered(l.coefficient * 10n ** BigInt(scale - l.scale), r.coefficient * 10n ** BigInt(scale - r.scale)),
-    };
-  }
-  if (type.value === 'instant') {
-    const l = scalarInstantParts(a.value as string)!;
-    const r = scalarInstantParts(b.value as string)!;
-    const seconds = ordered(l.milliseconds, r.milliseconds);
-    const length = Math.max(l.fraction.length, r.fraction.length);
-    return { ok: true, value: seconds || ordered(l.fraction.padEnd(length, '0'), r.fraction.padEnd(length, '0')) };
-  }
-  if (type.value === 'boolean') return { ok: true, value: ordered(Number(a.value), Number(b.value)) };
-  if (type.value === 'text') {
-    const l = [...(a.value as string)];
-    const r = [...(b.value as string)];
-    for (let index = 0; index < Math.min(l.length, r.length); index++) {
-      const comparison = ordered(l[index]!.codePointAt(0)!, r[index]!.codePointAt(0)!);
-      if (comparison) return { ok: true, value: comparison };
+  switch (type.value) {
+    case 'decimal': {
+      const l = decimalParts((a.value as { decimal: string }).decimal);
+      const r = decimalParts((b.value as { decimal: string }).decimal);
+      const scale = Math.max(l.scale, r.scale);
+      return {
+        ok: true,
+        value: ordered(l.coefficient * 10n ** BigInt(scale - l.scale), r.coefficient * 10n ** BigInt(scale - r.scale)),
+      };
     }
-    return { ok: true, value: ordered(l.length, r.length) };
+    case 'instant': {
+      const l = scalarInstantParts(a.value as string)!;
+      const r = scalarInstantParts(b.value as string)!;
+      const seconds = ordered(l.milliseconds, r.milliseconds);
+      const length = Math.max(l.fraction.length, r.fraction.length);
+      return { ok: true, value: seconds || ordered(l.fraction.padEnd(length, '0'), r.fraction.padEnd(length, '0')) };
+    }
+    case 'boolean':
+      return { ok: true, value: ordered(Number(a.value), Number(b.value)) };
+    case 'text': {
+      const l = [...(a.value as string)];
+      const r = [...(b.value as string)];
+      for (let index = 0; index < Math.min(l.length, r.length); index++) {
+        const comparison = ordered(l[index]!.codePointAt(0)!, r[index]!.codePointAt(0)!);
+        if (comparison) return { ok: true, value: comparison };
+      }
+      return { ok: true, value: ordered(l.length, r.length) };
+    }
+    default:
+      return { ok: true, value: ordered(a.value as number | string, b.value as number | string) };
   }
-  return { ok: true, value: ordered(a.value as number | string, b.value as number | string) };
 }
 
 /** Collision-free component key; callers encode composite identities as tuples of these keys. */

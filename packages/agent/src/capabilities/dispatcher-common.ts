@@ -66,8 +66,9 @@ export function sameRef(left: VersionRef, right: VersionRef): boolean {
   return left.id === right.id && left.revision === right.revision;
 }
 
+const TRANSPORTS: ReadonlySet<AgentCapabilityTransport> = new Set(['manual', 'mcp', 'webmcp', 'byok', 'direct']);
+
 export function normalizeTransport(input: unknown): AgentCapabilityTransport {
-  if (input === 'manual' || input === 'mcp' || input === 'webmcp' || input === 'byok' || input === 'direct')
-    return input;
-  return 'direct';
+  const candidate = input as AgentCapabilityTransport;
+  return TRANSPORTS.has(candidate) ? candidate : 'direct';
 }

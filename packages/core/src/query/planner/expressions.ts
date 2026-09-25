@@ -25,28 +25,36 @@ function mapExpression(
   schema: QuerySchema,
   path: readonly (string | number)[] = [],
 ): QueryOutcome<{ readonly expression: Expression; readonly field?: QueryField }> {
-  if (expression.kind === 'field') {
-    const field = findField(schema, expression);
-    if (field === undefined)
-      return failure('query.field', 'Field reference is unknown or ambiguous in the current relation.', path);
-    const index = schema.fields.findIndex((candidate) => candidate.id === field.id);
-    return { ok: true, value: { expression: { kind: 'field', ref: syntheticId(index), entity: PLAN_ENTITY }, field } };
+  switch (expression.kind) {
+    case 'field': {
+      const field = findField(schema, expression);
+      if (field === undefined)
+        return failure('query.field', 'Field reference is unknown or ambiguous in the current relation.', path);
+      const index = schema.fields.findIndex((candidate) => candidate.id === field.id);
+      return {
+        ok: true,
+        value: { expression: { kind: 'field', ref: syntheticId(index), entity: PLAN_ENTITY }, field },
+      };
+    }
+    case 'literal':
+      return { ok: true, value: { expression } };
+    case 'definition':
+      return unsupported(
+        'definition-expression',
+        'Meaning definitions must be resolved by the authorized planner before local evaluation.',
+        ['Register a concrete expression definition.'],
+        path,
+      );
+    case 'call': {
+      const args: Expression[] = [];
+      for (let index = 0; index < expression.arguments.length; index += 1) {
+        const mapped = mapExpression(expression.arguments[index]!, schema, [...path, 'arguments', index]);
+        if (!mapped.ok) return mapped;
+        args.push(mapped.value.expression);
+      }
+      return { ok: true, value: { expression: { kind: 'call', function: expression.function, arguments: args } } };
+    }
   }
-  if (expression.kind === 'literal') return { ok: true, value: { expression } };
-  if (expression.kind === 'definition')
-    return unsupported(
-      'definition-expression',
-      'Meaning definitions must be resolved by the authorized planner before local evaluation.',
-      ['Register a concrete expression definition.'],
-      path,
-    );
-  const args: Expression[] = [];
-  for (let index = 0; index < expression.arguments.length; index += 1) {
-    const mapped = mapExpression(expression.arguments[index]!, schema, [...path, 'arguments', index]);
-    if (!mapped.ok) return mapped;
-    args.push(mapped.value.expression);
-  }
-  return { ok: true, value: { expression: { kind: 'call', function: expression.function, arguments: args } } };
 }
 
 export function resolveExpression(

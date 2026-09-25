@@ -227,7 +227,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
         type="button"
         data-clause-index=${index}
         aria-label=${`Remove condition ${index + 1}`}
-        ?disabled=${this.status === 'loading' || this.status === 'error' || this.status === 'unavailable' || this.clauseDrafts.length <= 1 || this.unsupportedPredicate !== undefined}
+        ?disabled=${this.isUnavailable() || this.clauseDrafts.length <= 1 || this.unsupportedPredicate !== undefined}
         @click=${this.handleRemoveCondition}
       >
         Remove
@@ -261,9 +261,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
     if (
       this.fields.length === 0 ||
       this.unsupportedPredicate !== undefined ||
-      this.status === 'loading' ||
-      this.status === 'error' ||
-      this.status === 'unavailable' ||
+      this.isUnavailable() ||
       this.clauseDrafts.length >= MAX_MANUAL_CLAUSES
     )
       return;
@@ -279,9 +277,7 @@ export class AeliqoFilterBuilderElement extends LitElement {
       index === undefined ||
       this.clauseDrafts.length <= 1 ||
       this.unsupportedPredicate !== undefined ||
-      this.status === 'loading' ||
-      this.status === 'error' ||
-      this.status === 'unavailable'
+      this.isUnavailable()
     )
       return;
     this.clauseDrafts = this.clauseDrafts.filter((_, position) => position !== index);

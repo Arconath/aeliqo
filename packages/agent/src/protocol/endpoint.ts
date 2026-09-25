@@ -62,8 +62,10 @@ type EndpointBoundary<T> =
   | { readonly kind: 'aborted' }
   | { readonly kind: 'failed' };
 
+const SUPPORTED_TRANSPORTS: ReadonlySet<AgentToolTransport> = new Set(['manual', 'mcp', 'webmcp', 'byok']);
+
 function supportedTransport(value: unknown): value is AgentToolTransport {
-  return value === 'manual' || value === 'mcp' || value === 'webmcp' || value === 'byok';
+  return SUPPORTED_TRANSPORTS.has(value as AgentToolTransport);
 }
 
 function validPairing(input: AgentToolEndpointOptions): boolean {
@@ -254,11 +256,16 @@ function pairedHost(state: EndpointState): AgentCapabilityHost {
   return { readContext: (request) => readPairedContext(state, request) };
 }
 
+const BOUNDARY_FAILURES: Readonly<
+  Record<Exclude<EndpointBoundary<unknown>['kind'], 'value'>, readonly [string, string]>
+> = {
+  aborted: ['agent.protocol.cancelled', 'The tool request was cancelled.'],
+  deadline: ['agent.protocol.time-budget', 'The tool request exceeded its time budget.'],
+  failed: ['agent.protocol.failed', 'The tool request failed safely.'],
+};
+
 function boundaryOutcome<T>(state: EndpointState, result: EndpointBoundary<Outcome<T>>): Outcome<T> {
-  if (result.kind === 'aborted') return failure('agent.protocol.cancelled', 'The tool request was cancelled.');
-  if (result.kind === 'deadline')
-    return failure('agent.protocol.time-budget', 'The tool request exceeded its time budget.');
-  if (result.kind === 'failed') return failure('agent.protocol.failed', 'The tool request failed safely.');
+  if (result.kind !== 'value') return failure(...BOUNDARY_FAILURES[result.kind]);
   if (remaining(state) === 0) return failure('agent.protocol.stale', 'The tool pairing expired before delivery.');
   return result.value;
 }

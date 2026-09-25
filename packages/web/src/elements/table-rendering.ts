@@ -1,5 +1,5 @@
 import { html, nothing, type TemplateResult } from 'lit';
-import { dataStatusMessage, scopeText } from '../data/shared.js';
+import { dataStatusMessage, displaysStatusSection, scopeText } from '../data/shared.js';
 import type { AeliqoDataScope, AeliqoDataStatus, AeliqoSortState } from '../data/types.js';
 
 export function sortDescription(
@@ -16,14 +16,8 @@ export function sortIndicator(active: boolean, direction: AeliqoSortState['direc
   return direction === 'asc' ? ' ↑' : ' ↓';
 }
 
-function displaysTableStatus(status: AeliqoDataStatus): boolean {
-  return (
-    status === 'loading' || status === 'partial' || status === 'stale' || status === 'error' || status === 'unavailable'
-  );
-}
-
 export function tableStatusSection(status: AeliqoDataStatus, message: string): TemplateResult | typeof nothing {
-  if (!displaysTableStatus(status)) return nothing;
+  if (!displaysStatusSection(status)) return nothing;
   const role = status === 'loading' ? 'status' : 'alert';
   return html`<p part="status" class=${status} role=${role}>${dataStatusMessage(status, message)}</p>`;
 }

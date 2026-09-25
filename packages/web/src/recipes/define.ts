@@ -26,16 +26,10 @@ function validCustomIntent(ref: unknown): ref is Extract<RecipeIntent, object> {
   );
 }
 
+const STANDARD_INTENTS: ReadonlySet<string> = new Set(['browse', 'detail', 'create', 'edit', 'compare', 'analyze']);
+
 function validIntent(intent: unknown): intent is RecipeIntent {
-  return (
-    intent === 'browse' ||
-    intent === 'detail' ||
-    intent === 'create' ||
-    intent === 'edit' ||
-    intent === 'compare' ||
-    intent === 'analyze' ||
-    validCustomIntent(intent)
-  );
+  return (typeof intent === 'string' && STANDARD_INTENTS.has(intent)) || validCustomIntent(intent);
 }
 
 function intentKey(intent: RecipeIntent): string {

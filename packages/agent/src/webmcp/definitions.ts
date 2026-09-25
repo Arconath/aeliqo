@@ -19,6 +19,17 @@ const OPERATIONS = new Set([
   'action.execute',
   'model.egress',
 ]);
+const READ_ONLY_OPERATIONS: ReadonlySet<AgentToolDefinition['operation']> = new Set([
+  'catalog.read',
+  'result.inspect',
+  'task.evaluate',
+]);
+const CONSEQUENTIAL_OPERATIONS: ReadonlySet<AgentToolDefinition['operation']> = new Set([
+  'experience.commit',
+  'meaning.activate',
+  'action.execute',
+  'model.egress',
+]);
 
 function failure<T>(code: string, message: string): Outcome<T> {
   return { ok: false, diagnostics: [{ code, message, retryable: false }] };
@@ -91,11 +102,9 @@ export function normalizeDefinitions(input: readonly AgentToolDefinition[]): Out
 }
 
 export function nativeAnnotations(operation: AgentToolDefinition['operation']): WebMcpToolAnnotations {
-  const readOnlyHint = operation === 'catalog.read' || operation === 'result.inspect' || operation === 'task.evaluate';
-  const consequentialHint =
-    operation === 'experience.commit' ||
-    operation === 'meaning.activate' ||
-    operation === 'action.execute' ||
-    operation === 'model.egress';
-  return Object.freeze({ readOnlyHint, untrustedContentHint: true, consequentialHint });
+  return Object.freeze({
+    readOnlyHint: READ_ONLY_OPERATIONS.has(operation),
+    untrustedContentHint: true,
+    consequentialHint: CONSEQUENTIAL_OPERATIONS.has(operation),
+  });
 }

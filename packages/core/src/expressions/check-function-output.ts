@@ -4,6 +4,7 @@ import { semanticFailure } from '../semantics/errors.js';
 import type { EvaluationContext } from '../semantics/types.js';
 import type { FunctionOutput, FunctionSignature, TypedExpression } from './types.js';
 import { isDimensionlessLiteral } from './check-function-compatibility.js';
+import { isAggregateOperation, isFractionalOperation } from './standard-signatures.js';
 
 export function resolveFunctionOutput(
   output: FunctionOutput,
@@ -85,11 +86,7 @@ function resolveNumericOutput(
       [...path, 'function'],
     );
   const unit = inferredOutputUnit(output, signature.operation, args, first, second);
-  const forceFloat =
-    output.forceFloat === true ||
-    signature.operation === 'divide' ||
-    signature.operation === 'mean-of-rates' ||
-    signature.operation === 'ratio-of-sums';
+  const forceFloat = output.forceFloat === true || isFractionalOperation(signature.operation);
   const options = {
     ...(unit === undefined ? {} : { unit }),
     ...(forceFloat ? { forceFloat: true } : {}),
@@ -141,14 +138,18 @@ function adjustResultType(
   signature: FunctionSignature,
   args: readonly TypedExpression[],
 ): SemanticType {
-  if (signature.operation === 'conditional') {
-    const withGrain = inheritGrain(output, args);
-    return { ...withGrain, nullable: resolveNullability(output.nullable, signature.nullResult, args) };
+  switch (signature.operation) {
+    case 'conditional': {
+      const withGrain = inheritGrain(output, args);
+      return { ...withGrain, nullable: resolveNullability(output.nullable, signature.nullResult, args) };
+    }
+    case 'comparison':
+      return inheritGrain(output, args);
+    case 'coalesce':
+      return { ...output, nullable: args.every((argument) => argument.type.nullable) };
+    default:
+      return output;
   }
-  if (signature.operation === 'comparison') return inheritGrain(output, args);
-  if (signature.operation === 'coalesce')
-    return { ...output, nullable: args.every((argument) => argument.type.nullable) };
-  return output;
 }
 
 function inheritGrain(output: SemanticType, args: readonly TypedExpression[]): SemanticType {
@@ -157,9 +158,7 @@ function inheritGrain(output: SemanticType, args: readonly TypedExpression[]): S
 }
 
 function reducesGroupGrain(operation: FunctionSignature['operation'], context: EvaluationContext): boolean {
-  return (
-    context === 'group' && (operation === 'aggregate' || operation === 'ratio-of-sums' || operation === 'mean-of-rates')
-  );
+  return context === 'group' && isAggregateOperation(operation);
 }
 
 function operationMayReturnNull(signature: FunctionSignature, reducesGroup: boolean): boolean {
@@ -186,8 +185,13 @@ function resolveEntityId(
   return { ok: true, value: identities.values().next().value };
 }
 
+const OPERATION_AGGREGATION: Readonly<
+  Partial<Record<FunctionSignature['operation'], FunctionSignature['aggregation']['kind']>>
+> = {
+  'ratio-of-sums': 'ratio-of-sums',
+  'mean-of-rates': 'non-additive',
+};
+
 function resultAggregation(signature: FunctionSignature): FunctionSignature['aggregation']['kind'] {
-  if (signature.operation === 'ratio-of-sums') return 'ratio-of-sums';
-  if (signature.operation === 'mean-of-rates') return 'non-additive';
-  return signature.aggregation.kind;
+  return OPERATION_AGGREGATION[signature.operation] ?? signature.aggregation.kind;
 }

@@ -185,8 +185,10 @@ function sourceSurfaceValid(value: MeaningSource): boolean {
   return value.surface === 'code' || value.surface === 'ai-assisted';
 }
 
+const SOURCE_OWNERSHIPS: ReadonlySet<string> = new Set(['code', 'session', 'personal', 'workspace', 'organization']);
+
 function sourceOwnershipValid(value: MeaningSource): boolean {
-  return ['code', 'session', 'personal', 'workspace', 'organization'].includes(value.ownership);
+  return SOURCE_OWNERSHIPS.has(value.ownership);
 }
 
 function sourceOriginValid(value: MeaningSource, meaning: MeaningDefinition): boolean {

@@ -18,8 +18,10 @@ function unavailable(reason: UnavailableReason): AeliqoDeltaResult {
   return { status: 'unavailable', reason };
 }
 
+const DELTA_MODES: readonly AeliqoDeltaMode[] = ['absolute', 'relative', 'percentage-point'];
+
 function isDeltaMode(mode: string): mode is AeliqoDeltaMode {
-  return mode === 'absolute' || mode === 'relative' || mode === 'percentage-point';
+  return DELTA_MODES.includes(mode as AeliqoDeltaMode);
 }
 
 function hasInvalidDecimal(value: AeliqoDataValue | undefined): boolean {

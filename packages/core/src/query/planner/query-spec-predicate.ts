@@ -64,24 +64,27 @@ function convertLeafPredicate(
     field.type,
     definition.rowGrain.map((grain) => fieldKey(selectedEntity, grain)),
   );
-  if (input.op === 'compare')
-    return {
-      ok: true,
-      value: {
-        op: 'compare',
-        left,
-        comparison: input.comparison,
-        right: literalExpression(input.value, { ...type, nullable: input.value === null }),
-      },
-    };
-  return {
-    ok: true,
-    value: {
-      op: 'in',
-      expression: left,
-      values: input.values.map((value) => literalExpression(value, { ...type, nullable: value === null })),
-    },
-  };
+  switch (input.op) {
+    case 'compare':
+      return {
+        ok: true,
+        value: {
+          op: 'compare',
+          left,
+          comparison: input.comparison,
+          right: literalExpression(input.value, { ...type, nullable: input.value === null }),
+        },
+      };
+    case 'in':
+      return {
+        ok: true,
+        value: {
+          op: 'in',
+          expression: left,
+          values: input.values.map((value) => literalExpression(value, { ...type, nullable: value === null })),
+        },
+      };
+  }
 }
 
 function convertQueryPredicate(
@@ -90,13 +93,15 @@ function convertQueryPredicate(
   catalog: Catalog,
 ): QueryOutcome<PredicateSpec> {
   if (input === undefined) return failure('query.predicate', 'Predicate is missing.');
-  if (input.op === 'and' || input.op === 'or') return convertPredicateGroup(input, defaultEntity, catalog);
-  if (input.op === 'not') return convertNegation(input, defaultEntity, catalog);
-  return convertLeafPredicate(
-    input as Exclude<NonNullable<QuerySpec['where']>, { op: 'and' | 'or' | 'not' }>,
-    defaultEntity,
-    catalog,
-  );
+  switch (input.op) {
+    case 'and':
+    case 'or':
+      return convertPredicateGroup(input, defaultEntity, catalog);
+    case 'not':
+      return convertNegation(input, defaultEntity, catalog);
+    default:
+      return convertLeafPredicate(input, defaultEntity, catalog);
+  }
 }
 
 export function querySpecPredicate(

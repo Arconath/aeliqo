@@ -10,17 +10,23 @@ export type AeliqoValidator<T> = (
   signal: AbortSignal,
 ) => AeliqoValidationResult | Promise<AeliqoValidationResult>;
 
+const VALIDITY_FLAG_KEYS = [
+  'badInput',
+  'patternMismatch',
+  'rangeOverflow',
+  'rangeUnderflow',
+  'stepMismatch',
+  'tooLong',
+  'tooShort',
+  'typeMismatch',
+  'valueMissing',
+] as const;
+
 function nativeValidityFlags(validity: ValidityState): ValidityStateFlags {
   const flags: ValidityStateFlags = {};
-  if (validity.badInput) flags.badInput = true;
-  if (validity.patternMismatch) flags.patternMismatch = true;
-  if (validity.rangeOverflow) flags.rangeOverflow = true;
-  if (validity.rangeUnderflow) flags.rangeUnderflow = true;
-  if (validity.stepMismatch) flags.stepMismatch = true;
-  if (validity.tooLong) flags.tooLong = true;
-  if (validity.tooShort) flags.tooShort = true;
-  if (validity.typeMismatch) flags.typeMismatch = true;
-  if (validity.valueMissing) flags.valueMissing = true;
+  for (const key of VALIDITY_FLAG_KEYS) {
+    if (validity[key]) flags[key] = true;
+  }
   return flags;
 }
 

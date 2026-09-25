@@ -37,9 +37,7 @@ function validateRequiredResults(refs: readonly ResultRef[], context: Normalized
 
 function isUnsupportedQuery(item: Diagnostic | undefined): boolean {
   if (item === undefined) return false;
-  return (
-    item.code === 'query.meaning' || item.code === 'query.unsupported' || item.code.startsWith('query.unsupported')
-  );
+  return item.code === 'query.meaning' || item.code.startsWith('query.unsupported');
 }
 
 function plannerFailure(

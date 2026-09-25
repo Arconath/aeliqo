@@ -1,6 +1,7 @@
 import type { Expression, Outcome, SemanticType } from '../../contracts/types.js';
 import type { FunctionRegistry, FunctionSignature } from '../../expressions/types.js';
 import { queryFunctionSignaturesV2, standardFunctionSignatures } from '../../expressions/registry.js';
+import { isAggregateOperation } from '../../expressions/standard-signatures.js';
 import type { PredicateSpec, QueryOutcome, QueryRow, QuerySchema, QueryValue } from '../types.js';
 import { failure, relationKey, stable, unsupported, type EvalState } from './shared.js';
 import { tick } from './execution-budget.js';
@@ -111,7 +112,7 @@ function evaluateCallExpression(
 }
 
 function isAggregateFunction(signature: FunctionSignature): boolean {
-  return ['aggregate', 'ratio-of-sums', 'mean-of-rates'].includes(signature.operation);
+  return isAggregateOperation(signature.operation);
 }
 
 export function evaluateExpression(
@@ -182,15 +183,21 @@ function promoteInteger(value: Exclude<QueryValue, null>, type: SemanticType | u
   return { decimal: String(value) };
 }
 
+type DecimalOperand = { readonly decimal: string };
+type DecimalOperator = (left: DecimalOperand, right: DecimalOperand) => DecimalOperand | undefined;
+
+const DECIMAL_OPERATORS: Readonly<Record<string, DecimalOperator>> = {
+  'core.multiply': decimalMultiply,
+  'core.subtract': (left, right) => decimalAdd(left, right, -1n),
+};
+
 function evaluateDecimalArithmetic(
   id: string,
-  left: { readonly decimal: string },
-  right: { readonly decimal: string },
+  left: DecimalOperand,
+  right: DecimalOperand,
 ): QueryOutcome<QueryValue | undefined> {
-  let result: { readonly decimal: string } | undefined;
-  if (id === 'core.multiply') result = decimalMultiply(left, right);
-  else if (id === 'core.subtract') result = decimalAdd(left, right, -1n);
-  else result = decimalAdd(left, right);
+  const operator = DECIMAL_OPERATORS[id] ?? decimalAdd;
+  const result = operator(left, right);
   if (result !== undefined) return { ok: true, value: result };
   return failure('query.numeric-overflow', 'Decimal operation exceeded the bounded exact representation.');
 }

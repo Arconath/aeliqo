@@ -200,12 +200,15 @@ export function hasDataOutput(value: AgentJsonValue | undefined, refs: readonly 
   return value !== undefined || (refs !== undefined && refs.length > 0);
 }
 
+const OPERATION_STATES: Readonly<Partial<Record<OperationGrant, ReadonlySet<AgentCapabilityState>>>> = {
+  'experience.commit': COMMIT_STATES,
+  'task.evaluate': EVALUATION_STATES,
+};
+
 export function allowedState(operation: OperationGrant, state: AgentCapabilityState): boolean {
   if (ANY_OPERATION_STATES.has(state)) return true;
   if (operation.endsWith('.propose')) return PROPOSAL_STATES.has(state);
-  if (operation === 'experience.commit') return COMMIT_STATES.has(state);
-  if (operation === 'task.evaluate') return EVALUATION_STATES.has(state);
-  return READ_STATES.has(state);
+  return (OPERATION_STATES[operation] ?? READ_STATES).has(state);
 }
 
 function identityChanged(before: AgentCapabilityAuthority, after: AgentCapabilityAuthority): boolean {

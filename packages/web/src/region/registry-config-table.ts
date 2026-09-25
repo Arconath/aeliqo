@@ -2,6 +2,7 @@ import type { Outcome, Result, VersionRef } from '@aeliqo/core';
 import type { PresentationValues, ResolvedPresentationConfig } from '@aeliqo/core/presentation';
 import type { AeliqoPresentationRegistryOptions } from './registry-contracts.js';
 import { AELIQO_OPERATION_REFS } from './registry-contracts.js';
+import { allowedKeys } from './data-registry-common.js';
 import {
   columns,
   defaultTableConfig,
@@ -56,7 +57,7 @@ export function tableConfig(
 function validatedTableInput(values: PresentationValues, result: Result): Outcome<ValidatedTableInput> {
   const input = record(values);
   if (input === undefined) return fail('config', 'The table configuration must be an object.');
-  if (Object.keys(input).some((key) => !['columns', 'identity', 'selection'].includes(key)))
+  if (!allowedKeys(input, ['columns', 'identity', 'selection']))
     return fail('config', 'The table configuration contains an unknown field.');
   const columnList = input.columns === undefined ? undefined : columns(input, result);
   if (columnList !== undefined && !columnList.ok) return columnList;

@@ -99,11 +99,18 @@ function validDecimalRecord(value: object): boolean {
 
 function validSourceValue(value: unknown, field: CatalogEntity['fields'][number]): value is DataValue {
   if (value === null) return field.type.nullable;
-  if (typeof value === 'string') return validSourceString(value, field);
-  if (typeof value === 'boolean') return field.type.value === 'boolean';
-  if (typeof value === 'number') return validSourceNumber(value, field);
-  if (typeof value === 'object') return field.type.value === 'decimal' && validDecimalRecord(value);
-  return false;
+  switch (typeof value) {
+    case 'string':
+      return validSourceString(value, field);
+    case 'boolean':
+      return field.type.value === 'boolean';
+    case 'number':
+      return validSourceNumber(value, field);
+    case 'object':
+      return field.type.value === 'decimal' && validDecimalRecord(value);
+    default:
+      return false;
+  }
 }
 
 function validSourceNumber(value: number, field: CatalogEntity['fields'][number]): boolean {

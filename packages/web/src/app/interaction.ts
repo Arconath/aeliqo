@@ -12,6 +12,18 @@ import type { AeliqoAppActionEvent } from './types.js';
 import { diagnostic, type WebAppContext, type WebRegion } from './context.js';
 
 type ActionRequestPayload = Extract<InteractionPayload, { readonly kind: 'action-request' }>;
+type RegionValuePayload = Extract<
+  InteractionPayload,
+  { readonly kind: 'selection' | 'filter' | 'range' | 'group' | 'page' }
+>;
+
+const REGION_VALUE_KINDS: ReadonlySet<InteractionPayload['kind']> = new Set([
+  'selection',
+  'filter',
+  'range',
+  'group',
+  'page',
+]);
 
 interface ActionSession {
   active: boolean;
@@ -71,16 +83,8 @@ function saveInteraction(region: WebRegion, request: AeliqoSemanticInteractionRe
   publishInteraction(region);
 }
 
-function isRegionValue(
-  payload: InteractionPayload,
-): payload is Extract<InteractionPayload, { readonly kind: 'selection' | 'filter' | 'range' | 'group' | 'page' }> {
-  return (
-    payload.kind === 'selection' ||
-    payload.kind === 'filter' ||
-    payload.kind === 'range' ||
-    payload.kind === 'group' ||
-    payload.kind === 'page'
-  );
+function isRegionValue(payload: InteractionPayload): payload is RegionValuePayload {
+  return REGION_VALUE_KINDS.has(payload.kind);
 }
 
 function clearPendingAction(region: WebRegion, session: ActionSession): void {

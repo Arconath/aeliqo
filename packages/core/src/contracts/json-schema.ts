@@ -12,9 +12,17 @@ function addObjectBounds(record: Record<string, unknown>): void {
 }
 
 function addTypeBounds(record: Record<string, unknown>): void {
-  if (record.type === 'object') addObjectBounds(record);
-  if (record.type === 'array') record.maxItems ??= WIRE_LIMITS.array;
-  if (record.type === 'string') record.maxLength ??= WIRE_LIMITS.text;
+  switch (record.type) {
+    case 'object':
+      addObjectBounds(record);
+      break;
+    case 'array':
+      record.maxItems ??= WIRE_LIMITS.array;
+      break;
+    case 'string':
+      record.maxLength ??= WIRE_LIMITS.text;
+      break;
+  }
 }
 
 function addBounds(value: unknown): void {

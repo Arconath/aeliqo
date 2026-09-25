@@ -29,6 +29,9 @@ const sources = new Set<AuditSourceTransport>(['local', 'http']);
 const caches = new Set<AuditCache>(['catalog', 'result', 'presentation', 'meaning']);
 const renderers = new Set<AuditRenderer>(['component', 'plot', 'compound']);
 const resources = new Set<AuditResource>(['rows', 'bytes', 'nodes', 'regions', 'results']);
+const planStatuses: ReadonlySet<string> = new Set(['completed', 'rejected', 'cancelled', 'failed']);
+const capabilityStatuses: ReadonlySet<string> = new Set(['accepted', 'rejected', 'cancelled']);
+const rendererStatuses: ReadonlySet<string> = new Set(['ready', 'partial', 'empty', 'error']);
 const capabilityCodes = new Set<CapabilityAuditCode>([
   'policy.denied',
   'renderer.unsupported',
@@ -80,7 +83,7 @@ function parsePlanEvent(record: RecordValue): LocalAuditOutcome<LocalAuditEvent>
   const valid =
     exactKeys(record, ['kind', 'phase', 'status', 'durationMs']) &&
     plans.has(record.phase as AuditPlanPhase) &&
-    ['completed', 'rejected', 'cancelled', 'failed'].includes(record.status as string) &&
+    planStatuses.has(record.status as string) &&
     integer(record.durationMs, MAX_DURATION_MS);
   if (!valid) return failure('audit.invalid', 'The plan event contains an unknown field or invalid bounded value.');
   return {
@@ -98,7 +101,7 @@ function parseCapabilityEvent(record: RecordValue): LocalAuditOutcome<LocalAudit
   const valid =
     exactKeys(record, ['kind', 'operation', 'status'], ['code']) &&
     operations.has(record.operation as AuditOperation) &&
-    ['accepted', 'rejected', 'cancelled'].includes(record.status as string) &&
+    capabilityStatuses.has(record.status as string) &&
     !(record.status === 'accepted' && record.code !== undefined) &&
     !(record.status === 'rejected' && !capabilityCodes.has(record.code as CapabilityAuditCode)) &&
     !(record.status === 'cancelled' && record.code !== undefined && record.code !== 'host.cancelled');
@@ -171,7 +174,7 @@ function parseRendererEvent(record: RecordValue): LocalAuditOutcome<LocalAuditEv
   const valid =
     exactKeys(record, ['kind', 'renderer', 'status'], ['resourceCount']) &&
     renderers.has(record.renderer as AuditRenderer) &&
-    ['ready', 'partial', 'empty', 'error'].includes(record.status as string) &&
+    rendererStatuses.has(record.status as string) &&
     (record.resourceCount === undefined || integer(record.resourceCount));
   if (!valid) return failure('audit.invalid', 'The renderer event contains an unknown field or invalid bounded value.');
   return {

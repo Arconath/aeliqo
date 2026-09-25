@@ -1,5 +1,5 @@
 import { failure } from './shared.js';
-import type { Catalog, Diagnostic, Expression, Outcome, QuerySpec } from '@aeliqo/core';
+import type { Catalog, Expression, Outcome, QuerySpec } from '@aeliqo/core';
 import type { CatalogEntity } from '@aeliqo/core/semantics';
 import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
 import type { FunctionRegistry } from '@aeliqo/core/expressions';
@@ -21,26 +21,25 @@ interface DependencyContext {
   readonly fields: Map<string, Set<string>>;
 }
 
+const PLANNER_FAILURE_CODES: ReadonlyMap<string, string> = new Map([
+  ['query.budget', 'data.budget'],
+  ['query.denied', 'data.denied'],
+  ['query.stale-catalog', 'data.stale-plan'],
+  ['query.stale-source', 'data.stale-plan'],
+  ['query.stale-registry', 'data.stale-plan'],
+]);
+
 export function plannerFailure<T>(outcome: Outcome<T>): Outcome<T> {
   if (outcome.ok) return outcome;
   const first = outcome.diagnostics[0];
   if (first === undefined) return failure('data.unsupported', 'The requested query cannot be executed by this source.');
-  if (first.code === 'query.budget') return failure('data.budget', first.message, first.path, first.remedies);
-  if (first.code === 'query.denied') return failure('data.denied', first.message, first.path, first.remedies);
-  if (isStaleQueryDiagnostic(first)) return failure('data.stale-plan', first.message, first.path, first.remedies);
+  const code = PLANNER_FAILURE_CODES.get(first.code);
+  if (code !== undefined) return failure(code, first.message, first.path, first.remedies);
   return failure(
     'data.unsupported',
     first.message,
     first.path,
     first.remedies ?? ['Use a source capability that declares this operation.'],
-  );
-}
-
-function isStaleQueryDiagnostic(diagnostic: Diagnostic): boolean {
-  return (
-    diagnostic.code === 'query.stale-catalog' ||
-    diagnostic.code === 'query.stale-source' ||
-    diagnostic.code === 'query.stale-registry'
   );
 }
 

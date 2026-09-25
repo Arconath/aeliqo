@@ -5,10 +5,12 @@ import type { InteractionHostContext, InteractionOutcome } from './types.js';
 
 type HostReader = () => InteractionHostContext;
 
+const ACTOR_KINDS: ReadonlySet<unknown> = new Set(['user', 'service', 'system']);
+
 function validActor(value: unknown): value is InteractionHostContext['actor'] {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
   const actor = value as Record<string, unknown>;
-  return validText(actor.id) && (actor.kind === 'user' || actor.kind === 'service' || actor.kind === 'system');
+  return validText(actor.id) && ACTOR_KINDS.has(actor.kind);
 }
 
 function validGrants(value: unknown): value is readonly string[] {

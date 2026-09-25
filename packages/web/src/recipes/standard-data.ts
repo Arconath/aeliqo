@@ -1,11 +1,22 @@
+import type { Result } from '@aeliqo/core';
 import type { PresentationValues } from '@aeliqo/core/presentation';
 import type { RecipeContext } from './types.js';
 
 type BarConfig = { readonly kind: 'available'; readonly values: PresentationValues } | { readonly kind: 'unavailable' };
 type DataColumn = { readonly key: string; readonly label: string; readonly type?: string };
 
+type ResultField = Result['fields'][number];
+
 export function requestedFields(context: RecipeContext): ReadonlySet<string> {
   return new Set(context.task.needs.flatMap((need) => need.fields));
+}
+
+export function temporalField(field: ResultField): boolean {
+  return field.type.value === 'date' || field.type.value === 'instant';
+}
+
+export function measureField(field: ResultField): boolean {
+  return field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value);
 }
 
 export function barConfig(context: RecipeContext): BarConfig {
@@ -21,9 +32,7 @@ export function barConfig(context: RecipeContext): BarConfig {
       field.id !== timeField &&
       (authoredDimensions.size === 0 || authoredDimensions.has(field.id)),
   );
-  const measures = fields.filter(
-    (field) => field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value),
-  );
+  const measures = fields.filter(measureField);
   if (dimensions.length !== 1 || measures.length !== 1) return { kind: 'unavailable' };
   const dimension = dimensions[0]!;
   const measure = measures[0]!;

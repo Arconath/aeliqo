@@ -72,12 +72,16 @@ function denied(): AgentCapabilityHandlerResult<AgentJsonValue> {
 
 function renderOutcome(receipt: RenderReceipt): AgentCapabilityHandlerResult<AgentJsonValue> {
   const value = renderValue(receipt);
-  if (receipt.status === 'renderer-ready')
-    return { state: 'renderer-ready', value, regionRevision: receipt.runtime.region.regionRevision };
-  if (receipt.status === 'committed')
-    return { state: 'plan-committed', value, regionRevision: receipt.region.regionRevision };
-  const state = receipt.status === 'needs-input' ? 'needs-choice' : receipt.status;
-  return { state, value, diagnostics: receipt.diagnostics };
+  switch (receipt.status) {
+    case 'renderer-ready':
+      return { state: 'renderer-ready', value, regionRevision: receipt.runtime.region.regionRevision };
+    case 'committed':
+      return { state: 'plan-committed', value, regionRevision: receipt.region.regionRevision };
+    default: {
+      const state = receipt.status === 'needs-input' ? 'needs-choice' : receipt.status;
+      return { state, value, diagnostics: receipt.diagnostics };
+    }
+  }
 }
 
 type IntentInput = Extract<ReturnType<typeof parseIntent>, { readonly ok: true }>['value'];

@@ -20,6 +20,7 @@ export const EMPTY_STATE_KINDS: readonly AeliqoEmptyStateKind[] = [
   'failure',
 ];
 export const FEEDBACK_TONES = ['neutral', 'info', 'success', 'warning', 'danger'] as const;
+export const SKELETON_VARIANTS: readonly string[] = ['text', 'rect', 'circle'];
 
 export type RecordValue = Record<string, unknown>;
 

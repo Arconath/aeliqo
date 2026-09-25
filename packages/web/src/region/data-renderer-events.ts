@@ -7,6 +7,7 @@ import type {
   AeliqoTableWindowDetail,
 } from '../data/types.js';
 import type { AeliqoDataResolvedNode } from './data-registry.js';
+import { allowedKeys } from './data-registry-common.js';
 import type { AeliqoDataRenderContext } from './data-renderer-types.js';
 import {
   eventDetail,
@@ -223,7 +224,7 @@ function validSortValue(value: unknown, node: AeliqoDataResolvedNode): boolean {
 }
 
 function onlySortKeys(sort: Record<string, unknown>): boolean {
-  return Object.keys(sort).every((key) => ['field', 'direction'].includes(key));
+  return allowedKeys(sort, ['field', 'direction']);
 }
 
 function sortRequest(value: unknown): AeliqoSortState | undefined {

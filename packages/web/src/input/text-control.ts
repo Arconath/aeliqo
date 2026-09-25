@@ -371,21 +371,7 @@ export abstract class AeliqoTextControlElement extends AeliqoFieldElement<string
   }
 
   private safeInputType(): AeliqoTextFieldInputType {
-    const allowed: readonly AeliqoTextFieldInputType[] = [
-      'text',
-      'search',
-      'url',
-      'tel',
-      'email',
-      'password',
-      'date',
-      'month',
-      'week',
-      'time',
-      'datetime-local',
-      'number',
-    ];
-    return allowed.includes(this.inputType) ? this.inputType : 'text';
+    return BLOCKING_INPUT_TYPES.has(this.inputType) ? this.inputType : 'text';
   }
 
   static readonly styles = [

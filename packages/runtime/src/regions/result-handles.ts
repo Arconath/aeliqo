@@ -1,8 +1,10 @@
 import { WIRE_LIMITS } from '@aeliqo/core';
 import type { ResultRef } from '@aeliqo/core';
-import type { ResultHandle, ResultLease } from '../results/types.js';
+import type { ResultHandle, ResultLease, ResultStatus } from '../results/types.js';
 import type { RegionAuthority, RegionContent, RegionOutcome, RegionRestoreMaterialization } from './types.js';
 import { FAILURE, failure, frozen, validateResultRef } from './region-contracts.js';
+
+const READABLE_STATUSES: ReadonlySet<ResultStatus> = new Set(['ready', 'partial', 'refreshing']);
 
 export function resultRefFromHandle(handle: ResultHandle): RegionOutcome<ResultRef> {
   if (handle === null || typeof handle !== 'object' || typeof handle.snapshot !== 'function')
@@ -16,7 +18,7 @@ export function resultRefFromHandle(handle: ResultHandle): RegionOutcome<ResultR
       ref.outputId !== handle.key.outputId ||
       ref.queryDigest !== handle.key.queryDigest ||
       ref.scopeDigest !== handle.key.scopeDigest ||
-      !['ready', 'partial', 'refreshing'].includes(snapshot.status)
+      !READABLE_STATUSES.has(snapshot.status)
     )
       return failure('runtime.region-stale', 'The result handle is no longer an authorized dependency.');
     return { ok: true, value: frozen({ ...ref }) };

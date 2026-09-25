@@ -17,11 +17,17 @@ function failure(code: string, message: string, path: readonly (string | number)
 
 function kindOf(value: unknown): LocalDataFieldKind | undefined {
   if (value === null) return undefined;
-  if (typeof value === 'string') return 'text';
-  if (typeof value === 'boolean') return 'boolean';
-  if (typeof value === 'number' && Number.isFinite(value)) return Number.isSafeInteger(value) ? 'integer' : 'float';
-  if (decimal(value)) return 'decimal';
-  return undefined;
+  switch (typeof value) {
+    case 'string':
+      return 'text';
+    case 'boolean':
+      return 'boolean';
+    case 'number':
+      if (!Number.isFinite(value)) return undefined;
+      return Number.isSafeInteger(value) ? 'integer' : 'float';
+    default:
+      return decimal(value) ? 'decimal' : undefined;
+  }
 }
 
 function jsonByteLength(value: unknown): Outcome<number> {

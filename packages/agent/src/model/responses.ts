@@ -148,14 +148,20 @@ function project(request: ToolModelRequest, model: string): Record<string, unkno
   const input: Record<string, unknown>[] = [];
   const instructions = [INSTRUCTIONS];
   for (const message of request.messages) {
-    if (message.role === 'system') instructions.push(message.text);
-    else if (message.role === 'user') input.push({ role: 'user', content: message.text });
-    else if (message.role === 'tool')
-      input.push({ type: 'function_call_output', call_id: message.callId, output: serialized(message.output) });
-    else {
-      if (message.text !== undefined) input.push({ role: 'assistant', content: message.text });
-      for (const call of message.calls)
-        input.push({ type: 'function_call', call_id: call.id, name: call.name, arguments: serialized(call.input) });
+    switch (message.role) {
+      case 'system':
+        instructions.push(message.text);
+        break;
+      case 'user':
+        input.push({ role: 'user', content: message.text });
+        break;
+      case 'tool':
+        input.push({ type: 'function_call_output', call_id: message.callId, output: serialized(message.output) });
+        break;
+      default:
+        if (message.text !== undefined) input.push({ role: 'assistant', content: message.text });
+        for (const call of message.calls)
+          input.push({ type: 'function_call', call_id: call.id, name: call.name, arguments: serialized(call.input) });
     }
   }
   return {

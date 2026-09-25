@@ -1,6 +1,14 @@
 import { validateScalar, type Outcome, type Result, type SemanticType } from '@aeliqo/core';
 import type { AeliqoFilterPredicate } from '../data/index.js';
-import { allowedKeys, boundedText, failure, fieldMap, MAX_DATA_ITEMS, object } from './data-registry-common.js';
+import {
+  allowedKeys,
+  boundedText,
+  COMPARISON_OPERATORS,
+  failure,
+  fieldMap,
+  MAX_DATA_ITEMS,
+  object,
+} from './data-registry-common.js';
 
 const MAX_FILTER_DEPTH = 32;
 const MAX_FILTER_NODES = 128;
@@ -35,7 +43,7 @@ function comparePredicate(
   }
   const field = filterField(candidate.field, result, allowedFields);
   if (!field.ok) return field;
-  if (!['eq', 'ne', 'lt', 'lte', 'gt', 'gte'].includes(String(candidate.comparison))) {
+  if (!COMPARISON_OPERATORS.has(String(candidate.comparison))) {
     return failure('config', 'A compare predicate uses an invalid comparison.');
   }
   const scalar = validateScalar(candidate.value, field.value.type);

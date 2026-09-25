@@ -294,6 +294,34 @@ export function createFunctionRegistry(input: FunctionRegistryInput): Outcome<Fu
   return { ok: true, value: Object.freeze(registry) };
 }
 
+const EVALUATION_CONTEXTS: ReadonlySet<unknown> = new Set(['row', 'group', 'window', 'aggregate-of-aggregates']);
+const AGGREGATION_KINDS: ReadonlySet<unknown> = new Set([
+  'additive',
+  'semi-additive',
+  'non-additive',
+  'ratio-of-sums',
+  'none',
+]);
+const FUNCTION_OPERATIONS: ReadonlySet<unknown> = new Set([
+  'arithmetic',
+  'comparison',
+  'boolean',
+  'coalesce',
+  'conditional',
+  'cast',
+  'aggregate',
+  'divide',
+  'ratio-of-sums',
+  'mean-of-rates',
+  'temporal',
+  'other',
+]);
+const NULL_POLICIES: ReadonlySet<unknown> = new Set(['propagate', 'reject', 'exclude-pair']);
+const NULL_RESULTS: ReadonlySet<unknown> = new Set([undefined, 'propagate', 'preserve', 'non-null']);
+const UNIT_RULES: ReadonlySet<unknown> = new Set([undefined, 'same', 'scalar-multiply', 'explicit-output']);
+const REALIZATIONS: ReadonlySet<unknown> = new Set(['local', 'host', 'both']);
+const ZERO_POLICIES: ReadonlySet<unknown> = new Set(['null', 'unknown', 'error']);
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
@@ -309,54 +337,35 @@ function validVersionRef(value: unknown): value is VersionRef {
 }
 
 function isEvaluationContext(value: unknown): value is FunctionSignature['contexts'][number] {
-  return value === 'row' || value === 'group' || value === 'window' || value === 'aggregate-of-aggregates';
+  return EVALUATION_CONTEXTS.has(value);
 }
 
 function isAggregationKind(value: unknown): value is FunctionSignature['aggregation']['kind'] {
-  return (
-    value === 'additive' ||
-    value === 'semi-additive' ||
-    value === 'non-additive' ||
-    value === 'ratio-of-sums' ||
-    value === 'none'
-  );
+  return AGGREGATION_KINDS.has(value);
 }
 
 function isFunctionOperation(value: unknown): value is FunctionSignature['operation'] {
-  return (
-    value === 'arithmetic' ||
-    value === 'comparison' ||
-    value === 'boolean' ||
-    value === 'coalesce' ||
-    value === 'conditional' ||
-    value === 'cast' ||
-    value === 'aggregate' ||
-    value === 'divide' ||
-    value === 'ratio-of-sums' ||
-    value === 'mean-of-rates' ||
-    value === 'temporal' ||
-    value === 'other'
-  );
+  return FUNCTION_OPERATIONS.has(value);
 }
 
 function isNullPolicy(value: unknown): value is FunctionSignature['nullPolicy'] {
-  return value === 'propagate' || value === 'reject' || value === 'exclude-pair';
+  return NULL_POLICIES.has(value);
 }
 
 function isNullResult(value: unknown): value is NonNullable<FunctionSignature['nullResult']> {
-  return value === undefined || value === 'propagate' || value === 'preserve' || value === 'non-null';
+  return NULL_RESULTS.has(value);
 }
 
 function isUnitRule(value: unknown): value is NonNullable<FunctionSignature['unitRule']> {
-  return value === undefined || value === 'same' || value === 'scalar-multiply' || value === 'explicit-output';
+  return UNIT_RULES.has(value);
 }
 
 function isRealization(value: unknown): value is FunctionSignature['realization'] {
-  return value === 'local' || value === 'host' || value === 'both';
+  return REALIZATIONS.has(value);
 }
 
 function isZeroPolicy(value: unknown): value is NonNullable<FunctionSignature['zeroDenominator']> {
-  return value === 'null' || value === 'unknown' || value === 'error';
+  return ZERO_POLICIES.has(value);
 }
 
 function validParameter(value: unknown): value is FunctionParameter {

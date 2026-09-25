@@ -1,6 +1,7 @@
 import { validateScalar, type Outcome, type Scalar, type SemanticType } from '@aeliqo/core';
 import { AELIQO_INPUT_REFS, type AeliqoInputId } from '../input/manifest.js';
 import type { AeliqoInputBinding, AeliqoInputDraftBinding } from './input-registry-types.js';
+import { NUMERIC_TYPE_VALUES } from './data-registry-common.js';
 import {
   boundedId,
   boundedText,
@@ -271,7 +272,7 @@ function validateConfiguration(ref: AeliqoInputId, config: Record<string, unknow
 }
 
 function invalidNumericTarget(ref: AeliqoInputId, type: SemanticType['value']): boolean {
-  return NUMERIC_INPUTS.has(ref) && !['integer', 'float', 'decimal'].includes(type);
+  return NUMERIC_INPUTS.has(ref) && !NUMERIC_TYPE_VALUES.has(type);
 }
 
 function invalidTextTarget(ref: AeliqoInputId, type: SemanticType['value']): boolean {
@@ -413,10 +414,12 @@ function sliderValue(value: unknown, type: SemanticType): Outcome<void> {
   return { ok: true, value: undefined };
 }
 
+const BOUNDED_VALUE_KEYS = ['value', 'defaultValue', 'min', 'max', 'step'] as const;
+
 function validateSliderDraft(config: Record<string, unknown>, draft: AeliqoInputDraftBinding): Outcome<void> {
   if (!unitMatches(draft.type, config.unit))
     return fail('binding', 'Slider unit must match the registered semantic unit exactly.');
-  for (const key of ['value', 'defaultValue', 'min', 'max', 'step']) {
+  for (const key of BOUNDED_VALUE_KEYS) {
     if (config[key] === undefined) continue;
     const checked = sliderValue(config[key], draft.type);
     if (!checked.ok) return checked;
@@ -427,7 +430,7 @@ function validateSliderDraft(config: Record<string, unknown>, draft: AeliqoInput
 function validateNumberDraft(config: Record<string, unknown>, draft: AeliqoInputDraftBinding): Outcome<void> {
   if (!unitMatches(draft.type, config.unit))
     return fail('binding', 'Number field unit must match the registered semantic unit exactly.');
-  for (const key of ['value', 'defaultValue', 'min', 'max', 'step']) {
+  for (const key of BOUNDED_VALUE_KEYS) {
     if (config[key] === undefined || config[key] === '') continue;
     if (!numberValue(draft.type, config[key]).ok)
       return fail('binding', `Number field ${key} does not satisfy its registered semantic type.`);

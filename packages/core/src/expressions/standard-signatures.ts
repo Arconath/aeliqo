@@ -70,6 +70,17 @@ const numeric: TypeConstraint = { kind: 'numeric' };
 const any: TypeConstraint = { kind: 'any' };
 const text: TypeConstraint = { kind: 'text' };
 
+const AGGREGATE_OPERATIONS: ReadonlySet<unknown> = new Set(['aggregate', 'ratio-of-sums', 'mean-of-rates']);
+const FRACTIONAL_OPERATIONS: ReadonlySet<unknown> = new Set(['divide', 'ratio-of-sums', 'mean-of-rates']);
+
+export function isAggregateOperation(operation: unknown): boolean {
+  return AGGREGATE_OPERATIONS.has(operation);
+}
+
+export function isFractionalOperation(operation: unknown): boolean {
+  return FRACTIONAL_OPERATIONS.has(operation);
+}
+
 function signature(
   ref: VersionRef,
   parameters: readonly FunctionParameter[],

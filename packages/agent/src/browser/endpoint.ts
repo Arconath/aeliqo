@@ -216,6 +216,25 @@ function resultDiagnostic(status: AgentSurfaceRenderResult['status']): Diagnosti
   return diagnostic(`agent.bridge.${status}`, `The surface request ended as ${status}.`);
 }
 
+/** Revision-bearing render outcomes share one freshness check and differ only in their receipt shape. */
+const REVISIONED_RESULTS: Readonly<
+  Record<
+    'renderer-ready' | 'committed',
+    { readonly state: 'renderer-ready' | 'plan-committed'; readonly code: string; readonly message: string }
+  >
+> = {
+  'renderer-ready': {
+    state: 'renderer-ready',
+    code: 'agent.bridge.renderer-ack',
+    message: 'The renderer acknowledgement did not match a new surface revision.',
+  },
+  committed: {
+    state: 'plan-committed',
+    code: 'agent.bridge.commit-receipt',
+    message: 'The runtime commit receipt did not match a new surface revision.',
+  },
+};
+
 function surfaceResult(
   result: AgentSurfaceRenderResult,
   targetId: string,
@@ -243,30 +262,15 @@ function surfaceResult(
       state: 'stale',
       diagnostics: [diagnostic('agent.bridge.stale', 'The surface address changed during rendering.')],
     };
-  if (result.status === 'renderer-ready') {
+  if (result.status === 'renderer-ready' || result.status === 'committed') {
+    const mapped = REVISIONED_RESULTS[result.status];
     if (result.revision !== after.revision || result.revision === before.revision)
       return {
         state: 'failed',
-        diagnostics: [
-          diagnostic('agent.bridge.renderer-ack', 'The renderer acknowledgement did not match a new surface revision.'),
-        ],
+        diagnostics: [diagnostic(mapped.code, mapped.message)],
       };
     return {
-      state: 'renderer-ready',
-      regionRevision: result.revision,
-      value: { targetId, status: result.status, revision: result.revision },
-    };
-  }
-  if (result.status === 'committed') {
-    if (result.revision !== after.revision || result.revision === before.revision)
-      return {
-        state: 'failed',
-        diagnostics: [
-          diagnostic('agent.bridge.commit-receipt', 'The runtime commit receipt did not match a new surface revision.'),
-        ],
-      };
-    return {
-      state: 'plan-committed',
+      state: mapped.state,
       regionRevision: result.revision,
       value: { targetId, status: result.status, revision: result.revision },
     };
@@ -315,11 +319,17 @@ async function defaultRender(
   const surface = surfaceOf(target);
   if (surface === undefined) return { status: 'failed', diagnosticCode: 'agent.bridge.target-invalid' };
   const result = await surface.request(intent as SurfaceRequest<unknown>, { signal, expectedAddress: address });
-  if (result.status === 'committed') return { status: 'committed', revision: result.revision };
-  if (result.status === 'proposed' || result.status === 'needs-input')
-    return { status: 'needs-input', diagnosticCode: result.status };
-  if (result.status === 'disposed') return { status: 'failed', diagnosticCode: result.diagnosticCode };
-  return { status: result.status, diagnosticCode: result.diagnosticCode };
+  switch (result.status) {
+    case 'committed':
+      return { status: 'committed', revision: result.revision };
+    case 'proposed':
+    case 'needs-input':
+      return { status: 'needs-input', diagnosticCode: result.status };
+    case 'disposed':
+      return { status: 'failed', diagnosticCode: result.diagnosticCode };
+    default:
+      return { status: result.status, diagnosticCode: result.diagnosticCode };
+  }
 }
 
 function contextManifest(

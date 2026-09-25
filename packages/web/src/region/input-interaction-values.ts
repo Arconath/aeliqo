@@ -1,74 +1,13 @@
 import { validateScalar, type Scalar, type SemanticType } from '@aeliqo/core';
+import { boundedText, exactKeys, record, semanticType, versionRef } from './input-registry-support.js';
 
-export const record = (value: unknown): Record<string, unknown> | undefined =>
-  value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+export { exactKeys, record };
 
 export const bounded = (value: unknown, max = 512, required = true): value is string =>
-  typeof value === 'string' &&
-  value.length <= max &&
-  (!required || value.length > 0) &&
-  !/[\u0000-\u001f\u007f]/u.test(value);
-
-export const exactKeys = (value: Record<string, unknown>, allowed: readonly string[]): boolean =>
-  Object.keys(value).every((key) => allowed.includes(key));
-
-function validSemanticBase(candidate: Record<string, unknown>): boolean {
-  return (
-    exactKeys(candidate, ['value', 'nullable', 'unit', 'grain', 'temporal']) &&
-    ['text', 'boolean', 'integer', 'float', 'decimal', 'date', 'instant'].includes(String(candidate.value)) &&
-    typeof candidate.nullable === 'boolean'
-  );
-}
-
-function validSemanticUnit(value: unknown): boolean {
-  if (value === undefined) return true;
-  const unit = record(value);
-  if (unit === undefined) return false;
-  return (
-    exactKeys(unit, ['dimension', 'symbol', 'currency']) &&
-    bounded(unit.dimension, 160) &&
-    bounded(unit.symbol, 160) &&
-    (unit.currency === undefined || bounded(unit.currency, 160))
-  );
-}
-
-function validSemanticGrain(value: unknown): boolean {
-  if (value === undefined) return true;
-  if (!Array.isArray(value)) return false;
-  return value.every((item) => bounded(item, 160)) && new Set(value).size === value.length;
-}
-
-function validSemanticTemporal(value: unknown, semanticValue: unknown): boolean {
-  if (value === undefined) return true;
-  const temporal = record(value);
-  if (temporal === undefined) return false;
-  return (
-    exactKeys(temporal, ['calendar', 'timezone', 'grain']) &&
-    bounded(temporal.calendar, 160) &&
-    (temporal.timezone === undefined || bounded(temporal.timezone, 160)) &&
-    (temporal.grain === undefined || bounded(temporal.grain, 160)) &&
-    ['date', 'instant'].includes(String(semanticValue))
-  );
-}
-
-function semanticType(value: unknown): value is SemanticType {
-  const candidate = record(value);
-  if (candidate === undefined || !validSemanticBase(candidate)) return false;
-  return (
-    validSemanticUnit(candidate.unit) &&
-    validSemanticGrain(candidate.grain) &&
-    validSemanticTemporal(candidate.temporal, candidate.value)
-  );
-}
+  boundedText(value, max, required);
 
 export function validRef(value: unknown): value is { readonly id: string; readonly revision: string } {
-  const candidate = record(value);
-  return (
-    candidate !== undefined &&
-    Object.keys(candidate).length === 2 &&
-    bounded(candidate.id, 160) &&
-    bounded(candidate.revision, 160)
-  );
+  return versionRef(value);
 }
 
 export function scalarType(value: unknown): SemanticType | undefined {

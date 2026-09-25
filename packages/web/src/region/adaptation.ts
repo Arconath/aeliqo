@@ -214,10 +214,13 @@ export interface AeliqoRegionAdaptation {
   disconnect(): void;
 }
 
+const EDITABLE_TAGS: ReadonlySet<string> = new Set(['input', 'textarea', 'select']);
+const EDITABLE_ROLES: ReadonlySet<string> = new Set(['textbox', 'combobox', 'spinbutton']);
+
 function editableTarget(value: Element | undefined): boolean {
   if (value === undefined) return false;
   const tag = value.localName;
-  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+  if (EDITABLE_TAGS.has(tag)) {
     return (
       !value.hasAttribute('disabled') &&
       !value.hasAttribute('readonly') &&
@@ -226,11 +229,7 @@ function editableTarget(value: Element | undefined): boolean {
   }
   const contentEditable = value.getAttribute('contenteditable');
   if (contentEditable !== null && contentEditable !== 'false') return true;
-  return (
-    value.getAttribute('role') === 'textbox' ||
-    value.getAttribute('role') === 'combobox' ||
-    value.getAttribute('role') === 'spinbutton'
-  );
+  return EDITABLE_ROLES.has(value.getAttribute('role') ?? '');
 }
 
 function deepestActive(root: Document | Element): Element | undefined {

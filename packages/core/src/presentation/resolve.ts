@@ -2,6 +2,7 @@ import * as z from 'zod/mini';
 import { inspectWire } from '../contracts/ingress.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
 import { diagnosticSchema, idSchema, versionRefSchema } from '../contracts/schemas.js';
+import { NUMERIC_TYPE_VALUES } from '../contracts/scalars.js';
 import { compareText, sameVersionRef, versionRefKey } from '../contracts/stable.js';
 import type { Diagnostic, Outcome } from '../contracts/types.js';
 import { composePresentation } from './compose.js';
@@ -148,7 +149,7 @@ function authorizedClarification(
             needs.some((need) => need.required && need.fields.includes(field.id)) &&
             (kind === 'time'
               ? field.type.value === 'date' || field.type.value === 'instant'
-              : field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value)),
+              : field.role === 'measure' && NUMERIC_TYPE_VALUES.has(field.type.value)),
         )
         .map((field) => field.id),
     ),

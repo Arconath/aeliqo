@@ -237,13 +237,17 @@ export function asError(requestId: string, errors: readonly Diagnostic[]): Resul
   };
 }
 
+const STATUS_RULES: ReadonlyArray<readonly [RegExp, number]> = [
+  [/denied|authorization|origin/, 403],
+  [/stale|cursor|expired/, 409],
+  [/unsupported/, 422],
+  [/budget/, 413],
+  [/timeout/, 408],
+];
+
 export function statusFor(errors: readonly Diagnostic[]): number {
   const code = errors[0]?.code ?? '';
-  if (/denied|authorization|origin/.test(code)) return 403;
-  if (/stale|cursor|expired/.test(code)) return 409;
-  if (code.includes('unsupported')) return 422;
-  if (code.includes('budget')) return 413;
-  if (code.includes('timeout')) return 408;
+  for (const [pattern, status] of STATUS_RULES) if (pattern.test(code)) return status;
   return 400;
 }
 

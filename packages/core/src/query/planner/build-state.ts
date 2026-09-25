@@ -11,7 +11,15 @@ import type {
   QuerySchema,
   RelationalQuery,
 } from '../types.js';
-import { failure, immutableSnapshot, safeId, scanSchema, stable, type CatalogEntity } from './shared.js';
+import {
+  failure,
+  immutableSnapshot,
+  isJoinOperation,
+  safeId,
+  scanSchema,
+  stable,
+  type CatalogEntity,
+} from './shared.js';
 
 export interface PlannerState {
   readonly nodes: PlanNode[];
@@ -39,6 +47,15 @@ function estimateBytes(schema: QuerySchema, rows: number): number {
   return Math.min(Number.MAX_SAFE_INTEGER, Math.max(1, rows) * Math.max(1, schema.fields.length) * 32);
 }
 
+const POPULATION_OPERATIONS: ReadonlySet<PlanOperation> = new Set([
+  'join',
+  'semijoin',
+  'group',
+  'aggregate',
+  'top-k',
+  'window',
+]);
+
 function nextCost(
   previous: QueryCost,
   schema: QuerySchema,
@@ -47,9 +64,8 @@ function nextCost(
   joinRows = previous.joinRows,
   requiresComplete = previous.requiresComplete,
 ): QueryCost {
-  const isJoin = operation === 'join' || operation === 'semijoin';
-  const populationOperations = ['join', 'semijoin', 'group', 'aggregate', 'top-k', 'window'];
-  const requiresPopulation = populationOperations.includes(operation);
+  const isJoin = isJoinOperation(operation);
+  const requiresPopulation = POPULATION_OPERATIONS.has(operation);
   return {
     estimatedRows: Math.max(0, rows),
     estimatedBytes: estimateBytes(schema, rows),

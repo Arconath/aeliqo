@@ -26,6 +26,8 @@ import {
   type CompoundControl,
 } from './shared.js';
 
+const BUTTON_INPUT_TYPES: ReadonlySet<string> = new Set(['submit', 'reset', 'button', 'image']);
+
 export class AeliqoRecordEditorElement extends AeliqoCompoundElement {
   static readonly properties = {
     entity: { type: String },
@@ -272,7 +274,7 @@ export class AeliqoFormFlowElement extends AeliqoCompoundElement {
 
   private skipDraftControl(control: CompoundControl, name: string): boolean {
     if (!name || isDisabledControl(control) || control instanceof HTMLButtonElement) return true;
-    return control instanceof HTMLInputElement && ['submit', 'reset', 'button', 'image'].includes(control.type);
+    return control instanceof HTMLInputElement && BUTTON_INPUT_TYPES.has(control.type);
   }
 
   private collectToggleDraft(

@@ -7,11 +7,17 @@ import type {
   AeliqoDataRecord,
   AeliqoDataScope,
   AeliqoDataStatus,
-  AeliqoSelectionDetail,
   AeliqoSelectionMode,
 } from './types.js';
 import { AeliqoDataSelectionEvent } from './events.js';
-import { dataStyles, dataValueText, scopeText, stableDataRecordKey, statusTemplate } from './shared.js';
+import {
+  dataStyles,
+  dataValueText,
+  scopeText,
+  selectionChangeDetail,
+  stableDataRecordKey,
+  statusTemplate,
+} from './shared.js';
 
 /** A compact, keyboard-scannable record collection. Selection is controlled by
  * the host: this element emits stable identity proposals and never mutates
@@ -105,27 +111,15 @@ export class AeliqoRecordListElement extends LitElement {
   }
 
   private readonly requestSelection = (key: string | undefined): void => {
-    if (key === undefined || this.selection === 'none') return;
-    const selected = new Set(this.selectedKeys);
-    if (this.selection === 'single') {
-      selected.clear();
-      selected.add(key);
-    } else if (selected.has(key)) {
-      selected.delete(key);
-    } else {
-      selected.add(key);
-    }
-    const keys = [...selected];
-    const detail: AeliqoSelectionDetail =
-      keys.length === 0
-        ? { mode: 'clear', entity: this.entity, keys: [], ...(this.scope === undefined ? {} : { scope: this.scope }) }
-        : {
-            mode: 'ids',
-            entity: this.entity,
-            keys,
-            ...(this.result === undefined ? {} : { result: this.result }),
-            ...(this.scope === undefined ? {} : { scope: this.scope }),
-          };
+    const detail = selectionChangeDetail({
+      selection: this.selection,
+      keys: this.selectedKeys,
+      key,
+      entity: this.entity,
+      result: this.result,
+      scope: this.scope,
+    });
+    if (detail === undefined) return;
     this.dispatchEvent(new AeliqoDataSelectionEvent('aeliqo-record-list-selection', detail));
   };
 

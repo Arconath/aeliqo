@@ -158,11 +158,22 @@ export function sameRefParts(ref: ResultRef, input: ResultCacheKey): boolean {
   );
 }
 
+const ERROR_STATUS_CODES: ReadonlyMap<string, ResultStatus> = new Map([
+  ['data.aborted', 'cancelled'],
+  ['data.cancelled', 'cancelled'],
+  ['data.denied', 'denied'],
+]);
+
+const ERROR_STATUS_PREFIXES: ReadonlyArray<readonly [string, ResultStatus]> = [
+  ['data.authorization', 'denied'],
+  ['data.unsupported', 'unsupported'],
+  ['data.stale', 'stale'],
+];
+
 export function statusForError(code: string): ResultStatus {
-  if (code === 'data.aborted' || code === 'data.cancelled') return 'cancelled';
-  if (code === 'data.denied' || code.startsWith('data.authorization')) return 'denied';
-  if (code === 'data.unsupported' || code.startsWith('data.unsupported')) return 'unsupported';
-  if (code.startsWith('data.stale')) return 'stale';
+  const exact = ERROR_STATUS_CODES.get(code);
+  if (exact !== undefined) return exact;
+  for (const [prefix, status] of ERROR_STATUS_PREFIXES) if (code.startsWith(prefix)) return status;
   return 'failed';
 }
 

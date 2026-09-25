@@ -5,6 +5,14 @@ import { aeliqoFeedbackStyles } from './shared.js';
 
 export type AeliqoEmptyStateKind = 'no-records' | 'no-matches' | 'forbidden' | 'loading' | 'failure';
 
+const EMPTY_STATE_KINDS: ReadonlySet<AeliqoEmptyStateKind> = new Set([
+  'no-records',
+  'no-matches',
+  'forbidden',
+  'loading',
+  'failure',
+]);
+
 /** A truthful state message for a result surface with an optional host action. */
 export class AeliqoEmptyStateElement extends AeliqoFoundationElement {
   static readonly properties = {
@@ -63,11 +71,7 @@ export class AeliqoEmptyStateElement extends AeliqoFoundationElement {
   }
 
   protected override render() {
-    const kind: AeliqoEmptyStateKind = ['no-records', 'no-matches', 'forbidden', 'loading', 'failure'].includes(
-      this.kind,
-    )
-      ? this.kind
-      : 'failure';
+    const kind: AeliqoEmptyStateKind = EMPTY_STATE_KINDS.has(this.kind) ? this.kind : 'failure';
     const role = kind === 'failure' || kind === 'forbidden' ? 'alert' : 'status';
     const busy = kind === 'loading' ? 'true' : 'false';
     return html`<section

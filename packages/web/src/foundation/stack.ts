@@ -6,6 +6,10 @@ export type AeliqoStackGap = 0 | 4 | 8 | 12 | 16 | 24 | 32 | 48;
 export type AeliqoStackAlign = 'start' | 'center' | 'end' | 'stretch';
 export type AeliqoStackJustify = 'start' | 'center' | 'end' | 'between';
 
+const STACK_ALIGNS: ReadonlySet<AeliqoStackAlign> = new Set(['start', 'center', 'end', 'stretch']);
+const STACK_JUSTIFIES: ReadonlySet<AeliqoStackJustify> = new Set(['start', 'center', 'end', 'between']);
+const STACK_GAPS: ReadonlySet<AeliqoStackGap> = new Set([0, 4, 8, 12, 16, 24, 32, 48]);
+
 export class AeliqoStackElement extends AeliqoFoundationElement {
   static readonly properties = {
     direction: { type: String },
@@ -23,10 +27,9 @@ export class AeliqoStackElement extends AeliqoFoundationElement {
 
   protected override render() {
     const direction = this.direction === 'row' ? 'row' : 'column';
-    const align = this.align === 'start' || this.align === 'center' || this.align === 'end' ? this.align : 'stretch';
-    const justify =
-      this.justify === 'center' || this.justify === 'end' || this.justify === 'between' ? this.justify : 'start';
-    const gap = [0, 4, 8, 12, 16, 24, 32, 48].includes(this.gap) ? this.gap : 16;
+    const align = STACK_ALIGNS.has(this.align) ? this.align : 'stretch';
+    const justify = STACK_JUSTIFIES.has(this.justify) ? this.justify : 'start';
+    const gap = STACK_GAPS.has(this.gap) ? this.gap : 16;
     return html`<div
       part="stack"
       class=${`direction-${direction} align-${align} justify-${justify} gap-${gap}`}

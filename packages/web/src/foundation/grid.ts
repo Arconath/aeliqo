@@ -4,6 +4,9 @@ import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from './base.js'
 export type AeliqoGridColumns = 1 | 2 | 3 | 4 | 5 | 6;
 export type AeliqoGridGap = 4 | 8 | 12 | 16 | 24 | 32 | 48;
 
+const GRID_COLUMNS: ReadonlySet<AeliqoGridColumns> = new Set([1, 2, 3, 4, 5, 6]);
+const GRID_GAPS: ReadonlySet<AeliqoGridGap> = new Set([4, 8, 12, 16, 24, 32, 48]);
+
 export class AeliqoGridElement extends AeliqoFoundationElement {
   static readonly properties = {
     columns: { type: Number },
@@ -16,8 +19,8 @@ export class AeliqoGridElement extends AeliqoFoundationElement {
   minItem: 'small' | 'medium' | 'large' = 'medium';
 
   protected override render() {
-    const columns = [1, 2, 3, 4, 5, 6].includes(this.columns) ? this.columns : 2;
-    const gap = [4, 8, 12, 16, 24, 32, 48].includes(this.gap) ? this.gap : 16;
+    const columns = GRID_COLUMNS.has(this.columns) ? this.columns : 2;
+    const gap = GRID_GAPS.has(this.gap) ? this.gap : 16;
     const minItem = this.minItem === 'small' || this.minItem === 'large' ? this.minItem : 'medium';
     return html`<div part="grid" class=${`gap-${gap} min-${minItem}`} style=${`--aeliqo-grid-columns:${columns}`}>
       <slot></slot>

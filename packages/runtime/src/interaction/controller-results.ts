@@ -20,6 +20,9 @@ import type {
 
 type DeadlineCheck = (deadline: EventDeadline, controller: AbortController) => boolean;
 
+const READABLE_STATUSES: ReadonlySet<string> = new Set(['ready', 'partial', 'refreshing']);
+const QUERY_PAYLOAD_KINDS: ReadonlySet<InteractionPayload['kind']> = new Set(['filter', 'range', 'group', 'page']);
+
 export function createResolutionContext(
   event: InteractionEvent,
   host: InteractionHostContext,
@@ -55,7 +58,7 @@ function readableResult(handle: ResultHandle): InteractionOutcome<void> {
   } catch {
     return failure('runtime.interaction-stale', 'The interaction result could not be inspected.');
   }
-  if (!['ready', 'partial', 'refreshing'].includes(status))
+  if (!READABLE_STATUSES.has(status))
     return failure('runtime.interaction-stale', 'The interaction result is not currently readable.');
   return { ok: true, value: undefined };
 }
@@ -163,5 +166,5 @@ function resolveHandleRef(handle: ResultHandle): InteractionOutcome<import('@ael
 }
 
 export function isQueryPayload(payload: InteractionPayload): payload is InteractionQueryPayload {
-  return payload.kind === 'filter' || payload.kind === 'range' || payload.kind === 'group' || payload.kind === 'page';
+  return QUERY_PAYLOAD_KINDS.has(payload.kind);
 }

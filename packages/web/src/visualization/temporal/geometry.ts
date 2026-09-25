@@ -106,9 +106,15 @@ function dataOnly(base: TemporalGeometry, reason: string): Outcome<TemporalGeome
   return { ok: true, value: { ...base, state: 'data-only', reason } };
 }
 
+const CIVIL_CALENDARS: ReadonlySet<string> = new Set(['gregory', 'gregorian', 'iso8601']);
+const TEMPORAL_VIEWS: ReadonlySet<string> = new Set(['matrix', 'timeline', 'calendar-grid']);
+
+function isTemporalSpec(spec: VisualizationSpec): spec is TemporalSpec {
+  return TEMPORAL_VIEWS.has(spec.view);
+}
+
 function supportsCivilCalendar(field: Result['fields'][number]): boolean {
-  const calendar = field.type.temporal!.calendar;
-  return calendar === 'gregory' || calendar === 'gregorian' || calendar === 'iso8601';
+  return CIVIL_CALENDARS.has(field.type.temporal!.calendar);
 }
 
 function fieldForSpec(spec: TimelineSpec | CalendarSpec, result: Result): Result['fields'][number] {
@@ -339,8 +345,7 @@ export function compileTemporalVisualization(input: VisualizationInputs): Outcom
   const bound = bindVisualizationSpec(input.visualization, input.context);
   if (!bound.ok) return bound;
   const spec = bound.value.spec;
-  if (spec.view !== 'matrix' && spec.view !== 'timeline' && spec.view !== 'calendar-grid')
-    return fail('This renderer requires a matrix, timeline or calendar specification.');
+  if (!isTemporalSpec(spec)) return fail('This renderer requires a matrix, timeline or calendar specification.');
   const materialized = materializeVisualizationRows(bound.value, spec.result, input.datasets);
   if (!materialized.ok) return materialized;
   if (!validDimensions(input)) return fail('Visualization dimensions or mark budget are outside supported limits.');

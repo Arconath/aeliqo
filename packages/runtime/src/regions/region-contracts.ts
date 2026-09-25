@@ -17,6 +17,8 @@ export const FAILURE = {
 
 export const DEFAULT_COMMIT_AUTHORIZATION_MILLISECONDS = 30_000;
 export const MAX_COMMIT_AUTHORIZATION_MILLISECONDS = 86_400_000;
+
+const STATE_FIELDS: ReadonlySet<string> = new Set(['task', 'presentation', 'interaction']);
 let regionIncarnationCounter = 0;
 let runtimeRevisionCounter = 0;
 
@@ -190,10 +192,7 @@ function validateStateRecord(value: unknown): RegionOutcome<Record<string, unkno
   const wire = parseWireValue(value);
   if (!wire.ok || !isRecord(wire.value)) return failure('runtime.region-invalid', FAILURE.invalid);
   const record = wire.value;
-  if (
-    Object.keys(record).some((field) => field !== 'task' && field !== 'presentation' && field !== 'interaction') ||
-    !Object.hasOwn(record, 'task')
-  )
+  if (Object.keys(record).some((field) => !STATE_FIELDS.has(field)) || !Object.hasOwn(record, 'task'))
     return failure(
       'runtime.region-invalid',
       'A region state requires a Task and may contain a PresentationPlan and typed interaction state.',
