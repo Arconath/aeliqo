@@ -186,7 +186,7 @@ function authShape(authInfo: unknown): authInfo is AuthInfo {
     validText(authInfo.token, WIRE_LIMITS.text) &&
     validId(authInfo.clientId) &&
     Array.isArray(authInfo.scopes) &&
-    authInfo.scopes.every(validId) &&
+    authInfo.scopes.every((scope) => validId(scope)) &&
     (authInfo.extra === undefined || isRecord(authInfo.extra))
   );
 }
