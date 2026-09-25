@@ -5,6 +5,7 @@ import { checkConnection, sendLocalPrompt } from './connection-controller.js';
 import { evidenceFor, selectedView, viewLabel, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
 import { fixtureEvidence } from './fixture-inspector.js';
 import { createFixtureJourneys, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
+import { createJourneyTracker } from './journey.js';
 import { connectLocalHost, type LocalHostConnection } from './local-host.js';
 import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId } from './scenarios.js';
 import { findScenario, labelIntent, renderScenarioControls } from './scenario-controls.js';
@@ -47,6 +48,7 @@ const modelCalls = required<HTMLElement>('#pg-model-calls');
 const journeyIntent = required<HTMLElement>('#pg-journey-intent');
 const journeyResult = required<HTMLElement>('#pg-journey-result');
 const journeyView = required<HTMLElement>('#pg-journey-view');
+const setJourney = createJourneyTracker(document.querySelectorAll<HTMLElement>('.pg-journey li'), viewBadge).set;
 const inspector = required<HTMLDialogElement>('#pg-inspector');
 const inspectorSummary = required<HTMLElement>('#pg-inspector-summary');
 const inspectorContent = required<HTMLElement>('#pg-inspector-content');
@@ -173,6 +175,7 @@ function resetSession(): void {
   journeyIntent.textContent = 'Choose a task';
   journeyResult.textContent = 'Waiting';
   journeyView.textContent = 'Waiting';
+  setJourney('pending', 'pending', 'pending');
   viewBadge.textContent = 'Waiting for intent';
   resultTitle.textContent = 'Employees';
   resultDefinition.hidden = true;
@@ -211,6 +214,7 @@ function showFixtureJourney(kind: FixtureJourney): void {
   journeyIntent.textContent = kind === 'attendance' ? 'Analyze daily attendance' : 'Engineering attendance overview';
   journeyResult.textContent = 'Evaluating…';
   journeyView.textContent = 'Waiting';
+  setJourney('done', 'active', 'pending');
   resultTitle.textContent = kind === 'attendance' ? 'Daily attendance' : 'Analytical workspace';
   resultDefinition.hidden = false;
   resultDefinition.textContent =
@@ -232,10 +236,15 @@ const fixtureJourneys = createFixtureJourneys({
     journeyView.textContent = state.view;
     viewBadge.textContent = state.view;
     status.textContent = state.status;
+    if (state.receipt === 'renderer-ready') setJourney('done', 'done', 'done');
+    else if (state.receipt === 'pending' || state.receipt.startsWith('needs-input:'))
+      setJourney('done', 'active', 'pending');
+    else setJourney('done', 'failed', 'pending');
   },
   onError() {
     setError('The synthetic journey could not load. Reload the page to retry.');
     journeyResult.textContent = 'Could not complete';
+    setJourney('done', 'failed', 'pending');
   },
 });
 
@@ -254,11 +263,13 @@ async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<
       intent.id === 'people-jakarta' ? 'Committed filter · Location: Jakarta · Scope: synthetic People' : '';
     journeyResult.textContent = 'Evaluated';
     journeyView.textContent = viewLabel(selectedView(receipt));
+    setJourney('done', 'done', 'done');
     status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
   } else {
     const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
     journeyResult.textContent = 'Could not complete';
     journeyView.textContent = 'No new view';
+    setJourney('done', 'failed', 'pending');
     status.textContent = message;
     setError(message);
   }
@@ -280,6 +291,7 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
   journeyIntent.textContent = labelIntent(scenario, intent);
   journeyResult.textContent = 'Checking…';
   journeyView.textContent = 'Waiting';
+  setJourney('done', 'active', 'pending');
   status.textContent = 'Checking the request and evaluating the result…';
   trigger?.setAttribute('aria-busy', 'true');
   try {
@@ -290,6 +302,7 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
     if (!controller.signal.aborted) {
       journeyResult.textContent = 'Could not complete';
       journeyView.textContent = 'No new view';
+      setJourney('done', 'failed', 'pending');
       setError('The playground request failed safely. Reset the session and try again.');
     }
   } finally {

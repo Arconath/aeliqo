@@ -211,28 +211,70 @@
 }
 .component-links {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
+  gap: 0.6rem;
   padding: 0;
   list-style: none;
 }
 .component-links a {
-  display: block;
+  display: flex;
   min-height: 100%;
-  padding: 0.7rem 0.8rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 0.9rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--surface-raised);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 4%, transparent);
   text-decoration: none;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
-.component-links strong,
-.component-links small {
+.component-links a:hover {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--accent) 9%, transparent);
+  transform: translateY(-2px);
+}
+.component-links strong {
   display: block;
+  font-size: var(--type-detail);
+  letter-spacing: -0.015em;
+}
+.component-links .component-contract {
+  flex: 1 1 auto;
+  color: var(--muted);
+  font-size: var(--type-compact-readable);
+  line-height: 1.5;
 }
 .component-links small {
-  margin-top: 0.3rem;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.58rem;
+  font-weight: 740;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.component-links small[data-level='standalone'] {
+  border: 1px solid var(--line);
   color: var(--muted);
-  font-size: var(--type-caption);
+  background: var(--surface);
+}
+.component-links small[data-level='semantic'] {
+  border: 1px solid color-mix(in srgb, var(--aeliqo-color-info) 32%, transparent);
+  color: var(--aeliqo-color-info);
+  background: color-mix(in srgb, var(--aeliqo-color-info) 10%, var(--surface-raised));
+}
+.component-links small[data-level='adaptive'] {
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 .component-meta {
   display: grid;
@@ -261,20 +303,54 @@
   margin-bottom: var(--space-8);
 }
 .component-maturity > div {
-  padding: 0.85rem;
+  padding: 0.95rem;
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface-raised);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    150deg,
+    var(--surface-raised),
+    color-mix(in srgb, var(--surface) 55%, var(--surface-raised))
+  );
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 4%, transparent);
 }
-.component-maturity strong,
-.component-maturity span {
+.component-maturity strong {
   display: block;
   font-size: var(--type-small);
 }
-.component-maturity span {
-  margin-top: 0.25rem;
+.component-maturity span[data-state] {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.6rem;
+  font-weight: 740;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.component-maturity span[data-state]::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+.component-maturity span[data-state='available'] {
+  border: 1px solid color-mix(in srgb, var(--success) 36%, transparent);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 10%, var(--surface-raised));
+}
+.component-maturity span[data-state='standard'] {
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
   color: var(--accent);
-  font-weight: 650;
+  background: var(--accent-soft);
+}
+.component-maturity span[data-state='unavailable'] {
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: var(--surface);
 }
 .component-maturity p {
   margin: 0.55rem 0 0;
@@ -537,5 +613,19 @@
   .doc-header {
     margin-bottom: var(--space-8);
     padding-bottom: 1.65rem;
+  }
+}
+@media (forced-colors: active) {
+  .component-links a,
+  .component-maturity > div,
+  .docs-inline-cta,
+  .docs-inline-cta a {
+    border-color: CanvasText;
+  }
+  .component-links small[data-level],
+  .component-maturity span[data-state] {
+    border-color: CanvasText;
+    color: CanvasText;
+    background: Canvas;
   }
 }
