@@ -57,6 +57,22 @@
   padding-block: 1.45rem;
   border-bottom: 1px solid var(--line);
   text-decoration: none;
+  transition:
+    background-color 140ms ease,
+    padding-inline 140ms ease;
+}
+.use-case-list a:hover {
+  padding-inline: 0.6rem;
+  background: color-mix(in srgb, var(--surface-raised) 85%, var(--surface));
+}
+.use-case-list a:hover strong {
+  color: var(--accent);
+}
+.use-case-list a:hover b {
+  transform: translateX(2px);
+}
+.use-case-list b {
+  transition: transform 140ms ease;
 }
 .use-case-list a > span {
   color: var(--faint);
@@ -107,7 +123,14 @@
   border-bottom: 1px solid var(--line);
 }
 .approach-list article > span {
-  color: var(--faint);
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--accent);
+  background: var(--accent-soft);
   font-family: ui-monospace, monospace;
   font-size: var(--type-compact);
 }

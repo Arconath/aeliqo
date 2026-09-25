@@ -245,6 +245,12 @@ function componentLevel(component) {
   return 'No built-in semantic binding';
 }
 
+function componentTag(component) {
+  if (component.surfaces.includes('adaptive')) return 'adaptive';
+  if (component.surfaces.includes('semantic')) return 'semantic';
+  return 'standalone';
+}
+
 function componentCatalogPage(components) {
   return {
     id: 'components',
@@ -261,7 +267,7 @@ function componentCatalogPage(components) {
             .filter((component) => component.family === family)
             .map(
               (component) =>
-                `<li><a href="/components/${component.id}/"><strong>${component.name}</strong><small>${componentLevel(component)}</small></a></li>`,
+                `<li><a href="/components/${component.id}/"><strong>${escape(component.name)}</strong><span class="component-contract">${escape(component.contract)}</span><small data-level="${componentTag(component)}">${componentLevel(component)}</small></a></li>`,
             )
             .join('')}</ul>`,
       )

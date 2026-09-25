@@ -11,19 +11,40 @@
   justify-content: space-between;
   gap: var(--space-5);
 }
-.pg-result-header > span {
+.pg-view-badge {
+  display: inline-flex;
   max-width: 18rem;
+  align-items: center;
+  gap: 0.45rem;
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
   border-radius: var(--radius-pill);
-  padding: 0.38rem 0.7rem;
-  color: var(--muted);
-  background: var(--surface-raised);
+  padding: 0.42rem 0.8rem;
+  color: var(--accent);
+  background: var(--accent-soft);
   font:
-    0.62rem ui-monospace,
+    700 0.62rem ui-monospace,
     monospace;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.pg-view-badge::before {
+  flex: 0 0 auto;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+.pg-view-badge[data-state='pending'] {
+  border-color: var(--line);
+  color: var(--muted);
+  background: var(--surface);
+}
+.pg-view-badge[data-state='pending']::before {
+  background: var(--line-strong);
 }
 .pg-status {
   min-height: 1.25rem;
@@ -40,20 +61,80 @@
   list-style: none;
 }
 .pg-journey li {
+  position: relative;
   display: grid;
   min-width: 0;
-  gap: 0.22rem;
-  padding: 0.8rem 0.9rem;
+  align-content: start;
+  gap: 0.3rem;
+  padding: 0.8rem 0.95rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--surface-raised);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+.pg-journey li:not(:last-child)::after {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: -0.55rem;
+  z-index: 1;
+  color: var(--faint);
+  font-size: 0.68rem;
+  font-weight: var(--weight-bold);
+  transform: translateY(-50%);
+  content: '→';
 }
 .pg-journey small {
-  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--muted);
   font-size: var(--type-caption);
   font-weight: var(--weight-bold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+.pg-journey small::before {
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--line-strong);
+  content: '';
+}
+.pg-journey li[data-state='active'] {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface-raised));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.pg-journey li[data-state='active'] small {
+  color: var(--accent);
+}
+.pg-journey li[data-state='active'] small::before {
+  background: var(--accent);
+  animation: pg-dot-pulse 1.1s ease-in-out infinite;
+}
+.pg-journey li[data-state='done'] small {
+  color: var(--success);
+}
+.pg-journey li[data-state='done'] small::before {
+  background: var(--success);
+}
+.pg-journey li[data-state='failed'] {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+}
+.pg-journey li[data-state='failed'] small {
+  color: var(--danger);
+}
+.pg-journey li[data-state='failed'] small::before {
+  background: var(--danger);
+}
+@keyframes pg-dot-pulse {
+  50% {
+    opacity: 0.35;
+  }
 }
 .pg-journey strong {
   overflow-wrap: anywhere;
@@ -80,17 +161,29 @@
   min-height: 20rem;
   display: grid;
   place-items: center;
-  border: 1px dashed var(--line-strong);
+  border: 1px dashed color-mix(in srgb, var(--line-strong) 75%, transparent);
   border-radius: var(--radius-card);
-  background: var(--surface-raised);
+  background:
+    radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent-soft) 45%, transparent), transparent 22rem),
+    var(--surface-raised);
+}
+.pg-region:empty::after {
+  color: var(--muted);
+  font-size: var(--type-small);
+  content: 'Choose a task — the rendered interface appears here.';
 }
 .pg-evidence {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   overflow: hidden;
+  margin-top: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-dialog);
-  background: var(--surface-raised);
+  background: linear-gradient(
+    180deg,
+    var(--surface-raised),
+    color-mix(in srgb, var(--surface) 55%, var(--surface-raised))
+  );
 }
 .pg-evidence span {
   display: grid;
@@ -164,6 +257,8 @@
   overflow-x: auto;
 }
 .pg-inspector nav button {
+  min-height: 2.1rem;
+  border-radius: var(--radius-pill);
   font-size: var(--type-compact-readable);
   white-space: nowrap;
 }
@@ -197,6 +292,7 @@
   .pg-connection {
     grid-column: 2/4;
     grid-row: 2;
+    justify-self: start;
   }
   .pg-toolbar-actions {
     grid-column: 4;
@@ -260,6 +356,14 @@
     grid-template-columns: 5.9rem minmax(0, 1fr);
     align-items: baseline;
     padding-block: 0.55rem;
+  }
+  .pg-journey li:not(:last-child)::after {
+    inset-block-start: auto;
+    inset-block-end: -0.58rem;
+    inset-inline-end: auto;
+    inset-inline-start: 1.2rem;
+    transform: none;
+    content: '↓';
   }
   .pg-journey li span {
     grid-column: 2;
@@ -326,8 +430,15 @@
   .pg-region:empty,
   .pg-evidence,
   .pg-inspector,
-  .pg-action {
+  .pg-action,
+  .pg-journey li,
+  .pg-steps button,
+  .pg-view-badge,
+  .pg-connection {
     border-color: CanvasText;
+  }
+  .pg-journey li[data-state] {
+    box-shadow: none;
   }
   .pg-mode button[aria-pressed='true'] {
     color: HighlightText;
