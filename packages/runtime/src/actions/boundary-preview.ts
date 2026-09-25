@@ -244,11 +244,18 @@ export class ActionPreviewPort extends ActionPortBase {
   }
 
   private confirmationCallFailure(state: string): ActionOutcome<void> | undefined {
-    if (state === 'completed') return undefined;
-    if (state === 'lifecycle') return this.lifecycle();
-    if (state === 'cancelled') return this.outcome('action.cancelled', 'The action confirmation was cancelled.');
-    if (state === 'budget') return this.outcome('action.budget', 'The host callback budget is full.');
-    return this.outcome('action.budget', 'The action confirmation exceeded its bounded time budget.');
+    switch (state) {
+      case 'completed':
+        return undefined;
+      case 'lifecycle':
+        return this.lifecycle();
+      case 'cancelled':
+        return this.outcome('action.cancelled', 'The action confirmation was cancelled.');
+      case 'budget':
+        return this.outcome('action.budget', 'The host callback budget is full.');
+      default:
+        return this.outcome('action.budget', 'The action confirmation exceeded its bounded time budget.');
+    }
   }
 
   private async recheckConfirmation(

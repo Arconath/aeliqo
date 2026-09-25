@@ -2,6 +2,7 @@ import type { Catalog, Outcome, VersionRef } from '../../contracts/types.js';
 import { versionRefKey as relationKey } from '../../contracts/stable.js';
 import type { FunctionRegistry } from '../../expressions/types.js';
 import type { QueryExecutionContext, QueryRow, QuerySchema, QuerySource } from '../types.js';
+import { failure } from '../planner/shared.js';
 
 export type CatalogEntity = Catalog['entities'][number];
 export type CatalogRelationship = Catalog['relationships'][number];
@@ -34,12 +35,7 @@ export interface EvalState {
   readonly materializedBytes: WeakMap<QueryRow[], number>;
 }
 
-export function failure<T>(code: string, message: string, path: readonly (string | number)[] = []): Outcome<T> {
-  return {
-    ok: false,
-    diagnostics: [{ code, message, retryable: false, ...(path.length === 0 ? {} : { path: [...path] }) }],
-  };
-}
+export { failure };
 
 export function unsupported<T>(id: string, reason: string): Outcome<T> {
   return failure('query.unsupported', `Query capability ${id} is not supported: ${reason}`);

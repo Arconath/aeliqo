@@ -159,6 +159,58 @@ test('drawer keeps inline and modal modes separate', async ({ page }) => {
   await expect(drawer.locator('dialog')).toBeHidden();
 });
 
+test('drawer modal traps Tab and returns focus to the opener', async ({ page }) => {
+  const drawer = page.locator('#drawer');
+  const before = page.locator('#before');
+  await before.focus();
+  await drawer.evaluate((element) => {
+    const value = element as HTMLElement & { mode: string; open: boolean };
+    value.mode = 'modal';
+    value.open = true;
+  });
+  await expect.poll(() => drawer.locator('dialog').evaluate((element) => element.matches(':modal'))).toBe(true);
+  const close = drawer.getByRole('button', { name: 'Close' });
+  const action = drawer.getByRole('button', { name: 'Drawer action' });
+  // Focus order inside the surface is Close then the slotted action: Tab at
+  // the last control wraps to the first and Shift+Tab at the first wraps back.
+  await action.focus();
+  await action.press('Tab');
+  await expect(close).toBeFocused();
+  await close.press('Shift+Tab');
+  await expect(action).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(drawer.locator('dialog')).toBeHidden();
+  await expect(before).toBeFocused();
+});
+
+test('drawer modal traps Tab even when native showModal is unavailable', async ({ page }) => {
+  const drawer = page.locator('#drawer');
+  await page.locator('#before').focus();
+  await drawer.evaluate(async (element) => {
+    const host = element as HTMLElement & {
+      mode: string;
+      open: boolean;
+      updateComplete: Promise<boolean>;
+      shadowRoot: ShadowRoot | null;
+    };
+    host.mode = 'modal';
+    await host.updateComplete;
+    const dialog = host.shadowRoot?.querySelector('dialog');
+    if (dialog !== null && dialog !== undefined)
+      Object.defineProperty(dialog, 'showModal', { value: undefined, configurable: true });
+    host.open = true;
+  });
+  const surface = drawer.locator('dialog');
+  await expect(surface).toBeVisible();
+  const close = drawer.getByRole('button', { name: 'Close' });
+  const action = drawer.getByRole('button', { name: 'Drawer action' });
+  await action.focus();
+  await action.press('Tab');
+  await expect(close).toBeFocused();
+  await close.press('Shift+Tab');
+  await expect(action).toBeFocused();
+});
+
 test('toast, alert and progress expose honest status states', async ({ page }) => {
   const toast = page.locator('#toast');
   await toast.evaluate((element) => {

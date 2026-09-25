@@ -1,4 +1,4 @@
-import { WIRE_LIMITS, parseContract, type Diagnostic, type Outcome, type ResultRef, type Task } from '@aeliqo/core';
+import { parseContract, type Diagnostic, type Outcome, type ResultRef, type Task } from '@aeliqo/core';
 import type { AgentBindingOutcome, OperationGrant } from '@aeliqo/core/agent';
 import type { AgentBindingDecision, AgentHostContext } from '../binder-types.js';
 import type { BindingFailureState, InspectionFailure, NormalizedHostContext } from './types.js';
@@ -27,15 +27,7 @@ export function failure<T>(code: string, message: string, path?: readonly (strin
   return { ok: false, diagnostics: [diagnostic(code, message, path)] };
 }
 
-export function validId(value: unknown, limit = WIRE_LIMITS.id): value is string {
-  return (
-    typeof value === 'string' && value.length > 0 && value.length <= limit && !/[\s\u0000-\u001f\u007f]/u.test(value)
-  );
-}
-
-export function validText(value: unknown): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.text;
-}
+export { boundedId as validId, boundedString as validText } from '../guards.js';
 
 export function sameResultRef(left: ResultRef, right: ResultRef): boolean {
   return (

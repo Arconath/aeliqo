@@ -1,16 +1,16 @@
 import React from 'react';
 import { inferLocalDataShape } from '@aeliqo/core/features';
 import type { Intent } from '@aeliqo/core';
-import {
-  createLocalDataSurface,
-  type LocalBrowseState,
-  type LocalDataSurfaceInput,
-  type OwnedLocalDataSurface,
-  type SurfaceController,
-  type SurfacePresentationEvidence,
+import type {
+  LocalBrowseState,
+  LocalDataSurfaceInput,
+  SurfaceController,
+  SurfacePresentationEvidence,
 } from '@aeliqo/runtime/surfaces';
-import type { DataRecord, DataValue } from '@aeliqo/runtime/data';
+import type { DataRecord } from '@aeliqo/runtime/data';
 import { useContainerSize, useSurfaceState } from './hooks.js';
+import { useLocalMount, useLocalUpdates } from './local-hooks.js';
+import { DataCards, DataRows } from './local-fallback.js';
 import { resolveLocalBrowse, type ContainerSize } from './local-presentation.js';
 import { useOptionalAeliqoScope } from './scope.js';
 
@@ -29,86 +29,6 @@ export interface LocalDataSurface<Row extends DataRecord> {
   readonly version?: string | number;
   readonly controller?: SurfaceController<Intent, LocalBrowseState>;
   readonly error?: string;
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'The local data surface could not be initialized.';
-}
-
-interface LocalOwnership<Row extends DataRecord> {
-  readonly owned: OwnedLocalDataSurface<Row> | undefined;
-  readonly error: string | undefined;
-  readonly setError: React.Dispatch<React.SetStateAction<string | undefined>>;
-  readonly initialData: React.RefObject<readonly Row[] | undefined>;
-  readonly initialVersion: React.RefObject<string | number | undefined>;
-}
-
-function useLocalMount<Row extends DataRecord>(
-  options: LocalDataSurfaceOptions<Row> | undefined,
-  scoped: boolean,
-): LocalOwnership<Row> {
-  const [owned, setOwned] = React.useState<OwnedLocalDataSurface<Row>>();
-  const [error, setError] = React.useState<string>();
-  const latest = React.useRef(options);
-  const initialData = React.useRef<readonly Row[] | undefined>(options?.data);
-  const initialVersion = React.useRef(options?.version);
-  const canInitialize =
-    options !== undefined &&
-    (options.data.length > 0 || (options.schema !== undefined && options.identity !== undefined));
-  const shouldStart = owned !== undefined || canInitialize;
-  latest.current = options;
-
-  React.useEffect(() => {
-    const current = latest.current;
-    if (current === undefined || scoped || !canInitialize) return;
-    let instance: OwnedLocalDataSurface<Row>;
-    try {
-      instance = createLocalDataSurface(current);
-    } catch (cause) {
-      setError(errorMessage(cause));
-      return;
-    }
-    initialData.current = current.data;
-    initialVersion.current = current.version;
-    setError(undefined);
-    setOwned(instance);
-    void instance.surface.request({ kind: 'browse' });
-    return () => {
-      instance.dispose();
-      setOwned((previous) => (previous === instance ? undefined : previous));
-    };
-  }, [scoped, options?.schema, options?.identity, shouldStart]);
-
-  return { owned, error, setError, initialData, initialVersion };
-}
-
-function useLocalUpdates<Row extends DataRecord>(
-  options: LocalDataSurfaceOptions<Row> | undefined,
-  scoped: boolean,
-  ownership: LocalOwnership<Row>,
-): void {
-  const { owned, setError, initialData, initialVersion } = ownership;
-  React.useEffect(() => {
-    if (scoped || owned === undefined || options === undefined) return;
-    if (options.data === initialData.current && options.version === initialVersion.current) {
-      setError((previous) => (previous === undefined ? previous : undefined));
-      return;
-    }
-    const result = owned.replaceData(options.data);
-    if (!result.ok) {
-      const diagnostic = result.diagnostics[0];
-      setError(
-        diagnostic.message.startsWith(`${diagnostic.code}:`)
-          ? diagnostic.message
-          : `${diagnostic.code}: ${diagnostic.message}`,
-      );
-      return;
-    }
-    initialData.current = options.data;
-    initialVersion.current = options.version;
-    setError(undefined);
-    void owned.surface.request({ kind: 'browse' });
-  }, [scoped, owned, options?.data, options?.version]);
 }
 
 /** The owned runtime is created only after React commits this hook. */
@@ -132,71 +52,6 @@ export function useLocalDataSurface<Row extends DataRecord>(
     ...(scoped || ownership.owned === undefined ? {} : { controller: ownership.owned.surface }),
     ...(visibleError === undefined ? {} : { error: visibleError }),
   };
-}
-
-function display(value: DataValue): string {
-  if (value === null) return '—';
-  if (typeof value === 'object') return value.decimal;
-  return String(value);
-}
-
-function DataRows({
-  rows,
-  fields,
-}: {
-  readonly rows: readonly DataRecord[];
-  readonly fields: readonly string[];
-}): React.JSX.Element {
-  if (rows.length === 0) return <p role="status">No records to show.</p>;
-  return (
-    <div style={{ overflowX: 'auto' }}>
-      <table>
-        <thead>
-          <tr>
-            {fields.map((field) => (
-              <th scope="col" key={field}>
-                {field}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index}>
-              {fields.map((field) => (
-                <td key={field}>{display(row[field] ?? null)}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function DataCards({
-  rows,
-  fields,
-}: {
-  readonly rows: readonly DataRecord[];
-  readonly fields: readonly string[];
-}): React.JSX.Element {
-  return (
-    <ul aria-label="Records" style={{ display: 'grid', gap: '0.75rem', padding: 0, listStyle: 'none' }}>
-      {rows.map((row, index) => (
-        <li key={index} style={{ border: '1px solid currentColor', borderRadius: '0.5rem', padding: '0.75rem' }}>
-          <dl style={{ margin: 0 }}>
-            {fields.map((field) => (
-              <React.Fragment key={field}>
-                <dt style={{ fontWeight: 600 }}>{field}</dt>
-                <dd style={{ margin: '0 0 0.5rem' }}>{display(row[field] ?? null)}</dd>
-              </React.Fragment>
-            ))}
-          </dl>
-        </li>
-      ))}
-    </ul>
-  );
 }
 
 function committedFields(evidence: SurfacePresentationEvidence | undefined): readonly string[] {

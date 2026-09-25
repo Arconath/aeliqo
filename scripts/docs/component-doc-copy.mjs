@@ -143,24 +143,43 @@ const PROPERTY_COPY = Object.freeze({
   wrap: 'Chooses whether layout children wrap when inline space runs out.',
 });
 
+const PROPERTY_PATTERN_RULES = Object.freeze([
+  [
+    ({ name }) => name.startsWith('default'),
+    (label, { name }) =>
+      `Provides the initial uncontrolled ${words(name.slice(7))}. Later updates come from component interaction.`,
+  ],
+  [
+    ({ name }) => name.endsWith('Label'),
+    (label, { name }) => `Provides the visible text for the ${words(name.slice(0, -5))} control or section.`,
+  ],
+  [
+    ({ name }) => name.endsWith('Revision'),
+    (label, { name }) =>
+      `Identifies the ${words(name.slice(0, -8))} version so stale state can be detected explicitly.`,
+  ],
+  [
+    ({ name }) => name.startsWith('has'),
+    (label, { name }) =>
+      `Declares whether ${words(name.slice(3))} is available. The host updates it with the underlying data state.`,
+  ],
+  [
+    ({ name }) => name.startsWith('selected'),
+    (label) => `Controls the current ${label} using stable application-owned identity.`,
+  ],
+  [({ name }) => name.startsWith('max'), (label) => `Sets the upper bound for ${label}.`],
+  [({ name }) => name.startsWith('min'), (label) => `Sets the lower bound for ${label}.`],
+  [({ type }) => /boolean/u.test(type), (label) => `Enables or disables ${label} as explicit host-controlled state.`],
+  [
+    ({ type }) => /readonly|\[\]/u.test(type),
+    (label) => `Supplies the bounded ordered ${label} collection used by this component.`,
+  ],
+]);
+
 function patternedPropertyCopy(property) {
   const label = words(property.name);
-  if (property.name.startsWith('default'))
-    return `Provides the initial uncontrolled ${words(property.name.slice(7))}. Later updates come from component interaction.`;
-  if (property.name.endsWith('Label'))
-    return `Provides the visible text for the ${words(property.name.slice(0, -5))} control or section.`;
-  if (property.name.endsWith('Revision'))
-    return `Identifies the ${words(property.name.slice(0, -8))} version so stale state can be detected explicitly.`;
-  if (property.name.startsWith('has'))
-    return `Declares whether ${words(property.name.slice(3))} is available. The host updates it with the underlying data state.`;
-  if (property.name.startsWith('selected'))
-    return `Controls the current ${label} using stable application-owned identity.`;
-  if (property.name.startsWith('max')) return `Sets the upper bound for ${label}.`;
-  if (property.name.startsWith('min')) return `Sets the lower bound for ${label}.`;
-  if (/boolean/u.test(property.type)) return `Enables or disables ${label} as explicit host-controlled state.`;
-  if (/readonly|\[\]/u.test(property.type))
-    return `Supplies the bounded ordered ${label} collection used by this component.`;
-  return `Supplies ${label} to the component as application-owned input.`;
+  const rule = PROPERTY_PATTERN_RULES.find(([predicate]) => predicate(property));
+  return rule ? rule[1](label, property) : `Supplies ${label} to the component as application-owned input.`;
 }
 
 export function propertyDescription(property) {
@@ -390,20 +409,29 @@ const EVENT_COPY = Object.freeze({
   ],
 });
 
-function defaultEventCopy(name) {
-  const label = words(name.replace(/^aeliqo-/u, ''));
-  if (name.endsWith('-close') || name.endsWith('-dismiss'))
-    return [
+const EVENT_PATTERN_RULES = Object.freeze([
+  [
+    (name) => name.endsWith('-close') || name.endsWith('-dismiss'),
+    (label) => [
       'The close or dismissal reason.',
       `After the user requests ${label}.`,
       'Update the controlled visible state and restore focus when appropriate.',
-    ];
-  if (name.endsWith('-selection') || name.endsWith('-select'))
-    return [
+    ],
+  ],
+  [
+    (name) => name.endsWith('-selection') || name.endsWith('-select'),
+    (label) => [
       'The proposed stable selection identity.',
       `After ${label}.`,
       'Validate identity and scope, then update controlled selection state.',
-    ];
+    ],
+  ],
+]);
+
+function defaultEventCopy(name) {
+  const label = words(name.replace(/^aeliqo-/u, ''));
+  const rule = EVENT_PATTERN_RULES.find(([predicate]) => predicate(name));
+  if (rule) return rule[1](label);
   return [
     'The typed proposal declared by the component event class.',
     `After the user requests ${label}.`,

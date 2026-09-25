@@ -2,17 +2,23 @@ import { aeliqoTableStyles } from './aeliqo-table-styles.js';
 import { html, LitElement, nothing } from 'lit';
 import { AeliqoTableSelectionEvent } from '../events.js';
 import { AeliqoTablePageEvent, AeliqoTableSortEvent, AeliqoTableWindowEvent } from '../data/events.js';
-import { scopeText } from '../data/shared.js';
+import { dataValueText } from '../data/shared.js';
 import type { ResultRef } from '@aeliqo/core';
 import type { AeliqoDataScope, AeliqoDataStatus, AeliqoSortState } from '../data/types.js';
-import type { AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode, TableCell } from '../types.js';
+import type { AeliqoTableColumn, AeliqoTableRow, AeliqoTableSelectionMode } from '../types.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
 import { stableTableRowKey, tableIdentityLabel } from './table-identity.js';
 import { gridCellTarget } from './table-grid-navigation.js';
 import type { GridNavigationContext } from './table-grid-navigation.js';
 import { createTableWindow, visibleTableRows } from './table-window.js';
 import type { TableWindow } from './table-window.js';
-import { displaysTableStatus, sortDescription, sortIndicator } from './table-rendering.js';
+import {
+  sortDescription,
+  sortIndicator,
+  tablePaginationSection,
+  tableScopeSection,
+  tableStatusSection,
+} from './table-rendering.js';
 
 export { stableTableRowKey } from './table-identity.js';
 export { AELIQO_TABLE_MAX_VIRTUAL_ROWS } from './table-window.js';
@@ -80,6 +86,15 @@ export class AeliqoTableElement extends LitElement {
     const status = this.rows.length === 0 && this.status === 'ready' ? 'empty' : this.status;
     const visible = this.visibleRows();
     const rowCount = this.totalRows ?? this.scope?.filteredTotal ?? this.scope?.populationTotal ?? this.rows.length;
+    const scopeView = {
+      scope: this.scope,
+      totalRows: this.totalRows,
+      rowCount,
+      loadedRows: this.rows.length,
+      renderedCount: visible.length,
+      virtualized: this.virtualized,
+      entity: this.entity,
+    };
     return html`
       <div part="scroll" tabindex=${mode === 'grid' ? nothing : '0'}>
         ${
@@ -88,7 +103,8 @@ export class AeliqoTableElement extends LitElement {
             : this.renderGrid(visible, selectable, rowCount)
         }
       </div>
-      ${this.renderScope(rowCount, visible.length)} ${this.renderStatus(status)} ${this.renderPagination()}
+      ${tableScopeSection(scopeView)} ${tableStatusSection(status, this.message)}
+      ${tablePaginationSection(this.page, this.pageSize, this.totalRows, this.requestPage)}
     `;
   }
 
@@ -138,12 +154,6 @@ export class AeliqoTableElement extends LitElement {
     </tr>`;
   }
 
-  private renderStatus(status: AeliqoDataStatus) {
-    if (!displaysTableStatus(status)) return nothing;
-    const role = status === 'loading' ? 'status' : 'alert';
-    return html`<p part="status" class=${status} role=${role}>${this.message || this.statusMessage(status)}</p>`;
-  }
-
   private renderHeader(column: AeliqoTableColumn) {
     const sortable = column.sortable === true;
     const active = this.sort?.field === column.key;
@@ -169,7 +179,7 @@ export class AeliqoTableElement extends LitElement {
       aria-selected=${selectable ? String(selected) : nothing}
     >
       ${selectable ? this.renderSelectionCell(key, selected) : nothing}
-      ${this.columns.map((column) => html`<td data-label=${column.label} style=${column.align ? `text-align:${column.align}` : nothing}>${this.formatCell(row[column.key])}</td>`)}
+      ${this.columns.map((column) => html`<td data-label=${column.label} style=${column.align ? `text-align:${column.align}` : nothing}>${dataValueText(row[column.key])}</td>`)}
     </tr>`;
   }
 
@@ -212,7 +222,7 @@ export class AeliqoTableElement extends LitElement {
       aria-rowindex=${rowIndex + 2}
     >
       ${selectable ? this.renderGridCell(0, rowIndex, focus, this.renderSelectionCell(key, selected, true)) : nothing}
-      ${this.columns.map((column, index) => this.renderGridCell(selectable ? index + 1 : index, rowIndex, focus, html`${this.formatCell(row[column.key])}`, column.align))}
+      ${this.columns.map((column, index) => this.renderGridCell(selectable ? index + 1 : index, rowIndex, focus, html`${dataValueText(row[column.key])}`, column.align))}
     </div>`;
   }
 
@@ -288,54 +298,6 @@ export class AeliqoTableElement extends LitElement {
 
   private visibleRows(): readonly { readonly row: AeliqoTableRow; readonly index: number }[] {
     return visibleTableRows(this.rows, this.virtualized, this.virtualWindow());
-  }
-
-  private renderScope(rowCount: number | undefined, renderedCount: number) {
-    const loaded = this.scope?.loaded ?? this.rows.length;
-    const total = this.totalRows ?? this.scope?.filteredTotal ?? this.scope?.populationTotal ?? rowCount;
-    const description = scopeText(this.scope);
-    if (this.virtualized && renderedCount !== loaded)
-      return this.renderVirtualizedScope(renderedCount, loaded, total, description);
-    return this.renderScopeSummary(loaded, total, description);
-  }
-
-  private renderScopeSummary(loaded: number, total: number | undefined, description: string | undefined) {
-    if (description !== undefined) return html`<p part="scope">${description}</p>`;
-    if (total !== undefined && total !== loaded) return this.renderTotalScope(loaded, total);
-    return nothing;
-  }
-
-  private renderVirtualizedScope(
-    rendered: number,
-    loaded: number,
-    total: number | undefined,
-    description: string | undefined,
-  ) {
-    let totalText = '';
-    if (description !== undefined) totalText = `; ${description}`;
-    else if (total !== undefined && total !== loaded)
-      totalText = `; ${total.toLocaleString()} matching ${this.entity}s`;
-    return html`<p part="scope">
-      Showing ${rendered.toLocaleString()} rendered of ${loaded.toLocaleString()} loaded ${this.entity}s${totalText}.
-    </p>`;
-  }
-
-  private renderTotalScope(loaded: number, total: number) {
-    return html`<p part="scope">Showing ${loaded.toLocaleString()} of ${total.toLocaleString()} ${this.entity}s.</p>`;
-  }
-
-  private renderPagination() {
-    if (this.pageSize <= 0 || this.totalRows === undefined || this.totalRows <= this.pageSize) return nothing;
-    const pages = Math.max(1, Math.ceil(this.totalRows / this.pageSize));
-    return html`<nav part="pagination" aria-label="Pages">
-      <button type="button" part="previous" ?disabled=${this.page <= 1} @click=${() => this.requestPage(this.page - 1)}>
-        Previous
-      </button>
-      <span part="page-status">Page ${this.page} of ${pages}</span>
-      <button type="button" part="next" ?disabled=${this.page >= pages} @click=${() => this.requestPage(this.page + 1)}>
-        Next
-      </button>
-    </nav>`;
   }
 
   private readonly requestSort = (column: AeliqoTableColumn): void => {
@@ -517,22 +479,6 @@ export class AeliqoTableElement extends LitElement {
     if (!this.virtualized || destination.rowIndex === currentRow) return;
     this.requestGridWindow(destination.rowIndex, destination.column);
     event.preventDefault();
-  }
-
-  private formatCell(value: TableCell | undefined): string {
-    if (value === null || value === undefined) return '—';
-    if (typeof value === 'object' && Object.keys(value).length === 1 && typeof value.decimal === 'string')
-      return value.decimal;
-    return String(value);
-  }
-
-  private statusMessage(status: AeliqoDataStatus): string {
-    if (this.message) return this.message;
-    if (status === 'loading') return 'Loading…';
-    if (status === 'partial') return 'Showing a partial result.';
-    if (status === 'stale') return 'This result may be out of date.';
-    if (status === 'error') return 'The data could not be loaded.';
-    return 'Value unavailable.';
   }
 
   static readonly styles = aeliqoTableStyles;

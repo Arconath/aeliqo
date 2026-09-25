@@ -12,6 +12,7 @@ import {
   type EvalState,
 } from './shared.js';
 import { appendRow, outputBytes, tick } from './execution-budget.js';
+import { scanSchema } from '../planner/shared.js';
 
 interface SourceDefinition {
   readonly entity: CatalogEntity;
@@ -39,24 +40,6 @@ function validateSourceDefinition(
   if (state.scannedRows + source.rows.length > state.context.maxRows!)
     return failure('query.budget', 'Source population exceeds the effective row budget before scanning.');
   return { ok: true, value: { entity: definition, rows: source.rows } };
-}
-
-function schemaFor(definition: CatalogEntity): QuerySchema {
-  const entityId = definition.id;
-  return {
-    fields: definition.fields.map((field) => ({
-      id: fieldKey(entityId, field.id),
-      label: field.label,
-      type:
-        field.type.grain === undefined
-          ? { ...field.type, grain: definition.rowGrain.map((grain) => fieldKey(entityId, grain)) }
-          : field.type,
-      role: field.role,
-      source: { entity: entityId, field: field.id },
-    })),
-    identity: definition.identity.map((field) => fieldKey(entityId, field)),
-    grain: definition.rowGrain.map((field) => fieldKey(entityId, field)),
-  };
 }
 
 function sourceValue(
@@ -160,7 +143,7 @@ export function normalizeSourceRelation(
   if (!prepared.ok) return prepared;
   const { entity: definition, rows: sourceRows } = prepared.value;
   state.scannedRows += sourceRows.length;
-  const schema = schemaFor(definition);
+  const schema = scanSchema(definition);
   const rows: QueryRow[] = [];
   const identities = new Set<string>();
   for (let index = 0; index < sourceRows.length; index += 1) {

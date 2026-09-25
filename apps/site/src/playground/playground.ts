@@ -4,9 +4,9 @@ import { createActionReviewController } from './action-review.js';
 import { createConnectionFlow } from './connection-flow.js';
 import { evidenceFor, selectedView, viewLabel, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
 import { fixtureEvidence } from './fixture-inspector.js';
-import { createFixtureJourneys, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
+import { createFixtureJourneys, FIXTURE_JOURNEYS, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
 import { createJourneyTracker, journeyStagesFor } from './journey.js';
-import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId } from './scenarios.js';
+import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario } from './scenarios.js';
 import { findScenario, labelIntent, renderScenarioControls } from './scenario-controls.js';
 import { createPlaygroundSession, type PlaygroundSession } from './session.js';
 
@@ -62,9 +62,14 @@ const prompt = required<HTMLTextAreaElement>('#pg-prompt');
 const send = required<HTMLButtonElement>('#pg-send');
 const exportButton = required<HTMLButtonElement>('#pg-export');
 const exportNote = required<HTMLElement>('#pg-export-note');
-const region = required<HTMLElement>('#pg-region');
 const attendancePanel = required<HTMLElement>('#pg-attendance-journey');
 const workspacePanel = required<HTMLElement>('#pg-workspace-journey');
+const modeButtons = document.querySelectorAll<HTMLButtonElement>('[data-mode]');
+const inspectorButtons = document.querySelectorAll<HTMLButtonElement>('[data-inspector]');
+const FIXTURE_PANELS: Readonly<Record<FixtureJourney, HTMLElement>> = {
+  attendance: attendancePanel,
+  workspace: workspacePanel,
+};
 
 let mode: Mode = 'without-ai';
 let scenario: PlaygroundScenario = PLAYGROUND_SCENARIOS[0]!;
@@ -130,7 +135,7 @@ const actionReview = createActionReviewController({
 
 function renderInspector(): void {
   if (activeJourney !== 'standard') {
-    const panel = activeJourney === 'attendance' ? attendancePanel : workspacePanel;
+    const panel = FIXTURE_PANELS[activeJourney];
     const evidence = fixtureEvidence(
       activeJourney,
       inspectorSection,
@@ -181,7 +186,7 @@ function renderScenario(): void {
 function showStandardJourney(): void {
   fixtureJourneys.hide();
   activeJourney = 'standard';
-  region.hidden = false;
+  regionHost.hidden = false;
 }
 
 function showFixtureJourney(kind: FixtureJourney): void {
@@ -191,19 +196,17 @@ function showFixtureJourney(kind: FixtureJourney): void {
   setMode('without-ai');
   activeJourney = kind;
   setExportAvailability(true);
-  region.hidden = true;
+  regionHost.hidden = true;
   committedFilter.hidden = true;
   setError();
-  journeyIntent.textContent = kind === 'attendance' ? 'Analyze daily attendance' : 'Engineering attendance overview';
+  const spec = FIXTURE_JOURNEYS[kind];
+  journeyIntent.textContent = spec.intentLabel;
   journeyResult.textContent = 'Evaluating…';
   journeyView.textContent = 'Waiting';
   setJourney('done', 'active', 'pending');
-  resultTitle.textContent = kind === 'attendance' ? 'Daily attendance' : 'Analytical workspace';
+  resultTitle.textContent = spec.title;
   resultDefinition.hidden = false;
-  resultDefinition.textContent =
-    kind === 'attendance'
-      ? 'Approved rate: present eligible employee-days / eligible employee-days. September 2026, Asia/Jakarta.'
-      : 'One registered goal with summary, daily trend, and employee breakdown in a single Region.';
+  resultDefinition.textContent = spec.definition;
   status.textContent = 'Evaluating the registered synthetic journey…';
   void fixtureJourneys.show(kind);
   renderInspector();
@@ -303,8 +306,7 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
 
 function setMode(next: Mode): void {
   mode = next;
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
-    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  for (const button of modeButtons) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
   guidedPanel.hidden = mode !== 'without-ai';
   manualPanel.hidden = mode !== 'without-ai';
   connectedPanel.hidden = mode !== 'connected';
@@ -355,7 +357,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-journey
     }
     if (isFixtureJourney(button.dataset.journey)) showFixtureJourney(button.dataset.journey);
   });
-for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
+for (const button of modeButtons)
   button.addEventListener('click', () => {
     const next = modeFrom(button.dataset.mode);
     if (next !== undefined) setMode(next);
@@ -381,13 +383,12 @@ required<HTMLButtonElement>('#pg-inspect').addEventListener('click', () => {
   inspector.showModal();
 });
 required<HTMLButtonElement>('#pg-inspector-close').addEventListener('click', () => inspector.close());
-for (const button of document.querySelectorAll<HTMLButtonElement>('[data-inspector]'))
+for (const button of inspectorButtons)
   button.addEventListener('click', () => {
     const next = inspectorFrom(button.dataset.inspector);
     if (next === undefined) return;
     inspectorSection = next;
-    for (const candidate of document.querySelectorAll<HTMLButtonElement>('[data-inspector]'))
-      candidate.setAttribute('aria-pressed', String(candidate === button));
+    for (const candidate of inspectorButtons) candidate.setAttribute('aria-pressed', String(candidate === button));
     renderInspector();
   });
 required<HTMLButtonElement>('#pg-connect').addEventListener('click', () => void connectionFlow.connect());
@@ -406,5 +407,3 @@ window.addEventListener('pagehide', () => {
   connectionFlow.close();
   session.dispose();
 });
-
-export type { ScenarioId };

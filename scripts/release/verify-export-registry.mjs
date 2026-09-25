@@ -6,16 +6,13 @@ import { dirname, join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { projectFiles } from '../../apps/site/src/playground/project-template.ts';
 import { zipProject } from '../../apps/site/src/playground/zip.ts';
+import { flagValue } from './cli.mjs';
+import { PUBLIC_PACKAGE_NAMES } from './metadata.mjs';
 
 const execute = promisify(execFile);
-const packages = ['@aeliqo/core', '@aeliqo/runtime', '@aeliqo/web', '@aeliqo/react', '@aeliqo/agent'];
+const args = process.argv.slice(2);
 const scenarios = ['people', 'products', 'support', 'knowledge'];
 const registry = 'https://registry.npmjs.org/';
-
-function argument(name) {
-  const index = process.argv.indexOf(name);
-  return index < 0 ? undefined : process.argv[index + 1];
-}
 
 async function run(command, args, cwd) {
   return execute(command, args, {
@@ -28,7 +25,7 @@ async function run(command, args, cwd) {
 
 async function latestTags(version) {
   const tags = {};
-  for (const name of packages) {
+  for (const name of PUBLIC_PACKAGE_NAMES) {
     const { stdout } = await run('npm', ['view', name, 'dist-tags.latest', '--json'], process.cwd());
     tags[name] = JSON.parse(stdout);
     if (tags[name] !== version) throw new Error(`${name} latest dist-tag is not ${version}.`);
@@ -66,9 +63,9 @@ async function verifyScenario(root, scenario, version) {
 }
 
 async function main() {
-  const version = argument('--version');
-  const sourceRevision = argument('--source');
-  const output = argument('--output');
+  const version = flagValue(args, '--version');
+  const sourceRevision = flagValue(args, '--source');
+  const output = flagValue(args, '--output');
   if (!/^\d+\.\d+\.\d+$/u.test(version ?? '') || !/^[0-9a-f]{40}$/u.test(sourceRevision ?? '') || !output)
     throw new Error('Pass --version <stable semver> --source <SHA> --output <report path>.');
   const root = await mkdtemp(join(tmpdir(), 'aeliqo-export-registry-'));

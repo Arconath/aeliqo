@@ -175,11 +175,18 @@ export class ResultHandleController extends ResultHandleBase {
   }
 
   private async dispatchEvent(event: ResultEvent): Promise<Outcome<ResultEvent>> {
-    if (event.kind === 'descriptor') return this.ingestDescriptor(event);
-    if (event.kind === 'batch') return this.ingestBatch(event);
-    if (event.kind === 'progress') return this.ingestProgress(event);
-    if (event.kind === 'complete') return this.ingestComplete(event);
-    return this.ingestError(event);
+    switch (event.kind) {
+      case 'descriptor':
+        return this.ingestDescriptor(event);
+      case 'batch':
+        return this.ingestBatch(event);
+      case 'progress':
+        return this.ingestProgress(event);
+      case 'complete':
+        return this.ingestComplete(event);
+      case 'error':
+        return this.ingestError(event);
+    }
   }
 
   async ingest(raw: unknown): Promise<Outcome<ResultEvent>> {

@@ -1,23 +1,28 @@
 #!/usr/bin/env node
 /** Install and verify one exact five-package release directly from npm. */
-import { spawnSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { PUBLIC_PACKAGE_NAMES, exportSpecifiers, packageShortName, readJson, sha256 } from './candidate-lib.mjs';
+import { flagValue } from './cli.mjs';
+import {
+  CONSUMER_TOOL_VERSIONS,
+  exportImportStatement,
+  externalPeerNames,
+  recordLockedPeer,
+  sortedPeerEntries,
+  writeConsumerTsconfig,
+} from './consumer-scaffold.mjs';
 import { NPM_REGISTRY, assertCandidateIdentity, verifyNpmProvenance } from './publication-lib.mjs';
 import { isReleaseVersion, RELEASE_VERSION, releaseCandidateNumber } from './metadata.mjs';
+import { run } from './run.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
-const value = (flag) => {
-  const index = args.indexOf(flag);
-  return index === -1 ? undefined : args[index + 1];
-};
-const version = value('--version');
-const output = resolve(root, value('--output') ?? 'artifacts/registry-consumer.json');
-const expectedCandidatePath = value('--expected-candidate');
-const expectedSourceRevision = value('--require-provenance-source');
+const version = flagValue(args, '--version');
+const output = resolve(root, flagValue(args, '--output') ?? 'artifacts/registry-consumer.json');
+const expectedCandidatePath = flagValue(args, '--expected-candidate');
+const expectedSourceRevision = flagValue(args, '--require-provenance-source');
 if (!isReleaseVersion(version))
   throw new Error(`A unique ${RELEASE_VERSION} or ${RELEASE_VERSION}-rc.N --version is required`);
 if ((expectedCandidatePath === undefined) !== (expectedSourceRevision === undefined))
@@ -25,14 +30,6 @@ if ((expectedCandidatePath === undefined) !== (expectedSourceRevision === undefi
 if (expectedSourceRevision !== undefined && !/^[0-9a-f]{40}$/.test(expectedSourceRevision))
   throw new Error('Expected provenance source must be a full Git commit SHA');
 
-function command(commandName, commandArgs, cwd) {
-  const result = spawnSync(commandName, commandArgs, { cwd, encoding: 'utf8', timeout: 300_000 });
-  if (result.error || result.status !== 0)
-    throw new Error(
-      `${commandName} ${commandArgs.join(' ')} failed\n${result.error?.message ?? ''}\n${result.stdout ?? ''}\n${result.stderr ?? ''}`,
-    );
-  return result.stdout;
-}
 async function packedPaths(directory, relative = '') {
   const paths = [];
   for (const entry of await readdir(join(directory, relative), { withFileTypes: true })) {
@@ -43,20 +40,13 @@ async function packedPaths(directory, relative = '') {
   return paths;
 }
 
-function recordPeerVersion(peers, name, version) {
-  const previous = peers.get(name);
-  if (previous && previous !== version) throw new Error(`Conflicting locked peer versions for ${name}`);
-  peers.set(name, version);
-}
-
 async function collectPackagePeers(packageName, peers) {
   const manifest = await readJson(join(root, 'packages', packageShortName(packageName), 'package.json'));
-  for (const peer of Object.keys(manifest.peerDependencies ?? {})) {
-    if (PUBLIC_PACKAGE_NAMES.includes(peer)) continue;
+  for (const peer of externalPeerNames(manifest)) {
     const installed = await readJson(
       join(root, 'packages', packageShortName(packageName), 'node_modules', peer, 'package.json'),
     );
-    recordPeerVersion(peers, peer, installed.version);
+    recordLockedPeer(peers, peer, installed.version, () => `Conflicting locked peer versions for ${peer}`);
   }
 }
 
@@ -78,23 +68,15 @@ const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-registry-consumer-'));
 try {
   const peers = await collectExternalPeerVersions();
   const dependencies = Object.fromEntries(PUBLIC_PACKAGE_NAMES.map((name) => [name, version]));
-  for (const [name, requested] of [...peers].sort(([left], [right]) => left.localeCompare(right)))
-    dependencies[name] = requested;
-  const devDependencies = {
-    typescript: '7.0.2',
-    '@types/node': '24.13.3',
-    '@types/react': '19.2.18',
-    '@types/react-dom': '19.2.7',
-  };
+  for (const [name, requested] of sortedPeerEntries(peers)) dependencies[name] = requested;
   await writeFile(
     join(consumer, 'package.json'),
-    JSON.stringify({ private: true, type: 'module', dependencies, devDependencies }, null, 2) + '\n',
+    JSON.stringify({ private: true, type: 'module', dependencies, devDependencies: CONSUMER_TOOL_VERSIONS }, null, 2) +
+      '\n',
   );
-  command(
-    'npm',
-    ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact', '--registry', NPM_REGISTRY],
-    consumer,
-  );
+  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--save-exact', '--registry', NPM_REGISTRY], {
+    cwd: consumer,
+  });
 
   const installedManifests = [];
   const imports = [];
@@ -105,37 +87,12 @@ try {
     installedManifests.push(manifest);
     const paths = await packedPaths(join(consumer, 'node_modules', name));
     for (const specifier of exportSpecifiers(manifest, paths)) {
-      const index = imports.length;
-      imports.push(
-        specifier.endsWith('.json')
-          ? `import Export${index} from ${JSON.stringify(specifier)} with { type: "json" }; export type ExportCheck${index} = typeof Export${index};`
-          : `import * as Export${index} from ${JSON.stringify(specifier)}; export type ExportCheck${index} = typeof Export${index};`,
-      );
+      imports.push(exportImportStatement(specifier, imports.length));
     }
   }
   await writeFile(join(consumer, 'exports.ts'), imports.join('\n') + '\n');
-  await writeFile(
-    join(consumer, 'tsconfig.json'),
-    JSON.stringify(
-      {
-        compilerOptions: {
-          target: 'ES2022',
-          module: 'NodeNext',
-          moduleResolution: 'NodeNext',
-          strict: true,
-          noEmit: true,
-          skipLibCheck: false,
-          resolveJsonModule: true,
-          lib: ['ES2022', 'DOM', 'DOM.Iterable'],
-          types: ['node', 'react', 'react-dom'],
-        },
-        include: ['exports.ts'],
-      },
-      null,
-      2,
-    ) + '\n',
-  );
-  command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], consumer);
+  await writeConsumerTsconfig(consumer);
+  run(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], { cwd: consumer });
   await writeFile(
     join(consumer, 'consumer.mjs'),
     [
@@ -146,7 +103,7 @@ try {
       "import '@aeliqo/react/ssr';",
     ].join('\n') + '\n',
   );
-  command('node', ['--disallow-code-generation-from-strings', 'consumer.mjs'], consumer);
+  run('node', ['--disallow-code-generation-from-strings', 'consumer.mjs'], { cwd: consumer });
 
   const lockBytes = await readFile(join(consumer, 'package-lock.json'));
   const lock = JSON.parse(lockBytes);
@@ -169,7 +126,9 @@ try {
     }
     assertRegistryMatchesCandidate(candidate.packages, packages);
     const audit = JSON.parse(
-      command('npm', ['audit', 'signatures', '--json', '--include-attestations', '--registry', NPM_REGISTRY], consumer),
+      run('npm', ['audit', 'signatures', '--json', '--include-attestations', '--registry', NPM_REGISTRY], {
+        cwd: consumer,
+      }),
     );
     provenance = packages.map((item) =>
       verifyNpmProvenance(audit, { ...item, sourceRevision: expectedSourceRevision }),

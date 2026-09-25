@@ -1,6 +1,5 @@
 import {
   parseWireValue,
-  type Diagnostic,
   type Intent,
   type Outcome,
   type ReadonlyJsonValue,
@@ -17,6 +16,7 @@ import {
 import { createLocalDataService, type DataRecord, type DataValue, type LocalDataService } from '@aeliqo/runtime/data';
 import type { AeliqoFormState } from '@aeliqo/web/app';
 import { PLAYGROUND_RECORDS, PLAYGROUND_RESOURCES } from './scenarios.js';
+import { failure, isRecord } from './guards.js';
 
 type Records = Record<string, DataRecord[]>;
 type Services = Map<string, LocalDataService>;
@@ -27,15 +27,6 @@ interface PlaygroundDataState {
   readonly services: Services;
   currentRevision(): number;
   nextSourceRevision(): number;
-}
-
-function failure<T>(code: string, message: string): Outcome<T> {
-  const diagnostic: Diagnostic = { code, message, retryable: false };
-  return { ok: false, diagnostics: [diagnostic] };
-}
-
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isJsonValue(value: unknown): value is ReadonlyJsonValue {

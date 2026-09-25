@@ -1,6 +1,7 @@
 import type { InteractionState, Outcome, Scalar, VersionRef } from '@aeliqo/core';
 import type { InteractionPort } from '@aeliqo/core/interaction';
 import type { ValidatedPresentation } from '@aeliqo/core/presentation';
+import { canonicalJson as canonical } from '../canonical.js';
 import type { RegionContent, RegionOutcome } from '../regions/types.js';
 
 const failure = <T>(code: string, message: string): RegionOutcome<T> => ({
@@ -9,16 +10,6 @@ const failure = <T>(code: string, message: string): RegionOutcome<T> => ({
 });
 
 const endpointKey = (nodeId: string, portId: string): string => JSON.stringify([nodeId, portId]);
-
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
-}
 
 function samePortShape(left: InteractionPort, right: InteractionPort): boolean {
   const shape = (port: InteractionPort): unknown => ({

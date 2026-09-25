@@ -4,15 +4,12 @@ import { renderAeliqoDataPresentationNode } from './data-presentation.js';
 import { AELIQO_DATA_REFS } from './data-registry.js';
 import type { AeliqoRegionDataRequestHandler } from './types.js';
 import {
-  decimalText,
   filterPort,
   filterPredicates,
   configColumns as tableConfigColumns,
   fieldLabel as getFieldLabel,
   filterValue as getFilterValue,
   inputChangeDetail,
-  numericValue,
-  record,
   refKey,
   resultColumns,
   resultFor,
@@ -21,27 +18,23 @@ import {
   tableSelectionDetail,
   tableDisplayState,
   tableSelectionMode,
-  temporalLabel,
-  temporalTime,
   text,
-  trendSummary,
   valuesOf,
 } from './element-helpers.js';
 import { renderNavigationFeedbackNode } from './navigation-feedback-renderer.js';
 import { renderInputNode } from './input-renderer.js';
 import { renderFoundationNode } from './foundation-renderer.js';
-import type { InteractionPayload, InteractionState, Result } from '@aeliqo/core';
+import { renderTrendNode } from './trend-renderer.js';
+import type { InteractionPayload, InteractionState } from '@aeliqo/core';
 import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import type { PropertyValues } from 'lit';
 import { AELIQO_WEB_VERSION } from '../version.js';
 import { aeliqoThemeStyles } from '../styles/theme.js';
-import { dataStatusMessage, materializedDataStatus, scopeText } from '../data/shared.js';
 import '../elements/aeliqo-table.js';
 import '../elements/aeliqo-chart.js';
 import { stableTableRowKey } from '../elements/aeliqo-table.js';
-import type { AeliqoChartSeries, AeliqoTableRow } from '../types.js';
 import type { AeliqoTableSelectionDetail } from '../types.js';
 import type {
   AeliqoRegionResult,
@@ -49,21 +42,6 @@ import type {
   AeliqoSemanticInteractionRequest,
   AeliqoViewDefinition,
 } from './types.js';
-
-function localizedTrendSummary(
-  bound: AeliqoRegionResult | undefined,
-  result: Result | undefined,
-  locale: string | undefined,
-): string {
-  if (!/^id(?:-|$)/i.test(locale ?? '')) return trendSummary(bound, result);
-  if (bound === undefined) return 'Data tidak tersedia.';
-  if (result === undefined) return '';
-  return dataStatusMessage(materializedDataStatus(result), undefined, locale) ?? '';
-}
-
-function trendTitle(value: unknown, locale: string | undefined): string {
-  return text(value, /^id(?:-|$)/i.test(locale ?? '') ? 'Tren' : 'Trend');
-}
 
 /**
  * One controlled renderer for a validated presentation. It consumes only
@@ -187,7 +165,12 @@ export class AeliqoRegionElement extends LitElement {
       case 'data.table':
         return this.renderTable(resolved, values);
       case 'data.trend':
-        return this.renderTrend(resolved, values);
+        return renderTrendNode(
+          resolved,
+          values,
+          resultFor(resolved, this.results),
+          this.presentation?.environment.locale,
+        );
       case 'control.filter':
         return this.renderFilter(resolved, values);
       default:
@@ -328,84 +311,6 @@ export class AeliqoRegionElement extends LitElement {
       .message=${display.message}
       @aeliqo-table-selection=${(event: Event) => this.handleTableSelection(event, resolved)}
     ></aeliqo-table>`;
-  }
-
-  private renderTrend(
-    resolved: ValidatedPresentation['nodes'][number],
-    values: Record<string, unknown>,
-  ): TemplateResult {
-    const bound = resultFor(resolved, this.results);
-    const locale = this.presentation?.environment.locale;
-    const labelField = text(values.labelField);
-    const seriesBy = Array.isArray(values.seriesBy)
-      ? values.seriesBy.flatMap((value) => (typeof value === 'string' ? [value] : []))
-      : [];
-    const rawSeries = Array.isArray(values.series) ? values.series : [];
-    const rows = bound?.rows ?? [];
-    const series: AeliqoChartSeries[] = rawSeries.flatMap((item) => {
-      const candidate = record(item);
-      if (candidate === undefined) return [];
-      const field = text(candidate.field);
-      if (field.length === 0) return [];
-      const label = text(candidate.label, field);
-      const unit = text(candidate.unit);
-      const groups = new Map<
-        string,
-        {
-          readonly values: readonly unknown[];
-          readonly rows: { readonly row: AeliqoTableRow; readonly index: number; readonly time: number }[];
-        }
-      >();
-      rows.forEach((row, index) => {
-        const values = seriesBy.map((groupField) => row[groupField]);
-        const key = JSON.stringify(values);
-        const group = groups.get(key);
-        const time = temporalTime(row[labelField]);
-        if (group === undefined) groups.set(key, { values, rows: [{ row, index, time: time ?? Number.NaN }] });
-        else group.rows.push({ row, index, time: time ?? Number.NaN });
-      });
-      return [...groups.entries()].map(([groupKey, group]) => {
-        const ordered = [...group.rows].sort((left, right) =>
-          Number.isNaN(left.time) || Number.isNaN(right.time)
-            ? left.index - right.index
-            : left.time - right.time || left.index - right.index,
-        );
-        const suffix =
-          group.values.length === 0
-            ? ''
-            : ` · ${group.values.map((value) => (value === null || value === undefined ? '—' : String(value))).join(' · ')}`;
-        const points = ordered.map(({ row, time }) => {
-          const sourceValue = row[field];
-          const value = Number.isNaN(time) ? Number.NaN : numericValue(sourceValue);
-          const displayValue = decimalText(sourceValue);
-          const sourceTime = row[labelField];
-          return {
-            label: temporalLabel(row[labelField]),
-            // Keep the source instant text so the chart can retain canonical
-            // sub-millisecond identity; Date.parse is only used for ordering.
-            ...(Number.isNaN(time) ? {} : { x: typeof sourceTime === 'string' ? sourceTime : time }),
-            value,
-            ...(displayValue === undefined ? {} : { displayValue }),
-          };
-        });
-        return {
-          id: `${field}:${groupKey}`,
-          label: `${label}${suffix}`,
-          ...(unit.length === 0 ? {} : { unit }),
-          points,
-        };
-      });
-    });
-    return html`<aeliqo-chart
-      data-aeliqo-node-id=${resolved.node.id}
-      data-aeliqo-theme="inherit"
-      lang=${locale ?? ''}
-      .title=${trendTitle(values.title, locale)}
-      .summary=${localizedTrendSummary(bound, resolved.result, locale)}
-      .scope=${scopeText(bound?.scope, locale) ?? ''}
-      .series=${series}
-      .points=${series[0]?.points ?? []}
-    ></aeliqo-chart>`;
   }
 
   private renderFilter(

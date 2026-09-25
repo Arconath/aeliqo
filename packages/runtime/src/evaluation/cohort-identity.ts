@@ -1,25 +1,16 @@
 import { scalarIdentity, WIRE_LIMITS } from '@aeliqo/core';
 import type { Catalog, Outcome, QuerySpec, Result, ResultRef, SemanticType } from '@aeliqo/core';
+import { canonicalJson } from '../canonical.js';
 import type { DataValue } from '../data/types.js';
 import type { CohortMembership } from './types.js';
+
+export { canonicalJson as canonical };
 
 function failure<T = never>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
   return {
     ok: false,
     diagnostics: [{ code, message, retryable: false, ...(path === undefined ? {} : { path: [...path] }) }],
   };
-}
-
-export function canonical(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
-  if (typeof value !== 'object') return JSON.stringify(value) ?? 'undefined';
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
 }
 
 export function safeId(value: unknown): value is string {
@@ -46,12 +37,12 @@ function sameType(left: SemanticType, right: SemanticType): boolean {
   if (
     left.value !== right.value ||
     left.nullable !== right.nullable ||
-    canonical(left.unit) !== canonical(right.unit) ||
-    canonical(left.temporal) !== canonical(right.temporal)
+    canonicalJson(left.unit) !== canonicalJson(right.unit) ||
+    canonicalJson(left.temporal) !== canonicalJson(right.temporal)
   )
     return false;
   if (left.grain === undefined || right.grain === undefined) return true;
-  return canonical(normalizeGrain(left.grain)) === canonical(normalizeGrain(right.grain));
+  return canonicalJson(normalizeGrain(left.grain)) === canonicalJson(normalizeGrain(right.grain));
 }
 
 function normalizeGrain(grain: readonly string[]): readonly string[] {
@@ -137,7 +128,7 @@ export function tupleKey(tuple: readonly DataValue[], types: readonly SemanticTy
       return failure('runtime.evaluation-grain', 'Cohort identity value does not match its declared scalar type.');
     identities.push(identity.value);
   }
-  return { ok: true, value: canonical(identities) };
+  return { ok: true, value: canonicalJson(identities) };
 }
 
 function fieldSuffix(value: string): string {

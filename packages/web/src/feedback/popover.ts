@@ -1,15 +1,7 @@
 import { css, html } from 'lit';
 import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from '../foundation/base.js';
-import {
-  activeElement,
-  focusFirst,
-  focusableElements,
-  listenOutside,
-  nextFrame,
-  restoreFocus,
-  emitAction,
-  safeElementId,
-} from '../navigation/shared.js';
+import { listenOutside, nextFrame, emitAction, safeElementId } from '../navigation/shared.js';
+import { OverlayFocus } from './focus-trap.js';
 import { aeliqoFeedbackStyles } from './shared.js';
 
 export class AeliqoPopoverElement extends AeliqoFoundationElement {
@@ -75,20 +67,17 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
   open = false;
   modal = false;
   closeOnOutside = true;
-  private returnFocus: HTMLElement | undefined = undefined;
-  private pendingFocus: HTMLElement | undefined = undefined;
-  private focusEpoch = 0;
+  private readonly overlayFocus = new OverlayFocus(this);
   private stopOutside: (() => void) | undefined = undefined;
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (!changed.has('modal') || !this.open) return;
-    const active = focusableElements(this).find((candidate) => candidate.matches(':focus'));
-    if (active !== undefined) this.pendingFocus = active;
+    this.overlayFocus.capturePending();
   }
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has('open') && !changed.has('closeOnOutside') && !changed.has('modal')) return;
-    const epoch = ++this.focusEpoch;
+    const epoch = this.overlayFocus.nextEpoch();
     this.stopOutside?.();
     this.stopOutside = undefined;
     if (!this.open) {
@@ -99,17 +88,17 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
   }
 
   private openPopover(epoch: number): void {
-    this.returnFocus ??= activeElement(this);
+    this.overlayFocus.rememberOpener();
     if (this.closeOnOutside) this.stopOutside = listenOutside(this, () => this.close());
     const surface = this.renderRoot.querySelector<HTMLElement>("[part='popover']");
     this.showModalPopover(surface);
-    const pending = this.pendingFocus;
-    this.pendingFocus = undefined;
+    const pending = this.overlayFocus.takePending();
     // Preserve a focused slotted control during a mode switch synchronously.
     // The queued fallback only fills an empty focus surface and cannot steal a
     // focus that the consumer moved after opening.
-    if (this.modal || pending?.isConnected) this.focusIfNeeded(surface, epoch, pending, true);
-    if (this.modal && surface !== null) nextFrame(() => this.focusIfNeeded(surface, epoch, pending, false));
+    if (this.modal || pending?.isConnected) this.overlayFocus.focusIfNeeded(surface, epoch, this.open, pending, true);
+    if (this.modal && surface !== null)
+      nextFrame(() => this.overlayFocus.focusIfNeeded(surface, epoch, this.open, pending, false));
   }
 
   private showModalPopover(surface: HTMLElement | null): void {
@@ -119,31 +108,14 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
     else surface.setAttribute('open', '');
   }
 
-  private focusIfNeeded(
-    surface: HTMLElement | null,
-    epoch: number,
-    pending: HTMLElement | undefined,
-    restorePending: boolean,
-  ): void {
-    if (epoch !== this.focusEpoch || !this.open || surface === null || !surface.isConnected) return;
-    const focusables = focusableElements(surface);
-    const current = focusables.find((candidate) => candidate.matches(':focus'));
-    if (restorePending && pending?.isConnected && focusables.includes(pending)) {
-      pending.focus();
-      return;
-    }
-    if (current === undefined) focusFirst(surface);
-  }
-
   private closePopover(): void {
-    this.pendingFocus = undefined;
+    this.overlayFocus.takePending();
     const surface = this.renderRoot.querySelector<HTMLDialogElement>("dialog[part='popover']");
     if (surface?.open) {
       if (typeof surface.close === 'function') surface.close();
       else surface.removeAttribute('open');
     }
-    restoreFocus(this.returnFocus);
-    this.returnFocus = undefined;
+    this.overlayFocus.restoreOpener();
   }
 
   disconnectedCallback(): void {
@@ -162,25 +134,7 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
     if (!this.modal || event.key !== 'Tab') return;
     const surface = this.renderRoot.querySelector<HTMLElement>("[part='popover']");
     if (surface === null) return;
-    this.trapTabFocus(event, surface);
-  }
-
-  private trapTabFocus(event: KeyboardEvent, surface: HTMLElement): void {
-    const focusables = focusableElements(surface);
-    const first = focusables[0];
-    const last = focusables.at(-1);
-    if (first === undefined || last === undefined) return;
-    const target = event.target;
-    const active = target instanceof HTMLElement && focusables.includes(target) ? target : activeElement(this);
-    if (event.shiftKey && active === first) {
-      event.preventDefault();
-      last.focus();
-      return;
-    }
-    if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    this.overlayFocus.trapTab(event, surface);
   }
 
   private cancel(event: Event): void {
@@ -202,7 +156,7 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
           if (this.open && event.key === 'Escape') this.keydown(event);
         }}
         @click=${() => {
-          this.returnFocus ??= activeElement(this);
+          this.overlayFocus.rememberOpener();
           this.open = !this.open;
         }}
       >

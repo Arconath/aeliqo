@@ -1,4 +1,3 @@
-import { spawnSync } from 'node:child_process';
 import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -12,64 +11,40 @@ import {
   removeDirectoryOnFailure,
   sha256,
 } from './candidate-lib.mjs';
+import {
+  CONSUMER_TOOL_SPECS,
+  exportImportStatement,
+  externalPeerNames,
+  recordLockedPeer,
+  sortedPeerEntries,
+  writeConsumerTsconfig,
+} from './consumer-scaffold.mjs';
+import { run } from './run.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
-
-function command(commandName, args, { cwd = root } = {}) {
-  const result = spawnSync(commandName, args, { cwd, encoding: 'utf8', timeout: 300_000 });
-  if (result.error || result.status !== 0)
-    throw new Error(
-      `${commandName} ${args.join(' ')} failed\n${result.error?.message ?? ''}\n${result.stdout ?? ''}\n${result.stderr ?? ''}`,
-    );
-  return result.stdout.trim();
-}
+const command = run;
 
 async function peerInstallSpecs(packages) {
   const peers = new Map();
   for (const item of packages) {
-    for (const name of Object.keys(item.manifest.peerDependencies ?? {})) {
-      if (PUBLIC_PACKAGE_NAMES.includes(name)) continue;
+    for (const name of externalPeerNames(item.manifest)) {
       const installed = await readJson(join(item.directory, 'node_modules', name, 'package.json'));
-      const previous = peers.get(name);
-      if (previous && previous !== installed.version)
-        throw new Error(`Conflicting locked peer versions for ${name}: ${previous} and ${installed.version}`);
-      peers.set(name, installed.version);
+      recordLockedPeer(
+        peers,
+        name,
+        installed.version,
+        (previous, current) => `Conflicting locked peer versions for ${name}: ${previous} and ${current}`,
+      );
     }
   }
-  return [...peers]
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([name, requested]) => `${name}@${requested}`);
+  return sortedPeerEntries(peers).map(([name, requested]) => `${name}@${requested}`);
 }
 
 async function typeCheckInstalledExports(consumer, packages) {
   const specifiers = packages.flatMap((item) => exportSpecifiers(item.manifest, item.paths));
-  const imports = specifiers.map((specifier, index) =>
-    specifier.endsWith('.json')
-      ? `import Export${index} from ${JSON.stringify(specifier)} with { type: "json" }; export type ExportCheck${index} = typeof Export${index};`
-      : `import * as Export${index} from ${JSON.stringify(specifier)}; export type ExportCheck${index} = typeof Export${index};`,
-  );
+  const imports = specifiers.map(exportImportStatement);
   await writeFile(join(consumer, 'exports.ts'), imports.join('\n') + '\n');
-  await writeFile(
-    join(consumer, 'tsconfig.json'),
-    JSON.stringify(
-      {
-        compilerOptions: {
-          target: 'ES2022',
-          module: 'NodeNext',
-          moduleResolution: 'NodeNext',
-          strict: true,
-          noEmit: true,
-          skipLibCheck: false,
-          resolveJsonModule: true,
-          lib: ['ES2022', 'DOM', 'DOM.Iterable'],
-          types: ['node', 'react', 'react-dom'],
-        },
-        include: ['exports.ts'],
-      },
-      null,
-      2,
-    ) + '\n',
-  );
+  await writeConsumerTsconfig(consumer);
   command(join(consumer, 'node_modules/.bin/tsc'), ['--project', 'tsconfig.json'], { cwd: consumer });
   return imports.length;
 }
@@ -178,7 +153,6 @@ async function installExternalPackages(consumer, packages, workspaceLockText, ve
     join(consumer, 'package.json'),
     JSON.stringify({ private: true, type: 'module', overrides }, null, 2) + '\n',
   );
-  const tools = ['typescript@7.0.2', '@types/node@24.13.3', '@types/react@19.2.18', '@types/react-dom@19.2.7'];
   command(
     'npm',
     [
@@ -189,7 +163,7 @@ async function installExternalPackages(consumer, packages, workspaceLockText, ve
       '--save-exact',
       ...packages.map((item) => item.path),
       ...(await peerInstallSpecs(packages)),
-      ...tools,
+      ...CONSUMER_TOOL_SPECS,
     ],
     { cwd: consumer },
   );

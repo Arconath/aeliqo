@@ -135,30 +135,7 @@ export function frozen<T>(value: T): T {
   return Object.freeze(value);
 }
 
-export function canonical(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
-  if (typeof value !== 'object') {
-    const encoded = JSON.stringify(value);
-    return encoded === undefined ? 'undefined' : encoded;
-  }
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const record = value as Record<string, unknown>;
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`)
-    .join(',')}}`;
-}
-
-/** Bounded non-cryptographic digest for metadata and history identity. */
-export function digest(value: unknown): string {
-  let hash = 2166136261;
-  for (const character of canonical(value)) {
-    hash ^= character.codePointAt(0)!;
-    hash = Math.imul(hash, 16777619);
-  }
-  return `h${(hash >>> 0).toString(16).padStart(8, '0')}`;
-}
+export { canonicalJson as canonical, canonicalDigest as digest } from '../canonical.js';
 
 export function validId(value: unknown): value is string {
   return (

@@ -77,11 +77,18 @@ function invalidOffset(hours: string | undefined, minutes: string | undefined): 
   return hours !== undefined && (Number(hours) > 23 || Number(minutes) > 59);
 }
 
+type FieldValueKind = CatalogEntity['fields'][number]['type']['value'];
+
+const STRING_FIELD_CHECKS: Readonly<Partial<Record<FieldValueKind, (value: string) => boolean>>> = {
+  date: validDate,
+  instant: (value) => instantParts(value) !== undefined,
+  text: () => true,
+};
+
 function validSourceString(value: string, field: CatalogEntity['fields'][number]): boolean {
   if (value.length > WIRE_LIMITS.text) return false;
-  if (field.type.value === 'date') return validDate(value);
-  if (field.type.value === 'instant') return instantParts(value) !== undefined;
-  return field.type.value === 'text';
+  const check = STRING_FIELD_CHECKS[field.type.value];
+  return check !== undefined && check(value);
 }
 
 function validDecimalRecord(value: object): boolean {

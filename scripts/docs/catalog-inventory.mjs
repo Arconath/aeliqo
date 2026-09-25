@@ -1,6 +1,7 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { COMPONENT_DIRECTIVES, COMPONENT_HEADINGS, parseComponentDocument } from './component-documents.mjs';
+import { filesAt } from './docs-lib.mjs';
 
 const componentClass = (component) => `Aeliqo${component.name}Element`;
 
@@ -212,16 +213,6 @@ export function formatCatalogInventoryReport(audit) {
     );
   }
   return `${lines.join('\n')}\n`;
-}
-
-async function filesAt(directory, predicate = () => true) {
-  const files = [];
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) files.push(...(await filesAt(path, predicate)));
-    else if (predicate(path)) files.push(path);
-  }
-  return files.sort();
 }
 
 export async function readCatalogInventoryInputs(rootDirectory) {
