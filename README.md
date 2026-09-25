@@ -50,7 +50,8 @@ The common application entry points are:
 ```ts
 import { defineResource } from '@aeliqo/core';
 import { createAeliqoRuntime } from '@aeliqo/runtime';
-import { createAeliqoApp, registerAeliqoElements } from '@aeliqo/web';
+import { registerAeliqoElements } from '@aeliqo/web';
+import { createAeliqoApp } from '@aeliqo/web/app';
 import { AeliqoProvider, AeliqoRegion } from '@aeliqo/react';
 import { createAppToolEndpoint } from '@aeliqo/agent';
 ```

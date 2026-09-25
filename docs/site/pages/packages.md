@@ -36,7 +36,19 @@ code never imports the site.
   renderer.
 
 Install all five packages on the same exact release when an application uses
-them together.
+them together:
+
+```sh
+npm install --save-exact \
+  @aeliqo/core@0.5.2 \
+  @aeliqo/runtime@0.5.2 \
+  @aeliqo/web@0.5.2 \
+  @aeliqo/react@0.5.2 \
+  @aeliqo/agent@0.5.2
+```
+
+Component-only consumers can install just `@aeliqo/web`; skip `@aeliqo/agent`
+when no agent connects.
 
 <aeliqo-release-status></aeliqo-release-status>
 

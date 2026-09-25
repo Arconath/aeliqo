@@ -3,7 +3,14 @@ import type { AeliqoSemanticInteractionRequest } from '../region/types.js';
 import { registerAeliqoElements } from '../register.js';
 import { AeliqoRegionElement } from '../region/aeliqo-region.js';
 import { bridgeRuntimeState } from './lifecycle.js';
-import { category, diagnostic, interactionLocked, type WebAppContext, type WebRegion } from './context.js';
+import {
+  ADAPTIVE_MEDIA_QUERIES,
+  category,
+  diagnostic,
+  interactionLocked,
+  type WebAppContext,
+  type WebRegion,
+} from './context.js';
 import type { WebMountInput } from './types.js';
 
 type MountResult = ReturnType<AeliqoApp['mount']>;
@@ -59,6 +66,15 @@ function createRegion(input: WebMountInput, element: AeliqoRegionElement): WebRe
   };
 }
 
+function scheduleAdapt(region: WebRegion, view: Window, adapt: AdaptRegion): void {
+  if (region.adaptFrame !== undefined) return;
+  region.adaptFrame = view.requestAnimationFrame(() => {
+    delete region.adaptFrame;
+    if (region.resize === undefined && region.media === undefined) return;
+    void adapt(region);
+  });
+}
+
 function observeSize(region: WebRegion, view: Window, adapt: AdaptRegion): void {
   const Observer = (view as WindowWithResizeObserver).ResizeObserver;
   if (Observer === undefined) return;
@@ -67,15 +83,26 @@ function observeSize(region: WebRegion, view: Window, adapt: AdaptRegion): void 
     const next = category(width, region.category);
     if (next === region.category) return;
     region.category = next;
-    if (region.resizeFrame !== undefined) return;
-    region.resizeFrame = view.requestAnimationFrame(() => {
-      delete region.resizeFrame;
-      if (region.resize === undefined) return;
-      void adapt(region);
-    });
+    scheduleAdapt(region, view, adapt);
   });
   region.resize = resize;
   resize.observe(region.target);
+}
+
+function observeMedia(region: WebRegion, view: Window, adapt: AdaptRegion): void {
+  if (typeof view.matchMedia !== 'function') return;
+  const onChange = (): void => {
+    scheduleAdapt(region, view, adapt);
+  };
+  const lists: MediaQueryList[] = [];
+  for (const query of ADAPTIVE_MEDIA_QUERIES) {
+    const list = view.matchMedia(query);
+    if (typeof list.addEventListener !== 'function') continue;
+    list.addEventListener('change', onChange);
+    lists.push(list);
+  }
+  if (lists.length === 0) return;
+  region.media = { lists: Object.freeze(lists), onChange };
 }
 
 function releasePendingAdapt(region: WebRegion, adapt: AdaptRegion): void {
@@ -112,6 +139,7 @@ function installRegionListeners(
     void interaction(region, request);
   };
   observeSize(region, view, adapt);
+  observeMedia(region, view, adapt);
   installCompositionListeners(region, adapt);
   installFocusListener(region, adapt);
 }

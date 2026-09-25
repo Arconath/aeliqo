@@ -70,6 +70,6 @@ Stack filters, records, and detail in reading order on narrow hosts. Preserve th
 
 ## Version
 
-This page documents the 0.5.0 component contract. Keep every installed
+This page documents the Aeliqo 0.5 component contract. Keep every installed
 Aeliqo package on the same exact version and check the release status
 before installing from the registry.

@@ -71,8 +71,9 @@ const FIXTURE_PANELS: Readonly<Record<FixtureJourney, HTMLElement>> = {
   workspace: workspacePanel,
 };
 
+const requestedScenario = new URLSearchParams(window.location.search).get('scenario') ?? '';
 let mode: Mode = 'without-ai';
-let scenario: PlaygroundScenario = PLAYGROUND_SCENARIOS[0]!;
+let scenario: PlaygroundScenario = findScenario(requestedScenario);
 let activeRequest: AbortController | undefined;
 let session: PlaygroundSession;
 let last: PlaygroundEvidence = {};
@@ -343,6 +344,9 @@ for (const item of PLAYGROUND_SCENARIOS) {
 scenarioSelect.value = scenario.id;
 scenarioSelect.addEventListener('change', () => {
   scenario = findScenario(scenarioSelect.value);
+  const url = new URL(window.location.href);
+  url.searchParams.set('scenario', scenario.id);
+  window.history.replaceState(null, '', url);
   renderScenario();
   void runIntent(scenario.steps[0]!.intent());
 });

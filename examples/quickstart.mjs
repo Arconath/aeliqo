@@ -26,7 +26,7 @@ const input = {
 };
 
 const parsed = parseCatalog(input);
-if (!parsed.ok) throw new Error(`Catalog rejected: ${parsed.error.code}`);
+if (!parsed.ok) throw new Error(`Catalog rejected: ${parsed.diagnostics[0].message}`);
 
 console.log(
   JSON.stringify({

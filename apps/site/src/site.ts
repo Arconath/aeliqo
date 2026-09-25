@@ -135,13 +135,19 @@ await app.render({
   },
 });`;
 const demo = document.querySelector<HTMLElement>('#home-demo');
+const intentLabel = (team: string): string =>
+  team === 'all'
+    ? `{ kind: 'browse', resource: 'people', fields: ['name', 'team', 'location'] }`
+    : `{ kind: 'browse', resource: 'people', fields: ['name', 'team', 'location'], filter: team = '${team}' }`;
 async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
-  const { mountPeopleExample } = await import('./home-example.js');
+  const { mountPeopleExample, mountProofExample } = await import('./home-example.js');
   const example = mountPeopleExample(demoRoot);
   const teamControl = document.querySelector<HTMLSelectElement>('#team');
   const status = document.querySelector<HTMLElement>('#demo-status');
   const evaluateButton = document.querySelector<HTMLButtonElement>('#demo-evaluate');
   const manualButton = document.querySelector<HTMLButtonElement>('#demo-manual');
+  const intentLine = document.querySelector<HTMLElement>('#demo-intent');
+  const widthButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-demo-width]')];
   const flowSteps = [...document.querySelectorAll<HTMLElement>('[data-flow-step]')];
   const setFlow = (current: string): void => {
     for (const step of flowSteps) {
@@ -158,12 +164,14 @@ async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
   ): void => {
     setFlow('view');
     const count = selectedTeam === 'all' ? '4' : '2';
-    const view = receipt.presentation.plan.nodes[0]?.representation.id.split('.').at(-1) ?? 'registered';
+    const viewId = receipt.presentation.plan.nodes[0]?.representation.id.split('.').at(-1) ?? 'registered';
+    const view = viewId === 'card-collection' ? 'cards' : viewId;
     setDemoStatus(`${count} of 4 synthetic people matched. Aeliqo chose the ${view} view. Zero model calls.`);
   };
   async function renderIntent(): Promise<void> {
     const selectedTeam = teamControl?.value ?? 'all';
     setFlow('request');
+    if (intentLine) intentLine.textContent = intentLabel(selectedTeam);
     setDemoStatus('Checking the request against registered data and views…');
     if (evaluateButton) evaluateButton.disabled = true;
     try {
@@ -182,7 +190,22 @@ async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
     if (teamControl) teamControl.value = 'all';
     void renderIntent();
   });
+  for (const button of widthButtons) {
+    button.addEventListener('click', () => {
+      demoRoot.dataset.width = button.dataset.demoWidth === 'narrow' ? 'narrow' : 'wide';
+      for (const item of widthButtons) item.setAttribute('aria-pressed', String(item === button));
+      void renderIntent();
+    });
+  }
   void renderIntent();
+  const proofWide = document.querySelector<HTMLElement>('#home-proof-wide');
+  const proofNarrow = document.querySelector<HTMLElement>('#home-proof-narrow');
+  const proofTrend = document.querySelector<HTMLElement>('#home-proof-trend');
+  if (proofWide !== null && proofNarrow !== null && proofTrend !== null) {
+    const proof = mountProofExample({ wide: proofWide, narrow: proofNarrow, trend: proofTrend });
+    void proof.render();
+    window.addEventListener('pagehide', () => proof.dispose(), { once: true });
+  }
   document.querySelector('#demo-source')!.textContent = source;
   document.querySelector('#copy-demo')?.addEventListener('click', async () => {
     try {

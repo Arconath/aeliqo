@@ -142,10 +142,26 @@ const adaptation = createAeliqoRegionAdaptation({
 });
 let latestWide: Awaited<ReturnType<typeof adaptation.request>> | undefined;
 let latestNarrow: Awaited<ReturnType<typeof adaptation.request>> | undefined;
+let observed: ReturnType<typeof createAeliqoRegionAdaptation> | undefined;
 Object.assign(window, {
   adaptation,
   region,
   editor,
+  observeMedia: () => {
+    observed?.disconnect();
+    observed = createAeliqoRegionAdaptation({
+      element,
+      region,
+      registry: registryResult.value,
+      baseContext,
+      dwellMs: 0,
+      renderer,
+    });
+  },
+  disconnectObserved: () => {
+    observed?.disconnect();
+    observed = undefined;
+  },
   requestWide: async () => {
     latestWide = await adaptation.request(env(800), { force: true });
     return latestWide;

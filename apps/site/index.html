@@ -6,13 +6,13 @@
     <title>Aeliqo — adaptive interfaces, with or without AI</title>
     <meta
       name="description"
-      content="Build adaptive, registered interfaces from application code or a compatible agent while your application keeps authority over data, actions, and views."
+      content="Register your data, permissions, and allowed views once. Aeliqo renders each request as the fitting view — a table, cards, or a chart — with or without an agent."
     />
     <link rel="canonical" href="https://aeliqo.com/" />
     <meta property="og:title" content="Aeliqo — adaptive interfaces, with or without AI" />
     <meta
       property="og:description"
-      content="Register permitted data, actions, and views once. Aeliqo selects a fitting interface from structured intent."
+      content="Register data, permissions, and allowed views once. Aeliqo turns each typed intent into the view that fits the context."
     />
     <meta property="og:url" content="https://aeliqo.com/" />
     <meta property="og:type" content="website" />
@@ -48,20 +48,19 @@
       <section class="shell hero">
         <div class="hero-copy">
           <p class="eyebrow hero-status">OPEN-SOURCE TYPESCRIPT UI RUNTIME</p>
-          <h1>From intent to <em>a fitting interface.</em></h1>
+          <h1>Say what to show. <em>Aeliqo picks the view that fits.</em></h1>
           <p class="lead">
-            Start with a task. Aeliqo checks the request against what your app allows, evaluates the result, and
-            chooses a registered view for the available space. It works without an AI provider.
+            Register your data, permissions, and allowed views once. Every request — sent by your code or an optional
+            agent — renders as the fitting view: a table on a wide screen, cards on a phone. Agents can never inject UI
+            or permissions.
           </p>
           <div class="actions">
             <a class="primary" href="https://docs.aeliqo.com/playground/"
               >Try the playground <span aria-hidden="true">→</span></a
             >
-            <a class="secondary-action" href="https://docs.aeliqo.com/start/">Read the React starter</a>
+            <a class="secondary-action" href="https://docs.aeliqo.com/start/">Start the quickstart</a>
           </div>
-          <p class="hero-note">
-            {{AELIQO_RELEASE_NOTE}}
-          </p>
+          <p class="hero-note">{{AELIQO_RELEASE_NOTE}}</p>
         </div>
 
         <aside class="product-window" aria-label="Live Aeliqo runtime demonstration">
@@ -73,8 +72,11 @@
             <div class="demo-heading">
               <div>
                 <p class="eyebrow">PEOPLE / BROWSE</p>
-                <h2 id="demo-title">Filter the sample records</h2>
-                <p class="demo-lead">Choose a team. The same request will produce a result and an adapted view.</p>
+                <h2 id="demo-title">One request, rendered to fit</h2>
+                <p class="demo-lead">
+                  This is a real Region running in your browser. Filter the team or shrink the container — the same
+                  intent is re-checked and the view is re-picked.
+                </p>
               </div>
               <div class="demo-controls">
                 <label for="team"
@@ -90,7 +92,7 @@
                 <button id="demo-manual" type="button">Reset</button>
               </div>
             </div>
-            <p class="caption demo-caption">Four synthetic people · Runs locally · Zero model calls</p>
+            <p class="caption demo-caption">Four synthetic people · Runs entirely in your browser · Zero model calls</p>
             <div class="demo-stage">
               <ol class="demo-flow" aria-label="Runtime steps">
                 <li class="demo-flow-step" data-flow-step="request" aria-current="step"><span>01</span>Intent</li>
@@ -99,7 +101,19 @@
                 <li class="demo-flow-arrow" aria-hidden="true">→</li>
                 <li class="demo-flow-step" data-flow-step="view"><span>03</span>Selected view</li>
               </ol>
-              <div id="home-demo" role="region" aria-label="Synthetic people adaptive result" tabindex="0">
+              <code class="demo-intent" id="demo-intent" tabindex="0"></code>
+              <div class="demo-width" role="group" aria-label="Demo container width">
+                <span>Container</span>
+                <button type="button" data-demo-width="wide" aria-pressed="true">Full width</button>
+                <button type="button" data-demo-width="narrow" aria-pressed="false">Compact</button>
+              </div>
+              <div
+                id="home-demo"
+                role="region"
+                aria-label="Synthetic people adaptive result"
+                tabindex="0"
+                data-width="wide"
+              >
                 <noscript
                   ><p>Enable JavaScript to run the sample. The documentation remains readable without it.</p></noscript
                 >
@@ -115,27 +129,92 @@
         </aside>
       </section>
 
+      <section class="shell proof" aria-labelledby="proof-title">
+        <div class="section-intro">
+          <p class="eyebrow">LIVE PROOF, NOT SLIDES</p>
+          <h2 id="proof-title">Same intent. Different context. Different view.</h2>
+          <p>
+            Three Regions rendered by the real runtime — not screenshots. The first two run the identical browse intent
+            and differ only in container width. The third answers an analyze intent with a chart.
+          </p>
+        </div>
+        <div class="proof-grid">
+          <figure class="proof-pane proof-pane-wide">
+            <figcaption>
+              <strong>Wide container</strong>
+              <code>{ kind: 'browse', resource: 'people' }</code>
+              <span>renders a table</span>
+            </figcaption>
+            <div
+              class="proof-scroll"
+              role="region"
+              tabindex="0"
+              aria-label="Live table view produced by the people browse intent in a wide container"
+            >
+              <div id="home-proof-wide" class="proof-target proof-target-wide"></div>
+            </div>
+          </figure>
+          <figure class="proof-pane">
+            <figcaption>
+              <strong>Compact container</strong>
+              <code>{ kind: 'browse', resource: 'people' }</code>
+              <span>renders cards</span>
+            </figcaption>
+            <div
+              class="proof-scroll"
+              role="region"
+              tabindex="0"
+              aria-label="Live card view produced by the same people browse intent in a compact container"
+            >
+              <div id="home-proof-narrow" class="proof-target proof-target-narrow"></div>
+            </div>
+          </figure>
+          <figure class="proof-pane">
+            <figcaption>
+              <strong>A different task</strong>
+              <code>{ kind: 'analyze', resource: 'workforce-headcount' }</code>
+              <span>renders a chart</span>
+            </figcaption>
+            <div
+              class="proof-scroll"
+              role="region"
+              tabindex="0"
+              aria-label="Live trend chart produced by the headcount analyze intent"
+            >
+              <div id="home-proof-trend" class="proof-target"></div>
+            </div>
+          </figure>
+        </div>
+        <p class="caption proof-note">
+          Each Region measures its own container and picks among the views you registered — no hand-written breakpoints.
+        </p>
+      </section>
+
       <section class="shell approach" aria-labelledby="approach-title">
         <div class="approach-intro">
           <p class="eyebrow">CLEAR OWNERSHIP</p>
           <h2 id="approach-title">You define the product.<br />Aeliqo adapts the interface.</h2>
-          <p>Your application owns the data and actions. Aeliqo validates intents and selects a registered view.</p>
+          <p>You keep the data, the rules, and the views. Aeliqo only does the adapting.</p>
         </div>
         <div class="approach-list">
           <article>
             <span>01</span>
             <div>
-              <h3>Developer declares.</h3>
-              <p>Define resource meaning, connect permitted data, register actions, and choose which views exist.</p>
+              <h3>You declare.</h3>
+              <p>
+                Describe what your data means, connect the permitted records, register actions, and pick the views that
+                may appear.
+              </p>
               <a href="https://docs.aeliqo.com/start/">See the full setup <span aria-hidden="true">→</span></a>
             </div>
           </article>
           <article>
             <span>02</span>
             <div>
-              <h3>Aeliqo executes.</h3>
+              <h3>Aeliqo renders.</h3>
               <p>
-                Compile the intent, enforce authority, evaluate data, select a compatible recipe, and preserve state.
+                Each request is checked against your rules, evaluated on your data, and shown through a view you
+                registered — with open items and drafts preserved.
               </p>
               <a href="https://docs.aeliqo.com/concepts/">Understand the pipeline <span aria-hidden="true">→</span></a>
             </div>
@@ -143,9 +222,10 @@
           <article>
             <span>03</span>
             <div>
-              <h3>Agent proposes.</h3>
+              <h3>An agent asks.</h3>
               <p>
-                MCP, WebMCP, or BYOK may submit the same bounded intent. The agent never supplies HTML or permission.
+                MCP, WebMCP, or your own model host can submit the same bounded request. The agent never supplies HTML,
+                code, or permissions.
               </p>
               <a href="https://docs.aeliqo.com/agents/">Connect an agent <span aria-hidden="true">→</span></a>
             </div>
@@ -157,7 +237,7 @@
         <div class="section-intro">
           <p class="eyebrow">FOUR WORKING SCENARIOS</p>
           <h2 id="use-cases-title">The same runtime across four kinds of work.</h2>
-          <p>Each example uses synthetic records and registered views. Open a scenario to inspect its runnable flow.</p>
+          <p>Each example runs on synthetic records and registered views. Open one to inspect its runnable flow.</p>
         </div>
         <div class="use-case-list">
           <a href="https://docs.aeliqo.com/examples/people/"
@@ -186,18 +266,18 @@
       <section class="boundary-section">
         <div class="shell boundary-grid">
           <div>
-            <p class="eyebrow">PERMISSION STAYS WITH YOUR APP</p>
-            <h2>Your application remains the authority.</h2>
+            <p class="eyebrow">THE BOUNDARY, IN ONE SENTENCE</p>
+            <h2>Agents propose. Your app decides.</h2>
           </div>
           <div class="boundary-copy">
             <p>
-              Aeliqo validates semantics, queries, results, and presentation plans. Your application still owns its
-              data, authenticated principal, routes, and business execution.
+              An agent may submit a typed intent — it can never provide HTML, JavaScript, SQL, credentials, permissions,
+              or an unregistered view.
             </p>
             <ul>
-              <li>Manual authoring stays fully supported.</li>
-              <li>AI proposals are typed, bounded, and untrusted.</li>
-              <li>The framework and manual controls work without AI.</li>
+              <li>Your app keeps its data, identity, routes, and actions.</li>
+              <li>Manual authoring and controls work with no AI at all.</li>
+              <li>Invalid or stale proposals are rejected before anything renders.</li>
             </ul>
             <a class="text-action" href="https://docs.aeliqo.com/ship/"
               >Read the production boundary <span aria-hidden="true">→</span></a
@@ -208,7 +288,7 @@
 
       <section class="shell closing">
         <p class="eyebrow">START WITH ONE REGION</p>
-        <h2>Build one working Region before adding an agent.</h2>
+        <h2>Render one real view before adding an agent.</h2>
         <div class="closing-actions">
           <a class="primary" href="https://docs.aeliqo.com/playground/"
             >Try the playground <span aria-hidden="true">↗</span></a

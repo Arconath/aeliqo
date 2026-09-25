@@ -55,7 +55,8 @@ function clientPaths(base: URL, custom?: Partial<HttpDataPaths>): HttpDataPaths 
   const paths = {} as Record<keyof HttpDataPaths, string>;
   for (const key of Object.keys(configured) as (keyof HttpDataPaths)[]) {
     const url = originUrl(new URL(configured[key], base).href);
-    if (url.origin !== base.origin) throw new TypeError('ADC endpoint overrides must stay on the configured origin.');
+    if (url.origin !== base.origin)
+      throw new TypeError('data service endpoint overrides must stay on the configured origin.');
     paths[key] = url.href;
   }
   return paths;
@@ -132,7 +133,7 @@ class HttpDataServiceImpl implements DataService {
     const response = await life.wait(() => this.fetchResponse(path, value, outgoingHeaders, life));
     if (response.redirected || (response.url && new URL(response.url).origin !== this.config.base.origin)) {
       void response.body?.cancel().catch(() => {});
-      reject('data.http-origin', 'The ADC response came from an unexpected redirect or origin.');
+      reject('data.http-origin', 'The data service response came from an unexpected redirect or origin.');
     }
     return response;
   }
@@ -164,7 +165,7 @@ class HttpDataServiceImpl implements DataService {
     const raw = unwrap(parseJSON(await readText(response.body, maximumBytes, life), 'http-error'));
     const error = unwrap(parseDataError(raw));
     if (error.requestId !== requestId && error.requestId !== 'unknown-request')
-      return failure('data.http-correlation', 'The ADC error response belongs to another request.');
+      return failure('data.http-correlation', 'The data service error response belongs to another request.');
     return { ok: false, diagnostics: error.diagnostics };
   }
 
@@ -181,7 +182,7 @@ class HttpDataServiceImpl implements DataService {
       if (!response.ok) return await this.errorResponse(response, value.requestId, maximumBytes, life);
       if (!hasJsonContentType(response)) {
         void response.body?.cancel().catch(() => {});
-        return failure('data.http-content-type', 'The ADC host returned an unexpected response format.');
+        return failure('data.http-content-type', 'The data service host returned an unexpected response format.');
       }
       const text = await readText(response.body, maximumBytes, life);
       const result = parse(unwrap(parseJSON(text, 'http-response')));
@@ -202,7 +203,7 @@ class HttpDataServiceImpl implements DataService {
     if (discoveryMatches(parsed.value, result.value)) return result;
     return failure(
       'data.http-correlation',
-      'The ADC discovery response does not match its request, revision or budget.',
+      'The data service discovery response does not match its request, revision or budget.',
     );
   }
 
@@ -212,7 +213,10 @@ class HttpDataServiceImpl implements DataService {
     const result = await this.requestJSON(this.config.paths.plan, parsed.value, parsePlanAcceptance, context);
     if (!result.ok) return result;
     if (planMatches(parsed.value, result.value)) return result;
-    return failure('data.http-correlation', 'The ADC plan response does not match its request, query or budget.');
+    return failure(
+      'data.http-correlation',
+      'The data service plan response does not match its request, query or budget.',
+    );
   }
 
   async *execute(request: AcceptedQuery, context: ReadContext = {}): AsyncGenerator<ResultEvent> {
@@ -237,7 +241,7 @@ class HttpDataServiceImpl implements DataService {
         return;
       }
       this.assertStreamResponse(response);
-      if (response.body === null) reject('data.http-body', 'The ADC host returned no result stream.');
+      if (response.body === null) reject('data.http-body', 'The data service host returned no result stream.');
       const stream = readResultStream(response.body, streamContext(accepted, life, this.config.limits));
       for await (const event of stream) {
         life.check();
@@ -265,7 +269,7 @@ class HttpDataServiceImpl implements DataService {
   private assertStreamResponse(response: Response): void {
     if (hasStreamContentType(response)) return;
     void response.body?.cancel().catch(() => {});
-    reject('data.http-content-type', 'The ADC host returned an unexpected stream format.');
+    reject('data.http-content-type', 'The data service host returned an unexpected stream format.');
   }
 
   private currentDiagnostics(error: unknown, life: Lifetime): readonly [Diagnostic, ...Diagnostic[]] {

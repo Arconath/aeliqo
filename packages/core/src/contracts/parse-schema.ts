@@ -26,6 +26,7 @@ export function parseInspectedSchema<S extends z.ZodMiniType>(
       wireDiagnostic(
         `wire.${issue.code}`,
         issue.path.filter((part): part is string | number => typeof part !== 'symbol'),
+        issue.message,
       ),
     );
     return { ok: false, diagnostics: diagnostics as [Diagnostic, ...Diagnostic[]] };

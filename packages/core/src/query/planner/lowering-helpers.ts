@@ -308,8 +308,8 @@ export function validateQueryDelivery(query: QuerySpec): QueryOutcome<void> {
   if (query.page !== undefined)
     return unsupported(
       'query.pagination',
-      'Delivery paging requires the ADC adapter and does not define the query population.',
-      ['Use topK for an explicit ranked population, or execute paging through the ADC adapter.'],
+      'Delivery paging requires the data service adapter and does not define the query population.',
+      ['Use topK for an explicit ranked population, or execute paging through the data service adapter.'],
       ['page'],
     );
   if (query.topK !== undefined && query.order.length === 0)

@@ -92,6 +92,63 @@
   font-size: var(--type-compact-readable);
   font-weight: 650;
 }
+.proof {
+  padding-block: clamp(4.5rem, 8vw, 7.5rem);
+}
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8);
+}
+.proof-pane {
+  min-width: 0;
+  margin: 0;
+}
+.proof-pane-wide {
+  grid-column: 1 / -1;
+}
+.proof-pane figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.7rem;
+  margin-bottom: 0.7rem;
+  font-size: var(--type-compact-readable);
+}
+.proof-pane figcaption code {
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  background: var(--surface-raised);
+  font-size: var(--type-caption);
+}
+.proof-pane figcaption span {
+  color: var(--accent);
+  font-weight: 650;
+}
+.proof-scroll {
+  min-width: 0;
+  padding: 0.9rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--surface-raised);
+}
+.proof-target {
+  min-height: 12rem;
+}
+.proof-target-wide {
+  min-inline-size: 42rem;
+}
+.proof-target-narrow {
+  inline-size: 19rem;
+  max-inline-size: 100%;
+  margin-inline: auto;
+}
+.proof-note {
+  margin-top: var(--space-6);
+}
 .approach {
   display: grid;
   grid-template-columns: minmax(16rem, 0.58fr) minmax(0, 1fr);
@@ -210,8 +267,12 @@
   }
   .approach,
   .boundary-grid,
-  .section-intro {
+  .section-intro,
+  .proof-grid {
     grid-template-columns: 1fr;
+  }
+  .proof-pane-wide {
+    grid-column: auto;
   }
   .section-intro .eyebrow {
     grid-column: auto;
@@ -274,9 +335,16 @@
 @media (forced-colors: active) {
   .product-window,
   .demo-stage,
+  .demo-intent,
+  .proof-scroll,
+  .proof-pane figcaption code,
   .boundary-section {
     border-color: CanvasText;
     box-shadow: none;
+  }
+  .demo-width button[aria-pressed='true'] {
+    color: HighlightText;
+    background: Highlight;
   }
   .product-window {
     color: CanvasText;

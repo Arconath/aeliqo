@@ -51,7 +51,7 @@ function unsupportedLivePopulation(): Outcome<ResolvedPopulation> {
       kind: 'source',
       id: 'population',
       reason: 'Live named-output population binding belongs to the trusted task evaluator.',
-      alternatives: ['Bind the live output to a complete fixed cohort before calling this ADC service.'],
+      alternatives: ['Bind the live output to a complete fixed cohort before calling this data service service.'],
     },
     ['query', 'population'],
   );
