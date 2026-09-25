@@ -94,6 +94,7 @@
 html {
   min-width: 320px;
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
   background: var(--bg);
 }
 body {
@@ -103,6 +104,12 @@ body {
   background:
     radial-gradient(circle at 75% -20%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 34rem), var(--bg);
   letter-spacing: var(--tracking-body);
+}
+body[data-docs] {
+  background:
+    radial-gradient(circle at 18% -18%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 28rem),
+    radial-gradient(circle at 92% 16%, color-mix(in srgb, var(--aeliqo-color-info) 4%, transparent), transparent 30rem),
+    var(--bg);
 }
 img {
   max-width: 100%;
@@ -175,14 +182,17 @@ pre:focus-visible,
   top: var(--space-4);
 }
 .topbar {
-  position: relative;
+  position: sticky;
   z-index: 20;
+  top: 0;
   min-height: 4.75rem;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-10);
   border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(16px);
 }
 .brand {
   display: inline-flex;

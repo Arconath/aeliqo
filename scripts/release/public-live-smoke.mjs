@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 
 import { chromium } from '@playwright/test';
+import { RELEASE_VERSION } from './metadata.mjs';
 const expectedSha = process.argv[2];
 if (!/^[a-f0-9]{40}$/u.test(expectedSha ?? '')) throw new Error('Expected full release SHA.');
 const apexOrigin = process.env.AELIQO_APEX_ORIGIN ?? 'https://aeliqo.com';
@@ -28,7 +29,7 @@ try {
     const identity = await version.json();
     assert.equal(identity.sdkRevision, expectedSha);
     assert.equal(identity.siteRevision, expectedSha);
-    assert.equal(identity.sdkVersion, '0.5.0');
+    assert.equal(identity.sdkVersion, RELEASE_VERSION);
   }
   await visit(`${apexOrigin}/healthz`);
   await visit(`${apexOrigin}/readyz`);
@@ -113,7 +114,7 @@ try {
     execFileSync('unzip', ['-p', await download.path(), 'package.json'], { encoding: 'utf8' }),
   );
   for (const name of ['@aeliqo/core', '@aeliqo/runtime', '@aeliqo/web']) {
-    assert.equal(packageJson.dependencies[name], '0.5.0');
+    assert.equal(packageJson.dependencies[name], RELEASE_VERSION);
   }
   evidence.exportPackageDependencies = packageJson.dependencies;
   assert.deepEqual(errors, []);
@@ -125,7 +126,7 @@ try {
       evidence,
       noAiJourneys: ['people', 'attendance', 'workspace'],
       modelCalls: 0,
-      export: { filename: download.suggestedFilename(), bytes: archive.length, pinnedVersion: '0.5.0' },
+      export: { filename: download.suggestedFilename(), bytes: archive.length, pinnedVersion: RELEASE_VERSION },
     }),
   );
 } finally {

@@ -3,18 +3,18 @@
   grid-template-columns: minmax(13.5rem, 15.5rem) minmax(0, 47rem) minmax(10rem, 12rem);
   grid-template-areas: 'sidebar reading toc';
   align-items: start;
-  gap: clamp(var(--space-10), 4.5vw, 4.5rem);
+  gap: clamp(var(--space-8), 4vw, 4rem);
   max-width: 98rem;
-  padding-block: 2.75rem var(--space-32);
+  padding-block: clamp(2rem, 4vw, 3.5rem) var(--space-32);
 }
 .docs-sidebar {
   grid-area: sidebar;
   position: sticky;
-  top: var(--space-5);
+  top: 6.25rem;
   align-self: start;
   min-width: 0;
-  max-height: calc(100vh - 2rem);
-  padding-inline-end: 1.4rem;
+  max-height: calc(100vh - 7.5rem);
+  padding-inline-end: 1.25rem;
   overflow: auto;
   border-inline-end: 1px solid var(--line);
   font-size: var(--type-code);
@@ -23,8 +23,8 @@
 .docs-sidebar-brand {
   display: grid;
   gap: 0.15rem;
-  margin-bottom: 1.15rem;
-  padding-bottom: 1.15rem;
+  margin-bottom: 1.3rem;
+  padding: 0.15rem 0.55rem 1.25rem;
   border-bottom: 1px solid var(--line);
   color: var(--text);
   text-decoration: none;
@@ -37,7 +37,7 @@
   text-transform: uppercase;
 }
 .docs-sidebar-brand strong {
-  font-size: var(--type-lead);
+  font-size: 1.1rem;
   letter-spacing: -0.02em;
 }
 .docs-sidebar-brand::after {
@@ -50,17 +50,18 @@
 }
 .docs-sidebar nav {
   display: grid;
-  gap: 1.05rem;
+  gap: 1.2rem;
   margin-top: var(--space-5);
 }
 .docs-nav-group {
   display: grid;
-  gap: 0.12rem;
+  gap: 0.18rem;
 }
 .docs-nav-group > strong {
-  margin: 0 0 0.32rem 0.55rem;
+  margin: 0 0 0.38rem 0.6rem;
   color: var(--accent);
   font-size: var(--type-micro);
+  font-weight: 780;
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
@@ -98,7 +99,7 @@
   padding-inline-start: 0.45rem;
 }
 .docs-sidebar nav a {
-  padding: 0.42rem 0.6rem;
+  padding: 0.46rem 0.65rem;
   border-radius: var(--radius-sm);
   color: var(--muted);
   line-height: 1.35;
@@ -109,6 +110,7 @@
   background: var(--surface);
 }
 .docs-sidebar nav a[aria-current='page'] {
+  box-shadow: inset 3px 0 var(--accent);
   color: var(--text);
   background: color-mix(in srgb, var(--accent-soft) 82%, transparent);
   font-weight: 650;
@@ -138,10 +140,14 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 0.08rem 0.45rem;
-  padding: 0.7rem var(--space-3);
-  border: 1px solid var(--line);
+  padding: 0.75rem var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
   border-radius: var(--radius-soft);
-  background: color-mix(in srgb, var(--surface-raised) 86%, var(--surface));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-soft) 68%, var(--surface-raised)),
+    var(--surface-raised)
+  );
 }
 .docs-version span {
   grid-row: 1/3;
@@ -205,11 +211,11 @@
 .docs-toc {
   grid-area: toc;
   position: sticky;
-  top: 6.5rem;
+  top: 6.25rem;
   align-self: start;
   min-width: 0;
-  max-height: calc(100vh - 2.5rem);
-  padding-inline-start: var(--space-4);
+  max-height: calc(100vh - 7.5rem);
+  padding: 0.95rem 0 0.95rem var(--space-4);
   overflow: auto;
   border-inline-start: 1px solid var(--line);
   font-size: var(--type-label);
@@ -240,30 +246,42 @@
 .reading {
   grid-area: reading;
   min-width: 0;
-  max-width: 47rem;
+  max-width: 50rem;
   padding-bottom: var(--space-10);
 }
 .doc-header {
-  margin-bottom: 2.75rem;
-  padding-bottom: 2.15rem;
-  border-bottom: 1px solid var(--line);
+  position: relative;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.35rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+}
+.doc-header::after {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: -1px;
+  width: 4.25rem;
+  height: 2px;
+  background: var(--accent);
+  content: '';
 }
 .doc-header .eyebrow {
   margin-bottom: 0.8rem;
 }
 .reading h1 {
-  max-width: 20ch;
-  margin: 0 0 1.1rem;
+  max-width: 24ch;
+  margin: 0 0 1rem;
   overflow-wrap: anywhere;
-  font-size: clamp(2.65rem, 4.2vw, 4rem);
-  line-height: 1.02;
+  font-size: clamp(2.45rem, 3.6vw, 3.55rem);
+  font-weight: 720;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
 }
 .doc-dek,
 .reading .lead {
   max-width: 44rem;
   color: var(--muted);
-  font-size: clamp(1.02rem, 1.35vw, 1.16rem);
-  line-height: 1.7;
+  font-size: clamp(1rem, 1.2vw, 1.1rem);
+  line-height: 1.65;
 }
 .doc-dek {
   margin: 0;
@@ -274,8 +292,8 @@
 }
 .reading h2 {
   position: relative;
-  margin: var(--space-16) 0 1.15rem;
-  padding-top: 1.3rem;
+  margin: clamp(3.75rem, 7vw, 5.5rem) 0 1.1rem;
+  padding-top: 1.15rem;
   border-top: 1px solid var(--line);
   font-size: clamp(1.5rem, 2.35vw, 2.15rem);
   line-height: 1.15;
@@ -332,14 +350,15 @@
   align-items: start;
   gap: 2.75rem;
   margin: -var(--space-1) 0 2.75rem;
-  padding: 1.35rem;
-  border: 1px solid var(--line);
+  padding: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
   border-radius: var(--radius-xl);
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--accent-soft) 50%, var(--surface-raised)),
+    color-mix(in srgb, var(--accent-soft) 72%, var(--surface-raised)),
     var(--surface-raised)
   );
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--accent) 7%, transparent);
 }
 .docs-landing-actions {
   display: flex;
@@ -398,7 +417,23 @@
   padding: var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  background: var(--surface-raised);
+  background: linear-gradient(
+    145deg,
+    var(--surface-raised),
+    color-mix(in srgb, var(--surface) 60%, var(--surface-raised))
+  );
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--text) 5%, transparent);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+.decision-grid article:hover,
+.ownership-grid article:hover,
+.component-contract-grid section:hover {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--accent) 8%, transparent);
+  transform: translateY(-2px);
 }
 .doc-paths a {
   display: flex;
@@ -443,7 +478,11 @@
   border: 1px solid var(--line);
   border-inline-start: 3px solid var(--accent);
   border-radius: var(--radius-panel);
-  background: color-mix(in srgb, var(--surface) 78%, var(--surface-raised));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-soft) 42%, var(--surface-raised)),
+    var(--surface-raised)
+  );
 }
 .doc-callout[data-tone='warning'] {
   border-inline-start-color: var(--code-accent);

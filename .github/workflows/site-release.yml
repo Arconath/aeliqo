@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       stable_publish_run_id:
-        description: Successful same-SHA 0.5.0 stable package publication run
+        description: Successful same-SHA stable package publication run
         required: true
         type: string
 

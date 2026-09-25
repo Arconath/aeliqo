@@ -415,9 +415,14 @@
   gap: var(--space-4);
   margin-block: var(--space-6);
   padding: var(--space-4) 1.1rem;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
   border-radius: var(--radius-md);
-  background: var(--surface-raised);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-soft) 68%, var(--surface-raised)),
+    var(--surface-raised)
+  );
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 6%, transparent);
 }
 .docs-inline-cta p {
   margin: 0;
@@ -425,9 +430,17 @@
 }
 .docs-inline-cta a {
   flex: 0 0 auto;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: var(--radius-action);
+  background: var(--surface-raised);
   font-size: var(--type-small);
   font-weight: var(--weight-strong);
   text-decoration: none;
+}
+.docs-inline-cta a:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 @media (max-width: 1120px) {
   .docs-layout {

@@ -3,27 +3,21 @@ id: 'support-matrix'
 path: '/ship/support-matrix/'
 section: 'Ship'
 title: 'vNext support matrix'
-description: 'Bounded framework, browser, provider, and workload evidence for Aeliqo 0.5.0.'
+description: 'Bounded framework, browser, provider, and workload evidence for the Aeliqo 0.5 line.'
 ---
 
-All five Aeliqo `0.5.0-rc.2` packages and matching stable `0.5.0` packages
-were published from accepted source `4e8b0395b92eee699da4e25c3cd4991bc50b4a5e`.
-The [RC publication run](https://github.com/Arconath/aeliqo/actions/runs/35985377354)
-and [stable publication run](https://github.com/Arconath/aeliqo/actions/runs/35988121627)
-succeeded. At image publication, production cutover and public live checks had
-not yet been verified.
-The [platform deployment evidence](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a)
-records acceptance at 2026-09-24 11:17 UTC. Apex, www, and docs then served
-0.5.0 at the accepted source SHA. The local bounded profile rows below retain
-their stated limits after publication.
+The current 0.5 line keeps one source-bound contract across the five packages,
+the documentation site, and the playground. The patch release carries the
+same 0.5 API and runtime boundaries while making the getting-started routes,
+registered-app tutorial, and public journeys easier to follow.
 
-This matrix describes bounded local evidence for the 0.5.0 source. It is not a
+This matrix describes bounded evidence for the 0.5 line. It is not a
 promise that every framework, provider, or application size is supported.
 
 The machine-readable source is [`docs/support-matrix.json`](https://github.com/Arconath/aeliqo/blob/main/docs/support-matrix.json).
-Its candidate and publication flags record the prepublication source
-qualification and are not live registry-status lookups; use the publication
-runs above for package status.
+Its candidate and publication flags record source qualification and are not
+live registry-status lookups. Use the release run and the public `/version`
+route for the package and site identity that is currently deployed.
 `qualified` means the named fixture and version passed. `qualified-bounded`
 means the result is limited to the stated synthetic or integration profile.
 `protocol-only`, `unverified`, and `unsupported-claim` are intentionally not

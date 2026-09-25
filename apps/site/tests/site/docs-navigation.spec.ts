@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { componentCatalog } from '../shared/catalog.js';
+import { RELEASE_VERSION } from '../../../../scripts/release/metadata.mjs';
 
 const COMPONENT_ROUTES = componentCatalog.map(({ id }) => `/components/${id}/`);
 
@@ -274,7 +275,7 @@ test('scrollable code remains focusable and named across static, hydrated, and o
 }) => {
   await page.goto('/start/');
   const packageManifest = page.locator('.reading .doc-code pre').first();
-  await expect(packageManifest).toContainText('"@aeliqo/react": "0.5.0"');
+  await expect(packageManifest).toContainText(`"@aeliqo/react": "${RELEASE_VERSION}"`);
   await expect(packageManifest).toHaveAttribute('tabindex', '0');
   await packageManifest.focus();
   await expect(packageManifest).toBeFocused();
@@ -290,7 +291,7 @@ test('scrollable code remains focusable and named across static, hydrated, and o
   try {
     await noScriptPage.goto('/start/');
     const staticPackageManifest = noScriptPage.locator('.reading .doc-code pre').first();
-    await expect(staticPackageManifest).toContainText('"@aeliqo/react": "0.5.0"');
+    await expect(staticPackageManifest).toContainText(`"@aeliqo/react": "${RELEASE_VERSION}"`);
     await expect(staticPackageManifest).toHaveAttribute('tabindex', '0');
     await staticPackageManifest.focus();
     await expect(staticPackageManifest).toBeFocused();

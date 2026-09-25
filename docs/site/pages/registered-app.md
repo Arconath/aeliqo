@@ -10,11 +10,11 @@ description: 'Connect application-owned data and authority, then render a filter
 
 <div class="docs-inline-cta"><p><strong>New to Aeliqo?</strong> Start with the smaller local example first. You can return here when you need authenticated application data.</p><a href="/start/">Open the local React quickstart →</a></div>
 
-<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Node.js 24, React 19.2, TypeScript, and a host application that can provide a bounded data adapter plus trusted authority state. Keep every Aeliqo package on exactly version 0.5.0.</p></aside>
+<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Node.js 24, React 19.2, TypeScript, and a host application that can provide a bounded data adapter plus trusted authority state. Keep every Aeliqo package on exactly version 0.5.1.</p></aside>
 
 <aeliqo-release-status></aeliqo-release-status>
 
-This is the full registered app tutorial for the stable `0.5.0` release. It uses
+This is the full registered app tutorial for the stable `0.5.1` release. It uses
 the compatibility `@aeliqo/react/app` API for its Region. The local array path
 is separate and remains available without the authority adapter shown here.
 
@@ -25,11 +25,11 @@ and Zod together:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.5.0 \
-  @aeliqo/runtime@0.5.0 \
-  @aeliqo/web@0.5.0 \
-  @aeliqo/react@0.5.0 \
-  @aeliqo/agent@0.5.0 \
+  @aeliqo/core@0.5.1 \
+  @aeliqo/runtime@0.5.1 \
+  @aeliqo/web@0.5.1 \
+  @aeliqo/react@0.5.1 \
+  @aeliqo/agent@0.5.1 \
   react@19.2.8 react-dom@19.2.8 zod@4.5.4
 ```
 
@@ -82,13 +82,13 @@ Mount the screen with one application instance and dispose it when the React
 root is permanently removed:
 
 ```tsx
-import {createRoot} from 'react-dom/client';
-import {createTutorialApp} from './app.js';
-import {PeopleTutorial} from './PeopleTutorial.js';
+import { createRoot } from 'react-dom/client';
+import { createTutorialApp } from './app.js';
+import { PeopleTutorial } from './PeopleTutorial.js';
 
 const app = createTutorialApp([
-  {id: 'ada', name: 'Ada Chen', team: 'Design'},
-  {id: 'sam', name: 'Sam Rivera', team: 'Engineering'},
+  { id: 'ada', name: 'Ada Chen', team: 'Design' },
+  { id: 'sam', name: 'Sam Rivera', team: 'Engineering' },
 ]);
 
 createRoot(document.querySelector('#root')!).render(<PeopleTutorial app={app} />);
