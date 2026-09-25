@@ -91,6 +91,11 @@ request is not proof that a view rendered. When authority, activation epoch,
 target, or principal changes, the old pairing is fenced and scoped conversation
 continuity must reset. The target list grants no new data permission.
 
+`connectAgent` accepts an optional `grants` ceiling of operation grants. The
+pairing's effective authority is always the intersection of that ceiling and
+the operations its registered tools require — a broader ceiling is clamped,
+never unioned. `manual` pairings can never carry `model.egress`.
+
 Install optional provider or transport dependencies only for the integrations
 the host enables. Keep credentials in the host and outside prompts or tool
 arguments.
