@@ -5,6 +5,7 @@ export const DOC_ROUTES = Object.freeze([
   route('home', '/', 'Start', '/docs/'),
   route('what-is', '/start/what-is-aeliqo/', 'Start'),
   route('quickstart', '/start/', 'Start', '/docs/getting-started/'),
+  route('registered-app', '/start/registered-app/', 'Start'),
   route('existing-app', '/start/existing-app/', 'Start'),
   route('standalone', '/start/standalone-components/', 'Start', '/docs/getting-started/standalone/'),
   route('frameworks', '/start/frameworks/', 'Start', '/docs/integration/'),
@@ -120,7 +121,7 @@ export function canonicalizeDocsMarkup(markup) {
 }
 
 const navigation = [
-  ['Start', ['home', 'what-is', 'quickstart', 'existing-app', 'standalone', 'frameworks']],
+  ['Start', ['home', 'what-is', 'quickstart', 'registered-app', 'existing-app', 'standalone', 'frameworks']],
   [
     'Build',
     [
