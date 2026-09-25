@@ -465,4 +465,6 @@ export declare function connectAgent(input: {
   readonly scope: ScopeController;
   readonly client: AgentClient;
   readonly targets: readonly string[];
+  /** Host-delegated grant ceiling; effective authority is intersected, never unioned. */
+  readonly grants?: readonly string[];
 }): AgentConnection;
