@@ -579,9 +579,7 @@ async function waitForObserverDelivery(page: Page): Promise<void> {
 
 async function assertRouteReady(page: Page, route: (typeof ROUTES)[number]): Promise<RouteReadiness> {
   if (route.id === 'home') {
-    await expect(
-      page.getByRole('heading', { name: 'From intent to a fitting interface.', exact: true }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'From intent to a fitting interface.', exact: true })).toBeVisible();
     await expect(page.locator('#home-demo aeliqo-region')).toBeVisible();
     await expect(page.locator('#demo-status')).toContainText('4 of 4');
     return {
