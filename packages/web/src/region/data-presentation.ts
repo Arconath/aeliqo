@@ -76,6 +76,14 @@ const DATA_COMPONENTS: readonly DataManifestComponent[] = [
   'selectionSummary',
 ];
 
+const SELECTION_COMPONENTS: ReadonlySet<DataManifestComponent | 'table'> = new Set([
+  'table',
+  'recordList',
+  'cardCollection',
+  'selectionSummary',
+]);
+const COMPARE_COMPONENTS: ReadonlySet<DataManifestComponent | 'table'> = new Set(['table', 'delta', 'detail']);
+
 const fail = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
   diagnostics: [{ code: `web.data.presentation.${code}`, message, retryable: false }],
@@ -152,12 +160,7 @@ function shouldRead(component: DataManifestComponent | 'table', config: AeliqoDa
 }
 
 function supportsSelection(component: DataManifestComponent | 'table'): boolean {
-  return (
-    component === 'table' ||
-    component === 'recordList' ||
-    component === 'cardCollection' ||
-    component === 'selectionSummary'
-  );
+  return SELECTION_COMPONENTS.has(component);
 }
 
 function operationsFor(
@@ -169,8 +172,7 @@ function operationsFor(
     if (!operations.some((candidate) => versionKey(candidate) === versionKey(operation))) operations.push(operation);
   };
   if (shouldRead(component, config)) add(AELIQO_DATA_PRESENTATION_OPERATIONS.read);
-  if (component === 'table' || component === 'delta' || component === 'detail')
-    add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
+  if (COMPARE_COMPONENTS.has(component)) add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
   if (component === 'filterBuilder') add(AELIQO_DATA_PRESENTATION_OPERATIONS.filter);
   if (supportsSelection(component) && config.ports.some((port) => port.payload === 'selection'))
     add(AELIQO_DATA_PRESENTATION_OPERATIONS.selection);

@@ -264,18 +264,22 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
     return this.renderGeometry(compiled.value, this.label);
   }
   private renderNode(node: CompiledPlotNode, label: string, graphic = true, data = true): unknown {
-    if (node.kind === 'unit') return this.renderGeometry(node.geometry, label, graphic, data, node.displayedIdentities);
-    if (node.kind === 'facet')
-      return html`<section aria-label=${label} part="facet">
-        ${node.children.map((c) => html`<section aria-label=${`${node.field}: ${c.label}`}>${data ? html`<h3>${node.field}: ${c.label}</h3>` : nothing}${this.renderNode(c.node, `${label}, ${node.field}: ${c.label}`, graphic, data)}</section>`)}
-      </section>`;
-    if (node.kind === 'concat')
-      return html`<section part=${`concat-${node.direction}`} aria-label=${label}>
-        ${node.children.map((c, i) => this.renderNode(c, `${label}, panel ${i + 1}`, graphic, data))}
-      </section>`;
-    return html`<section aria-label=${label}>
-      ${data ? html`<h3>${label}</h3>` : nothing}${graphic ? html`<div part="layer">${node.children.map((c, i) => html`<div>${this.renderNode(c, `${label}, layer ${i + 1}`, true, false)}</div>`)}</div>` : nothing}${data ? node.children.map((c, i) => this.renderNode(c, `${label}, layer ${i + 1}`, false, true)) : nothing}
-    </section>`;
+    switch (node.kind) {
+      case 'unit':
+        return this.renderGeometry(node.geometry, label, graphic, data, node.displayedIdentities);
+      case 'facet':
+        return html`<section aria-label=${label} part="facet">
+          ${node.children.map((c) => html`<section aria-label=${`${node.field}: ${c.label}`}>${data ? html`<h3>${node.field}: ${c.label}</h3>` : nothing}${this.renderNode(c.node, `${label}, ${node.field}: ${c.label}`, graphic, data)}</section>`)}
+        </section>`;
+      case 'concat':
+        return html`<section part=${`concat-${node.direction}`} aria-label=${label}>
+          ${node.children.map((c, i) => this.renderNode(c, `${label}, panel ${i + 1}`, graphic, data))}
+        </section>`;
+      default:
+        return html`<section aria-label=${label}>
+          ${data ? html`<h3>${label}</h3>` : nothing}${graphic ? html`<div part="layer">${node.children.map((c, i) => html`<div>${this.renderNode(c, `${label}, layer ${i + 1}`, true, false)}</div>`)}</div>` : nothing}${data ? node.children.map((c, i) => this.renderNode(c, `${label}, layer ${i + 1}`, false, true)) : nothing}
+        </section>`;
+    }
   }
   private renderGeometry(
     g: PlotGeometry,

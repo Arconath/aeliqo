@@ -96,17 +96,26 @@ function literalType(value: unknown): SemanticType['value'] | undefined {
   return Number.isInteger(value) ? 'integer' : 'float';
 }
 
+const STRING_FORMAT_TYPES: Readonly<Record<string, SemanticType['value']>> = {
+  date: 'date',
+  datetime: 'instant',
+};
+
 function typeFromSchema(runtime: ZodRuntimeSchema): SemanticType['value'] | undefined {
-  if (runtime.type === 'string') {
-    if (runtime.format === 'date') return 'date';
-    if (runtime.format === 'datetime') return 'instant';
-    return 'text';
+  switch (runtime.type) {
+    case 'string':
+      return STRING_FORMAT_TYPES[runtime.format ?? ''] ?? 'text';
+    case 'boolean':
+      return 'boolean';
+    case 'number':
+      return runtime.isInt === true ? 'integer' : 'float';
+    case 'enum':
+      return 'text';
+    case 'literal':
+      return literalType(runtime.values?.values().next().value);
+    default:
+      return undefined;
   }
-  if (runtime.type === 'boolean') return 'boolean';
-  if (runtime.type === 'number') return runtime.isInt === true ? 'integer' : 'float';
-  if (runtime.type === 'enum') return 'text';
-  if (runtime.type !== 'literal') return undefined;
-  return literalType(runtime.values?.values().next().value);
 }
 
 function temporalFor(value: SemanticType['value']): SemanticType['temporal'] | undefined {

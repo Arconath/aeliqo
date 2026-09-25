@@ -16,6 +16,21 @@ export interface AeliqoMenuItem {
   readonly disabled?: boolean;
 }
 
+function nextIndexFor(key: string, current: number, count: number): number | undefined {
+  switch (key) {
+    case 'ArrowDown':
+      return (current + 1) % count;
+    case 'ArrowUp':
+      return (current - 1 + count) % count;
+    case 'Home':
+      return 0;
+    case 'End':
+      return count - 1;
+    default:
+      return undefined;
+  }
+}
+
 export class AeliqoMenuElement extends AeliqoFoundationElement {
   static readonly properties = {
     items: { attribute: false },
@@ -130,12 +145,8 @@ export class AeliqoMenuElement extends AeliqoFoundationElement {
       return;
     }
     if (current < 0) return;
-    let next = current;
-    if (event.key === 'ArrowDown') next = (current + 1) % enabled.length;
-    else if (event.key === 'ArrowUp') next = (current - 1 + enabled.length) % enabled.length;
-    else if (event.key === 'Home') next = 0;
-    else if (event.key === 'End') next = enabled.length - 1;
-    else return;
+    const next = nextIndexFor(event.key, current, enabled.length);
+    if (next === undefined) return;
     event.preventDefault();
     const target = this.renderRoot.querySelector<HTMLElement>(`[data-menu-id="${CSS.escape(enabled[next]!.item.id)}"]`);
     target?.focus();
