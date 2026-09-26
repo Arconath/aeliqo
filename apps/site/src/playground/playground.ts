@@ -2,19 +2,17 @@ import type { Intent } from '@aeliqo/core';
 import type { WebRenderReceipt } from '@aeliqo/web/app';
 import { createActionReviewController } from './action-review.js';
 import { createConnectionFlow } from './connection-flow.js';
+import { demoTasksFor } from './demo-agent.js';
 import { evidenceFor, selectedView, viewLabel, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
 import { fixtureEvidence } from './fixture-inspector.js';
 import { createFixtureJourneys, FIXTURE_JOURNEYS, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
 import { createJourneyTracker, journeyStagesFor } from './journey.js';
+import { bindConfigCopy, COPY_HINTS, renderMcpClientConfigs } from './mcp-configs.js';
 import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario } from './scenarios.js';
 import { findScenario, labelIntent, renderScenarioControls } from './scenario-controls.js';
 import { createPlaygroundSession, type PlaygroundSession } from './session.js';
 
 type Mode = 'without-ai' | 'connected';
-const modeLabels: Readonly<Record<Mode, string>> = {
-  'without-ai': 'Without AI',
-  connected: 'Connect AI',
-};
 
 function required<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -26,12 +24,10 @@ const scenarioSelect = required<HTMLSelectElement>('#pg-scenario');
 const appRoot = required<HTMLElement>('.pg-app');
 const bootState = required<HTMLElement>('#pg-boot');
 const bootControls = document.querySelectorAll<HTMLButtonElement | HTMLSelectElement>('[data-playground-boot-control]');
+const requestRail = required<HTMLDetailsElement>('#pg-request');
 const scenarioDescription = required<HTMLElement>('#pg-scenario-description');
 const stepsHost = required<HTMLElement>('#pg-steps');
-const manualStep = required<HTMLSelectElement>('#pg-manual-step');
-const modeLabel = required<HTMLElement>('#pg-mode-label');
 const guidedPanel = required<HTMLElement>('#pg-guided');
-const manualPanel = required<HTMLElement>('#pg-manual');
 const connectedPanel = required<HTMLElement>('#pg-connected');
 const regionHost = required<HTMLElement>('#pg-region');
 const status = required<HTMLElement>('#pg-status');
@@ -55,13 +51,17 @@ const actionStatus = required<HTMLElement>('#pg-action-status');
 const actionCancel = required<HTMLButtonElement>('#pg-action-cancel');
 const actionConfirm = required<HTMLButtonElement>('#pg-action-confirm');
 const connectionKind = required<HTMLSelectElement>('#pg-connection-kind');
+const connectButton = required<HTMLButtonElement>('#pg-connect');
 const connectionStatus = required<HTMLElement>('#pg-connect-status');
 const connectionLabel = required<HTMLElement>('#pg-connection-label');
 const connectionDot = required<HTMLElement>('#pg-connection-dot');
 const prompt = required<HTMLTextAreaElement>('#pg-prompt');
 const send = required<HTMLButtonElement>('#pg-send');
+const demoList = required<HTMLElement>('#pg-demo-list');
+const copyStatus = required<HTMLElement>('#pg-copy-status');
 const exportButton = required<HTMLButtonElement>('#pg-export');
 const exportNote = required<HTMLElement>('#pg-export-note');
+const actionsMenu = required<HTMLDetailsElement>('#pg-menu');
 const attendancePanel = required<HTMLElement>('#pg-attendance-journey');
 const workspacePanel = required<HTMLElement>('#pg-workspace-journey');
 const modeButtons = document.querySelectorAll<HTMLButtonElement>('[data-mode]');
@@ -89,8 +89,20 @@ const connectionFlow = createConnectionFlow(
     prompt,
     send,
     modelCalls,
+    connectButton,
+    localControls: required<HTMLElement>('#pg-local-connection-controls'),
+    demoPanel: required<HTMLElement>('#pg-demo-controls'),
+    relayControls: required<HTMLElement>('#pg-relay-controls'),
+    relayGenerate: required<HTMLButtonElement>('#pg-relay-generate'),
+    relaySession: required<HTMLElement>('#pg-relay-session'),
+    relayConfig: required<HTMLElement>('#pg-mcp-relay-json'),
+    relayCli: required<HTMLElement>('#pg-mcp-relay-cli'),
+    relayExpiry: required<HTMLElement>('#pg-relay-expiry'),
+    mcpConfig: required<HTMLElement>('#pg-mcp-config'),
+    webmcpNote: required<HTMLElement>('#pg-webmcp-note'),
   },
   () => session,
+  { scenario: () => scenario.id },
 );
 
 function stringify(value: unknown): string {
@@ -115,11 +127,19 @@ function setExportAvailability(publicJourney: boolean): void {
     return;
   }
   exportButton.setAttribute('aria-describedby', 'pg-export-note');
-  if (!published) return;
   const link = document.createElement('a');
   link.href = '/examples/';
-  link.textContent = 'Run the matching 0.5 source fixture';
-  exportNote.replaceChildren('This journey has no matching project ZIP. ', link, ' instead.');
+  if (!published) {
+    link.textContent = 'the source examples from the matching checkout';
+    exportNote.replaceChildren(
+      'Export is unavailable until the matching Aeliqo packages are verified in the registry. Run ',
+      link,
+      ' instead.',
+    );
+    return;
+  }
+  link.textContent = 'Run the matching source fixture';
+  exportNote.replaceChildren('This guided demo has no matching project ZIP. ', link, ' instead.');
 }
 
 const actionReview = createActionReviewController({
@@ -170,7 +190,7 @@ function resetSession(): void {
   journeyResult.textContent = 'Waiting';
   journeyView.textContent = 'Waiting';
   setJourney('pending', 'pending', 'pending');
-  viewBadge.textContent = 'Waiting for intent';
+  viewBadge.textContent = 'Waiting for a request';
   resultTitle.textContent = 'Employees';
   resultDefinition.hidden = true;
   resultDefinition.textContent = '';
@@ -181,7 +201,22 @@ function resetSession(): void {
 }
 
 function renderScenario(): void {
-  renderScenarioControls(scenario, scenarioDescription, stepsHost, manualStep, runIntent);
+  renderScenarioControls(scenario, scenarioDescription, stepsHost, runIntent);
+  renderDemoTasks();
+}
+
+function renderDemoTasks(): void {
+  demoList.replaceChildren();
+  for (const task of demoTasksFor(scenario.id)) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = task.label;
+    button.addEventListener('click', () => {
+      prompt.value = task.label;
+      void connectionFlow.submitPrompt();
+    });
+    demoList.append(button);
+  }
 }
 
 function showStandardJourney(): void {
@@ -193,7 +228,7 @@ function showStandardJourney(): void {
 function showFixtureJourney(kind: FixtureJourney): void {
   activeRequest?.abort();
   connectionFlow.disconnect();
-  connectionFlow.show('No agent · synthetic journey', 'disconnected');
+  connectionFlow.show('No agent · guided demo', 'disconnected');
   setMode('without-ai');
   activeJourney = kind;
   setExportAvailability(true);
@@ -208,7 +243,7 @@ function showFixtureJourney(kind: FixtureJourney): void {
   resultTitle.textContent = spec.title;
   resultDefinition.hidden = false;
   resultDefinition.textContent = spec.definition;
-  status.textContent = 'Evaluating the registered synthetic journey…';
+  status.textContent = 'Evaluating the registered guided demo…';
   void fixtureJourneys.show(kind);
   renderInspector();
 }
@@ -217,7 +252,7 @@ const fixtureJourneys = createFixtureJourneys({
   attendancePanel,
   workspacePanel,
   onStatus(kind, receipt) {
-    const state = fixtureStatus(kind, receipt, resultTitle.textContent ?? 'Journey');
+    const state = fixtureStatus(kind, receipt, resultTitle.textContent ?? 'Demo');
     receiptState.textContent = state.receipt;
     journeyResult.textContent = state.result;
     journeyView.textContent = state.view;
@@ -226,7 +261,7 @@ const fixtureJourneys = createFixtureJourneys({
     setJourney(...journeyStagesFor(state.receipt));
   },
   onError() {
-    setError('The synthetic journey could not load. Reload the page to retry.');
+    setError('The guided demo could not load. Reload the page to retry.');
     journeyResult.textContent = 'Could not complete';
     setJourney('done', 'failed', 'pending');
   },
@@ -309,9 +344,11 @@ function setMode(next: Mode): void {
   mode = next;
   for (const button of modeButtons) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
   guidedPanel.hidden = mode !== 'without-ai';
-  manualPanel.hidden = mode !== 'without-ai';
   connectedPanel.hidden = mode !== 'connected';
-  modeLabel.textContent = modeLabels[mode];
+  if (mode === 'connected') {
+    requestRail.open = true;
+    void connectionFlow.prepare();
+  }
 }
 
 const MODES = ['without-ai', 'connected'] as const satisfies readonly Mode[];
@@ -366,12 +403,12 @@ for (const button of modeButtons)
     const next = modeFrom(button.dataset.mode);
     if (next !== undefined) setMode(next);
   });
-required<HTMLButtonElement>('#pg-run-manual').addEventListener('click', () => {
-  const step = scenario.steps.find((candidate) => candidate.id === manualStep.value) ?? scenario.steps[0]!;
-  void runIntent(step.intent());
+required<HTMLButtonElement>('#pg-reset').addEventListener('click', () => {
+  actionsMenu.open = false;
+  resetSession();
 });
-required<HTMLButtonElement>('#pg-reset').addEventListener('click', () => resetSession());
 exportButton.addEventListener('click', async () => {
+  actionsMenu.open = false;
   const [{ projectFiles }, { zipProject }] = await Promise.all([import('./project-template.js'), import('./zip.js')]);
   const blob = zipProject(projectFiles(scenario.id, __AELIQO_RELEASE_VERSION__));
   const href = URL.createObjectURL(blob);
@@ -395,9 +432,24 @@ for (const button of inspectorButtons)
     for (const candidate of inspectorButtons) candidate.setAttribute('aria-pressed', String(candidate === button));
     renderInspector();
   });
-required<HTMLButtonElement>('#pg-connect').addEventListener('click', () => void connectionFlow.connect());
+connectButton.addEventListener('click', () => void connectionFlow.connect());
+required<HTMLButtonElement>('#pg-relay-generate').addEventListener('click', () => void connectionFlow.connect());
 connectionKind.addEventListener('change', () => connectionFlow.changeKind());
 send.addEventListener('click', () => void connectionFlow.submitPrompt());
+
+renderMcpClientConfigs(required<HTMLElement>('#pg-mcp-http'), required<HTMLElement>('#pg-mcp-stdio'));
+bindConfigCopy(required<HTMLElement>('#pg-mcp-config'), copyStatus);
+bindConfigCopy(
+  required<HTMLElement>('#pg-relay-controls'),
+  required<HTMLElement>('#pg-relay-copy-status'),
+  COPY_HINTS.hosted,
+);
+const narrowRail = window.matchMedia('(max-width: 800px)');
+const syncRequestRail = () => {
+  requestRail.open = !narrowRail.matches;
+};
+syncRequestRail();
+narrowRail.addEventListener('change', syncRequestRail);
 
 resetSession();
 renderScenario();

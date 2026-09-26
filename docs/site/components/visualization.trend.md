@@ -7,23 +7,25 @@ contract: 'Temporal metric series, declared grain, gaps and exact accessible sum
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Trend plots an application-supplied temporal visualization against exact Result rows and declared field
-meanings. It preserves gaps rather than inventing points, and pairs the graphic with exact values in an
-accessible data table. Use it directly, through a semantic binding, or as an
-eligible standard recipe choice for browse and analyze results. The recipe
-requires a compatible time field, measure, and permitted renderer.
+Show how a measure changes over time as a line. Gaps stay visible; exact values live in the paired data table.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Track a measure like revenue or signups over time.
+- Show change at the grain the spec declares.
+- Keep missing periods visible as gaps, not filled points.
+- Let people select a point tied to its source row.
 
 ## When to use a different component
 
-Use Area when magnitude should read as a filled surface and the stacking policy is explicit. Use Metric for one point-in-time value.
+- Use Area when filled magnitude or stacking is the point.
+- Use Metric for one current value without a time axis.
 
 ## Properties and defaults
 

@@ -1,28 +1,77 @@
 ---
 id: 'analytics'
 path: '/guides/analytics/'
-section: 'Build'
+section: 'Guides'
 title: 'Analytics and time'
 description: 'Declare analytical meanings, periods, denominators, completeness, and eligible trend views.'
 ---
 
-<p class="lead">An analytical chart is trustworthy only when the application defines what its numbers mean. Aeliqo evaluates registered meanings and carries their grain, time policy, population, and coverage into the Result used by the view.</p>
+<p class="lead">A chart is trustworthy only when your app defines what its numbers mean. Aeliqo evaluates registered meanings and carries their time period, time policy, population, and coverage into the result the view uses.</p>
 
-## Register the meaning before requesting it
+## When you need this
 
-Define the entity fields and their roles, then register the measure and its allowed aggregation. A count, sum, and ratio are different meanings even when they use the same source rows. A ratio of daily totals must divide the summed numerator by the summed denominator for each day; averaging individual percentages changes the meaning. The query may refer only to registered fields, meanings, relations, and operations authorized for its resource. See [semantic contracts](/concepts/semantics/) and [resource metadata](/guides/resources/).
+- Users should see a trend or comparison, not a table of raw rows.
+- A number needs a declared unit, denominator, or time period.
+- Missing data must never plot as a confident zero.
 
-## Make the time window explicit
+## 1. Register the meaning
 
-Choose a registered temporal field, calendar, timezone, bucket grain, and visible period. The September 2026 attendance fixture registers `day` with `Asia/Jakarta` and requests daily buckets in that timezone. The host describes September as the half-open interval `[2026-09-01T00:00:00+07:00, 2026-10-01T00:00:00+07:00)`; for its fixed September 6 as-of date, it evaluates supported civil-day filters from September 1 through before September 6. The fixture does not execute `QuerySpec.period`: offset and DST period execution remain unsupported in this local path. A record at a half-open end boundary belongs to the next period. The timezone is declared on the temporal field and query time bucket rather than inferred from the browser clock.
+Define the entity fields and their roles first, then register the measure and its allowed aggregation. A count, a sum, and a ratio are different meanings even when they read the same rows. A daily ratio divides the summed numerator by the summed denominator for each day. Averaging individual percentages would change the meaning. A request may only name registered fields, meanings, relations, and operations authorized for that resource.
 
-The approved attendance rate is **present eligible employee-days / eligible employee-days**. Its synthetic daily values are 1 on September 1, 0.5 on September 2, and 1 on September 3. September 4–5 have no observations; the fixture labels them as missing instead of plotting zero. September 6 is marked future in that fixture. A partial month is not presented as complete coverage.
+```ts
+const workforceHeadcount = defineResource({
+  id: 'workforce-headcount',
+  revision: 'headcount-1',
+  label: 'Monthly workforce headcount',
+  identity: ['id'],
+  rowGrain: ['month'],
+  schema: z.object({ id: z.string(), month: z.iso.date(), headcount: z.number().int() }),
+  fields: {
+    id: { label: 'Snapshot ID', hidden: true },
+    month: { label: 'Month', role: 'time' },
+    headcount: { label: 'Month end headcount', role: 'measure' },
+  },
+  meanings: [
+    {
+      id: 'month-end-headcount',
+      revision: '1',
+      label: 'Month end headcount',
+      explanation: 'Employees active at the end of each month. Never sum across time.',
+      output: { value: 'integer', nullable: false, grain: ['month'] },
+      implementation: {
+        kind: 'expression',
+        expression: {
+          kind: 'call',
+          function: { id: 'core.aggregate.sum', revision: '1' },
+          arguments: [{ kind: 'field', ref: 'headcount' }],
+        },
+      },
+      dependencies: [],
+      functionRegistryDigest: 'core-query-2',
+      origin: 'manual',
+      lifecycle: 'active',
+      scope: 'workspace',
+      authority: 'approved',
+      aggregation: 'semi-additive',
+      aggregationDimensions: ['month'],
+      missingPolicy: 'reject',
+    },
+  ],
+  presentation: { allowedViews: ['table', 'trend'], preferred: { analyze: 'trend' } },
+});
+```
 
-## Request the analysis
+See [semantic contracts](/concepts/semantics/) and [resource metadata](/guides/resources/).
 
-An `analyze` intent names the registered meaning and the declared temporal policy. This is the request the maintained tutorial sends for its headcount trend:
+## 2. Make the time window explicit
 
-**analyze intent**
+Choose a registered temporal field, a calendar, a timezone, a time bucket, and a visible period. A period is a half-open interval — a record exactly on the end boundary belongs to the next period. Declare the timezone on the field and the query's time bucket; never infer it from the browser clock. Period offsets and DST-aware period execution are not supported by the local evaluation path — filter with explicit date ranges instead.
+
+## 3. Send an analyze request
+
+An `analyze` request names the registered meaning and the declared time policy. This request asks for the headcount trend:
+
+**analyze request**
 
 ```json
 {
@@ -37,17 +86,20 @@ An `analyze` intent names the registered meaning and the declared temporal polic
 }
 ```
 
-The measure must be a registered meaning on that resource at that revision; an ad-hoc aggregate such as “average of headcount” is not accepted.
+The measure must be a registered meaning on that resource at that revision. An ad-hoc aggregate like "average of headcount" is not accepted. Send it with `app.render` or `surface.request`.
 
-## Select an eligible presentation
+## 4. Pick an eligible view
 
-The resolver may choose a trend when the Result has a compatible time field, registered measure, and renderer. The application can pin a valid view, but a preference does not bypass eligibility or authority. The browser attendance example renders a chart and exposes the metric, denominator, period, timezone, and missing coverage as text. When both the approved rate and count are requested without a choice, it asks which metric to show. See [adaptive regions](/guides/adaptive-region/) and [runnable examples](/examples/).
+The resolver may choose `trend` when the result has a compatible time field, a registered measure, and a renderer. `preferredView` is a hint, not a bypass. When a request names two metrics and needs a choice, the status is `needs-input`. See [adaptive regions](/guides/adaptive-region/).
 
-## Failure and recovery
+Run **Monthly headcount** in the [playground](/playground/?scenario=people) to see this request committed as a trend.
 
-- Unknown or ambiguous metrics require a registered default or explicit clarification.
-- Mixed units, incompatible grain, unsupported aggregation, and missing required denominators cannot be converted into a plausible chart.
-- Cancellation and late Results cannot replace a newer committed view.
-- A failed update keeps the previous Result only while that Result remains authorized; scope revocation clears it.
+## What can go wrong
 
-Run **Daily attendance** in the [public Playground](/playground/) to see the fixture's committed trend, denominator, period, missing coverage, and clarification choice in one shell. The journey uses synthetic records and does not validate a live provider or a customer dataset. A server adapter must enforce the same authorization and coverage claims before returning data; see [HTTP data](/guides/http-data/).
+- Unknown or ambiguous metrics need a registered default or an explicit clarification. The request fails or returns `needs-input`.
+- Mixed units, an incompatible time period, an unsupported aggregation, or a missing denominator cannot be faked into a plausible chart.
+- A period with no observations stays marked missing. A partial period is not complete coverage.
+- Cancellation and late results cannot replace a newer committed view. A failed update keeps the previous result only while it stays authorized; scope revocation clears it.
+- A server adapter must enforce the same authorization and coverage claims before returning data. See [HTTP data](/guides/http-data/).
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/concepts/semantics/"><span>Semantic contracts</span><small>Model units, measures, and temporal policy.</small><b aria-hidden="true">→</b></a><a href="/examples/"><span>Runnable examples</span><small>See analyze requests in working apps.</small><b aria-hidden="true">→</b></a></nav>

@@ -7,19 +7,24 @@ contract: 'Determinate or unknown progress honestly; no invented completion perc
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Describe an ongoing operation with native progress semantics. A bounded value reports determinate progress; an absent value stays indeterminate, so the component never invents a completion percentage.
+Reports an ongoing operation with native progress semantics. A bounded value shows determinate progress; no value stays indeterminate, so nothing is invented.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- The host knows how much of the operation is done.
+- The operation is underway but completion is unknown.
+- A persistent label should name what is progressing.
 
 ## When to use a different component
 
-Use Skeleton while the shape of pending content is known. Use Progress when the host can report operation progress.
+- Use [Skeleton](/components/feedback.skeleton/) when the shape of pending content matters more than progress.
+- Use [EmptyState](/components/feedback.empty-state/) when the operation ended with nothing to show.
 
 ## Properties and defaults
 

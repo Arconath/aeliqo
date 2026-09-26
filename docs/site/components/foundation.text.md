@@ -7,19 +7,24 @@ contract: 'Render trusted/plain text with locale and wrapping; no untrusted HTML
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Render a trusted string as text in the chosen semantic element, with optional muted emphasis. Text is inserted as content rather than interpreted as HTML, so the host controls its meaning and formatting.
+Renders a trusted string in the element you choose, with optional muted styling. The value is inserted as text, never parsed as HTML.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Body copy, captions, or any ordinary trusted string.
+- Text that must never be interpreted as markup.
+- Strings needing muted styling or a specific element via `as`.
 
 ## When to use a different component
 
-Use Heading for a section title and Badge for a short status or category. Text is ordinary trusted copy.
+- Use Heading for a section title in the document outline.
+- Use Badge for a short status or category marker.
 
 ## Properties and defaults
 

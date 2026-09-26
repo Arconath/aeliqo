@@ -1,10 +1,12 @@
 ---
 id: 'migration-0-4'
 path: '/ship/migration-0.4/'
-section: 'Ship'
-title: 'Migrate from 0.4.2 to vNext 0.5'
+section: 'Releases'
+title: 'Migrate from 0.4.2 to 0.5'
 description: 'Move from Aeliqo 0.4.2 to the breaking 0.5.0 release line.'
 ---
+
+<p class="lead">Move from 0.4.2 to 0.5 one boundary at a time. The existing app and Region path keeps working while you adopt scopes and surfaces.</p>
 
 ## Release line and compatibility
 
@@ -17,11 +19,11 @@ available for older integrations.
 
 The wire contract remains version `1`. The existing application/resource/Region
 path is the compatibility adapter for applications that are not ready to move.
-Do not install a mixture of `0.4.2` and `0.5.0` packages in one application;
-keep all Aeliqo packages on one exact release line.
+Do not install a mixture of `0.4.2` and `0.5.0` packages in one application.
+Keep all Aeliqo packages on one exact release line.
 
-Migrate one integration boundary at a time: keep the existing app and Region
-working, add an explicitly owned scope and one surface, then move that screen's
+Migrate one integration boundary at a time. Keep the existing app and Region
+working. Add an explicitly owned scope and one surface, then move that screen's
 rendering and optional agent pairing. Check the old and new paths against the
 same host authority and data source before removing the old Region. The
 [local data starter](/start/) is complete and copyable; the advanced snippets
@@ -36,7 +38,7 @@ non-data features through the dedicated feature entry:
 // Existing 0.4.2 path
 import { defineResource } from '@aeliqo/core';
 
-// vNext 0.5.0 path
+// 0.5.0 path
 import { defineDataFeature, defineFeature } from '@aeliqo/core/features';
 ```
 
@@ -50,9 +52,9 @@ and host permissions outside the immutable definition.
 Create each live surface through `@aeliqo/runtime/surfaces` and keep its scope,
 identity, and data binding explicit. Scope transition contracts are available
 from `@aeliqo/runtime/scopes` as types for the host-owned lifecycle adapter.
-The following is an integration outline: `resources`, `authority`, `scope`,
-`peopleFeature`, `snapshot`, `coverage`, and `normalize` are supplied by the
-host; copy the concrete binding from the [runtime package guide](/reference/packages/)
+The following is an integration outline. The host supplies `resources`,
+`authority`, `scope`, `peopleFeature`, `snapshot`, `coverage`, and `normalize`.
+Copy the concrete binding from the [runtime package guide](/reference/packages/)
 or the maintained fixtures before using it:
 
 ```ts
@@ -103,12 +105,11 @@ model port; never put them in prompts or tool arguments.
 
 ## Migration checks
 
-Build a clean consumer from packed artifacts and run the T20 qualification
-fixture before requesting a release candidate. From the repository root, run
-`pnpm test:release-tooling`; this includes the T20 packaging fixture. It checks
-the old 0.4 root
-imports, every new feature/surface/browser entry, export targets, legal files,
-optional peers, and the browser no-agent module graph. See the
-[qualified support matrix](/ship/support-matrix/) for the tested framework,
+Build a clean consumer from packed artifacts and run the packaging
+qualification fixture before requesting a release candidate. From the
+repository root, run `pnpm test:release-tooling`. It checks the old 0.4 root
+imports, the new feature/surface/browser entries, export targets, and legal
+files. It also checks optional peers and the browser no-agent module graph. See
+the [qualified support matrix](/ship/support-matrix/) for the tested framework,
 browser, provider, and workload profiles. Unsupported or untested entries are
 labelled there rather than inferred from a passing protocol test.

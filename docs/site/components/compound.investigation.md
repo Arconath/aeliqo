@@ -7,21 +7,26 @@ contract: 'Trend, baseline, event timeline and detail; associations never imply 
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Investigation brings a supplied trend, baseline metric, event timeline, and selected detail into one
-scope. The application binds each Result and dataset; missing trend or event evidence gets an explicit
-message, and the view warns that association is not causation.
+Investigation arranges a trend, baseline metric, event timeline, and record detail in one scope. Use it when evidence about an entity must be reviewed together without implying cause.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- An entity needs trend, baseline, and event evidence viewed in one place.
+- The host supplies the visualization specs, datasets, and detail record.
+- Missing trend or event data must surface an explicit message.
+- Associations may be shown but never presented as causes.
 
 ## When to use a different component
 
-Use Explorer for routine browse, filter, and selection work. Investigation keeps baseline, trend evidence, and detail in one declared scope.
+- Use Explorer for routine browse, filter, and selection work.
+- Use Trend or Timeline alone when one evidence view is enough.
+- Use Detail when only the record fields matter, without evidence panels.
 
 ## Properties and defaults
 

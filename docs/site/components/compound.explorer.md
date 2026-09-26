@@ -7,21 +7,26 @@ contract: 'Filter plus collection plus selected detail using shared parameter/se
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Explorer places FilterBuilder, RecordList, and Detail in one bounded layout. The application supplies the
-rows, selected key, and detail record; filter and selection events are forwarded as proposals rather than
-changing host data silently.
+Explorer combines a filter bar, record list, and detail pane into one view with shared scope. Use it when browsing and inspecting records belong on the same screen.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A record collection needs filter controls and a detail pane sharing one selection.
+- Choosing a row should reveal its detail in place instead of navigating away.
+- Filter and selection changes must reach the host as proposals, not silent mutations.
+- The host owns rows, selection, and detail; the panels only coordinate them.
 
 ## When to use a different component
 
-Use separate FilterBuilder, RecordList, and Detail components when the application already owns panel composition. Explorer coordinates their shared scope and selection.
+- Use RecordList alone when the view needs no filters or detail pane.
+- Use Table when users scan many rows instead of inspecting one record.
+- Use separate FilterBuilder, RecordList, and Detail when the app already owns panel layout.
 
 ## Properties and defaults
 

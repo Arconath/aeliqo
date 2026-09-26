@@ -21,7 +21,7 @@ export function viewLabel(view: string): string {
   return name.replaceAll('-', ' ').replace(/^\w/u, (letter) => letter.toUpperCase());
 }
 
-const intentSummary = 'The exact bounded request sent by guided controls, application code, or an agent tool.';
+const intentSummary = 'The exact bounded request sent by the task list or an agent tool.';
 const diagnosticSummary = 'Actionable runtime diagnostics. Empty means no diagnostic was emitted for the last request.';
 
 function taskEvidence(receipt: NonNullable<PlaygroundEvidence['receipt']>) {
@@ -63,15 +63,15 @@ const EVIDENCE_SECTIONS: Readonly<Record<InspectorSection, (evidence: Playground
   diagnostics: (evidence) => ({ summary: diagnosticSummary, value: evidence.receipt?.diagnostics ?? [] }),
   task: (evidence) =>
     evidence.receipt === undefined
-      ? { summary: 'Run an intent to inspect this stage.', value: {} }
+      ? { summary: 'Run a request to inspect this stage.', value: {} }
       : taskEvidence(evidence.receipt),
   result: (evidence) =>
     evidence.receipt === undefined
-      ? { summary: 'Run an intent to inspect this stage.', value: {} }
+      ? { summary: 'Run a request to inspect this stage.', value: {} }
       : resultEvidence(evidence.receipt),
   presentation: (evidence) =>
     evidence.receipt === undefined
-      ? { summary: 'Run an intent to inspect this stage.', value: {} }
+      ? { summary: 'Run a request to inspect this stage.', value: {} }
       : presentationEvidence(evidence.receipt),
 };
 

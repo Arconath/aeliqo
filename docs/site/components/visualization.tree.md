@@ -7,21 +7,24 @@ contract: 'Explicit hierarchy, cycle validation, stable expansion and equivalent
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Tree presents a declared parent-child hierarchy from authorized rows. The bound geometry validates the
-hierarchy and limits graphic complexity; a structured data view keeps node labels and selection reachable
-when the graphic cannot be shown.
+Show a declared parent-child hierarchy as a tree. A structured data view keeps every node reachable without the graphic.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Show org charts or nested categories with declared parents.
+- Let people expand levels while selection stays stable.
+- Offer a text outline when the graphic is too dense.
 
 ## When to use a different component
 
-Use Relationship for general directed edges. Tree requires explicit parent identity.
+- Use Treemap when area should encode a value.
+- Use Relationship for directed edges that are not strict parent-child.
 
 ## Properties and defaults
 

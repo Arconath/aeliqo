@@ -7,19 +7,24 @@ contract: 'Navigate to an application-approved destination; preserve browser ope
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Render an application-supplied destination with native link behavior, including keyboard activation and browser navigation. The host must approve `href` and `target`; a cancellable link event lets it intercept activation when needed.
+A native link to a destination your app approves, preserving browser behavior like open-in-new-tab. The host sets `href` and `target`; a cancellable event lets it intercept activation.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Navigating to another page or route.
+- Destinations users may open in a new tab.
+- Links your app must approve before they render as anchors.
 
 ## When to use a different component
 
-Use Button when activation changes application state or submits a request. Link should preserve normal browser navigation.
+- Use Button when activation changes state or submits a request.
+- Use Breadcrumb for a trail of ancestor links ending at the current page.
 
 ## Properties and defaults
 
@@ -37,10 +42,10 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
-If `href` is empty or fails the component's URL check, it renders text rather
-than a navigable anchor. `disabled` also renders noninteractive text. For an
-approved `_blank` destination, the anchor includes `noopener noreferrer`;
-the host still decides which destinations users may open.
+An empty or invalid `href` renders plain text, not an anchor. `disabled`
+renders noninteractive text too. Approved `_blank` destinations get
+`noopener noreferrer`; your app still decides which destinations users may
+open.
 
 ## Keyboard, focus, and accessibility
 

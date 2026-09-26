@@ -7,19 +7,24 @@ contract: 'Action menu with focus return and keyboard behavior; no layout-genera
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Show a bounded list of application-supplied actions with roving keyboard focus. Selecting an enabled item emits its ID; the host performs the action and decides how open state changes.
+A short list of app-supplied commands with roving keyboard focus. Selecting an item emits its ID; your app performs the action and controls open state.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- An overflow or actions button on a row or record.
+- A few explicit commands, some possibly disabled.
+- Command lists that must stay fully keyboard operable.
 
 ## When to use a different component
 
-Use Popover for details or non-command content. Menu is for a short list of explicit commands.
+- Use Popover for details or content that isn't a command list.
+- Use TreeNav for hierarchical navigation instead of flat commands.
 
 ## Properties and defaults
 

@@ -7,21 +7,24 @@ contract: 'Scannable records with identity-based selection and reachable additio
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-RecordList gives supplied records a compact, scannable reading order. When selection is enabled, it emits
-proposed stable record keys and waits for the application to update the selected keys; an empty row set
-has its own visible state.
+Show records in a compact, scannable list. Selection emits stable record keys; the application applies them.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Browse records where reading order matters more than columns.
+- Let people select one or more records by stable identity.
+- Expose extra fields on demand while rows stay compact.
 
 ## When to use a different component
 
-Use Table when column comparison, sorting, or page controls dominate. RecordList is for browsing and selecting identified records.
+- Use Table when sorting, paging, or comparing columns is the task.
+- Use CardCollection when each record needs a heading and card layout.
 
 ## Properties and defaults
 

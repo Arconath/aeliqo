@@ -7,21 +7,24 @@ contract: 'Two dimensions and one measure; accessible exact cell values and read
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Heatmap encodes a measure over two declared dimensions with a color key. The accompanying data table
-keeps exact cell values available without relying on color, and binding requires the host's authorized
-Result and field meanings.
+Show a measure across two dimensions as colored cells with a readable key. Exact cell values stay in the data table.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Find hot spots across two categories, like team by weekday.
+- Scan many cells at once through color.
+- Keep exact cell values reachable without reading color.
 
 ## When to use a different component
 
-Use Matrix when values should be compared in a table grid. Use CalendarGrid when one axis is calendar days.
+- Use Matrix when exact table values matter more than color.
+- Use CalendarGrid when one axis is calendar days.
 
 ## Properties and defaults
 

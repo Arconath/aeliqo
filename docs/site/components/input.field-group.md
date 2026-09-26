@@ -7,19 +7,24 @@ contract: 'Group related controls with legend, descriptions and coordinated vali
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Put related form controls under one legend with shared description and error text. The group can disable its child fieldset, while each child still owns its value and validation behavior.
+Groups related controls under one legend with shared description and error text. It can disable the whole fieldset while each child keeps its own value and validation.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Several controls answer one question, such as the parts of an address.
+- The group needs one legend plus shared description or error text.
+- You want to disable a whole set of controls at once.
 
 ## When to use a different component
 
-Use Form when the controls also need submit and reset behavior. FieldGroup provides shared labeling around child controls.
+- Use [Form](/components/input.form/) when the controls also need submit and reset behavior.
+- Use [TextField](/components/input.text-field/) or another single control when there is nothing to group.
 
 ## Properties and defaults
 
