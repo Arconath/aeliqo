@@ -45,6 +45,7 @@ apply those rules automatically.
 
 | Subpath | Responsibility |
 | --- | --- |
+| `@aeliqo/agent/app` | Application tool endpoint; identical to the root entry |
 | `@aeliqo/agent/mcp` | MCP client and server adapters |
 | `@aeliqo/agent/webmcp` | Browser WebMCP capability adapter |
 | `@aeliqo/agent/model` | Provider-neutral model tool loop |
