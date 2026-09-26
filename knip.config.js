@@ -109,6 +109,10 @@ export default {
       ],
       project: ['runner/**/*.{mjs,js}', 'src/**/*.{ts,tsx}', 'tests/**/*.{ts,tsx,mjs}'],
     },
+    'apps/relay': {
+      entry: ['src/index.ts', 'tests/**/*.test.ts'],
+      project: ['src/**/*.ts', 'tests/**/*.ts'],
+    },
     'examples/catalog': {
       entry: ['index.ts'],
       project: ['**/*.ts'],
