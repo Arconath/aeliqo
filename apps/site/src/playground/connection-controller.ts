@@ -18,8 +18,11 @@ function isLoopbackOrigin(): boolean {
 async function checkWebMcp(): Promise<PlaygroundConnection> {
   const { detectWebMcp } = await import('@aeliqo/agent/webmcp');
   const hostDocument = typeof document === 'undefined' ? undefined : document;
+  const hostNavigator = typeof navigator === 'undefined' ? undefined : navigator;
   const detected =
-    hostDocument === undefined ? detectWebMcp() : detectWebMcp({ document: hostDocument, evidence: 'native' });
+    hostDocument === undefined && hostNavigator === undefined
+      ? detectWebMcp()
+      : detectWebMcp({ document: hostDocument, navigator: hostNavigator, evidence: 'native' });
   return detected.supported
     ? { state: 'available', kind: 'webmcp', label: 'Native WebMCP is available (experimental).' }
     : {

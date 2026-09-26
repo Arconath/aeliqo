@@ -42,23 +42,41 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
     return html`
       <div part="field">
         <label part="label" for="control"><span class="label-text">${this.label}</span></label>
-        <select
-          part="input"
-          id="control"
-          name=""
-          .value=${this.value}
-          ?disabled=${this.fieldDisabled}
-          ?required=${this.required}
-          aria-readonly=${this.readOnly ? 'true' : nothing}
-          autocomplete=${this.autocomplete || nothing}
-          aria-invalid=${this.error || (!known && this.value) ? 'true' : nothing}
-          aria-describedby=${describedBy || nothing}
-          @change=${this.handleChange}
-        >
-          <option value="">${this.emptyLabel}</option>
-          ${!known && this.value ? html`<option value=${this.value}>${this.unknownLabel}: ${this.value}</option>` : nothing}
-          ${options.map((option) => html`<option value=${option.value} ?disabled=${option.disabled === true}>${option.label}</option>`)}
-        </select>
+        <div class="select-wrap">
+          <select
+            part="input"
+            id="control"
+            name=""
+            .value=${this.value}
+            ?disabled=${this.fieldDisabled}
+            ?required=${this.required}
+            aria-readonly=${this.readOnly ? 'true' : nothing}
+            autocomplete=${this.autocomplete || nothing}
+            aria-invalid=${this.error || (!known && this.value) ? 'true' : nothing}
+            aria-describedby=${describedBy || nothing}
+            @change=${this.handleChange}
+          >
+            <option value="">${this.emptyLabel}</option>
+            ${
+              !known && this.value
+                ? html`<option value=${this.value}>${this.unknownLabel}: ${this.value}</option>`
+                : nothing
+            }
+            ${options.map(
+              (option) =>
+                html`<option value=${option.value} ?disabled=${option.disabled === true}>${option.label}</option>`,
+            )}
+          </select>
+          <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+            <path
+              d="m4 6 4 4 4-4"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
         ${this.renderMessages()}
       </div>
     `;
@@ -102,8 +120,49 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
   static readonly styles = [
     ...aeliqoInputStyles,
     css`
+      .select-wrap {
+        min-inline-size: 0;
+        position: relative;
+      }
+
+      /* Native appearance ignores padding in some engines; draw our own chevron. */
       select {
-        appearance: auto;
+        appearance: none;
+        overflow: hidden;
+        padding-inline-end: 2.25rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      select:has(> option[value='']:checked) {
+        color: var(--aeliqo-color-muted, #4b5563);
+      }
+
+      .select-chevron {
+        block-size: 1rem;
+        color: var(--aeliqo-color-muted, #4b5563);
+        inline-size: 1rem;
+        inset-block-start: 50%;
+        inset-inline-end: 0.625rem;
+        pointer-events: none;
+        position: absolute;
+        transform: translateY(-50%);
+      }
+
+      /* The sibling chevron does not share the select's disabled opacity. */
+      select:disabled + .select-chevron {
+        opacity: 0.55;
+      }
+
+      @media (forced-colors: active) {
+        select {
+          appearance: auto;
+          padding-inline-end: var(--aeliqo-control-inline-padding, 0.75rem);
+        }
+
+        .select-chevron {
+          display: none;
+        }
       }
     `,
   ];

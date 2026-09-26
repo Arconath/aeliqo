@@ -18,19 +18,27 @@ export type AeliqoTokenName =
   | '--aeliqo-visualization-series3'
   | '--aeliqo-visualization-series4'
   | '--aeliqo-visualization-reference'
+  | '--aeliqo-space-2'
   | '--aeliqo-space-4'
+  | '--aeliqo-space-6'
   | '--aeliqo-space-8'
+  | '--aeliqo-space-10'
   | '--aeliqo-space-12'
   | '--aeliqo-space-16'
+  | '--aeliqo-space-20'
   | '--aeliqo-space-24'
   | '--aeliqo-space-32'
+  | '--aeliqo-space-40'
   | '--aeliqo-space-48'
+  | '--aeliqo-space-64'
   | '--aeliqo-radius-small'
   | '--aeliqo-radius-medium'
   | '--aeliqo-radius-large'
   | '--aeliqo-typography-font-family-system'
   | '--aeliqo-typography-font-family-mono'
   | '--aeliqo-typography-font-size-caption'
+  | '--aeliqo-typography-font-size-xs'
+  | '--aeliqo-typography-font-size-sm'
   | '--aeliqo-typography-font-size-body'
   | '--aeliqo-typography-font-size-body-large'
   | '--aeliqo-typography-font-size-title'
@@ -43,16 +51,21 @@ export type AeliqoTokenName =
   | '--aeliqo-typography-font-weight-semibold'
   | '--aeliqo-typography-font-weight-bold'
   | '--aeliqo-control-min-target'
+  | '--aeliqo-control-coarse-target'
   | '--aeliqo-control-compact-target'
   | '--aeliqo-control-inline-padding'
   | '--aeliqo-control-border-width'
   | '--aeliqo-focus-width'
   | '--aeliqo-focus-offset'
+  | '--aeliqo-focus-ring-width'
+  | '--aeliqo-focus-ring-alpha'
   | '--aeliqo-motion-duration-fast'
   | '--aeliqo-motion-duration-standard'
   | '--aeliqo-motion-easing-standard'
   | '--aeliqo-elevation-none'
+  | '--aeliqo-elevation-xs'
   | '--aeliqo-elevation-raised'
+  | '--aeliqo-elevation-lg'
   | '--aeliqo-locale-default'
   | '--aeliqo-locale-direction';
 export type AeliqoTokenValues = Readonly<Partial<Record<AeliqoTokenName, string>>>;
@@ -96,21 +109,29 @@ export const AELIQO_DARK_TOKENS = {
   '--aeliqo-visualization-reference': '#CBD5E1',
 } as const as AeliqoTokenValues;
 export const AELIQO_SHARED_TOKENS = {
+  '--aeliqo-space-2': '0.125rem',
   '--aeliqo-space-4': '0.25rem',
+  '--aeliqo-space-6': '0.375rem',
   '--aeliqo-space-8': '0.5rem',
+  '--aeliqo-space-10': '0.625rem',
   '--aeliqo-space-12': '0.75rem',
   '--aeliqo-space-16': '1rem',
+  '--aeliqo-space-20': '1.25rem',
   '--aeliqo-space-24': '1.5rem',
   '--aeliqo-space-32': '2rem',
+  '--aeliqo-space-40': '2.5rem',
   '--aeliqo-space-48': '3rem',
+  '--aeliqo-space-64': '4rem',
   '--aeliqo-radius-small': '0.375rem',
-  '--aeliqo-radius-medium': '0.625rem',
+  '--aeliqo-radius-medium': '0.5rem',
   '--aeliqo-radius-large': '0.875rem',
   '--aeliqo-typography-font-family-system':
     'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   '--aeliqo-typography-font-family-mono':
     'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
   '--aeliqo-typography-font-size-caption': '0.75rem',
+  '--aeliqo-typography-font-size-xs': '0.8125rem',
+  '--aeliqo-typography-font-size-sm': '0.875rem',
   '--aeliqo-typography-font-size-body': '1rem',
   '--aeliqo-typography-font-size-body-large': '1.125rem',
   '--aeliqo-typography-font-size-title': '1.25rem',
@@ -122,17 +143,22 @@ export const AELIQO_SHARED_TOKENS = {
   '--aeliqo-typography-font-weight-medium': '500',
   '--aeliqo-typography-font-weight-semibold': '600',
   '--aeliqo-typography-font-weight-bold': '700',
-  '--aeliqo-control-min-target': '2.75rem',
+  '--aeliqo-control-min-target': '2.25rem',
+  '--aeliqo-control-coarse-target': '2.75rem',
   '--aeliqo-control-compact-target': '2rem',
   '--aeliqo-control-inline-padding': '0.75rem',
   '--aeliqo-control-border-width': '0.0625rem',
   '--aeliqo-focus-width': '0.1875rem',
   '--aeliqo-focus-offset': '0.125rem',
+  '--aeliqo-focus-ring-width': '0.1875rem',
+  '--aeliqo-focus-ring-alpha': '0.3',
   '--aeliqo-motion-duration-fast': '120ms',
   '--aeliqo-motion-duration-standard': '180ms',
   '--aeliqo-motion-easing-standard': 'cubic-bezier(0.2, 0, 0, 1)',
   '--aeliqo-elevation-none': '0px 0px 0px 0px #00000000',
+  '--aeliqo-elevation-xs': '0px 1px 2px 0px rgb(15 23 42 / 0.05)',
   '--aeliqo-elevation-raised': '0px 0.25rem 0.75rem -0.5rem #0F172A33',
+  '--aeliqo-elevation-lg': '0px 8px 24px 0px rgb(15 23 42 / 0.12), 0px 0px 0px 1px rgb(15 23 42 / 0.04)',
   '--aeliqo-locale-default': 'en-US',
   '--aeliqo-locale-direction': 'logical',
 } as const as AeliqoTokenValues;
@@ -154,19 +180,27 @@ export const AELIQO_TOKEN_NAMES = [
   '--aeliqo-visualization-series3',
   '--aeliqo-visualization-series4',
   '--aeliqo-visualization-reference',
+  '--aeliqo-space-2',
   '--aeliqo-space-4',
+  '--aeliqo-space-6',
   '--aeliqo-space-8',
+  '--aeliqo-space-10',
   '--aeliqo-space-12',
   '--aeliqo-space-16',
+  '--aeliqo-space-20',
   '--aeliqo-space-24',
   '--aeliqo-space-32',
+  '--aeliqo-space-40',
   '--aeliqo-space-48',
+  '--aeliqo-space-64',
   '--aeliqo-radius-small',
   '--aeliqo-radius-medium',
   '--aeliqo-radius-large',
   '--aeliqo-typography-font-family-system',
   '--aeliqo-typography-font-family-mono',
   '--aeliqo-typography-font-size-caption',
+  '--aeliqo-typography-font-size-xs',
+  '--aeliqo-typography-font-size-sm',
   '--aeliqo-typography-font-size-body',
   '--aeliqo-typography-font-size-body-large',
   '--aeliqo-typography-font-size-title',
@@ -179,16 +213,21 @@ export const AELIQO_TOKEN_NAMES = [
   '--aeliqo-typography-font-weight-semibold',
   '--aeliqo-typography-font-weight-bold',
   '--aeliqo-control-min-target',
+  '--aeliqo-control-coarse-target',
   '--aeliqo-control-compact-target',
   '--aeliqo-control-inline-padding',
   '--aeliqo-control-border-width',
   '--aeliqo-focus-width',
   '--aeliqo-focus-offset',
+  '--aeliqo-focus-ring-width',
+  '--aeliqo-focus-ring-alpha',
   '--aeliqo-motion-duration-fast',
   '--aeliqo-motion-duration-standard',
   '--aeliqo-motion-easing-standard',
   '--aeliqo-elevation-none',
+  '--aeliqo-elevation-xs',
   '--aeliqo-elevation-raised',
+  '--aeliqo-elevation-lg',
   '--aeliqo-locale-default',
   '--aeliqo-locale-direction',
 ] as const;

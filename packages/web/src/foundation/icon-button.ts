@@ -56,9 +56,9 @@ export class AeliqoIconButtonElement extends AeliqoActionElement {
         cursor: pointer;
         display: inline-flex;
         font: inherit;
-        inline-size: var(--aeliqo-control-min-target, 2.75rem);
+        inline-size: var(--aeliqo-control-min-target, 2.25rem);
         justify-content: center;
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: var(--aeliqo-control-min-target, 2.25rem);
         padding: var(--aeliqo-space-8, 0.5rem);
       }
 

@@ -466,8 +466,8 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
         border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #64748b);
         color: var(--aeliqo-color-text, #111827);
         font: inherit;
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
-        min-inline-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: var(--aeliqo-control-min-target, 2.25rem);
+        min-inline-size: var(--aeliqo-control-min-target, 2.25rem);
         padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-control-inline-padding, 0.875rem);
       }
       @media (forced-colors: active) {

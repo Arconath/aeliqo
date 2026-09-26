@@ -41,6 +41,8 @@ export interface WebMcpDetection {
 export interface WebMcpDetectionOptions {
   /** Explicit host document. The agent package never reads an ambient DOM global. */
   readonly document?: unknown;
+  /** Explicit host navigator; Chrome 146-149 exposed modelContext only there. */
+  readonly navigator?: unknown;
   /** Set by the host integration after it supplies the corresponding context. */
   readonly evidence?: 'native' | 'simulated';
 }
@@ -52,6 +54,8 @@ export interface WebMcpAdapterOptions {
   readonly modelContext?: WebMcpModelContext;
   /** Explicit host document injection; the adapter never reads a global document. */
   readonly document?: unknown;
+  /** Explicit host navigator injection for hosts exposing navigator.modelContext only. */
+  readonly navigator?: unknown;
   /** Evidence supplied by the host integration. Context injection defaults to simulated. */
   readonly evidence?: 'native' | 'simulated';
 }

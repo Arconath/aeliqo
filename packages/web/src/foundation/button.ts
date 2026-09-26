@@ -57,14 +57,14 @@ export class AeliqoButtonElement extends AeliqoActionElement {
       button {
         align-items: center;
         border: var(--aeliqo-control-border-width, 0.0625rem) solid transparent;
-        border-radius: var(--aeliqo-radius-medium, 0.625rem);
+        border-radius: var(--aeliqo-radius-medium, 0.5rem);
         cursor: pointer;
         display: inline-flex;
         font: inherit;
         gap: var(--aeliqo-space-8, 0.5rem);
         justify-content: center;
         max-inline-size: 100%;
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: var(--aeliqo-control-min-target, 2.25rem);
         padding-inline: var(--aeliqo-control-inline-padding, 0.75rem);
         white-space: normal;
       }

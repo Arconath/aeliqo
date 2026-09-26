@@ -104,7 +104,7 @@ export class AeliqoCheckboxElement extends AeliqoFieldElement<boolean> {
         align-items: center;
         display: inline-flex;
         gap: var(--aeliqo-space-8, 0.5rem);
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: var(--aeliqo-control-min-target, 2.25rem);
       }
       input {
         accent-color: var(--aeliqo-color-accent, #4338ca);

@@ -10,7 +10,7 @@ test('themes inherit, legacy overrides survive, and direct inputs keep native st
   const designRoot = page.locator('#design-root');
   await expect(input).toHaveValue('Research');
   await expect(input).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(input).toHaveCSS('min-height', '44px');
+  await expect(input).toHaveCSS('min-height', '36px');
   await input.fill('Research draft');
   await page.locator('#theme').selectOption('dark');
   await expect(input).toHaveValue('Research draft');
@@ -32,11 +32,13 @@ test('themes inherit, legacy overrides survive, and direct inputs keep native st
   });
   await expect(input).toHaveCSS('color', 'rgb(160, 200, 240)');
   await expect(input).toHaveCSS('background-color', 'rgb(12, 34, 56)');
+  // fill() left the field focused; a focused control shows the focus border.
+  await input.blur();
   await expect(input).toHaveCSS('border-top-color', 'rgb(200, 120, 80)');
   await expect(page.locator('#team').locator('[part="description"]')).toHaveCSS('color', 'rgb(120, 220, 180)');
   await expect(page.locator('#code').locator('[part="error"]')).toHaveCSS('color', 'rgb(255, 130, 140)');
   await input.focus();
-  await expect(input).toHaveCSS('outline-color', 'rgb(250, 210, 70)');
+  await expect(input).toHaveCSS('border-top-color', 'rgb(250, 210, 70)');
   await designRoot.evaluate((element) => {
     const style = (element as HTMLElement).style;
     for (const key of [
@@ -51,23 +53,22 @@ test('themes inherit, legacy overrides survive, and direct inputs keep native st
   });
   await designRoot.evaluate((element) => {
     const style = (element as HTMLElement).style;
-    style.setProperty('--aeliqo-focus-width', '4px');
-    style.setProperty('--aeliqo-focus-offset', '5px');
+    style.setProperty('--aeliqo-focus-ring-width', '4px');
     style.setProperty('--aeliqo-control-border-width', '2px');
     style.setProperty('--aeliqo-control-inline-padding', '18px');
   });
   await input.focus();
-  await expect(input).toHaveCSS('outline-width', '4px');
-  await expect(input).toHaveCSS('outline-offset', '5px');
+  await expect(input).toHaveCSS('box-shadow', /0px 0px 0px 4px/);
   await expect(input).toHaveCSS('border-left-width', '2px');
   await expect(input).toHaveCSS('padding-inline-start', '18px');
   await page.locator('#design-root').evaluate((element) => {
-    for (const key of ['focus-width', 'focus-offset', 'control-border-width', 'control-inline-padding'])
+    for (const key of ['focus-ring-width', 'control-border-width', 'control-inline-padding'])
       (element as HTMLElement).style.removeProperty(`--aeliqo-${key}`);
   });
   await page.locator('#theme').selectOption('light');
   await input.focus();
-  await expect(input).toHaveCSS('outline-style', 'solid');
+  await expect(input).toHaveCSS('outline-style', 'none');
+  await expect(input).toHaveCSS('box-shadow', /0px 0px 0px 3px/);
   await page.screenshot({ path: info.outputPath('light-1280.png'), fullPage: true });
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   expect(errors).toEqual([]);

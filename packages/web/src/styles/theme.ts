@@ -114,6 +114,13 @@ export const aeliqoThemeStyles: CSSResult = css`
     --aeliqo-control-min-target: var(--aeliqo-control-compact-target);
   }
 
+  /* Coarse pointers keep the larger touch target; density opt-in still wins. */
+  @media (pointer: coarse) {
+    :host(:not([data-aeliqo-density='compact'])) {
+      --aeliqo-control-min-target: var(--aeliqo-control-coarse-target, 2.75rem);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :host {
       --aeliqo-motion-duration-fast: 0ms;
@@ -165,6 +172,12 @@ export const aeliqoStandaloneThemeStyles: CSSResult = css`
   :where([data-aeliqo-theme][dir='ltr']),
   :where([data-aeliqo-theme] [dir='ltr']) {
     direction: ltr;
+  }
+
+  @media (pointer: coarse) {
+    :where([data-aeliqo-theme]:not([data-aeliqo-density='compact'])) {
+      --aeliqo-control-min-target: var(--aeliqo-control-coarse-target, 2.75rem);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
