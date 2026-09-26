@@ -187,6 +187,11 @@
   .section-intro {
     grid-template-columns: 1fr;
   }
+  .section-intro h2,
+  .approach-intro h2,
+  .boundary-grid h2 {
+    max-width: 24ch;
+  }
   .section-intro .eyebrow {
     grid-column: auto;
     margin-bottom: 0;

@@ -391,8 +391,10 @@
   min-width: 0;
   flex-direction: column;
   gap: 1.65rem;
+  max-height: clamp(22rem, calc(100vh - 20rem), 54rem);
   padding: 0.9rem 1.45rem 1.45rem;
   overflow: auto;
+  scrollbar-width: thin;
 }
 .pg-request h2,
 .pg-result h2,

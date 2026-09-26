@@ -102,6 +102,7 @@
   font-weight: var(--weight-bold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .pg-journey small::before {
   flex: 0 0 auto;
@@ -161,7 +162,6 @@
 }
 .pg-region {
   min-width: 0;
-  flex: 1 1 auto;
   padding-block: var(--space-1) var(--space-6);
 }
 .pg-region:empty {
@@ -184,7 +184,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 0.3rem 0.9rem;
-  margin-top: auto;
+  margin-top: var(--space-5);
   padding: 0.5rem 0.85rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
@@ -344,6 +344,7 @@
     border-inline-end: 0;
   }
   .pg-request-body {
+    max-height: none;
     padding: 0.9rem var(--space-4) var(--space-4);
   }
   .pg-request-summary {
@@ -358,7 +359,7 @@
     grid-template-columns: 1fr;
   }
   .pg-journey li {
-    grid-template-columns: 5.9rem minmax(0, 1fr);
+    grid-template-columns: 7rem minmax(0, 1fr);
     align-items: baseline;
     padding-block: 0.55rem;
   }

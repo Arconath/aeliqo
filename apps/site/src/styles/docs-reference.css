@@ -27,12 +27,12 @@
 .doc-code-copy {
   min-height: 0;
   flex: 0 0 auto;
-  padding: 0.2rem 0.6rem;
+  padding: 0.3rem 0.65rem;
   border: 1px solid var(--code-border);
   border-radius: var(--radius-xs);
   color: var(--code-muted);
   background: transparent;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 600;
 }
 .doc-code-copy:hover:not(:disabled) {
@@ -118,27 +118,42 @@
   border-radius: var(--radius-md);
   background: var(--surface-raised);
 }
+/* Bare markdown tables (no .doc-table wrapper) get the same chrome and
+   scroll internally instead of squeezing columns. */
+.reading > table,
+.reading :not(.doc-table):not(.api-table):not(.component-preview) > table {
+  display: block;
+  max-width: 100%;
+  margin-block: var(--space-6);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
 .doc-table table,
-.api-table table {
+.api-table table,
+.reading table {
   width: 100%;
-  min-width: 38rem;
   border-collapse: collapse;
   font-size: 0.84rem;
 }
-.api-table table {
-  min-width: 100%;
+.doc-table table {
+  min-width: 38rem;
 }
 .doc-table th,
 .doc-table td,
 .api-table th,
-.api-table td {
+.api-table td,
+.reading table th,
+.reading table td {
   padding: var(--space-3);
   border-bottom: 1px solid var(--line);
   text-align: start;
   vertical-align: top;
 }
 .doc-table thead th,
-.api-table thead th {
+.api-table thead th,
+.reading table thead th {
   color: var(--faint);
   background: var(--surface);
   font-size: 0.65rem;
@@ -146,8 +161,20 @@
   text-transform: uppercase;
 }
 .doc-table tbody tr:last-child > *,
-.api-table tbody tr:last-child > * {
+.api-table tbody tr:last-child > *,
+.reading table tbody tr:last-child > * {
   border-bottom: 0;
+}
+/* Keep first-column identifiers (tool names, property names) on one line;
+   the table wrapper scrolls when the column gets wide. */
+.doc-table td:first-child code,
+.api-table td:first-child code,
+.doc-table th:first-child,
+.api-table th:first-child,
+.reading table td:first-child code,
+.reading table th:first-child {
+  overflow-wrap: normal;
+  white-space: nowrap;
 }
 .doc-checklist {
   margin-block: var(--space-6);
@@ -221,7 +248,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.7rem;
-  margin-top: var(--space-20);
+  margin-top: var(--space-12);
   padding-top: 1.75rem;
   border-top: 1px solid var(--line);
 }
@@ -510,8 +537,13 @@
 .search-results a:hover {
   background: var(--surface);
 }
+.search-results strong {
+  font-weight: var(--weight-strong);
+}
 .search-results span {
+  color: var(--muted);
   font-size: 0.84rem;
+  line-height: 1.45;
 }
 .docs-search-field {
   width: 100%;
@@ -663,7 +695,7 @@
     grid-template-columns: 1fr;
   }
   .reading h1 {
-    font-size: clamp(2.25rem, 10vw, 3.2rem);
+    font-size: clamp(1.85rem, 8vw, 2.5rem);
   }
   .doc-header {
     margin-bottom: var(--space-8);

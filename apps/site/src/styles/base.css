@@ -119,6 +119,10 @@ body[data-docs] {
 img {
   max-width: 100%;
 }
+::selection {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
 a {
   color: inherit;
   text-underline-offset: 0.2em;
