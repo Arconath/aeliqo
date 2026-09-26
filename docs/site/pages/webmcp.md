@@ -6,8 +6,31 @@ title: 'WebMCP (experimental)'
 description: 'Detect native browser support and register bounded tools only when the current browser exposes the required capability.'
 ---
 
-<p class="lead">WebMCP availability depends on browser implementation and release channel. Aeliqo reports <em>available</em>, <em>unavailable</em>, or <em>connected</em>; it does not display a mock connection as real.</p>
-<h2>Progressive enhancement</h2>
+<p class="lead">WebMCP is a Chrome experiment. It lets an agent built into the browser call your tools without a separate client. Aeliqo reports <em>available</em>, <em>unavailable</em>, or <em>connected</em>; it never shows a mock connection as real.</p>
+
+<h2>Enable support in Chrome</h2>
+
+You need Chrome 146 or newer. Then do one of the following:
+
+1. Open `chrome://flags/#enable-webmcp-testing`, set the flag to **Enabled**,
+   and restart Chrome; or
+2. Serve your site with a WebMCP origin-trial token.
+
+<h2>Try it in the playground</h2>
+
+1. Open the [playground](/playground/) in that Chrome.
+2. Choose **Connect AI**, select **WebMCP (experimental)**, then choose
+   **Check connection**.
+   You should see “Native WebMCP registered _n_ tools (experimental)”.
+3. If the browser lacks support, the status says WebMCP is unavailable. The
+   demo agent and the manual controls still work.
+
+<h2>Detect support in your app</h2>
+
+Call `detectWebMcp` with the real `document`. It reports support when the
+document exposes `modelContext.registerTool`. The adapter never reads globals
+itself; you pass the document in. Mark the evidence `native` only when the
+browser supplied the capability.
 
 **capability.ts**
 
@@ -25,19 +48,14 @@ if (capability.supported) {
 }
 ```
 
-<h2>Required fallback</h2><p>The same resource must remain fully usable through buttons, filters, forms, and routes. Native registration is an optional communication surface, not a dependency for rendering or authorization.</p>
+<h2>Keep a manual fallback</h2><p>The same resource must remain fully usable through buttons, filters, forms, and routes. Native registration is an optional communication surface, not a dependency for rendering or authorization.</p>
 <h2>Read the evidence correctly</h2>
 
-| Evidence | What it proves | What it does not prove |
-| --- | --- | --- |
-| Native | A real supported browser registered, discovered, executed, cancelled, unregistered, and rejected a late Aeliqo tool in an isolated profile | Support in every browser channel or enterprise policy |
-| Simulated | The adapter maps discovery, annotations, cancellation, receipts, and lifecycle to an injected test host | Browser implementation availability |
-| Unavailable | The current document exposes no supported `modelContext` host | A failure in buttons, forms, MCP, or BYOK |
-
-The opt-in native probe is `pnpm test:protocol-webmcp:native`. It opens an
-isolated headed Chrome profile and runs once with the default browser state and
-once with Chrome's local WebMCP testing flag. The normal automated suite uses
-`pnpm test:protocol-webmcp:simulated` and never reports that result as native.
+| Evidence    | What it proves                                                                                                 | What it does not prove                                |
+| ----------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Native      | A supported browser registered, discovered, executed, cancelled, unregistered, and rejected a late Aeliqo tool | Support in every browser channel or enterprise policy |
+| Simulated   | The adapter maps discovery, annotations, cancellation, receipts, and lifecycle to an injected test host        | Browser implementation availability                   |
+| Unavailable | The current document exposes no supported `modelContext` host                                                  | A failure in buttons, forms, MCP, or BYOK             |
 
 Chrome's [imperative API guidance](https://developer.chrome.com/docs/ai/webmcp/imperative-api)
 defines tool registration, discovery, execution cancellation, and disposal.

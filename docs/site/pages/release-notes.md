@@ -6,27 +6,32 @@ title: 'Release notes'
 description: 'Aeliqo 0.5 changes, migration boundaries, and the prior 0.4.2 release.'
 ---
 
+<p class="lead">Read what changed in each release and what evidence backs it. The latest version is 0.5.2.</p>
+
 ## Aeliqo 0.5.2
 
-This patch release keeps the 0.5 API and runtime contract intact while shipping
-the clearer local React quickstart, the registered People app tutorial, the
-public 0.5 playground journeys, and a polished documentation shell. It also
-redesigns the playground journey surface and enriches the public component
-catalog with contract summaries and integration-level chips.
+This patch release keeps the 0.5 API and runtime contract intact. It ships the
+clearer local React quickstart, the registered People app tutorial, and the
+public 0.5 playground journeys. The documentation shell is polished and the
+playground journey surface redesigned. The public component catalog gains
+contract summaries and integration-level chips.
 
-Two boundary corrections ship in this patch: scoped agent endpoints now mint
-only the intersection of the host grant ceiling and the operations their tools
-require — a broader request is clamped rather than unioned, so `manual`
-pairings no longer carry the unused `model.egress` grant; and modal drawers
-now trap keyboard focus like dialogs and popovers. There is no `0.5.1`; this release
-supersedes that version number. Install all five packages at exactly `0.5.2`
-when using this release.
+Two boundary corrections ship in this patch:
+
+- Scoped agent endpoints now mint only the intersection of the host grant
+  ceiling and the operations their tools require. A broader request is clamped
+  rather than unioned, so `manual` pairings no longer carry the unused
+  `model.egress` grant.
+- Modal drawers now trap keyboard focus like dialogs and popovers.
+
+There is no `0.5.1`; this release supersedes that version number. Install all
+five packages at exactly `0.5.2` when using this release.
 
 ## Aeliqo 0.5.0
 
 All five `0.5.0-rc.2` packages and matching stable `0.5.0` packages were
-published from accepted source `4e8b0395b92eee699da4e25c3cd4991bc50b4a5e`
-after the [Quality run](https://github.com/Arconath/aeliqo/actions/runs/35974446712),
+published from accepted source `4e8b0395b92eee699da4e25c3cd4991bc50b4a5e`.
+The [Quality run](https://github.com/Arconath/aeliqo/actions/runs/35974446712),
 [RC publication run](https://github.com/Arconath/aeliqo/actions/runs/35985377354),
 and [stable publication run](https://github.com/Arconath/aeliqo/actions/runs/35988121627)
 succeeded. The [site image run](https://github.com/Arconath/aeliqo/actions/runs/35988444181)
@@ -34,12 +39,13 @@ also succeeded. At image publication, production cutover and public live checks
 had not yet been verified.
 Production was subsequently accepted at 2026-09-24 11:17 UTC in the
 [platform deployment evidence](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a) (internal repository).
-The apex, www, and docs sites reported 0.5.0 at that source revision; the
+The apex, www, and docs sites reported 0.5.0 at that source revision. The
 [stable GitHub release](https://github.com/Arconath/aeliqo/releases/tag/v0.5.0)
 was published after live verification.
 The [platform cutover receipt](https://github.com/Arconath/workspace/blob/c35cb83c60e276a21f7500fa39a497db17e000a6/docs/platform/cutover.json) (internal repository)
-records reviewed promotion gates, Flux and pod readback, and a qualified route
-back to the retained 0.4.2 image. No production rollback was executed.
+records reviewed promotion gates plus Flux and pod readback. It also records a
+qualified route back to the retained 0.4.2 image. No production rollback was
+executed.
 
 This is a breaking successor to `0.4.2`. The historical `0.5.0-rc.1` was
 published from an earlier source revision that lacks the local React path
@@ -47,7 +53,7 @@ described below. Do not use that RC as evidence for this source.
 
 DeepSeek `deepseek-flash` passed the bounded 12-case synthetic J1–J3 live
 browser/provider/renderer corpus on tree-equivalent PR head `21afcca` (tree
-`955a7d1`); the [sanitized 12-case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json)
+`955a7d1`). The [sanitized 12-case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json)
 records each result. This is model- and corpus-specific evidence; it does not qualify
 other hosted models or production workloads.
 
@@ -55,8 +61,8 @@ The [public 0.5.0 browser receipt](https://github.com/Arconath/aeliqo/blob/main/
 records docs navigation/search, the no-AI People Jakarta, Daily attendance,
 and Analytical workspace journeys, and a downloadable ZIP. The separate
 [clean consumer receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/live-export-consumer-4e8b039.json)
-records installation of the exact 0.5.0 packages from npm, a successful build,
-and browser rendering of the ZIP's synthetic products.
+records installation of the exact 0.5.0 packages from npm. It also records a
+successful build and browser rendering of the ZIP's synthetic products.
 
 The items in this section describe the 0.5.0 source. For an existing
 0.4.2 integration, use the compatibility app/Region path described in
@@ -69,38 +75,38 @@ patterns, and time-window constraints for a paired Region. The host remains
 the authority for compilation, query bounds, and rendering.
 
 - `@aeliqo/core/features` introduces immutable data and non-data feature
-  definitions. Data features lower through the existing resource/catalog path;
-  non-data features declare versioned intents, views, and bounded capability
+  definitions. Data features lower through the existing resource/catalog path.
+  Non-data features declare versioned intents, views, and bounded capability
   schemas without fabricating relational data.
 - `@aeliqo/runtime` adds scoped surface controllers with immutable
-  instance addresses, per-runtime reference-counted registration, internal and
-  explicitly controlled host ownership, and real `DataService`/Region/Result
-  integration. Capability bindings carry an address-independent typed initial
-  intent, and permission changes fence pending host proposals. The new
-  host-resolved scope controller adds inert attachment, guarded Save/Discard/Stay
-  workspace transitions, forced revocation, monotonic activation epochs, and
-  child-surface fencing without treating a client workspace ID as authority.
-  Its required synchronous, side-effect-free preparation hook atomically
-  revalidates captured old-scope and target authority before fencing; a
-  separate commit hook starts target effects only after the old activation is
-  fenced.
+  instance addresses and per-runtime reference-counted registration. Ownership
+  stays internal or explicitly host-controlled, with real
+  `DataService`/Region/Result integration. Capability bindings carry an
+  address-independent typed initial intent, and permission changes fence
+  pending host proposals. The new host-resolved scope controller adds inert
+  attachment, guarded Save/Discard/Stay workspace transitions, forced
+  revocation, and monotonic activation epochs. It fences child surfaces without
+  treating a client workspace ID as authority. Its required synchronous,
+  side-effect-free preparation hook atomically revalidates captured old-scope
+  and target authority before fencing. A separate commit hook starts target
+  effects only after the old activation is fenced.
   Existing app/Region APIs remain the compatibility path.
 - Local implementation and acceptance evidence cover runtime, React, migration,
   compatibility, browser, documentation, performance, and packed-consumer
   gates. Production workload behavior needs separate environment evidence.
 - The runtime now exposes one canonical
   `createLocalDataBinding` adapter under `@aeliqo/runtime/surfaces`. It lowers
-  through the existing `LocalDataService`, ResultStore, and Region paths,
-  validates bounded local shape and identity diagnostics, preserves controller
-  addresses across explicit source revisions, and rejects same-revision or
-  catalog conflicts atomically.
+  through the existing `LocalDataService`, ResultStore, and Region paths. It
+  validates bounded local shape and identity diagnostics. It preserves
+  controller addresses across explicit source revisions and rejects
+  same-revision or catalog conflicts atomically.
 - The local React path can now use `useDataSurface({ data, getRowId })` with an
   owned providerless local controller. Its runtime source can accept an
-  opt-in monotonic revision sequence for long-lived updates while rejecting
-  stale or changed-content replay; identical current-revision content remains
+  opt-in monotonic revision sequence for long-lived updates. It rejects stale
+  or changed-content replay; identical current-revision content remains
   a no-op. The default arbitrary-revision cap is unchanged. Native React
   adaptive selection requires trusted presentation evidence and uses the
-  shared resolver; standalone view registration alone is not automatic
+  shared resolver. Standalone view registration alone is not automatic
   eligibility.
 - Native React registrations now accept a trusted `load` function for a
   route-split view. The adapter retains an authorized previous view during
@@ -114,32 +120,32 @@ the authority for compilation, query bounds, and rendering.
   machine receipts in Inspect.
 - Remote data now uses the same validated `DataService`, ResultStore, and
   Region path as local data. Catalog capabilities declare metrics and stable
-  snapshot or keyset pagination; cursors are partitioned by authority and pin
+  snapshot or keyset pagination. Cursors are partitioned by authority and pin
   target, query, ordering, semantic revisions, consistency, and expiry.
   Expiry uses a wall clock while request work retains a separate monotonic
-  budget clock. Local continuation metadata is kept in a bounded host registry;
-  an accepted continuation plan pins its validated offset so registry eviction
+  budget clock. Local continuation metadata is kept in a bounded host registry.
+  An accepted continuation plan pins its validated offset, so registry eviction
   cannot restart the query from the first page.
   Partial pages preserve unknown or estimated population metadata, and only a
   server-proven aggregate may claim complete global coverage. The localhost
   protocol fixtures remain synthetic and do not prove a production backend.
 - Semantic aggregate plans now retain and revalidate their registered meaning
-  binding. Semi-additive period-end selection is deterministic, ratios and
-  variadic means keep their registered behavior, and nested/count aggregates
-  apply the meaning's missing-value policy instead of silently weakening it.
+  binding. Semi-additive period-end selection is deterministic. Ratios and
+  variadic means keep their registered behavior. Nested/count aggregates apply
+  the meaning's missing-value policy instead of silently weakening it.
 - `@aeliqo/core` now provides bounded `inferLocalDataShape` diagnostics for
-  declared or structurally inferred scalar fields; it does not infer authority,
+  declared or structurally inferred scalar fields. It does not infer authority,
   coverage, relationships, or business identity. The two helpers remain part
   of the 0.5 source.
 - `@aeliqo/core/presentation` now exposes the pure `resolvePresentation`
   decision facade. It returns a validated `ready` plan, structured
   `needs-input` choices, or bounded `unsupported` reasons from supplied
-  evidence only; target evidence is not authority, explicit view pins do not
+  evidence only. Target evidence is not authority, explicit view pins do not
   silently fall back, and preferred pins only influence deterministic ranking.
 - The advanced React path accepts `useSurface(feature, { id, bindings })`
   under the nearest `AeliqoProvider` and active `AeliqoScope`. Controller
   creation and the first request occur after React commit. `AeliqoScope`
-  gates children by the committed activation; a voluntary Save / Discard /
+  gates children by the committed activation. A voluntary Save / Discard /
   Stay transition keeps the old authorized subtree mounted while access
   remains valid. Accepted A→B→A activations create new controllers, and old
   callbacks retain their old address. Initial, denied, invalidated, and
@@ -149,7 +155,7 @@ the authority for compilation, query bounds, and rendering.
   experience without an application-supplied placeholder plan. The synthetic
   attendance workspace uses this path for its summary, daily trend, and
   employee breakdown. The attendance example derives its civil-day query
-  bounds from the period shown to the user and explicitly rejects unsupported
+  bounds from the period shown to the user. It explicitly rejects unsupported
   timezone projections.
 - The paired agent context can expose host-registered custom intent schemas
   and presentation pattern references for a routable resource. The live
@@ -158,13 +164,13 @@ the authority for compilation, query bounds, and rendering.
 - The public playground adds People Jakarta, Daily attendance, and Analytical
   workspace journeys alongside People, Products, Support, and Knowledge.
   Manual operation remains available without a model. Model prompts use a
-  configured same-origin local runner; the site no longer accepts a provider
+  configured same-origin local runner. The site no longer accepts a provider
   key in the browser or sends browser requests directly to the provider.
-  Exported 0.5 source projects are enabled only in a site image whose
-  matching packages passed an exact-version registry install and build check.
+  Exported 0.5 source projects require a site image whose matching packages
+  passed an exact-version registry install and build check.
 - Region trend charts pass the validated presentation locale to their chart.
   The low-level chart uses Indonesian controls, scope text, and accessible
-  labels when its host sets `lang="id"` or `lang="id-ID"`; application titles
+  labels when its host sets `lang="id"` or `lang="id-ID"`. Application titles
   and series names remain host-owned.
 
 ## 0.4.2
@@ -178,8 +184,8 @@ the authority for compilation, query bounds, and rendering.
 - Trend charts measure their container instead of stretching fixed SVG
   geometry, including narrow labels and constant-value series.
 - The People playground now proves employee browse, team filtering, detail,
-  and semantic monthly headcount through the same Without AI and connected
-  agent paths.
+  and semantic monthly headcount. The same Without AI and connected agent
+  paths cover them.
 - The site and components share one generated token source with system, light,
   and dark themes. Theme choice persists without changing application data.
 - The React-first tutorial now covers a complete table, filter, semantic chart,
@@ -211,8 +217,8 @@ plans, and result events. Use these when the contract kind is known; use
 
 ## Breaking changes
 
-The 0.4 release removes the Studio app and `@aeliqo/devtools`, narrows package
-root exports, and removes legacy input names and MCP request forms. A
+The 0.4 release removes the Studio app and `@aeliqo/devtools`. It narrows
+package root exports and removes legacy input names and MCP request forms. A
 `taskId` is required for task-scoped data requests. The web application facade
 is imported from `@aeliqo/web/app`; the package root remains usable without the
 optional runtime peer. `@aeliqo/react` declares `@aeliqo/runtime` as a required
@@ -223,5 +229,5 @@ integration.
 ## Runtime contract
 
 The serialized wire version remains `1`. Manual code and connected agents use
-the same validated intent path, while application code retains authority over
+the same validated intent path. Application code retains authority over
 identity, data access, actions, and business effects.

@@ -6,11 +6,17 @@ title: 'Application scopes'
 description: 'Bind surfaces to a host-authorized workspace and fence stale work across voluntary switches and revocation.'
 ---
 
-<p class="lead">A workspace ID selects a candidate context; it is never a permission grant. The application owns identity, policy, data access, drafts, navigation, and effects. Aeliqo binds each child surface and its work to one authorized scope activation.</p>
+<p class="lead">A scope binds each surface and its work to one authorized target, such as a workspace. A workspace ID selects a candidate — it never grants permission.</p>
 
-## Resolve and authorize in the host
+## When you need this
 
-Create a scope at the application composition root with `runtime.createScope({ initial, binding })`. The binding resolves the selector and authorizes the target using current host state. `prepareActivation` synchronously rechecks the target and captured previous revisions before acceptance; `activate` commits host effects; `deactivate` compensates them. `attach()` starts the initially inert scope. The full lifecycle contract is in the [runtime package guide](/reference/packages/).
+- Users switch workspaces, projects, or tenants inside your app.
+- A dirty draft must be saved or discarded before a switch.
+- Lost access must clear every child surface at once.
+
+## 1. Implement the binding
+
+Create the scope at your app's composition root. The binding resolves the selector and authorizes the target using current host state. Every `host.*` callback is your code, so the selector alone grants nothing.
 
 **scope.ts**
 
@@ -24,25 +30,49 @@ const binding: ScopeBinding = {
   activate: (target, context) => host.commitWorkspaceActivation(target, context),
   deactivate: (active, reason) => host.releaseWorkspaceActivation(active, reason),
 };
+```
 
+`resolve` maps the selector to a target. `authorize` re-checks permission. `prepareActivation` synchronously rechecks the target and captured revisions before acceptance. `activate` commits your side effects; `deactivate` reverses them. The full lifecycle is in the [runtime package guide](/reference/packages/).
+
+## 2. Create and attach the scope
+
+`attach` starts the scope in its initial state.
+
+```ts
 const workspace = runtime.createScope({ initial: { kind: 'workspace', id: 'acme' }, binding });
 const detach = workspace.attach();
 ```
 
-Every `host.*` callback reads current application state; the selector object alone grants nothing.
+Every child result, cursor, proposal, action, subscription, and renderer address carries the activation it started under. A later activation with the same workspace ID is a new session. Work started under the old one cannot commit after a detour through another workspace.
 
-Keep the host's data and action permissions on every request. A child Result, cursor, proposal, action, subscription, and renderer address carries the activation it started under. A later activation with the same workspace ID has a new epoch: late work from A1 cannot commit to A2 after a switch through B.
+## 3. Switch voluntarily
 
-## Voluntary switch and dirty work
+For a user-requested switch, call `requestChange(selector)`.
 
-For a user-requested switch, call `requestChange(selector)`. A dirty form may ask the host to Save, Discard, or Stay through `readLeaveState` and `beforeLeave`. While that decision is pending, the old authorized subtree remains labeled with its old workspace. Failed or stale save and denied target resolution leave it in place. Once acceptance succeeds, the old activation is fenced before the new one starts effects.
+```ts
+const result = await workspace.requestChange({ kind: 'workspace', id: 'acme-labs' });
+```
 
-## Forced revocation
+If a form is dirty, the result is `needs-input` with `save`, `discard`, and `stay` choices. Your `readLeaveState` and `beforeLeave` callbacks drive that decision. While it is pending, the old authorized subtree stays labeled with its old workspace. A failed save or denied target leaves it in place. Once acceptance succeeds, the old activation is fenced before the new one starts effects.
 
-Call `invalidate('logout' | 'revoked' | 'expired' | 'external-switch')` when authority is lost. Invalidation masks the scope and fences children synchronously, even when a voluntary dirty-work guard is open. A recovery hook may navigate afterward, but cannot delay the fence. Do not show cached rows from the revoked activation as a failure fallback.
+## 4. Revoke forcibly
 
-## Layout remains within one scope
+Call `invalidate` when access is lost:
 
-Changing a workspace from single to split or compare changes presentation, not tenancy. Child surfaces keep stable identities and one owner each. A proposed composition with a cross-scope child, cycle, duplicate owner, stale child revision, or exceeded depth/node/fan-out bound must be rejected. See [workspace composition](/guides/workspace/) for the presentation side and [permissions](/guides/permissions/) for the authority boundary.
+```ts
+workspace.invalidate('logout'); // or 'revoked' | 'expired' | 'external-switch'
+```
 
-The public 0.5 scope API does not make a client-supplied workspace selector trustworthy or replace host authentication and server authorization.
+Invalidation masks the scope and fences children synchronously — even while a dirty-work guard is open. A recovery hook may navigate afterward but cannot delay the fence. Never show cached rows from the revoked activation as a failure fallback.
+
+## Keep layout inside one scope
+
+Switching a workspace from single to split or compare changes presentation, not tenancy. Child surfaces keep stable identities and one owner each. A proposed composition with a cross-scope child, a cycle, a duplicate owner, or a stale child revision must be rejected. The same applies when depth or fan-out exceeds its limits. See [workspace composition](/guides/workspace/) for the presentation side and [permissions](/guides/permissions/) for the authority boundary.
+
+## What can go wrong
+
+- A selector from the client is never trustworthy on its own — the host resolves and authorizes it on every request.
+- The scope API does not replace host authentication or server authorization.
+- Late work from a previous activation session is fenced; it cannot overwrite the new workspace.
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/guides/workspace/"><span>Workspace composition</span><small>Compose several results under one presentation plan.</small><b aria-hidden="true">→</b></a><a href="/guides/permissions/"><span>Permissions</span><small>Supply the trusted context every scope check needs.</small><b aria-hidden="true">→</b></a></nav>

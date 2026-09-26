@@ -6,14 +6,17 @@ title: 'Local data service'
 description: 'Evaluate canonical queries over a bounded, application-owned snapshot with no network and no AI.'
 ---
 
-<p class="lead">Use local data for synthetic demos, offline tools, tests, and records the application already has permission to expose.</p>
-<h2>Start with React</h2>
+<p class="lead">A local data service runs queries over rows your app already owns. No network, no model, no server grant.</p>
 
-The 0.5.0 release line supports this API; the historical `0.5.0-rc.1` came
-from an earlier revision and does not include it. For a small complete dataset already owned by your
-application, no model, factory, catalog, or remote grant is needed. The
-[React quickstart](/start/) gives all four files for a copyable app; its central
-component is:
+## When you need this
+
+- You demo, test, or build offline with a fixed set of rows.
+- Your app already loaded the records and knows the signed-in user may see them.
+- You want the same query contract as a server, without running a server.
+
+## 1. Render a local array in React
+
+For a small dataset your app already owns, wrap the array with `useDataSurface` and render `AdaptiveSurface`.
 
 ```tsx
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
@@ -21,46 +24,42 @@ import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
 type Person = { id: string; name: string; team: string };
 
 export function People({ rows }: { rows: readonly Person[] }) {
-  const surface = useDataSurface({ data: rows, getRowId: row => row.id });
+  const surface = useDataSurface({ data: rows, getRowId: (row) => row.id });
   return <AdaptiveSurface surface={surface} />;
 }
 ```
 
-Use a new array reference when data changes. If the application mutates the
-same array reference, change the hook's `version` option explicitly. For an
-initially empty array, add a Zod `schema` and the real `identity` field name.
-The server-rendered browse view includes useful read-only cells; the client
-starts its source-backed controller after commit. Invalid updates report a
-diagnostic and retain the last authorized result.
-<h2>Use an owned local surface</h2>
+`getRowId` must return one real scalar field from each row. You should see: a table of your rows that adapts to its container.
 
-The 0.5.0 source includes a providerless path for a bounded
-array already supplied by the application. `createLocalDataSurface` owns its
-local runtime and scope; call it only from committed UI lifecycle or from an
-imperative application owner. The `getRowId` callback must select one actual
-scalar field from each record.
+Update rows by passing a new array. If you mutate the same array in place, bump the hook's `version` option so the surface notices. For an empty starting array, also pass a Zod `schema` and the identity field name. A `getRowId` callback cannot reveal its field until a row exists.
+
+The server-rendered first view already shows read-only cells. The client starts its source-backed controller after commit. An invalid update reports a diagnostic and keeps the last authorized result. The full walkthrough is the [React quickstart](/start/).
+
+## 2. Own the surface outside React
+
+`createLocalDataSurface` gives you the same surface without a provider. It owns its runtime and scope, so call it from your UI lifecycle and dispose it when done.
 
 ```ts
 import { createLocalDataSurface } from '@aeliqo/runtime/surfaces';
 
-const owned = createLocalDataSurface({ data: rows, getRowId: row => row.id });
+const owned = createLocalDataSurface({ data: rows, getRowId: (row) => row.id });
 await owned.surface.request({ kind: 'browse' });
 const update = owned.replaceData(nextRows);
 if (update.ok) await owned.surface.request({ kind: 'browse' });
 owned.dispose();
 ```
 
-Rows must have a consistent, bounded scalar shape and unique identities. For
-an initially empty array, supply both a declared schema and the identity field
-name (for example, `identity: 'id'`); a callback cannot reveal its field until
-there is a row. Empty rows without a usable identity return a diagnostic; callers should show
-an honest empty state. Invalid replacements retain the last committed result.
-The local scope grants no server authority and does not fetch remote data.
-<h2>Create the service</h2>
+Rows need a consistent scalar shape and unique identities. An invalid `replaceData` keeps the last committed rows and returns a diagnostic. This local scope grants no server authority and fetches nothing remote.
+
+## 3. Serve a registered resource
+
+For a named resource with permissions, create a `LocalDataService` — a real `DataService` over an in-memory snapshot.
 
 **data.ts**
 
 ```ts
+import { createLocalDataService } from '@aeliqo/runtime/data';
+
 const data = createLocalDataService({
   snapshot: {
     catalog: people.catalog,
@@ -73,44 +72,109 @@ const data = createLocalDataService({
 });
 ```
 
-<h2>Mount one canonical local binding</h2>
+`snapshot.catalog` comes from the resource (`people.catalog`). `sourceLimits` caps what the snapshot may hold. `authorize` runs on every request — it reads `context.principal`, the signed-in user your app supplied, and returns a grant or a denial. See [permissions](/guides/permissions/).
 
-For a scoped surface, construct the binding once. Its `service` is the exact
-`LocalDataService` mounted by the controller, so source revisions and Result
-events stay on one path:
+## 4. Bind it to a scoped surface
+
+For a scoped surface, build the binding once. Its `service` is the exact service the controller mounts, so source revisions and result events stay on one path.
 
 ```ts
+import { z } from 'zod';
+import { defineDataFeature } from '@aeliqo/core/features';
+import { createAeliqoRuntime } from '@aeliqo/runtime/app';
 import { createLocalDataBinding } from '@aeliqo/runtime/surfaces';
+import type { DataRecord, ResultEvent } from '@aeliqo/runtime/data';
+
+const peopleFeature = defineDataFeature({
+  id: 'people',
+  identity: ['id'],
+  schema: z.object({ id: z.string(), name: z.string(), team: z.string() }),
+});
+
+const permittedRecords = [
+  { id: 'p-1', name: 'Ada Chen', team: 'Design' },
+  { id: 'p-2', name: 'Sam Rivera', team: 'Engineering' },
+];
+
+const authority = {
+  read: () => ({
+    ok: true as const,
+    value: {
+      principalKey: 'local-user',
+      scopeDigest: 'local-session',
+      policyRevision: 'policy-1',
+      experienceRevision: 'local-1',
+      grants: ['task.evaluate', 'result.inspect', 'experience.commit'],
+      readContext: { principal: 'local-user' },
+    },
+  }),
+};
+
+async function readPeopleRows(events: AsyncIterable<ResultEvent>) {
+  const rows: DataRecord[] = [];
+  for await (const event of events) {
+    if (event.kind === 'batch') rows.push(...event.rows);
+    if (event.kind === 'error') throw new Error(event.error.message);
+  }
+  return { rows };
+}
 
 const bindings = createLocalDataBinding({
   feature: peopleFeature,
   snapshot: { catalog: peopleFeature.catalog, sourceRevision: 'people-1', records: { people: permittedRecords } },
-  initialState: { rows: [], selection: [] },
-  coverage,
-  normalize: normalizePeopleResults,
+  initialState: { rows: [] },
+  coverage: {
+    fields: ['id', 'name', 'team'],
+    operators: ['eq', 'contains'],
+    pagination: 'snapshot',
+    stableOrder: ['id'],
+    sorting: 'stable-fields-only',
+    aggregation: 'unsupported',
+    streaming: 'finite',
+    updates: 'snapshot-replace',
+    unsupported: ['aggregation', 'streaming', 'live-updates'],
+  },
+  normalize: readPeopleRows,
 });
-const people = runtime.createSurface({ scope, id: 'people', feature: peopleFeature, bindings });
-await people.request({ kind: 'browse' });
+
+const runtime = createAeliqoRuntime({
+  resources: [{ resource: peopleFeature.resource, data: bindings.service }],
+  authority,
+});
+const scope = runtime.createLocalSurfaceScope();
+const peopleSurface = runtime.createSurface({ scope, id: 'people', feature: peopleFeature, bindings });
+await peopleSurface.request({ kind: 'browse' });
 ```
 
-The surrounding application supplies `peopleFeature`, `runtime`, `scope`,
-`coverage`, `permittedRecords`, and `normalizePeopleResults`; the installed
-runtime consumer exercises the same binding and update path.
+`coverage` declares what the source honestly supports — fields, operators, pagination mode, stable ordering, and anything unsupported. `normalize` turns the result event stream into your surface state. A real `authority` adapter reads the signed-in user instead of returning a fixed value — see [permissions](/guides/permissions/).
 
-The binding copies and freezes each snapshot. Call `bindings.service.replaceSnapshot`
-with an explicit new source revision, then issue a new request; the controller
-and address remain stable. Equivalent catalog-and-record content at the same
-revision is a no-op, while a same-revision conflict, catalog mismatch, invalid
-shape, or capacity violation is rejected atomically and the last committed rows
-remain visible. Source revisions are non-reusable for the service lifetime;
-configure `maxSourceRevisions` (default 256, maximum 10,000) when a bounded
-revision history is needed. A cap failure preserves the current revision; a
-rollback uses a fresh revision with the old rows.
-Trusted sources with canonical increasing numeric revisions can opt into
-`revisionMode: { kind: 'monotonic', prefix: 'people-' }` to keep
-only a high-water mark. Changed content at a repeated revision, stale revisions,
-and malformed revisions are rejected; an exactly equivalent current revision
-remains a no-op. The default history limit remains in force for arbitrary IDs.
-<h2>Keep it bounded</h2><p>The snapshot is not a client-side database mirror. The binding performs bounded structural inference: empty input needs a declared schema, scalar fields must have consistent keys and types, and nested, accessor, executable, schema-less all-null, ambiguous, duplicate, or invalid-identity rows return explicit diagnostics. Configure row and source-byte limits; field count remains bounded by the wire/schema boundary, while query and result budgets bound each request. Page and row budgets return explicit partial coverage with a reason, population when known, and a continuation cursor when available; a byte budget that cannot fit a response returns <code>data.budget</code> instead of silently truncating. Declared nullable schemas accept null values. Dispose materialized results when the Region or authority context changes.</p>
-<h2>Failure recovery</h2><p>An unsupported query returns a diagnostic without mutating the current Region. A cancelled evaluation releases pending work. A denied request or failed replacement preserves the last committed rows only while the same authorized surface address remains active; disposal and scope transitions fence late updates.</p>
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/start/"><span>Complete quickstart</span><small>See this adapter in the compiled People example.</small><b aria-hidden="true">→</b></a><a href="/guides/http-data/"><span>Move execution server-side</span><small>Keep private source records out of the browser.</small><b aria-hidden="true">→</b></a></nav>
+## 5. Replace the snapshot
+
+The binding copies and freezes each snapshot. Swap data by calling `replaceSnapshot` with a new source revision, then request again — the controller and address stay stable.
+
+```ts
+const update = bindings.service.replaceSnapshot({
+  catalog: peopleFeature.catalog,
+  sourceRevision: 'people-2',
+  records: { people: nextRows },
+});
+if (update.ok) await peopleSurface.request({ kind: 'browse' });
+```
+
+Same revision with equal content is a no-op. Changed content at a repeated revision is rejected atomically (`data.source-revision-conflict`) and the last committed rows stay visible. Revisions are single-use for the service lifetime: `maxSourceRevisions` caps the history at 256 by default, configurable up to 10,000. A rollback uses a fresh revision with the old rows — do not reuse an old revision.
+
+Trusted sources with canonical increasing numeric revisions can use `revisionMode: { kind: 'monotonic', prefix: 'people-' }`. That mode keeps only a high-water mark. Stale or malformed revisions fail with `data.source-revision-sequence`.
+
+## Keep it limited
+
+The snapshot is not a client-side database mirror. Set row and byte limits in `sourceLimits`; each request also carries query and result budgets. A page or row limit returns explicit partial coverage. It carries a reason, the population when known, and a continuation cursor when available. A byte budget that cannot fit a response returns `data.budget` instead of silently truncating. Declared nullable schema fields accept null values. Dispose materialized results when the region or authority context changes.
+
+## What can go wrong
+
+- An empty starting array without a schema fails with `data.shape-empty`. Pass `schema` and `identity`.
+- Rows with inconsistent keys or types fail with `data.shape-inconsistent`. Nested objects, getters, and executable hooks fail with other `data.shape-*` codes.
+- Duplicate or missing identities fail with `data.identity-duplicate` or `data.identity-missing`.
+- An unsupported query returns a diagnostic without mutating the current region.
+- A denied request or failed replacement keeps the last committed rows. That holds only while the same authorized surface address stays active — disposal and scope transitions fence late updates.
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/start/"><span>Complete quickstart</span><small>See this adapter in the compiled People example.</small><b aria-hidden="true">→</b></a><a href="/guides/http-data/"><span>Move execution server-side</span><small>Keep private source records out of the browser.</small><b aria-hidden="true">→</b></a></nav>

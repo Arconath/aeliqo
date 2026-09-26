@@ -6,9 +6,21 @@ title: 'Business actions'
 description: 'Register schema-validated commands with permission, confirmation, revision, idempotency, and ambiguous-completion handling.'
 ---
 
-<p class="lead">An action is trusted application code behind an Aeliqo boundary. The agent or form may provide bounded JSON input; only the host can confirm and dispatch a registered command.</p>
-<h2>Lifecycle</h2><ol class="concept-flow"><li><span>01</span><div><h3>Preview</h3><p>Validate action identity, input schema, permission, entity revision, size, and idempotency policy.</p></div></li><li><span>02</span><div><h3>Confirm</h3><p>The trusted host or user interaction issues confirmation. An agent cannot confirm itself.</p></div></li><li><span>03</span><div><h3>Execute</h3><p>Recheck current authority and revision, then dispatch once through the registered application command.</p></div></li><li><span>04</span><div><h3>Reconcile</h3><p>Show executed, rejected, or ambiguous completion. Cancellation after a remote write is not a rollback.</p></div></li></ol>
-<h2>Register an action</h2><p>The host registers each command with a versioned descriptor, schema-checked input and output, and a dispatch function that only the runtime boundary can call:</p>
+<p class="lead">An action is trusted application code behind an Aeliqo boundary. An agent or form may propose limited JSON input; only the host can confirm and dispatch a registered command.</p>
+
+## When you need this
+
+- A request should change data, not only read it — close a ticket, publish an article.
+- Writes need confirmation, idempotent retries, or stale-record protection.
+- An agent or form must propose a change without performing it.
+
+## Know the lifecycle
+
+<ol class="concept-flow"><li><span>01</span><div><h3>Preview</h3><p>Validate action identity, input schema, permission, entity revision, size, and idempotency policy.</p></div></li><li><span>02</span><div><h3>Confirm</h3><p>The trusted host or a user interaction confirms. An agent cannot confirm itself.</p></div></li><li><span>03</span><div><h3>Execute</h3><p>Recheck current authority and revision, then dispatch once through the registered command.</p></div></li><li><span>04</span><div><h3>Reconcile</h3><p>Show executed, rejected, or ambiguous completion. Cancellation after a remote write is not a rollback.</p></div></li></ol>
+
+## 1. Register the action
+
+Register each command with a versioned descriptor and schema-checked input and output. Its dispatch function may be called only through the runtime boundary.
 
 **actions.ts**
 
@@ -64,7 +76,41 @@ actions.register({
 });
 ```
 
-<p><code>tickets.setStatus</code> is ordinary application code on a real backend. An agent or form can only propose bounded input; the registered dispatch performs the effect.</p>
-<h2>Payloads</h2><p>Inputs and outputs are bounded schema-validated JSON, including nested form groups, repeaters, and multiselect values. Files use host-owned upload references; arbitrary bytes do not travel through an agent argument.</p>
-<aside class="doc-callout" data-tone="warning"><strong>Do not auto-retry uncertainty</strong><p>If the remote system may have completed a write, return an ambiguous receipt and provide a reconciliation path. Retrying may duplicate the command.</p></aside>
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/guides/forms/"><span>Forms</span><small>Bind create and edit recipes to registered actions.</small><b aria-hidden="true">→</b></a><a href="/agents/quickstart/"><span>Agent actions</span><small>Expose preview and execution through the bounded tool endpoint.</small><b aria-hidden="true">→</b></a></nav>
+`tickets.setStatus` is ordinary application code on your backend. The registry returns an `Outcome` — a bad descriptor or schema mismatch fails with `action.invalid`, never a half-registered action.
+
+## 2. Preview and confirm
+
+The app emits an action event when a proposal is ready. Your UI reviews it and calls `confirm()` — or `cancel()`.
+
+```ts
+const app = createAeliqoApp({
+  resources,
+  authority,
+  onActionEvent: async (event) => {
+    if (event.state !== 'preview') return;
+    const accepted = await reviewDialog.open(event.preview); // your UI
+    if (accepted) await event.confirm();
+    else event.cancel();
+  },
+});
+```
+
+You should see: a preview event for each proposed action, then `executed` or `failed` after your decision.
+
+## 3. Execute once and reconcile
+
+Dispatch returns `completed`, `rejected`, or `ambiguous`. With `idempotency: 'required'`, a retry carries the same stable key, so a safe resend cannot duplicate the write. With `entityRevision: 'required'`, a stale record revision refuses the write.
+
+## Keep payloads limited
+
+Inputs and outputs are schema-validated JSON with size limits — including nested form groups, repeaters, and multiselect values. Files travel as host-owned upload references; arbitrary bytes never move through an agent's argument.
+
+<aside class="doc-callout" data-tone="warning"><strong>Do not auto-retry uncertainty</strong><p>If the remote system may have completed the write, return an ambiguous result and offer a reconciliation path. Retrying can duplicate the command.</p></aside>
+
+## What can go wrong
+
+- A descriptor missing required fields, or schema refs that do not match the descriptor, fails registration with `action.invalid`.
+- A stale entity revision refuses the write — reload the record and let the user retry.
+- Cancellation after a remote write is not a rollback; reconcile `ambiguous` outcomes explicitly.
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/guides/forms/"><span>Forms</span><small>Bind create and edit recipes to registered actions.</small><b aria-hidden="true">→</b></a><a href="/agents/quickstart/"><span>Agent actions</span><small>Expose preview and execution through the limited tool endpoint.</small><b aria-hidden="true">→</b></a></nav>

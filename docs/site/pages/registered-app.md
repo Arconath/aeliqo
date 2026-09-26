@@ -6,24 +6,19 @@ title: 'Tutorial: integrate a registered People app'
 description: 'Connect application-owned data and authority, then render a filtered table, semantic trend, reviewed form, and optional MCP tools.'
 ---
 
-<p class="lead">Use this path when your application already owns People data and permissions. You will connect that trusted state to one Aeliqo Region, add a semantic chart and reviewed form, then optionally expose the same Region through MCP.</p>
+<p class="lead">Connect your own data and permissions to Aeliqo. You will render a filtered table, a trend chart, and a reviewed form in one region. The last step exposes the same surface to an agent over MCP.</p>
 
-<div class="docs-inline-cta"><p><strong>New to Aeliqo?</strong> Start with the smaller local example first. You can return here when you need authenticated application data.</p><a href="/start/">Open the local React quickstart →</a></div>
+<div class="docs-inline-cta"><p><strong>New to Aeliqo?</strong> Run the small local quickstart first. Come back when you need real app data.</p><a href="/start/">Open the local React quickstart →</a></div>
 
-<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Node.js 24, React 19.2, TypeScript, and a host application that can provide a bounded data adapter plus trusted authority state. Keep every Aeliqo package on exactly version 0.5.2.</p></aside>
+<aside class="doc-callout" data-tone="note"><strong>Before you start</strong><p>You need Node.js 24, React 19.2, TypeScript, and an app that can provide rows plus the signed-in user's permissions. Keep every Aeliqo package on exactly version 0.5.2.</p></aside>
 
 <aeliqo-release-status></aeliqo-release-status>
 
-This is the full registered app tutorial for the stable `0.5.2` release. It uses
-the compatibility `@aeliqo/react/app` API for its Region. The local array path
-is separate and remains available without the authority adapter shown here.
+This tutorial uses the app-level API in `@aeliqo/react/app`. You mount a named region once, then send typed requests to it. The code below is the real, compiled tutorial source.
 
 ## 1. Install the packages
 
-Install the contract, runtime, renderer, React bindings, optional agent endpoint,
-and Zod together:
-
-```sh
+```bash
 npm install --save-exact \
   @aeliqo/core@0.5.2 \
   @aeliqo/runtime@0.5.2 \
@@ -33,53 +28,35 @@ npm install --save-exact \
   react@19.2.8 react-dom@19.2.8 zod@4.5.4
 ```
 
-## 2. Define resources and trusted data
+## 2. Register resources and data
 
-The application defines two resources. `people` provides stable identities and
-the fields used by table and filter intents. `workforce-headcount` records one
-month-end snapshot per month. Its meaning is semi-additive, so values may be
-compared across time and must never be summed across months.
+Create `src/app.ts`. It defines two resources. `people` has a stable `id`, labeled fields, and two allowed views. `workforce-headcount` stores one month-end snapshot per month; its measure is marked semi-additive so it is never summed across months.
 
-The same file connects bounded local records and reads authority from trusted
-application state. Replace the local adapter with an HTTP adapter when your
-server owns the records; do not move credentials or grants into an intent.
+The same file creates two bounded local data services and an `authorize` check that reads the signed-in user. `createAeliqoApp` wires resources, data, and authority into one app instance. Swap the local service for your HTTP adapter when your server owns the records — keep credentials and grants out of requests.
 
 <aeliqo-source data-label="src/app.ts" data-path="examples/quickstart/src/app.ts"></aeliqo-source>
 
-## 3. Render a table from React
+You should see: `createTutorialApp(records)` returns one app instance with two registered resources.
 
-`AeliqoProvider` shares the application instance. `AeliqoRegion` owns mount,
-render cancellation, subscription, and unmount for the React lifecycle. The
-first structured browse intent requests Name and Team and prefers the registered
-table representation.
+## 3. Mount a region in React
 
-The controls remain ordinary React buttons. No model call is required.
+Create `src/PeopleTutorial.tsx`. `AeliqoProvider` shares the app instance. `AeliqoRegion` mounts the `people-main` region and renders the current `intent` prop. `onReceipt` reports each result status. The buttons are plain React — no model call happens.
 
-## 4. Apply an explicit filter
+## 4. Filter with a typed request
 
-The Engineering button sends a typed equality predicate. Aeliqo validates the
-field and closed value against the resource before evaluation. The result and
-its visible filter remain aligned because the application replaces them from one
-receipt rather than filtering rendered DOM.
+The **Engineering** button sends a `browse` request with a `compare` filter on `team`. Aeliqo validates the field and value against the `people` resource before reading data. The table and its visible filter come from one result — you never filter the DOM yourself.
 
-## 5. Show a semantic trend
+## 5. Chart a measure
 
-The Monthly headcount button switches the Region to the snapshot resource. The
-intent requests the registered `month-end-headcount` meaning and declares the
-month field, Gregorian calendar, monthly grain, and UTC timezone. The chart
-recipe binds those requested roles; it does not choose the first numeric column.
+The **Monthly headcount** button sends an `analyze` request for the `month-end-headcount` measure. It declares the month field, Gregorian calendar, monthly grain, and UTC timezone. The trend view binds those declared roles — it does not guess the first numeric column.
 
-## 6. Add a host-owned form
+## 6. Add a reviewed form
 
-The form uses React wrappers for Aeliqo controls. Change events are proposals;
-React state remains authoritative. Submit creates a review message and prevents
-the native effect. A production app would pass the reviewed draft through a
-registered action with current authorization and revision evidence.
+The form uses the React wrappers `AeliqoForm`, `AeliqoTextField`, and `AeliqoSelect`. Field changes are proposals; React state stays in charge. Submit only writes a review message — a production app would pass the draft to a registered action with fresh authorization.
 
 <aeliqo-source data-label="src/PeopleTutorial.tsx" data-path="examples/quickstart/src/PeopleTutorial.tsx"></aeliqo-source>
 
-Mount the screen with one application instance and dispose it when the React
-root is permanently removed:
+Mount the screen in your entry file, then dispose the app when the screen is removed for good:
 
 ```tsx
 import { createRoot } from 'react-dom/client';
@@ -94,26 +71,22 @@ const app = createTutorialApp([
 createRoot(document.querySelector('#root')!).render(<PeopleTutorial app={app} />);
 ```
 
-## 7. Connect a user-owned agent
+You should see: three buttons drive the region — a table of people, a filtered table, and a headcount trend — plus a review-only form.
 
-Create the endpoint only after the Region is mounted. The host chooses the
-Region, transport, goal epoch, expiry, and resource discovery. The endpoint
-exposes `aeliqo_context`, `aeliqo_render`, and `aeliqo_act`; renderer success is
-reported only after the real Region accepts the presentation. The model cannot
-grant itself permissions or supply executable UI.
+## 7. Expose the region to an agent
+
+Create `src/agent.ts`. `createAppToolEndpoint` pairs one mounted region with a transport and gives the agent three tools: `aeliqo_context`, `aeliqo_render`, `aeliqo_act`. The host picks the region, transport, expiry, and size limits. The agent cannot grant itself permissions or supply markup.
 
 <aeliqo-source data-label="src/agent.ts" data-path="examples/quickstart/src/agent.ts"></aeliqo-source>
 
-Attach the returned endpoint to the [local MCP transport](/agents/mcp/), then
-close it on disconnect or expiry. Keep all buttons, filters, and forms available
-when no agent is connected.
+Attach the endpoint to the [local MCP transport](/agents/mcp/) and close it on disconnect or expiry. Keep every button and form working when no agent is connected.
 
-## Verify the tutorial
+## Check your work
 
-<div class="doc-checklist"><ul><li>All employees renders a table in a wide Region and an allowed compact view only when the resource permits it.</li><li>Engineering shows only the synthetic Engineering records and keeps the filter visible.</li><li>Monthly headcount labels the metric definition and plots 118 through 130 by month without summing them.</li><li>The form preserves its controlled draft and performs no write before host review.</li><li>The MCP endpoint expires, disconnects, and rechecks current authority for every tool call.</li><li>Removing the React screen unmounts the Region; disposing the application cancels remaining work.</li></ul></div>
+<div class="doc-checklist"><ul><li>All employees renders a table on wide containers and an allowed compact view on narrow ones.</li><li>Engineering shows only the Engineering rows you passed in, with the filter visible.</li><li>Monthly headcount plots 118 through 130 by month and never sums them.</li><li>The form keeps its draft and writes nothing before host review.</li><li>The MCP endpoint expires, disconnects, and rechecks permissions on every tool call.</li><li>Unmounting the screen disposes the region; disposing the app cancels remaining work.</li></ul></div>
 
-## Recover from failures
+## Read the result status
 
-<div class="doc-table"><table><thead><tr><th>Outcome</th><th>Next action</th></tr></thead><tbody><tr><th><code>needs-input</code></th><td>Show the returned metric, identity, or form choice and resubmit a more specific intent.</td></tr><tr><th><code>unsupported</code></th><td>Check resource intents, registered views, and the effective presentation policy.</td></tr><tr><th><code>denied</code></th><td>Fix host authorization. Never add a grant to the intent payload.</td></tr><tr><th><code>failed</code></th><td>Show the bounded diagnostic and keep the previous valid result available.</td></tr><tr><th><code>cancelled</code></th><td>Treat supersession and unmount as expected; retry only from a new user request.</td></tr></tbody></table></div>
+<div class="doc-table"><table><thead><tr><th>Status</th><th>Next action</th></tr></thead><tbody><tr><th><code>needs-input</code></th><td>Show the returned choice or form field and send a more specific request.</td></tr><tr><th><code>unsupported</code></th><td>Check the resource's requests, registered views, and presentation policy.</td></tr><tr><th><code>denied</code></th><td>Fix host authorization. Never put a grant inside the request.</td></tr><tr><th><code>failed</code></th><td>Show the diagnostic and keep the previous valid view.</td></tr><tr><th><code>cancelled</code></th><td>Treat unmount and superseded requests as normal. Retry only on a new user action.</td></tr></tbody></table></div>
 
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/start/"><span>Local React quickstart</span><small>Start with a small no-AI surface.</small><b aria-hidden="true">→</b></a><a href="/guides/resources/"><span>Resource guide</span><small>Review identity, meaning, forms, and presentation policy.</small><b aria-hidden="true">→</b></a></nav>
+<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/guides/resources/"><span>Resource guide</span><small>Review identity, meaning, forms, and presentation policy.</small><b aria-hidden="true">→</b></a><a href="/agents/quickstart/"><span>Agent quickstart</span><small>Pair one expiring session with your region.</small><b aria-hidden="true">→</b></a></nav>

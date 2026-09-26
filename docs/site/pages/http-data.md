@@ -6,51 +6,94 @@ title: 'HTTP data service'
 description: 'Keep authenticated identity, credentials, source policy, and private records in the application server.'
 ---
 
-<p class="lead">The browser sends a bounded query. The application service authenticates the request, derives current source policy, and executes against a private source.</p>
-<h2>Trust boundary</h2><div class="boundary-diagram" role="img" aria-label="Browser intent reaches an authenticated application service before the private source"><div>Browser Region<small>Intent + cancellation</small></div><span aria-hidden="true">→</span><div>Application service<small>Identity + policy</small></div><span aria-hidden="true">→</span><div>Private source<small>Authorized execution</small></div></div>
-<aside class="doc-callout" data-tone="warning"><strong>Never trust wire authority</strong><p>Principal IDs, grants, policies, credentials, or endpoint URLs received from the browser or agent are data—not authority. Derive trusted context inside the host.</p></aside>
-<h2>Map the complete protocol</h2><div class="doc-checklist"><ul><li>Discovery exposes only metadata allowed for the authenticated session.</li><li>Filter, sort, pagination, nulls, units, revisions, partial results, and errors have explicit mappings.</li><li>Request abort reaches the database or upstream request.</li><li>Malformed or over-budget messages fail closed.</li><li>Server authorization is checked again before reads and writes.</li></ul></div>
-<h2>Declare remote coverage honestly</h2>
+<p class="lead">The browser sends a limited query. Your server authenticates the request, applies current policy, and runs it against a private source.</p>
 
-The service catalog declares the supported fields, predicates, relationships,
-metrics, stable ordering, page size, and pagination mode. Reject anything
-outside that contract with a structured diagnostic. Do not fetch an entire
-remote source to emulate a missing operation. A page is partial coverage; an
-unknown or estimated population must stay unknown or estimated. A complete
-global aggregate additionally needs the accepted plan's trusted aggregate shape
-pin; semantic-looking descriptor evidence cannot create that exception.
+## When you need this
 
-Continuation cursors are opaque application data. Bind them to the authenticated
-principal partition, full target, normalized query and ordering, catalog,
-immutable source lineage and current source revision, semantic revisions,
-policy revision, consistency mode, and expiry. Snapshot pagination pins one
-immutable source revision. Live keyset
-pagination continues after the final stable identity value; it is not an offset
-with a different name.
+- Records or credentials must stay on the server.
+- You already have an HTTP layer that can serve `POST` endpoints.
+- You want the browser to hold a `DataService` that talks to your backend.
 
-<h2>Run the localhost reference</h2>
+<div class="boundary-diagram" role="img" aria-label="A browser request reaches an authenticated application service before the private source"><div>Browser region<small>Request + cancellation</small></div><span aria-hidden="true">→</span><div>Application service<small>Identity + policy</small></div><span aria-hidden="true">→</span><div>Private source<small>Authorized execution</small></div></div>
 
-From the repository root, install its locked workspace dependencies first,
-then run the synthetic reference:
+<aside class="doc-callout" data-tone="warning"><strong>Never trust wire authority</strong><p>Anything arriving in a request is data — user IDs, grants, policies, credentials, endpoint URLs. None of it is authority. Derive trusted context inside the host.</p></aside>
 
-```sh
-pnpm install --frozen-lockfile
-pnpm --filter @aeliqo/reference-host test
+## 1. Wrap your data service
+
+`createDataHttpHandler` turns any `DataService` into a fetch-style handler. It serves `POST` requests at `/adc/describe`, `/adc/plan`, and `/adc/execute` by default.
+
+```js
+import { createServer } from 'node:http';
+import { Readable } from 'node:stream';
+import { createDataHttpHandler } from '@aeliqo/runtime/data';
+
+const handleData = createDataHttpHandler({
+  service: peopleData, // your DataService — local or custom
+  authenticate: (request) => authorizeRequest(request), // your session check
+});
+
+createServer(async (req, res) => {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(', ') : value);
+  }
+  const request = new Request(`http://localhost:3000${req.url}`, {
+    method: req.method,
+    headers,
+    body: req.method === 'GET' || req.method === 'HEAD' ? undefined : Readable.toWeb(req),
+    duplex: 'half',
+  });
+  const response = await handleData(request);
+  res.writeHead(response.status, Object.fromEntries(response.headers));
+  if (response.body === null) res.end();
+  else Readable.fromWeb(response.body).pipe(res);
+}).listen(3000);
 ```
 
-`examples/reference-host/server.mjs` starts a real Node HTTP server and wraps
-`createDataHttpHandler` in the host's HTTP adapter. `verify.mjs` calls it via
-`createHttpDataService`, checks local and remote rows plus descriptor fields,
-then closes the listener. The executable path includes a `plan`, streamed
-`execute` events, and a completion event; a successful HTTP response alone is
-not evidence that a query was authorized or complete.
+Any HTTP layer that can hand the handler a `Request` and send back its `Response` works. Pass request limits with `maxRequestBytes`, `maxRequestMilliseconds`, and `maxConcurrentRequests`.
 
-To inspect the server separately, run
-`pnpm --filter @aeliqo/reference-host start`. It prints its loopback URL and
-uses synthetic commerce data; stop it with Ctrl+C. The test command is the
-repeatable check because it also exercises the client and cleanup. The fixture
-uses permissive synthetic authentication and makes no paid model calls.
-Production hosts must derive the principal and authorization from their own
-trusted session, use their own private source adapter, and map failures to
-explicit diagnostics. Do not copy the fixture's permissive authentication.
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/guides/permissions/"><span>Authority adapter</span><small>Unify evaluator, Region, action, and agent context.</small><b aria-hidden="true">→</b></a><a href="/ship/"><span>Production checks</span><small>Verify source isolation and failure handling.</small><b aria-hidden="true">→</b></a></nav>
+## 2. Connect from the client
+
+`createHttpDataService` is the browser half of the same protocol. Bind it to the resource like any other data service.
+
+```ts
+import { createHttpDataService } from '@aeliqo/runtime/data';
+import { createAeliqoApp } from '@aeliqo/web/app';
+
+const peopleData = createHttpDataService({ baseUrl: 'https://api.example.com' });
+
+const app = createAeliqoApp({
+  resources: [{ resource: people, data: peopleData }],
+  authority, // your trusted adapter — see the permissions guide
+});
+```
+
+You should see: the region renders views over remote rows. The wire carries `plan` and streamed `execute` events. A successful HTTP response alone is not proof the query was authorized or complete — the result stream carries that evidence.
+
+## 3. Authenticate inside the host
+
+The `authenticate` callback runs on every request. Read your own session — cookie, token, or mTLS identity — and return the signed-in user. Return a denial `Outcome` when there is none.
+
+Never copy permissive fixture authentication into production. A production host derives the signed-in user from its own trusted session. It uses its own private source adapter and maps failures to explicit diagnostics.
+
+## Check the whole protocol
+
+<div class="doc-checklist"><ul><li>Discovery exposes only the metadata the authenticated session may see.</li><li>Filter, sort, pagination, nulls, units, revisions, partial results, and errors each have an explicit mapping.</li><li>Request abort reaches the database or upstream request.</li><li>Malformed or over-budget messages fail closed.</li><li>Server authorization is checked again before reads and writes.</li></ul></div>
+
+## 4. Declare coverage honestly
+
+The service catalog declares the supported fields, predicates, relationships, metrics, stable ordering, page size, and pagination mode. Reject anything outside that contract with a structured diagnostic. Do not fetch an entire remote source to fake a missing operation.
+
+A page of rows is partial coverage. An unknown or estimated population stays marked that way. A complete global aggregate counts only when the accepted plan's trusted aggregate shape pins it. Descriptor evidence alone cannot create that exception.
+
+Continuation cursors are opaque application data. Bind each cursor to the signed-in user's partition, the full target, and the normalized query and ordering. Also bind the catalog, the source revision, semantic and policy revisions, the consistency mode, and an expiry. Snapshot pagination pins one source revision. Live keyset pagination continues after the last stable identity value — it is not an offset with a new name.
+
+## What can go wrong
+
+- Malformed or over-budget messages fail closed. A non-`POST` request fails with `data.method`.
+- Transport, content-type, and correlation failures surface as `data.http-*` diagnostics, not partial data.
+- A cursor from another user partition or a stale plan fails with `data.stale-cursor` or `data.expired-plan`.
+- Server authorization is checked again before reads and writes — cache never grants access.
+- Request abort must reach the database or upstream call, or cancelled work keeps running.
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/guides/permissions/"><span>Authority adapter</span><small>Unify evaluator, region, action, and agent context.</small><b aria-hidden="true">→</b></a><a href="/ship/"><span>Production checks</span><small>Verify source isolation and failure handling.</small><b aria-hidden="true">→</b></a></nav>
