@@ -416,7 +416,7 @@
     "@aeliqo/runtime": "workspace:*"
   },
   "peerDependencies": {
-    "@aeliqo/runtime": "0.5.2"
+    "@aeliqo/runtime": "0.6.0"
   },
   "peerDependenciesMeta": {
     "@aeliqo/runtime": {

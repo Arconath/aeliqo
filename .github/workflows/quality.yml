@@ -229,6 +229,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
       - name: Require approved source pixel comparison
@@ -272,6 +273,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
       - name: Capture unapproved diagnostic evidence
@@ -314,6 +316,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
       - name: Require approved paired performance comparison
@@ -357,6 +360,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
       - name: Measure unapproved same-source stability
