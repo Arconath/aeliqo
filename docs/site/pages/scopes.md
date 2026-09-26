@@ -1,7 +1,7 @@
 ---
 id: 'scopes'
 path: '/guides/scopes/'
-section: 'Build'
+section: 'Guides'
 title: 'Application scopes'
 description: 'Bind surfaces to a host-authorized workspace and fence stale work across voluntary switches and revocation.'
 ---

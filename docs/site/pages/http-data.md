@@ -1,7 +1,7 @@
 ---
 id: 'http-data'
 path: '/guides/http-data/'
-section: 'Build'
+section: 'Guides'
 title: 'HTTP data service'
 description: 'Keep authenticated identity, credentials, source policy, and private records in the application server.'
 ---

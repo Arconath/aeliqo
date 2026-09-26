@@ -1,7 +1,7 @@
 ---
 id: "mcp"
 path: "/agents/mcp/"
-section: "Connect agents"
+section: "AI agents"
 title: "MCP"
 description: "Connect an MCP client to the bounded Aeliqo endpoint through a trusted local host."
 ---

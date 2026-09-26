@@ -1,7 +1,7 @@
 ---
 id: 'permissions'
 path: '/guides/permissions/'
-section: 'Build'
+section: 'Guides'
 title: 'Permissions and authority'
 description: 'Provide one trusted host adapter for principal, scope, policy revision, grants, and query context.'
 ---

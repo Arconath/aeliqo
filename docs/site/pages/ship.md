@@ -1,7 +1,7 @@
 ---
 id: "ship"
 path: "/ship/"
-section: "Ship"
+section: "Releases"
 title: "Ship an Aeliqo application"
 description: "Verify contracts, authority, interaction, accessibility, framework integration, agent behavior, and clean installation before release."
 ---

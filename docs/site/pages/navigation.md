@@ -1,7 +1,7 @@
 ---
 id: "navigation"
 path: "/guides/navigation/"
-section: "Build"
+section: "Guides"
 title: "Navigation"
 description: "Keep the host router in control while Aeliqo preserves selection and back context across adaptive views."
 ---

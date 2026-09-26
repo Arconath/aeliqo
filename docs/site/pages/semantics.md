@@ -1,7 +1,7 @@
 ---
 id: 'semantics'
 path: '/concepts/semantics/'
-section: 'Understand'
+section: 'Reference'
 title: 'Semantic contracts'
 description: 'Separate technical field types from business definitions, units, aggregation, grain, and temporal policy.'
 ---

@@ -1,7 +1,7 @@
 ---
 id: 'agents-quickstart'
 path: '/agents/quickstart/'
-section: 'Connect agents'
+section: 'AI agents'
 title: 'Agent quickstart'
 description: 'Expose the three standard tools for one expiring Region session while the same app remains usable manually.'
 ---

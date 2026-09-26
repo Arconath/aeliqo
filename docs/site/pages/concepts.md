@@ -1,7 +1,7 @@
 ---
 id: 'concepts'
 path: '/concepts/'
-section: 'Understand'
+section: 'Reference'
 title: 'How Aeliqo works'
 description: 'Follow one intent through Catalog, Task, Result, Recipe, Experience, and Region without treating model output as UI code.'
 ---

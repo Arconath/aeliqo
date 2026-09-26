@@ -1,7 +1,7 @@
 ---
 id: 'agents'
 path: '/agents/'
-section: 'Connect agents'
+section: 'AI agents'
 title: 'Connect an agent'
 description: 'Pair MCP, experimental WebMCP, or a host-supplied model with one authorized application session and Region.'
 ---

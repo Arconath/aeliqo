@@ -1,7 +1,7 @@
 ---
 id: 'registered-app'
 path: '/start/registered-app/'
-section: 'Start'
+section: 'Get started'
 title: 'Tutorial: integrate a registered People app'
 description: 'Connect application-owned data and authority, then render a filtered table, semantic trend, reviewed form, and optional MCP tools.'
 ---

@@ -1,7 +1,7 @@
 ---
 id: 'agent-recovery'
 path: '/agents/recovery/'
-section: 'Connect agents'
+section: 'AI agents'
 title: 'Agent recovery'
 description: 'Keep the application understandable when language is ambiguous, the provider fails, the session expires, or an action outcome is uncertain.'
 ---

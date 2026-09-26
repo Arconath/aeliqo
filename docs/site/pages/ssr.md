@@ -1,7 +1,7 @@
 ---
 id: 'ssr'
 path: '/ship/ssr/'
-section: 'Ship'
+section: 'Releases'
 title: 'SSR and hydration'
 description: 'Render server-safe output without DOM access at module evaluation or cross-request runtime state.'
 ---

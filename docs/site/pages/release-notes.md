@@ -1,7 +1,7 @@
 ---
 id: 'release-notes'
 path: '/ship/release-notes/'
-section: 'Ship'
+section: 'Releases'
 title: 'Release notes'
 description: 'Aeliqo 0.5 changes, migration boundaries, and the prior 0.4.2 release.'
 ---

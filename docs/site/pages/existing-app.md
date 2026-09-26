@@ -1,7 +1,7 @@
 ---
 id: 'existing-app'
 path: '/start/existing-app/'
-section: 'Start'
+section: 'Get started'
 title: 'Add Aeliqo to an existing application'
 description: 'Adopt one Region at a time while keeping the existing backend, router, state, components, and authorization system.'
 ---

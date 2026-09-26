@@ -1,7 +1,7 @@
 ---
 id: "standalone"
 path: "/start/standalone-components/"
-section: "Start"
+section: "Get started"
 title: "Standalone web components"
 description: "Use a published component directly when the application already owns rows and interaction state."
 ---

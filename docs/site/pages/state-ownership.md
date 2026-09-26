@@ -1,7 +1,7 @@
 ---
 id: 'state-ownership'
 path: '/concepts/state-ownership/'
-section: 'Understand'
+section: 'Reference'
 title: 'Selection, draft, and focus ownership'
 description: 'Preserve user work during adaptation by assigning each piece of interaction state one clear owner.'
 ---

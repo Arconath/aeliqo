@@ -1,7 +1,7 @@
 ---
 id: "browser-support"
 path: "/ship/browser-support/"
-section: "Ship"
+section: "Releases"
 title: "Browser support"
 description: "Separate required web-platform behavior, verified journey coverage, and experimental WebMCP availability."
 ---

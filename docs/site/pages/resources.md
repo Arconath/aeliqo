@@ -1,7 +1,7 @@
 ---
 id: "resources"
 path: "/guides/resources/"
-section: "Build"
+section: "Guides"
 title: "Define resources"
 description: "Describe runtime shape, stable identity, business meaning, forms, and allowed presentations in one application-owned definition."
 ---

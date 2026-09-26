@@ -44,5 +44,32 @@ describe('static page generation', () => {
       expect(navigation).toContain(`<a href="/components/${id}/" aria-current="page">`);
       for (const catalogId of ids) expect(navigation).toContain(`href="/components/${catalogId}/"`);
     }
+
+    const summaryOrder = (markup: string) =>
+      [...markup.matchAll(/<summary>([^<]+)/gu)].map((match) => (match[1] ?? '').trim());
+    const pageAt = (route: string) => readFile(join(generatedRoot, 'docs', route, 'index.html'), 'utf8');
+    const navOf = async (route: string) =>
+      (await pageAt(route)).match(/<nav aria-label="Documentation">([\s\S]*?)<\/nav>/u)?.[1] ?? '';
+    const componentNav = await navOf('components/data.table');
+    const guideNav = await navOf('guides/resources');
+    const startNav = await navOf('start/what-is-aeliqo');
+    expect(componentNav).not.toBe('');
+    expect(guideNav).not.toBe('');
+    expect(startNav).not.toBe('');
+    // Sidebar order is identical on every page; only open state and aria-current differ.
+    expect(summaryOrder(guideNav)).toEqual(summaryOrder(componentNav));
+    expect(summaryOrder(startNav)).toEqual(summaryOrder(componentNav));
+    for (const navigation of [componentNav, guideNav, startNav]) {
+      expect(navigation.match(/<details class="docs-nav-group"/gu)).toHaveLength(6);
+      expect(navigation.match(/<details class="docs-nav-group" open>/gu)).toHaveLength(1);
+    }
+    const componentDoc = await pageAt('components/data.table');
+    expect(componentDoc).toContain('aria-label="Breadcrumb"');
+    expect(componentDoc).toContain('<a href="/components/">Components</a>');
+    expect(componentDoc).toContain('class="doc-code-copy"');
+    const guideDoc = await pageAt('start');
+    expect(guideDoc).toContain('aria-label="Breadcrumb"');
+    expect(guideDoc).toContain('class="doc-code-copy"');
+    expect(guideDoc).toContain('class="tk-kw"');
   });
 });

@@ -1,7 +1,7 @@
 ---
 id: 'analytics'
 path: '/guides/analytics/'
-section: 'Build'
+section: 'Guides'
 title: 'Analytics and time'
 description: 'Declare analytical meanings, periods, denominators, completeness, and eligible trend views.'
 ---

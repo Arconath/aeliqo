@@ -1,7 +1,7 @@
 ---
 id: 'intent'
 path: '/concepts/intent/'
-section: 'Understand'
+section: 'Reference'
 title: 'Intent'
 description: 'A small, validated request that application code and agents can both send through the same pipeline.'
 ---

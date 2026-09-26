@@ -1,7 +1,7 @@
 ---
 id: 'quickstart'
 path: '/start/'
-section: 'Start'
+section: 'Get started'
 title: 'Quickstart: run an adaptive React view'
 description: 'Run and test a local People surface in React without an account, model key, backend, or agent.'
 ---

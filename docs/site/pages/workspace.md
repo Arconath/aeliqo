@@ -1,7 +1,7 @@
 ---
 id: 'workspace'
 path: '/guides/workspace/'
-section: 'Build'
+section: 'Guides'
 title: 'Workspace composition'
 description: 'Compose registered needs into one bounded presentation without changing scope or duplicating child owners.'
 ---

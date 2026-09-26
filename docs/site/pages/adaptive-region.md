@@ -1,7 +1,7 @@
 ---
 id: 'adaptive-region'
 path: '/guides/adaptive-region/'
-section: 'Build'
+section: 'Guides'
 title: 'Adaptive Region lifecycle'
 description: 'Mount once, render typed intent, observe sanitized state, and dispose all work with the host surface.'
 ---

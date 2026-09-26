@@ -1,7 +1,7 @@
 ---
 id: "forms"
 path: "/guides/forms/"
-section: "Build"
+section: "Guides"
 title: "Create and edit forms"
 description: "Generate registered form recipes from schemas while preserving draft ownership, validation, and the action boundary."
 ---

@@ -1,7 +1,7 @@
 ---
 id: 'data'
 path: '/guides/data/'
-section: 'Build'
+section: 'Guides'
 title: 'Data adapters'
 description: 'Connect local records, the Aeliqo HTTP protocol, or an application adapter without leaking credentials or inventing REST semantics.'
 ---

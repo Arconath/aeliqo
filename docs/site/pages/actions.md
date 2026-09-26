@@ -1,7 +1,7 @@
 ---
 id: 'actions'
 path: '/guides/actions/'
-section: 'Build'
+section: 'Guides'
 title: 'Business actions'
 description: 'Register schema-validated commands with permission, confirmation, revision, idempotency, and ambiguous-completion handling.'
 ---

@@ -1,7 +1,7 @@
 ---
 id: "frameworks"
 path: "/start/frameworks/"
-section: "Start"
+section: "Get started"
 title: "Framework setup"
 description: "Use the same web implementation from Vanilla, React, Vue, and server-rendered hosts without creating a second renderer."
 ---

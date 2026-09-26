@@ -1,7 +1,7 @@
 ---
 id: 'migration-0-4'
 path: '/ship/migration-0.4/'
-section: 'Ship'
+section: 'Releases'
 title: 'Migrate from 0.4.2 to 0.5'
 description: 'Move from Aeliqo 0.4.2 to the breaking 0.5.0 release line.'
 ---

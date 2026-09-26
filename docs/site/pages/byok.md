@@ -1,7 +1,7 @@
 ---
 id: 'byok'
 path: '/agents/byok/'
-section: 'Connect agents'
+section: 'AI agents'
 title: 'Bring your own model'
 description: 'Connect a provider through a trusted local host while keeping credentials outside the browser.'
 ---

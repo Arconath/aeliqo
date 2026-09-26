@@ -1,7 +1,7 @@
 ---
 id: 'webmcp'
 path: '/agents/webmcp/'
-section: 'Connect agents'
+section: 'AI agents'
 title: 'WebMCP (experimental)'
 description: 'Detect native browser support and register bounded tools only when the current browser exposes the required capability.'
 ---

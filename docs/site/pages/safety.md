@@ -1,7 +1,7 @@
 ---
 id: 'safety'
 path: '/concepts/safety/'
-section: 'Understand'
+section: 'Reference'
 title: 'Safety infrastructure'
 description: 'Make invalid, stale, unauthorized, and over-budget proposals non-executable while keeping limitations visible.'
 ---

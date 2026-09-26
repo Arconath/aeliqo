@@ -17,14 +17,14 @@
   padding-inline-end: 1.25rem;
   overflow: auto;
   border-inline-end: 1px solid var(--line);
-  font-size: var(--type-code);
+  font-size: 0.8125rem;
   scrollbar-width: thin;
 }
 .docs-sidebar-brand {
   display: grid;
   gap: 0.15rem;
-  margin-bottom: 1.3rem;
-  padding: 0.15rem 0.55rem 1.25rem;
+  margin-bottom: 1.1rem;
+  padding: 0.15rem 0.55rem 1rem;
   border-bottom: 1px solid var(--line);
   color: var(--text);
   text-decoration: none;
@@ -40,68 +40,97 @@
   font-size: 1.1rem;
   letter-spacing: -0.02em;
 }
-.docs-sidebar-brand::after {
-  max-width: 15rem;
-  margin-top: 0.35rem;
-  color: var(--muted);
-  content: 'Build interfaces from meaning, intent, and registered views.';
-  font-size: var(--type-compact);
-  line-height: 1.45;
-}
 .docs-sidebar nav {
   display: grid;
-  gap: 1.2rem;
-  margin-top: var(--space-5);
+  gap: 0.3rem;
+  margin-top: var(--space-4);
 }
-.docs-nav-group {
-  display: grid;
-  gap: 0.18rem;
+.docs-nav-group,
+.docs-nav-subgroup,
+.docs-component-family {
+  min-width: 0;
+  padding-top: 0;
+  border-top: 0;
 }
-.docs-nav-group > strong {
-  margin: 0 0 0.38rem 0.6rem;
-  color: var(--accent);
-  font-size: var(--type-micro);
-  font-weight: 780;
-  letter-spacing: 0.09em;
+.docs-nav-group > summary,
+.docs-nav-subgroup > summary,
+.docs-component-family > summary {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.6rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  list-style: none;
+}
+.docs-nav-group > summary::-webkit-details-marker,
+.docs-nav-subgroup > summary::-webkit-details-marker,
+.docs-component-family > summary::-webkit-details-marker {
+  display: none;
+}
+.docs-nav-group > summary {
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 740;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.docs-component-menu {
-  display: grid;
-  gap: 0.2rem;
-  margin-top: 0.4rem;
-}
-.docs-component-menu details {
-  min-width: 0;
-}
-.docs-component-menu summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: var(--radius-sm);
+.docs-nav-subgroup > summary,
+.docs-component-family > summary {
   color: var(--muted);
-  cursor: pointer;
   font-weight: 650;
+}
+.docs-component-family > summary {
   text-transform: capitalize;
 }
-.docs-component-menu summary:hover,
-.docs-component-menu details[open] > summary {
+.docs-nav-group > summary::after,
+.docs-nav-subgroup > summary::after,
+.docs-component-family > summary::after {
+  margin-inline-start: auto;
+  color: var(--faint);
+  content: '›';
+  font-weight: 500;
+  transition: rotate 120ms ease;
+}
+.docs-nav-group[open] > summary::after,
+.docs-nav-subgroup[open] > summary::after,
+.docs-component-family[open] > summary::after {
+  rotate: 90deg;
+}
+.docs-nav-group > summary:hover,
+.docs-nav-subgroup > summary:hover,
+.docs-component-family > summary:hover {
   color: var(--text);
   background: var(--surface);
 }
-.docs-component-menu summary span {
+.docs-component-family > summary span {
   color: var(--faint);
   font-size: var(--type-micro);
 }
+.docs-nav-links {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0.1rem 0 0.45rem;
+}
+.docs-nav-subgroup > .docs-nav-links,
 .docs-component-links {
   display: grid;
-  padding-inline-start: 0.45rem;
+  gap: 0.1rem;
+  margin-inline-start: 0.6rem;
+  padding-inline-start: 0.55rem;
+  border-inline-start: 1px solid var(--line);
+}
+.docs-component-menu {
+  display: grid;
+  gap: 0.1rem;
 }
 .docs-sidebar nav a {
-  padding: 0.46rem 0.65rem;
+  padding: 0.38rem 0.6rem;
   border-radius: var(--radius-sm);
   color: var(--muted);
+  font-size: 0.8125rem;
   line-height: 1.35;
   text-decoration: none;
 }
@@ -136,44 +165,10 @@
   border-radius: var(--radius-sm);
 }
 .docs-version {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 0.08rem 0.45rem;
-  padding: 0.75rem var(--space-3);
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
-  border-radius: var(--radius-soft);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent-soft) 68%, var(--surface-raised)),
-    var(--surface-raised)
-  );
-}
-.docs-version span {
-  grid-row: 1/3;
-  color: var(--muted);
-  font-size: var(--type-caption);
-}
-.docs-version strong {
-  font-size: var(--type-label);
-}
-.docs-version i,
-.docs-version a {
+  margin: var(--space-3) 0 0;
+  padding-inline: 0.6rem;
   color: var(--faint);
-  font-size: var(--type-micro);
-}
-.docs-version i {
-  font-style: normal;
-}
-.docs-version a {
-  grid-column: 2;
-}
-.docs-search-tools {
-  display: grid;
-  margin-bottom: var(--space-3);
-}
-.docs-search-tools > * {
-  grid-area: 1/1;
+  font-size: var(--type-compact-readable);
 }
 .docs-search-fallback {
   display: grid;
@@ -182,23 +177,25 @@
 .docs-search-fallback input {
   min-width: 0;
 }
-.docs-search-tools .search-trigger,
-.docs-search-tools[data-enhanced='true'] .docs-search-fallback {
-  visibility: hidden;
-  pointer-events: none;
-}
-.docs-search-tools[data-enhanced='true'] .search-trigger {
-  visibility: visible;
-  pointer-events: auto;
-}
 .search-trigger {
   display: flex;
   width: 100%;
+  min-height: var(--control-height);
   align-items: center;
   justify-content: space-between;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
   color: var(--muted);
-  border-color: var(--line);
-  text-align: start;
+  background: var(--surface-raised);
+  font-size: var(--type-label);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.search-trigger:hover {
+  border-color: var(--faint);
+  color: var(--text);
+  background: var(--surface);
 }
 .search-trigger kbd {
   padding: 0.08rem 0.3rem;
@@ -250,31 +247,56 @@
   padding-bottom: var(--space-10);
 }
 .doc-header {
-  position: relative;
-  margin-bottom: 2.5rem;
-  padding-bottom: 2.35rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
-}
-.doc-header::after {
-  position: absolute;
-  inset-inline-start: 0;
-  bottom: -1px;
-  width: 4.25rem;
-  height: 2px;
-  background: var(--accent);
-  content: '';
+  margin-bottom: 2rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--line);
 }
 .doc-header .eyebrow {
   margin-bottom: 0.8rem;
 }
+.reading .doc-breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.9rem;
+  padding: 0;
+  list-style: none;
+}
+.reading .doc-breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0;
+  color: var(--faint);
+  font-size: var(--type-label);
+  font-weight: 650;
+  letter-spacing: 0.03em;
+}
+.reading .doc-breadcrumb li + li::before {
+  color: var(--line-strong);
+  content: '/';
+  font-weight: 400;
+}
+.reading .doc-breadcrumb li[aria-current='page'] {
+  color: var(--muted);
+  font-weight: 500;
+}
+.reading .doc-breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.reading .doc-breadcrumb a:hover {
+  color: var(--accent);
+}
 .reading h1 {
   max-width: 24ch;
-  margin: 0 0 1rem;
+  margin: 0 0 0.9rem;
   overflow-wrap: anywhere;
-  font-size: clamp(2.45rem, 3.6vw, 3.55rem);
+  font-size: clamp(1.9rem, 3vw, 2.5rem);
   font-weight: 720;
-  letter-spacing: -0.055em;
-  line-height: 1.04;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
 }
 .doc-dek,
 .reading .lead {
@@ -292,17 +314,16 @@
 }
 .reading h2 {
   position: relative;
-  margin: clamp(3.75rem, 7vw, 5.5rem) 0 1.1rem;
-  padding-top: 1.15rem;
-  border-top: 1px solid var(--line);
-  font-size: clamp(1.5rem, 2.35vw, 2.15rem);
-  line-height: 1.15;
+  margin: 2.6rem 0 0.9rem;
+  font-size: clamp(1.3rem, 1.9vw, 1.6rem);
+  line-height: 1.2;
   letter-spacing: var(--tracking-tight);
   scroll-margin-top: var(--space-4);
 }
 .reading h3 {
-  margin: 0.2rem 0 var(--space-2);
-  font-size: var(--type-body);
+  margin: 1.4rem 0 var(--space-2);
+  font-size: 1.125rem;
+  font-weight: 650;
   line-height: 1.35;
 }
 .heading-anchor {
@@ -320,8 +341,15 @@
 }
 .reading p,
 .reading li {
-  color: var(--muted);
+  color: var(--text);
   line-height: 1.75;
+}
+.reading .decision-grid p,
+.reading .ownership-grid li,
+.reading .component-contract-grid p,
+.reading .doc-paths p,
+.reading .doc-callout p {
+  color: var(--muted);
 }
 .reading li {
   margin-bottom: 0.45rem;

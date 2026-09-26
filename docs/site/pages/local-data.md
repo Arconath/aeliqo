@@ -1,7 +1,7 @@
 ---
 id: 'local-data'
 path: '/guides/local-data/'
-section: 'Build'
+section: 'Guides'
 title: 'Local data service'
 description: 'Evaluate canonical queries over a bounded, application-owned snapshot with no network and no AI.'
 ---

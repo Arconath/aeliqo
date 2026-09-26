@@ -1,7 +1,7 @@
 ---
 id: 'custom-views'
 path: '/guides/custom-views/'
-section: 'Build'
+section: 'Guides'
 title: 'Custom views'
 description: 'Register a trusted application renderer with an exact presentation manifest and lifecycle.'
 ---

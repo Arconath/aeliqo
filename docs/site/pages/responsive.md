@@ -1,7 +1,7 @@
 ---
 id: 'responsive'
 path: '/guides/responsive-behavior/'
-section: 'Build'
+section: 'Guides'
 title: 'Responsive behavior'
 description: 'Adapt registered views from container conditions without another model call or silent information loss.'
 ---

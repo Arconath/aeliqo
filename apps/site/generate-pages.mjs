@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { buildPublicPages } from '../../scripts/docs/build-public-docs.mjs';
-import { DOC_NAVIGATION, LEGACY_DOC_REDIRECTS, docsArtifactPath } from '../../docs/public-site/routes.mjs';
+import {
+  DOC_NAVIGATION,
+  LEGACY_DOC_REDIRECTS,
+  docsArtifactPath,
+  enhanceDocCodeFigures,
+  highlightDocCodePres,
+} from '../../docs/public-site/routes.mjs';
 import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 
 const root = dirname(new URL(import.meta.url).pathname);
@@ -48,6 +54,16 @@ function enhanceHeadings(body) {
   return { html, headings };
 }
 
+function navItemContainsPath(item, currentPath) {
+  if (item.type === 'link') return item.path === currentPath;
+  if (item.type === 'component-families') return currentPath.startsWith('/components/');
+  return item.items.some((link) => link.path === currentPath);
+}
+
+function navGroupContainsPath(group, currentPath) {
+  return group.items.some((item) => navItemContainsPath(item, currentPath));
+}
+
 function componentMenu(pages, currentPath) {
   const families = new Map();
   for (const page of pages.filter((candidate) => candidate.component !== undefined)) {
@@ -55,51 +71,61 @@ function componentMenu(pages, currentPath) {
     if (!families.has(family)) families.set(family, []);
     families.get(family).push(page);
   }
-  const ordered = [...families].sort(([left, leftPages], [right, rightPages]) => {
-    if (leftPages.some((component) => component.path === currentPath)) return -1;
-    if (rightPages.some((component) => component.path === currentPath)) return 1;
-    return left.localeCompare(right);
-  });
+  const ordered = [...families].sort(([left], [right]) => left.localeCompare(right));
   return `<div class="docs-component-menu" role="group" aria-label="Component pages">${ordered
     .map(([family, components]) => {
       const open = components.some((component) => component.path === currentPath) ? ' open' : '';
-      const orderedComponents = open
-        ? [...components].sort((left, right) => Number(right.path === currentPath) - Number(left.path === currentPath))
-        : components;
-      const links = orderedComponents
+      const links = components
         .map(
           (component) =>
             `<a href="${component.path}"${component.path === currentPath ? ' aria-current="page"' : ''}>${escape(component.title)}</a>`,
         )
         .join('');
-      return `<details${open}><summary>${escape(family)} <span>${components.length}</span></summary><div class="docs-component-links">${links}</div></details>`;
+      return `<details class="docs-component-family"${open}><summary>${escape(family)} <span>${components.length}</span></summary><div class="docs-component-links">${links}</div></details>`;
     })
     .join('')}</div>`;
 }
 
+function navLinkMarkup(item, docsPages, currentPath) {
+  const page = docsPages.find((candidate) => candidate.path === item.path);
+  if (page === undefined) return '';
+  const label = item.label ?? page.title;
+  const current = page.path === currentPath ? ' aria-current="page"' : '';
+  return `<a href="${page.path}"${current}>${escape(label)}</a>`;
+}
+
+function navItemMarkup(item, docsPages, currentPath) {
+  if (item.type === 'link') return navLinkMarkup(item, docsPages, currentPath);
+  if (item.type === 'component-families') return componentMenu(docsPages, currentPath);
+  const open = navItemContainsPath(item, currentPath) ? ' open' : '';
+  const links = item.items.map((link) => navLinkMarkup(link, docsPages, currentPath)).join('');
+  return `<details class="docs-nav-subgroup"${open}><summary>${escape(item.label)}</summary><div class="docs-nav-links">${links}</div></details>`;
+}
+
 function docsSidebar(groups, docsPages, currentPath) {
-  const orderedGroups = currentPath.startsWith('/components/')
-    ? [...groups].sort(
-        ([left], [right]) => Number(right === 'Components & recipes') - Number(left === 'Components & recipes'),
-      )
-    : groups;
-  const links = orderedGroups
-    .map(
-      ([label, paths]) =>
-        `<div class="docs-nav-group"><strong>${label}</strong>${paths
-          .map((path) => docsPages.find((page) => page.path === path))
-          .filter(Boolean)
-          .map(
-            (page) =>
-              `<a href="${page.path}"${page.path === currentPath ? ' aria-current="page"' : ''}>${escape(page.title)}</a>`,
-          )
-          .join(
-            '',
-          )}${label === 'Components & recipes' && currentPath.startsWith('/components/') ? componentMenu(docsPages, currentPath) : ''}</div>`,
-    )
+  const links = groups
+    .map((group) => {
+      const open = navGroupContainsPath(group, currentPath) ? ' open' : '';
+      const items = group.items.map((item) => navItemMarkup(item, docsPages, currentPath)).join('');
+      return `<details class="docs-nav-group"${open}><summary>${escape(group.label)}</summary><div class="docs-nav-links">${items}</div></details>`;
+    })
     .join('');
   const versionLabel = releaseStatus === 'candidate' ? 'Release candidate' : 'Current release';
-  return `<aside class="docs-sidebar" aria-label="Documentation navigation"><input class="docs-nav-toggle visually-hidden" id="docs-nav-toggle" type="checkbox"><label class="docs-nav-summary" for="docs-nav-toggle">Browse documentation <span aria-hidden="true">⌄</span></label><div class="docs-sidebar-content"><a class="docs-sidebar-brand" href="/"><span>Aeliqo</span><strong>Documentation</strong></a><div class="docs-search-tools"><form class="docs-search-fallback" role="search" aria-label="Search documentation" action="/search/" method="get"><label class="visually-hidden" for="docs-sidebar-search">Search documentation</label><input id="docs-sidebar-search" name="q" type="text" inputmode="search" placeholder="Search docs"><button type="submit">Search</button></form><button class="search-trigger" type="button" disabled aria-keyshortcuts="Control+K Meta+K"><span>Search docs</span><kbd>⌘ K</kbd></button></div><div class="docs-version"><span>${versionLabel}</span><strong>${RELEASE_VERSION}</strong></div><nav aria-label="Documentation">${links}</nav><a class="docs-sidebar-github" href="https://github.com/Arconath/aeliqo">View source on GitHub <span aria-hidden="true">↗</span></a></div></aside>`;
+  return `<aside class="docs-sidebar" aria-label="Documentation navigation"><input class="docs-nav-toggle visually-hidden" id="docs-nav-toggle" type="checkbox"><label class="docs-nav-summary" for="docs-nav-toggle">Browse documentation <span aria-hidden="true">⌄</span></label><div class="docs-sidebar-content"><a class="docs-sidebar-brand" href="/"><span>Aeliqo</span><strong>Documentation</strong></a><a class="search-trigger" href="/search/" aria-keyshortcuts="Control+K Meta+K"><span>Search docs</span><kbd>⌘ K</kbd></a><p class="docs-version">${RELEASE_VERSION} · ${versionLabel}</p><nav aria-label="Documentation">${links}</nav><a class="docs-sidebar-github" href="https://github.com/Arconath/aeliqo">View source on GitHub <span aria-hidden="true">↗</span></a></div></aside>`;
+}
+
+const SECTION_INDEX_FALLBACK = new Map([
+  ['About', '/about/'],
+  ['Documentation', '/search/'],
+  ['Examples', '/examples/'],
+]);
+
+function docBreadcrumb(page) {
+  const group = DOC_NAVIGATION.find((candidate) => navGroupContainsPath(candidate, page.path));
+  const section = group?.label ?? page.section;
+  const index = group?.index ?? SECTION_INDEX_FALLBACK.get(page.section);
+  const sectionMarkup = index === undefined ? escape(section) : `<a href="${index}">${escape(section)}</a>`;
+  return `<nav class="doc-breadcrumb" aria-label="Breadcrumb"><ol><li>${sectionMarkup}</li><li aria-current="page">${escape(page.title)}</li></ol></nav>`;
 }
 
 function docsToc(headings) {
@@ -168,10 +194,14 @@ function pageHeader(baseHeader, page, isDocs) {
 function pageBody(page, isDocs) {
   if (page.path === '/playground/') return { html: page.body, headings: [] };
   const enhanced = isDocs ? enhanceHeadings(page.body) : { html: page.body, headings: [] };
+  const body = isDocs ? highlightDocCodePres(enhanceDocCodeFigures(enhanced.html)) : enhanced.html;
   const articleClass = ['reading', page.path === '/' ? 'docs-home' : '', page.component ? 'component-doc' : '']
     .filter(Boolean)
     .join(' ');
-  const html = `<article class="${articleClass}"><header class="doc-header"><p class="eyebrow">${escape(page.section)}</p><h1>${escape(page.title)}</h1><p class="doc-dek">${escape(page.description)}</p></header>${enhanced.html}</article>`;
+  const header = isDocs
+    ? `<header class="doc-header">${docBreadcrumb(page)}<h1>${escape(page.title)}</h1><p class="doc-dek">${escape(page.description)}</p></header>`
+    : `<header class="doc-header"><p class="eyebrow">${escape(page.section)}</p><h1>${escape(page.title)}</h1><p class="doc-dek">${escape(page.description)}</p></header>`;
+  const html = `<article class="${articleClass}">${header}${body}</article>`;
   return { html, headings: enhanced.headings };
 }
 

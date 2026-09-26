@@ -5,13 +5,43 @@
   border-radius: var(--radius-card);
   background: var(--code-background);
 }
-.doc-code figcaption {
-  padding: 0.6rem 0.9rem;
+/* Code surfaces stay dark in both color schemes, so one token palette is used. */
+.doc-code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0.4rem 0.5rem 0.4rem 0.9rem;
   border-bottom: 1px solid var(--code-border);
   color: var(--code-muted);
   font:
     0.7rem/1.4 ui-monospace,
     monospace;
+}
+.doc-code-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc-code-copy {
+  min-height: 0;
+  flex: 0 0 auto;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius-xs);
+  color: var(--code-muted);
+  background: transparent;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+.doc-code-copy:hover:not(:disabled) {
+  border-color: var(--code-muted);
+  color: var(--code-text);
+  background: color-mix(in srgb, var(--code-text) 8%, transparent);
+}
+.doc-code-copy:disabled {
+  visibility: hidden;
 }
 .doc-code pre {
   margin: 0;
@@ -21,6 +51,31 @@
 }
 .doc-code code {
   color: var(--code-text);
+}
+.doc-code .tk-kw {
+  color: #ff7b72;
+}
+.doc-code .tk-str {
+  color: #a5d6ff;
+}
+.doc-code .tk-num,
+.doc-code .tk-lit {
+  color: #79c0ff;
+}
+.doc-code .tk-type,
+.doc-code .tk-flag {
+  color: #ffa657;
+}
+.doc-code .tk-fn {
+  color: #d2a8ff;
+}
+.doc-code .tk-prop,
+.doc-code .tk-tag {
+  color: #7ee787;
+}
+.doc-code .tk-com {
+  color: #8b949e;
+  font-style: italic;
 }
 .doc-steps,
 .concept-flow {

@@ -1,7 +1,7 @@
 ---
 id: "what-is"
 path: "/start/what-is-aeliqo/"
-section: "Start"
+section: "Get started"
 title: "What is Aeliqo?"
 description: "A framework that compiles bounded application intent into registered UI, with evidence and authority checked at every boundary."
 ---

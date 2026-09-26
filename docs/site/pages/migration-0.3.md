@@ -1,7 +1,7 @@
 ---
 id: "migration"
 path: "/ship/migration-0.3/"
-section: "Ship"
+section: "Releases"
 title: "Migrate from 0.3 to 0.4"
 description: "Update package roots, component imports, removed aliases, and agent requests for Aeliqo 0.4."
 ---
