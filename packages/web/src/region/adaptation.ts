@@ -487,9 +487,12 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
     if (currentlyBlocked) needsRetry = true;
     else needsRetry = false;
     const result = controller.request(environment, requestOptions);
-    void result.then((outcome) => {
-      if (!outcome.ok && guard.isBlocked()) needsRetry = true;
-    });
+    void result.then(
+      (outcome) => {
+        if (!outcome.ok && guard.isBlocked()) needsRetry = true;
+      },
+      () => undefined,
+    );
     return result;
   };
   retryAfterInteraction = (): void => {

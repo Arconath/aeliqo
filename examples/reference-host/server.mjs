@@ -73,7 +73,7 @@ export async function startReferenceHost({ fixture = commerceFixture(), port = 0
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const host = await startReferenceHost({ fixture: process.argv.includes('--hr') ? hrFixture() : commerceFixture() });
-  console.log(`Synthetic Aeliqo reference ADC: ${host.url}`);
+  console.log(`Synthetic Aeliqo reference data service: ${host.url}`);
   console.log('Local fixture data only. No production authentication or data connection.');
   for (const event of ['SIGINT', 'SIGTERM'])
     process.once(event, () => {

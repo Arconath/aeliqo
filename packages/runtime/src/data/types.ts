@@ -16,7 +16,7 @@ import type {
 
 export type ResultEvent = Contract<'result-event'>;
 
-/** Values supported by the ADC record boundary. Nested objects are not rows. */
+/** Values supported by the data-service record boundary. Nested objects are not rows. */
 export type DataValue = null | boolean | number | string | { readonly decimal: string };
 export type DataRecord = Readonly<Record<string, DataValue>>;
 
@@ -50,7 +50,7 @@ export type DataErrorPayload = ExactWire<DataErrorPayloadWire>;
 
 export interface ReadContext {
   readonly signal?: AbortSignal;
-  /** Application-owned principal. It never crosses the ADC wire envelope. */
+  /** Application-owned principal. It never crosses the data-service wire envelope. */
   readonly principal?: unknown;
   /** Optional transport metadata for host policy; never used as wire authority. */
   readonly metadata?: Readonly<Record<string, string>>;
@@ -114,7 +114,7 @@ export interface LocalDataServiceOptions {
    * Its digest must match the catalog. */
   readonly functionRegistry?: FunctionRegistry;
   /** Host-owned planner/work ceilings, additionally bounded by sourceLimits.
-   * ADC QueryBudget independently caps the streamed response. */
+   * The data-service QueryBudget independently caps the streamed response. */
   readonly queryLimits?: Partial<QueryLimits>;
   /** Host-owned limits for the immutable in-process source snapshot. */
   readonly sourceLimits?: {
@@ -144,14 +144,14 @@ export interface LocalDataServiceOptions {
   };
   /**
    * Host-owned result lineage resolver used by Task evaluation. It is kept
-   * outside the ADC wire protocol; HTTP services receive this port from the
+   * outside the data-service wire protocol; HTTP services receive this port from the
    * trusted evaluator context instead.
    */
   readonly cohortResolver?: import('../evaluation/types.js').CohortResolver;
   /**
    * Host-owned handles used by the resolver for fixed cohort source results.
    * The service fills authority and catalog fields from the current plan
-   * request before invoking the resolver; these handles never cross ADC.
+   * request before invoking the resolver; these handles never cross the data service.
    */
   readonly cohortContext?: (input: {
     readonly readContext: ReadContext;

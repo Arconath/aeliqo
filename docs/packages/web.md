@@ -96,7 +96,13 @@ import { AeliqoBarElement, AeliqoTrendElement } from '@aeliqo/web/visualization/
 Family exports include `foundation`, `inputs`, `navigation`, `feedback`, `data`,
 `plot`, `visualization`, and `compound`. Region registration and low-level
 rendering live under `@aeliqo/web/region`; server rendering lives under
-`@aeliqo/web/server`.
+`@aeliqo/web/server`. Utility subpaths cover `@aeliqo/web/register`
+(`registerAeliqoElements`, `AELIQO_WEB_VERSION`), `@aeliqo/web/events` (typed
+selection events), `@aeliqo/web/styles` (theme styles and locale context),
+`@aeliqo/web/table` and `@aeliqo/web/chart` (element classes and stable row
+keys), `@aeliqo/web/region/adaptation` (region adaptation internals), and the
+`@aeliqo/web/foundation/manifest` and `@aeliqo/web/inputs/manifest` family
+manifests.
 
 `<aeliqo-chart>` is the low-level series chart. It renders a responsive SVG
 with labeled axes and grid lines, plus a collapsible table with the exact

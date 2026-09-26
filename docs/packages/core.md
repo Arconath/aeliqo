@@ -247,6 +247,7 @@ license to choose the first available field or presentation.
 | `@aeliqo/core/plot`          | Plot specifications and binding                                |
 | `@aeliqo/core/visualization` | Visualization specifications and binding                       |
 | `@aeliqo/core/agent`         | Agent proposal and authority wire types                        |
+| `@aeliqo/core/schemas/*`     | Generated JSON Schema artifacts for external validators        |
 
 Import a subpath when using its named capability:
 
