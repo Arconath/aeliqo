@@ -63,7 +63,7 @@ const expectStable = (before: Box | null, after: Box | null, name: string): void
 async function assertNoScriptRoute(page: Page, component: (typeof COMPONENT_ROUTES)[number]): Promise<LayoutEvidence> {
   await page.goto(component.route, { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { level: 1, name: component.name, exact: true })).toBeVisible();
-  await expect(page.locator('.search-trigger')).toBeDisabled();
+  await expect(page.locator('.search-trigger')).toHaveAttribute('href', '/search/');
   await expect(page.locator('[data-component-preview] [data-preview-mount]')).toContainText(
     'Interactive preview requires JavaScript.',
   );

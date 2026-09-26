@@ -19,7 +19,7 @@ test('each component page exposes the complete component menu and identifies its
       await expect(componentMenu.locator(`a[href="${componentRoute}"]`)).toHaveCount(1);
     await expect(componentMenu.locator('a[aria-current="page"]')).toHaveAttribute('href', route);
     await expect(componentMenu.locator('details[open]')).toHaveCount(1);
-    await expect(componentMenu.locator('details[open] a').first()).toHaveAttribute('href', route);
+    await expect(componentMenu.locator('details[open] a[aria-current="page"]')).toHaveAttribute('href', route);
   }
   await page.goto('/components/');
   await expect(page.locator('.docs-component-menu a')).toHaveCount(COMPONENT_ROUTES.length);
@@ -33,7 +33,9 @@ test('each component page exposes the complete component menu and identifies its
   await foundation.locator('a[href="/components/foundation.button/"]').click();
   await expect(page).toHaveURL(/\/components\/foundation\.button\/$/);
   await page.goto('/concepts/');
-  await expect(page.locator('.docs-component-menu')).toHaveCount(0);
+  const conceptsMenu = page.locator('.docs-component-menu');
+  await expect(conceptsMenu.locator('a')).toHaveCount(COMPONENT_ROUTES.length);
+  await expect(conceptsMenu.locator('details[open]')).toHaveCount(0);
 });
 
 const ADOPTION_ROUTES = [
@@ -58,8 +60,7 @@ test('documentation information architecture exposes distinct adoption routes', 
   }
 
   await page.goto('/docs/');
-  for (const route of ADOPTION_ROUTES)
-    await expect(page.locator(`.docs-sidebar a[href="${route}"]`).first()).toBeVisible();
+  for (const route of ADOPTION_ROUTES) await expect(page.locator(`.docs-sidebar a[href="${route}"]`)).toHaveCount(1);
   for (const route of [
     '/start/',
     '/start/registered-app/',
@@ -73,8 +74,10 @@ test('documentation information architecture exposes distinct adoption routes', 
 
 test('documentation search keeps keyboard, query, no-result, and fallback paths', async ({ browser, page }) => {
   await page.goto('/concepts/');
-  await expect(page.locator('.docs-search-tools .docs-search-fallback')).toBeHidden();
-  await expect(page.locator('.search-trigger')).toBeVisible();
+  await expect(page.locator('.docs-sidebar .docs-search-fallback')).toHaveCount(0);
+  const searchTrigger = page.locator('.docs-sidebar .search-trigger');
+  await expect(searchTrigger).toBeVisible();
+  await expect(searchTrigger).toHaveAttribute('href', '/search/');
   await page.keyboard.press('Control+K');
   const searchDialog = page.locator('#docs-search-dialog');
   await expect(searchDialog.getByRole('dialog')).toBeVisible();
@@ -83,9 +86,7 @@ test('documentation search keeps keyboard, query, no-result, and fallback paths'
   const rankedLinks = page.locator('#docs-search-dialog .search-results a');
   await expect(rankedLinks.first()).toHaveAttribute('href', '/components/data.table/');
   await expect(rankedLinks.first().locator('strong')).toHaveText('Table');
-  await expect(page.locator("#docs-search-dialog .search-results a[href='/components/navigation.tabs/']")).toHaveCount(
-    0,
-  );
+  await expect(page.locator("#docs-search-dialog .search-results a[href='/legal/privacy/']")).toHaveCount(0);
   const accessibility = await new AxeBuilder({ page }).analyze();
   expect(
     accessibility.violations.filter((violation) =>
@@ -95,7 +96,7 @@ test('documentation search keeps keyboard, query, no-result, and fallback paths'
   await field.fill('meaning');
   await expect(page).toHaveURL(/\?q=meaning$/);
   await expect(page.locator('#docs-search-dialog').getByRole('link').first()).toBeVisible();
-  await field.fill('no-such-aeliqo-page');
+  await field.fill('no-such-aeliqo-zxqw');
   await expect(page.locator('#docs-search-dialog')).toContainText('No pages found');
 
   const noScriptContext = await browser.newContext({ javaScriptEnabled: false });
@@ -106,8 +107,9 @@ test('documentation search keeps keyboard, query, no-result, and fallback paths'
     await expect(noScriptPage.locator('form.docs-search-fallback').first()).toHaveAttribute('action', '/search/');
     await expect(noScriptPage.locator('.search-fallback-links a').first()).toBeVisible();
     await noScriptPage.goto('/components/data.table/');
-    await expect(noScriptPage.locator('.docs-search-tools .docs-search-fallback')).toBeVisible();
-    await expect(noScriptPage.locator('.search-trigger')).toBeHidden();
+    const noScriptTrigger = noScriptPage.locator('.docs-sidebar .search-trigger');
+    await expect(noScriptTrigger).toBeVisible();
+    await expect(noScriptTrigger).toHaveAttribute('href', '/search/');
   } finally {
     await noScriptContext.close();
   }
@@ -275,12 +277,12 @@ test('scrollable code remains focusable and named across static, hydrated, and o
 }) => {
   await page.goto('/start/');
   const packageManifest = page.locator('.reading .doc-code pre').first();
-  await expect(packageManifest).toContainText(`"@aeliqo/react": "${RELEASE_VERSION}"`);
+  await expect(packageManifest).toContainText('npm create vite@latest people');
   await expect(packageManifest).toHaveAttribute('tabindex', '0');
   await packageManifest.focus();
   await expect(packageManifest).toBeFocused();
   const typescriptConfig = page.locator('.reading .doc-code pre').nth(1);
-  await expect(typescriptConfig).toContainText('"moduleResolution": "Bundler"');
+  await expect(typescriptConfig).toContainText(`@aeliqo/react@${RELEASE_VERSION}`);
   await expect(typescriptConfig).toHaveAttribute('tabindex', '0');
   await typescriptConfig.focus();
   await expect(typescriptConfig).toBeFocused();
@@ -291,7 +293,7 @@ test('scrollable code remains focusable and named across static, hydrated, and o
   try {
     await noScriptPage.goto('/start/');
     const staticPackageManifest = noScriptPage.locator('.reading .doc-code pre').first();
-    await expect(staticPackageManifest).toContainText(`"@aeliqo/react": "${RELEASE_VERSION}"`);
+    await expect(staticPackageManifest).toContainText('npm create vite@latest people');
     await expect(staticPackageManifest).toHaveAttribute('tabindex', '0');
     await staticPackageManifest.focus();
     await expect(staticPackageManifest).toBeFocused();
@@ -349,9 +351,8 @@ test('every generated component example keeps its code focusable when opened', a
 test('homepage code disclosures remain focusable at 320px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 900 });
   await page.goto('/');
-  const details = page.locator('details.demo-source');
-  await details.locator('summary').click();
-  const pre = details.locator('pre');
+  await page.locator('#demo-tab-code').click();
+  const pre = page.locator('#demo-panel-code pre.demo-code').first();
   await expect(pre).toHaveAttribute('tabindex', '0');
   await pre.focus();
   await expect(pre).toBeFocused();
@@ -361,8 +362,9 @@ test('homepage code disclosures remain focusable at 320px', async ({ page }) => 
 
 test('homepage adaptive result remains a named accessible section after evaluation', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('#demo-status')).toContainText('4 of 4 synthetic people matched');
   await page.locator('#team').selectOption('Engineering');
-  await page.getByRole('button', { name: 'Apply filter', exact: true }).click();
+  await expect(page.locator('#demo-status')).toContainText('2 of 4 synthetic people matched');
   const result = page.getByRole('region', { name: 'Synthetic people adaptive result', exact: true });
   await expect(result).toBeVisible();
   await expect(result).toContainText('Sam Rivera');

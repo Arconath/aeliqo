@@ -1,10 +1,12 @@
 ---
 id: "migration"
 path: "/ship/migration-0.3/"
-section: "Ship"
+section: "Releases"
 title: "Migrate from 0.3 to 0.4"
 description: "Update package roots, component imports, removed aliases, and agent requests for Aeliqo 0.4."
 ---
+
+<p class="lead">Move your 0.3 integration to 0.4 one boundary at a time. Update package imports first, then replace removed elements, then update agent requests.</p>
 
 ## What changes in 0.4
 
@@ -13,11 +15,11 @@ package roots; specialized APIs remain available through explicit subpaths.
 The public site is one application and has one fixed visual style. The component
 library continues to accept host theme tokens.
 
-The 0.4 release removes the `@aeliqo/devtools` workspace package, the Studio
-application, compatibility React wrappers `AeliqoInput` and `AeliqoChart`, and
-the legacy `<aeliqo-input>` custom element. Existing npm artifacts remain
-available, but new applications should use the five packages documented in the
-[package map](/reference/packages/).
+The 0.4 release removes the `@aeliqo/devtools` workspace package and the Studio
+application. It also removes the compatibility React wrappers `AeliqoInput` and
+`AeliqoChart`, and the legacy `<aeliqo-input>` custom element. Existing npm
+artifacts remain available, but new applications should use the five packages
+documented in the [package map](/reference/packages/).
 
 ## Update package entry points
 
@@ -88,7 +90,7 @@ field?.addEventListener('aeliqo-input-change', (event) => {
 
 For number, date, search, choice, and multi-line values, use the corresponding
 component from the [input family](/components/). The old `AeliqoInput` React
-wrapper and `AeliqoFieldChangeDetail` alias are removed; React applications can
+wrapper and `AeliqoFieldChangeDetail` alias are removed. React applications can
 use the typed family wrapper or the custom element directly.
 
 ## Update agent requests

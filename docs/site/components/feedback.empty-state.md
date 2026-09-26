@@ -7,19 +7,24 @@ contract: 'Distinguish no records, no matches, forbidden data, loading and failu
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Explain why a result area has no content using an explicit kind, heading, and message. An optional recovery button proposes a host action such as clearing filters; it does not fabricate rows or retry data access itself.
+Explains why a region has no content, with an explicit kind, heading, and message. An optional recovery button proposes a host action such as clearing filters.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A list or panel has no records or no matches to show.
+- The reason for the empty region should be named, not implied.
+- Recovery needs a visible action, such as clearing filters.
 
 ## When to use a different component
 
-Use Alert for a warning when data is available. EmptyState describes a valid absence of results and offers recovery.
+- Use [Alert](/components/feedback.alert/) for a warning while data is still available.
+- Use [Skeleton](/components/feedback.skeleton/) while the content is still loading.
 
 ## Properties and defaults
 

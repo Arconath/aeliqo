@@ -7,19 +7,25 @@ contract: 'Bounded enumerated choice with native-first semantics; empty and unkn
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Present a bounded choice list through a native select. An empty value is distinct from a selected option, and a value missing from the current list remains visible as an unknown option instead of silently selecting another one.
+A bounded choice with a styled trigger and chevron; the option popup and keyboard stay native. An empty value is no selection, and an unknown value stays visible instead of picking another option.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- People pick one option from a short, fixed set.
+- The choices fit a bounded list that does not need a query.
+- Compact display matters more than keeping every option visible.
+- Empty and unknown values must stay distinct from a real selection.
 
 ## When to use a different component
 
-Use Combobox when people need to search a longer bounded list. Use RadioGroup when the choices should stay visible.
+- Use [Combobox](/components/input.combobox/) when people need to search a longer list.
+- Use [RadioGroup](/components/input.radio-group/) when the choices should stay visible.
 
 ## Properties and defaults
 

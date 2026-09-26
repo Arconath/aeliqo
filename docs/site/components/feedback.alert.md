@@ -7,19 +7,24 @@ contract: 'Persistent status/error with severity semantics and actionable recove
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Keep a status or warning visible with its heading and message until the host changes it. Optional action and dismiss buttons emit separate proposals; tone supplements the text rather than carrying the message alone.
+A persistent status or warning with a heading and message. Optional action and dismiss buttons emit separate proposals; tone supports the text, never replaces it.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A status or error must stay visible until the host changes it.
+- The message offers a recovery action or a dismissal.
+- The information belongs inside the page's reading flow.
 
 ## When to use a different component
 
-Use Toast for a brief non-blocking confirmation. Keep warnings and actionable messages in the page with Alert.
+- Use [Toast](/components/feedback.toast/) for brief feedback that can disappear.
+- Use [EmptyState](/components/feedback.empty-state/) when a region has no content to show.
 
 ## Properties and defaults
 

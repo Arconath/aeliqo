@@ -7,19 +7,24 @@ contract: 'Bounded quantity with keyboard and text alternative; steps and units 
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Edit one bounded numeric quantity with a native range control and a visible value and unit. The component applies `min`, `max`, and `step` to user changes; the host interprets the quantity and accepts its proposal.
+A native range control for one bounded quantity with a visible value and unit. It applies `min`, `max`, and `step` to changes; the host interprets the result.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- People adjust a quantity inside declared bounds, such as volume or confidence.
+- An approximate position is enough; exact digits are not required.
+- The current value and unit should stay visible beside the track.
 
 ## When to use a different component
 
-Use NumberField when an exact value matters or people need to type digits. Slider suits a bounded continuous choice.
+- Use [NumberField](/components/input.number-field/) when the exact value matters or people type digits.
+- Use [Form](/components/input.form/) when the value submits alongside other fields.
 
 ## Properties and defaults
 

@@ -7,21 +7,24 @@ contract: 'Nonnegative additive hierarchy; area meaning and tiny-node access pre
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Treemap sizes hierarchical marks from a declared nonnegative additive value. It needs valid parent-child
-relationships and an explicit leaf-value policy; a data view keeps small or omitted nodes and exact
-values reachable.
+Show a hierarchy as nested rectangles sized by a nonnegative measure. Tiny nodes stay reachable through the data view.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Compare part-to-whole size across a hierarchy.
+- Show breakdowns where areas must add up, like budgets.
+- Keep tiny nodes reachable through the data view.
 
 ## When to use a different component
 
-Use Tree when parent labels and paths matter more than area. Treemap sizes marks only with an explicit value meaning.
+- Use Tree when labels and structure matter more than area.
+- Use Heatmap for two flat dimensions instead of nested areas.
 
 ## Properties and defaults
 

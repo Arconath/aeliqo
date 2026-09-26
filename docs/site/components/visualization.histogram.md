@@ -7,21 +7,24 @@ contract: 'Declared binning, count/density labeling and missing-population discl
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Histogram displays bins declared by the visualization spec, with count or density meaning attached to the
-plotted measure. Its scope text distinguishes delivered bins from the unknown coverage of source
-observations, so the chart does not imply that missing or outside-bin populations are counted.
+Show how one numeric measure distributes across declared bins. Scope text says what the bins do not cover.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Show the distribution of one measure, like order size.
+- Work with bins that have declared boundaries.
+- Label counts or density without implying missing rows were counted.
 
 ## When to use a different component
 
-Use Bar for categories that are already defined. Histogram is for numeric bins with an explicit boundary policy.
+- Use Bar when categories already exist instead of numeric bins.
+- Use Heatmap to compare a measure across two dimensions.
 
 ## Properties and defaults
 

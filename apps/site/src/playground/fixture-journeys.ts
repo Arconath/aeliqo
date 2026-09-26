@@ -59,7 +59,7 @@ const STATUS_RULES: ReadonlyArray<
       receipt: 'pending',
       result: 'Evaluating…',
       view: 'Waiting',
-      status: 'Evaluating the registered synthetic journey…',
+      status: 'Evaluating the registered guided demo…',
     }),
   ],
   [
@@ -71,7 +71,7 @@ const STATUS_RULES: ReadonlyArray<
 export function fixtureStatus(kind: FixtureJourney, receipt: string, title: string): FixtureStatus {
   const rule = STATUS_RULES.find(([test]) => test(receipt));
   if (rule !== undefined) return rule[1](kind, receipt, title);
-  return { receipt, result: 'Could not complete', view: 'No new view', status: receipt || 'Journey failed.' };
+  return { receipt, result: 'Could not complete', view: 'No new view', status: receipt || 'The demo failed.' };
 }
 
 interface FixtureJourneyOptions {
@@ -109,7 +109,7 @@ export function createFixtureJourneys(options: FixtureJourneyOptions) {
       loaded.add(kind);
       if (active !== kind) return;
       const fixtureStatus = panel.querySelector<HTMLElement>('[role="status"]');
-      if (fixtureStatus === null) throw new Error('The journey status is unavailable.');
+      if (fixtureStatus === null) throw new Error('The demo status element is unavailable.');
       const syncStatus = () => {
         if (active === kind) options.onStatus(kind, fixtureStatus.textContent ?? '');
       };

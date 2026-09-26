@@ -7,19 +7,24 @@ contract: 'Native-first modal semantics, focus containment/return and escape pol
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Place a labelled interruption in a native dialog and contain focus while modal. Escape and the close button use the configured dismissal policy and emit a close request; the host owns the consequential action inside it.
+A modal dialog that contains focus while open. Escape and the close button follow the dismissal policy and emit a request; the host owns the action inside.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- The person must confirm or cancel before continuing.
+- The content needs a modal focus boundary.
+- Focus should return to the trigger when the dialog closes.
 
 ## When to use a different component
 
-Use Drawer for contextual detail that should sit beside the current page. Dialog is for modal interruption and confirmation.
+- Use [Drawer](/components/feedback.drawer/) for detail that should sit beside the current page.
+- Use [Alert](/components/feedback.alert/) when the message belongs inline in the page.
 
 ## Properties and defaults
 

@@ -84,7 +84,16 @@ jobs:
           jq -e --arg sha "$SOURCE_SHA" \
             '[.[] | select(.head_sha == $sha and .head_branch == "main" and .event == "push" and .conclusion == "success")] | if length == 0 then error("no successful same-SHA main quality run") else max_by(.run_number) | {id,run_number,head_sha,head_branch,event,conclusion,html_url} end' \
             artifacts/package-release-policy/quality-runs.json > artifacts/package-release-policy/quality-run.json
-          echo "quality_run_id=$(jq -r '.id' artifacts/package-release-policy/quality-run.json)" >> "$GITHUB_OUTPUT"
+          quality_run_id="$(jq -er '.id' artifacts/package-release-policy/quality-run.json)"
+          gh api "repos/$GH_REPO/actions/runs/$quality_run_id/jobs?per_page=100" \
+            --jq '.jobs[].steps[]' > artifacts/package-release-policy/quality-jobs.json
+          jq -es \
+            'if [.[] | select(.name == "Run required functional, security, browser, and package checks" and .conclusion == "success")] | length > 0
+             then true
+             else error("same-SHA quality ran the site lane only; dispatch quality.yml on main to fully qualify this revision for publication")
+             end' \
+            artifacts/package-release-policy/quality-jobs.json >/dev/null
+          echo "quality_run_id=$quality_run_id" >> "$GITHUB_OUTPUT"
           if [ "$STAGE" = stable ]; then
             gh api "repos/$GH_REPO/actions/runs/$RC_RUN_ID" > artifacts/package-release-policy/rc-run-full.json
             jq -e --arg sha "$RC_SOURCE_SHA" \

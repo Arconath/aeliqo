@@ -7,19 +7,24 @@ contract: 'Supplemental nonessential information; works on focus, dismisses, not
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Reveal a short supplemental explanation when its built-in trigger receives focus or hover. Escape hides it, and it never replaces the trigger's accessible name or essential instructions outside the tooltip.
+A short supplemental explanation shown when its built-in trigger gets focus or hover. Escape hides it; it never serves as the trigger's accessible name.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- An icon or control needs a short extra explanation.
+- The trigger already has an accessible name and the text is supplemental.
+- The tip should appear on focus and hover and dismiss on Escape.
 
 ## When to use a different component
 
-Use Popover when content needs interaction or richer structure. Tooltip text should be short and supplemental.
+- Use [Popover](/components/feedback.popover/) when the content needs interaction or richer structure.
+- Use [Text](/components/foundation.text/) when the explanation is essential and must stay visible.
 
 ## Properties and defaults
 
@@ -41,8 +46,8 @@ The built-in trigger opens the tooltip on focus or pointer hover and closes
 it on blur, pointer leave, or Escape. There is no `disabled` property and no
 separate component event. Remove the trigger when the explanation must be
 unavailable; setting `open` to false alone will not disable focus or hover.
-Keep a concise visible trigger label,
-because tooltip content is supplementary.
+Keep a concise visible trigger label, because
+tooltip content is supplementary.
 
 ## Keyboard, focus, and accessibility
 

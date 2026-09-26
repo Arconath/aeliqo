@@ -7,19 +7,24 @@ contract: 'Named panels with stable selection; automatic activation only when la
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Connect named tabs to panels with one selected value. Automatic activation selects as arrow-key focus moves; `activation='manual'` waits for Enter or Space, which is useful when changing panels starts costly work.
+Switches between named panels with one selected value. `activation='manual'` waits for Enter or Space when changing panels is expensive.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Switching between sibling views inside one page.
+- Panels keyed by stable IDs your app controls.
+- Costly panel loads that call for `activation='manual'`.
 
 ## When to use a different component
 
-Use Breadcrumb for a hierarchical location. Tabs switch among peer panels inside the current view.
+- Use Breadcrumb to show a path to the current location.
+- Use Menu for a list of commands, not panel switching.
 
 ## Properties and defaults
 

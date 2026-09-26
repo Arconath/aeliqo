@@ -7,21 +7,24 @@ contract: 'Labeled facts with stable ordering, wrapping and semantic links.'
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-KeyValue renders an ordered set of application-supplied facts as a definition list. Each item can include
-a description or a safe link, and the component reports scope and loading or failure states without
-fetching facts itself.
+Show a short ordered list of labeled facts as a definition list. Each fact can carry a description or a safe link.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- List a few stable facts like owner, status, or scope.
+- Keep fact order fixed so labels stay predictable.
+- Attach an approved link to a fact.
 
 ## When to use a different component
 
-Use Detail for a selected record with field definitions. KeyValue is a short ordered list of facts.
+- Use Detail to show a selected record with identity and missing-field labels.
+- Use RecordList when browsing and selecting records is the task.
 
 ## Properties and defaults
 

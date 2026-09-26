@@ -7,19 +7,24 @@ contract: 'Trigger one explicit action; native button semantics; disabled and pe
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Render a native button for one host-owned action. `disabled` and `pending` block activation; the component emits a cancellable action proposal, while the application performs the work and clears `pending` after its result.
+A native button for one explicit action. It emits a cancellable action event; your app performs the work and clears `pending`.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Submitting a form, saving a record, or confirming a step.
+- An action your app must be able to cancel before it runs.
+- Actions that must not double-submit while `pending` or `disabled`.
 
 ## When to use a different component
 
-Use Link when activation navigates. Choose IconButton only for a compact icon action that still has its own accessible name.
+- Use Link when activation navigates to another page.
+- Use IconButton for a compact icon action with its own accessible name.
 
 ## Properties and defaults
 

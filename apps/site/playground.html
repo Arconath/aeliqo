@@ -2,7 +2,7 @@
   <div>
     <p class="pg-kicker">Public runtime · synthetic data</p>
     <h1 id="playground-title">See the interface take shape.</h1>
-    <p class="pg-intro-dek">A live path from intent to result to presentation.</p>
+    <p class="pg-intro-dek">A live path from request to result to view.</p>
   </div>
   <div class="pg-intro-copy">
     <p>
@@ -27,7 +27,6 @@
     </div>
   </div>
   <header class="pg-toolbar">
-    <div class="pg-toolbar-brand" aria-hidden="true"><span>A</span><strong>Aeliqo / Playground</strong></div>
     <label
       ><span>Scenario</span
       ><select id="pg-scenario" data-playground-boot-control disabled></select
@@ -45,93 +44,156 @@
       <span id="pg-connection-dot"></span><strong id="pg-connection-label">No agent · manual runtime</strong>
     </div>
     <div class="pg-toolbar-actions">
-      <button type="button" id="pg-export" data-playground-boot-control disabled aria-label="Export project">
-        Export</button
-      ><button type="button" id="pg-inspect" data-playground-boot-control disabled aria-haspopup="dialog">
+      <button type="button" id="pg-inspect" data-playground-boot-control disabled aria-haspopup="dialog">
         Inspect</button
-      ><button type="button" id="pg-reset" data-playground-boot-control disabled aria-label="Reset playground">
-        Reset
-      </button>
+      ><details class="pg-menu" id="pg-menu">
+        <summary>More</summary>
+        <div class="pg-menu-body">
+          <button type="button" id="pg-export" data-playground-boot-control disabled>Export project</button>
+          <button type="button" id="pg-reset" data-playground-boot-control disabled aria-label="Reset playground">
+            Reset
+          </button>
+          <p id="pg-export-note" class="pg-menu-note" hidden></p>
+        </div>
+      </details>
     </div>
   </header>
-  <p id="pg-export-note" class="pg-export-note" hidden>
-    ZIP export is unavailable until the matching Aeliqo packages are verified in the registry. Run the
-    <a href="/examples/">source examples from the matching checkout</a> instead.
-  </p>
 
   <div class="pg-workspace">
-    <aside class="pg-request" aria-labelledby="pg-request-title">
-      <div>
-        <p class="pg-kicker" id="pg-mode-label">Without AI</p>
-        <h2 id="pg-request-title">Choose what to do</h2>
+    <details class="pg-request" id="pg-request" open>
+      <summary class="pg-request-summary">
+        <h2 id="pg-request-title">Choose a task</h2>
+        <span class="pg-request-hint">Scenario steps, guided demos, agent setup</span>
+      </summary>
+      <div class="pg-request-body">
         <p id="pg-scenario-description"></p>
-      </div>
-      <section id="pg-guided" aria-labelledby="pg-guided-title">
-        <h3 id="pg-guided-title">Pick a task</h3>
-        <div id="pg-steps" class="pg-steps"></div>
-        <p class="pg-note">Each task sends a predefined request through the real runtime. No model is called.</p>
-      </section>
-      <section class="pg-public-journeys" aria-labelledby="pg-journeys-title">
-        <h3 id="pg-journeys-title">Explore 0.5 journeys</h3>
-        <div class="pg-steps">
-          <button type="button" data-journey="jakarta">
-            <strong>People in Jakarta</strong><span>Commit a location filter on the People view.</span>
-          </button>
-          <button type="button" data-journey="attendance">
-            <strong>Daily attendance</strong><span>Inspect an approved rate, period, coverage, and metric choice.</span>
-          </button>
-          <button type="button" data-journey="workspace">
-            <strong>Analytical workspace</strong
-            ><span>Render a registered summary, trend, and breakdown together.</span>
-          </button>
-        </div>
-      </section>
-      <details id="pg-manual" class="pg-structured">
-        <summary>Run a structured intent</summary>
-        <section aria-labelledby="pg-manual-title">
-          <h3 id="pg-manual-title">Request from application code</h3>
-          <label>Action<select id="pg-manual-step" data-playground-boot-control disabled></select></label>
-          <button type="button" class="primary" id="pg-run-manual" data-playground-boot-control disabled>
-            Apply intent
-          </button>
-          <p class="pg-note">This sends the same typed intent from application code with no model connection.</p>
+        <section id="pg-guided" aria-labelledby="pg-guided-title">
+          <h3 id="pg-guided-title">Scenario steps</h3>
+          <div id="pg-steps" class="pg-steps"></div>
+          <p class="pg-note">Each step sends a predefined request through the real runtime. No model is called.</p>
         </section>
-      </details>
-      <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
-        <h3 id="pg-connected-title">Connect an agent</h3>
-        <p>
-          MCP, WebMCP, and a locally configured model use the same validated Playground tools. Actions still require
-          your confirmation.
-        </p>
-        <label
-          >Connection<select id="pg-connection-kind" data-playground-boot-control disabled>
-            <option value="detect">Local Playground host</option>
-            <option value="webmcp">WebMCP (experimental)</option>
-          </select></label
-        >
-        <div id="pg-local-connection-controls">
-          <ol class="pg-connect-steps">
-            <li>Run the local playground host.</li>
-            <li>Connect your local agent or WebMCP client.</li>
-            <li>Ask from the agent; the approved intent appears here.</li>
-          </ol>
-          <button type="button" id="pg-connect" data-playground-boot-control disabled>Check local connection</button>
-        </div>
-        <label class="pg-composer"
-          >Prompt<textarea
-            id="pg-prompt"
-            rows="3"
-            maxlength="1000"
-            placeholder="Available after a connection is ready"
-            disabled
-          ></textarea>
-        </label>
-        <button type="button" class="primary" id="pg-send" disabled>Send prompt</button>
-        <p id="pg-connect-status" class="pg-note" role="status">
-          No local host detected. Without AI remains available.
-        </p>
-      </section>
-    </aside>
+        <section class="pg-public-journeys" aria-labelledby="pg-journeys-title">
+          <h3 id="pg-journeys-title">Guided demos</h3>
+          <div class="pg-steps">
+            <button type="button" data-journey="jakarta">
+              <strong>People in Jakarta</strong><span>Commit a location filter on the People view.</span>
+            </button>
+            <button type="button" data-journey="attendance">
+              <strong>Daily attendance</strong><span>Inspect an approved rate, period, coverage, and metric choice.</span>
+            </button>
+            <button type="button" data-journey="workspace">
+              <strong>Analytical workspace</strong
+              ><span>Render a registered summary, trend, and breakdown together.</span>
+            </button>
+          </div>
+          <p class="pg-note">Scripted walkthroughs on richer fixtures — still no model calls.</p>
+        </section>
+        <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
+          <h3 id="pg-connected-title">Connect an agent</h3>
+          <p>
+            The scripted demo agent runs in this page, the hosted relay links a remote agent through mcp.aeliqo.com, and
+            the local runner or WebMCP attach agents on this machine — all through the same validated tools. Actions
+            still require your confirmation.
+          </p>
+          <p id="pg-webmcp-note" class="pg-webmcp-note" hidden>
+            Native WebMCP is an early-preview Chrome feature — enable
+            <code>chrome://flags/#enable-webmcp-testing</code> (Chrome 146+) or it needs an origin-trial token. The
+            playground works without it — use the demo agent or
+            <a href="/agents/mcp/">connect your own over MCP</a>. <a href="/agents/webmcp/">WebMCP setup</a>
+          </p>
+          <label
+            >Connection<select id="pg-connection-kind" data-playground-boot-control disabled>
+              <option value="demo">Demo agent (scripted)</option>
+              <option value="relay">Hosted MCP relay</option>
+              <option value="detect">Local Playground host</option>
+              <option value="webmcp">WebMCP (experimental)</option>
+            </select></label
+          >
+          <div id="pg-relay-controls" hidden>
+            <ol class="pg-connect-steps">
+              <li>Choose <b>Generate connection</b> — this page pairs with the hosted relay at mcp.aeliqo.com.</li>
+              <li>
+                Keep this tab open. Paste the config into Cursor (Settings → MCP), or run the command for Claude Code.
+              </li>
+              <li>
+                Then ask your agent: “show the people in Engineering” — the change appears here after you confirm.
+              </li>
+            </ol>
+            <button type="button" id="pg-relay-generate" data-playground-boot-control disabled>
+              Generate connection
+            </button>
+            <div id="pg-relay-session" hidden>
+              <div class="pg-config">
+                <div class="pg-config-head">
+                  <strong>MCP client config</strong>
+                  <button type="button" data-copy-config="relay-json">Copy</button>
+                </div>
+                <pre id="pg-mcp-relay-json" tabindex="0"></pre>
+              </div>
+              <div class="pg-config">
+                <div class="pg-config-head">
+                  <strong>Claude Code</strong>
+                  <button type="button" data-copy-config="relay-cli">Copy</button>
+                </div>
+                <pre id="pg-mcp-relay-cli" tabindex="0"></pre>
+              </div>
+              <p id="pg-relay-expiry" class="pg-note"></p>
+              <p class="pg-note">Keep this tab open — closing it disconnects your agent.</p>
+              <p id="pg-relay-copy-status" class="pg-note" role="status"></p>
+            </div>
+          </div>
+          <div id="pg-local-connection-controls">
+            <ol class="pg-connect-steps">
+              <li>In the repo, run <code>pnpm playground:local</code> and open the printed local address.</li>
+              <li>Choose <b>Check connection</b> on that local page to pair this Region with the runner.</li>
+              <li>Point your MCP client at the shown endpoint, or send a prompt to the configured local model.</li>
+            </ol>
+            <div id="pg-mcp-config" hidden>
+              <h4>MCP endpoint for your agent</h4>
+              <p class="pg-note">
+                Add this server to your MCP client config. Replace <code>&lt;token&gt;</code> with the bearer token
+                printed by <code>pnpm playground:local</code> in your terminal.
+              </p>
+              <div class="pg-config">
+                <div class="pg-config-head">
+                  <strong>Streamable HTTP</strong>
+                  <button type="button" data-copy-config="http">Copy</button>
+                </div>
+                <pre id="pg-mcp-http" tabindex="0"></pre>
+              </div>
+              <div class="pg-config">
+                <div class="pg-config-head">
+                  <strong>stdio bridge (Claude Desktop)</strong>
+                  <button type="button" data-copy-config="stdio">Copy</button>
+                </div>
+                <pre id="pg-mcp-stdio" tabindex="0"></pre>
+              </div>
+              <p id="pg-copy-status" class="pg-note" role="status"></p>
+            </div>
+          </div>
+          <div id="pg-demo-controls" hidden>
+            <p class="pg-note">
+              Scripted demo — no model calls. It only understands these requests for the current scenario:
+            </p>
+            <div id="pg-demo-list" class="pg-demo-list"></div>
+          </div>
+          <button type="button" id="pg-connect" data-playground-boot-control disabled>Check connection</button>
+          <label class="pg-composer"
+            >Prompt<textarea
+              id="pg-prompt"
+              rows="3"
+              maxlength="1000"
+              placeholder="Available after a connection is ready"
+              disabled
+            ></textarea>
+          </label>
+          <button type="button" class="primary" id="pg-send" disabled>Send prompt</button>
+          <p id="pg-connect-status" class="pg-note" role="status">
+            Pick a connection and choose Check connection. The scripted demo works in any browser.
+          </p>
+        </section>
+      </div>
+    </details>
 
     <div class="pg-result" aria-labelledby="pg-result-title">
       <header class="pg-result-header">
@@ -139,25 +201,31 @@
           <p class="pg-kicker">Live canvas</p>
           <h2 id="pg-result-title">Employees</h2>
         </div>
-        <span id="pg-view-badge" class="pg-view-badge" data-state="pending">Waiting for intent</span>
       </header>
-      <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to show the first view.</p>
-      <ol class="pg-journey" aria-label="Current runtime journey">
-        <li data-stage="intent" data-state="pending">
-          <small>01 · Intent</small><strong id="pg-journey-intent">Choose a task</strong><span>Registered request</span>
-        </li>
-        <li data-stage="result" data-state="pending">
-          <small>02 · Result</small><strong id="pg-journey-result">Waiting</strong><span>Evaluated with app data</span>
-        </li>
-        <li data-stage="view" data-state="pending">
-          <small>03 · View</small><strong id="pg-journey-view">Waiting</strong><span>Presentation chosen</span>
-        </li>
-      </ol>
+      <section class="pg-progress" aria-label="Request progress">
+        <ol class="pg-journey" aria-label="Current request progress">
+          <li data-stage="intent" data-state="pending">
+            <small>01 · Request</small><strong id="pg-journey-intent">Choose a task</strong
+            ><span>Validated request</span>
+          </li>
+          <li data-stage="result" data-state="pending">
+            <small>02 · Result</small><strong id="pg-journey-result">Waiting</strong
+            ><span>Evaluated with app data</span>
+          </li>
+          <li data-stage="view" data-state="pending">
+            <small>03 · View</small><strong id="pg-journey-view">Waiting</strong
+            ><span id="pg-view-badge" class="pg-view-badge" data-state="pending">Waiting for a request</span>
+          </li>
+        </ol>
+        <p id="pg-status" class="pg-status" role="status" aria-live="polite">
+          Choose a task to show the first view.
+        </p>
+      </section>
       <p id="pg-result-definition" class="pg-result-definition" hidden></p>
       <p id="pg-committed-filter" class="pg-result-definition" hidden></p>
       <div id="pg-error" class="pg-error" role="alert" hidden></div>
       <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
-      <section id="pg-attendance-journey" class="pg-fixture" hidden aria-label="Daily attendance journey">
+      <section id="pg-attendance-journey" class="pg-fixture" hidden aria-label="Daily attendance demo">
         <p data-testid="period">September 2026 · Asia/Jakarta · complete local days through 5 September only</p>
         <p data-testid="metric-policy">
           Approved attendance rate: Present eligible employee-days / eligible employee-days. Approved leave is excluded
@@ -171,7 +239,10 @@
         <div id="attendance-host"></div>
         <h3>Observed daily values</h3>
         <ul data-testid="daily-values"></ul>
-        <button type="button" id="compare-metrics">Compare attendance metrics</button>
+        <p class="pg-fixture-action">
+          <button type="button" id="compare-metrics">Compare attendance metrics</button>
+          <span class="pg-note">recalculates with two approved metrics, then asks you to pick one.</span>
+        </p>
         <div id="metric-choice" hidden>
           <label for="attendance-metric">Attendance metric</label>
           <select id="attendance-metric">
@@ -181,21 +252,26 @@
           <button type="button" id="apply-metric">Show selected attendance metric</button>
         </div>
       </section>
-      <section id="pg-workspace-journey" class="pg-fixture" hidden aria-label="Analytical workspace journey">
+      <section id="pg-workspace-journey" class="pg-fixture" hidden aria-label="Analytical workspace demo">
         <p>One registered goal with summary, daily trend, and employee breakdown.</p>
         <p>
           Scope: synthetic attendance · Filter: Engineering · Observed days: 1–2 September 2026 · Presentation:
           registered workspace pattern.
         </p>
-        <button type="button" id="request-anomaly">Request anomaly</button>
-        <button type="button" id="fail-breakdown">Fail breakdown update</button>
+        <p class="pg-fixture-action">
+          <button type="button" id="request-anomaly">Request anomaly</button>
+          <span class="pg-note">sends a request the demo cannot satisfy — shows an honest rejection.</span>
+        </p>
+        <p class="pg-fixture-action">
+          <button type="button" id="fail-breakdown">Fail breakdown update</button>
+          <span class="pg-note">simulates a failed update to show recovery.</span>
+        </p>
         <p data-testid="goal-status" role="status" hidden>Loading</p>
         <div id="workspace" data-testid="goal-workspace"></div>
       </section>
       <footer class="pg-evidence">
-        <span><small>Data</small>Synthetic · local</span
-        ><span><small>Model calls</small><strong id="pg-model-calls">0</strong></span
-        ><span hidden><small>Runtime receipt</small><strong id="pg-receipt-state">None</strong></span>
+        <span>Synthetic local data</span><span>Model calls: <strong id="pg-model-calls">0</strong></span
+        ><span hidden>Receipt <strong id="pg-receipt-state">None</strong></span>
       </footer>
     </div>
   </div>
@@ -210,7 +286,7 @@
     <button type="button" id="pg-inspector-close" aria-label="Close inspector">Close</button>
   </header>
   <nav aria-label="Inspector section">
-    <button type="button" data-inspector="intent" aria-pressed="true">Intent</button
+    <button type="button" data-inspector="intent" aria-pressed="true">Request</button
     ><button type="button" data-inspector="task" aria-pressed="false">Task</button
     ><button type="button" data-inspector="result" aria-pressed="false">Result</button
     ><button type="button" data-inspector="presentation" aria-pressed="false">View policy</button

@@ -12,7 +12,7 @@
     <meta property="og:title" content="Aeliqo — adaptive interfaces, with or without AI" />
     <meta
       property="og:description"
-      content="Register data, permissions, and allowed views once. Aeliqo turns each typed intent into the view that fits the context."
+      content="Register data, permissions, and allowed views once. Aeliqo renders each request as the view that fits — a table, cards, or a chart."
     />
     <meta property="og:url" content="https://aeliqo.com/" />
     <meta property="og:type" content="website" />
@@ -30,14 +30,60 @@
         ><a class="nav-github" href="https://github.com/Arconath/aeliqo">GitHub <span aria-hidden="true">↗</span></a>
       </nav>
       <div class="utilities">
-        <label class="theme-control">
-          <span class="visually-hidden">Theme</span>
-          <select id="theme-select" aria-label="Theme">
-            <option value="system">System</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </label>
+        <button
+          class="theme-toggle"
+          id="theme-toggle"
+          type="button"
+          data-theme-mode="system"
+          aria-label="Theme: system"
+          title="Theme: system"
+        >
+          <svg
+            class="icon-system"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="1.6" y="2.6" width="12.8" height="8.8" rx="1.4" />
+            <path d="M5.6 13.9h4.8M8 11.4v2.5" />
+          </svg>
+          <svg
+            class="icon-sun"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="8" cy="8" r="3.1" />
+            <path
+              d="M8 1.4v1.7M8 12.9v1.7M1.4 8h1.7M12.9 8h1.7M3.3 3.3l1.2 1.2M11.5 11.5l1.2 1.2M12.7 3.3l-1.2 1.2M4.5 11.5l-1.2 1.2"
+            />
+          </svg>
+          <svg
+            class="icon-moon"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M13.7 9.2A5.7 5.7 0 0 1 6.8 2.3a5.7 5.7 0 1 0 6.9 6.9Z" />
+          </svg>
+        </button>
+        <select id="theme-select" class="visually-hidden" aria-label="Theme" tabindex="-1">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
         <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
           <span class="nav-toggle-label">Menu</span><span aria-hidden="true">☰</span>
         </button>
@@ -50,9 +96,8 @@
           <p class="eyebrow hero-status">OPEN-SOURCE TYPESCRIPT UI RUNTIME</p>
           <h1>Say what to show. <em>Aeliqo picks the view that fits.</em></h1>
           <p class="lead">
-            Register your data, permissions, and allowed views once. Every request — sent by your code or an optional
-            agent — renders as the fitting view: a table on a wide screen, cards on a phone. Agents can never inject UI
-            or permissions.
+            A UI runtime that picks the right registered view for each request — a table, cards, or a chart — with or
+            without an AI agent.
           </p>
           <div class="actions">
             <a class="primary" href="https://docs.aeliqo.com/playground/"
@@ -60,134 +105,118 @@
             >
             <a class="secondary-action" href="https://docs.aeliqo.com/start/">Start the quickstart</a>
           </div>
+          <p class="install-row">
+            <button
+              class="install-chip"
+              id="install-chip"
+              type="button"
+              aria-label="Copy install command: npm i @aeliqo/react"
+              title="Copy install command"
+              data-copied="false"
+            >
+              <code>npm i @aeliqo/react</code>
+              <svg
+                class="icon-copy"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="5.5" y="5.5" width="8" height="8" rx="1.4" />
+                <path d="M10.5 3.5v-1a1.4 1.4 0 0 0-1.4-1.4H3.9A1.4 1.4 0 0 0 2.5 2.5v5.2A1.4 1.4 0 0 0 3.9 9.1h1" />
+              </svg>
+              <svg
+                class="icon-check"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m3 8.6 3.2 3.2L13 4.4" />
+              </svg>
+            </button>
+            <span class="install-status" id="install-status" role="status"></span>
+          </p>
           <p class="hero-note">{{AELIQO_RELEASE_NOTE}}</p>
         </div>
 
         <aside class="product-window" aria-label="Live Aeliqo runtime demonstration">
-          <header>
-            <div><span class="product-mark" aria-hidden="true">A</span><strong>Live runtime</strong></div>
-            <span class="runtime-state"><i aria-hidden="true"></i> Local · synthetic data</span>
+          <header class="demo-bar">
+            <p class="demo-bar-title">
+              <span class="demo-dot" aria-hidden="true"></span>Live demo · runs in your browser
+            </p>
+            <div class="demo-controls">
+              <label class="demo-filter" for="team"
+                >Team
+                <select id="team">
+                  <option value="all">All teams</option>
+                  <option value="Design">Design</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Operations">Operations</option>
+                </select>
+              </label>
+              <div class="demo-view" role="group" aria-label="Rendered view">
+                <button type="button" data-demo-view="table" aria-pressed="true">Table</button>
+                <button type="button" data-demo-view="cards" aria-pressed="false">Cards</button>
+                <button type="button" data-demo-view="chart" aria-pressed="false">Chart</button>
+              </div>
+            </div>
           </header>
-          <div class="product-canvas">
-            <div class="demo-heading">
-              <div>
-                <p class="eyebrow">PEOPLE / BROWSE</p>
-                <h2 id="demo-title">One request, rendered to fit</h2>
-                <p class="demo-lead">
-                  This is a real Region running in your browser. Filter the team or shrink the container — the same
-                  intent is re-checked and the view is re-picked.
-                </p>
-              </div>
-              <div class="demo-controls">
-                <label for="team"
-                  >Team
-                  <select id="team">
-                    <option value="all">All teams</option>
-                    <option value="Design">Design</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Operations">Operations</option>
-                  </select>
-                </label>
-                <button class="primary" id="demo-evaluate" type="button">Apply filter</button>
-                <button id="demo-manual" type="button">Reset</button>
-              </div>
-            </div>
-            <p class="caption demo-caption">Four synthetic people · Runs entirely in your browser · Zero model calls</p>
-            <div class="demo-stage">
-              <ol class="demo-flow" aria-label="Runtime steps">
-                <li class="demo-flow-step" data-flow-step="request" aria-current="step"><span>01</span>Intent</li>
-                <li class="demo-flow-arrow" aria-hidden="true">→</li>
-                <li class="demo-flow-step" data-flow-step="result"><span>02</span>Validated result</li>
-                <li class="demo-flow-arrow" aria-hidden="true">→</li>
-                <li class="demo-flow-step" data-flow-step="view"><span>03</span>Selected view</li>
-              </ol>
-              <code class="demo-intent" id="demo-intent" tabindex="0"></code>
-              <div class="demo-width" role="group" aria-label="Demo container width">
-                <span>Container</span>
-                <button type="button" data-demo-width="wide" aria-pressed="true">Full width</button>
-                <button type="button" data-demo-width="narrow" aria-pressed="false">Compact</button>
-              </div>
-              <div
-                id="home-demo"
-                role="region"
-                aria-label="Synthetic people adaptive result"
-                tabindex="0"
-                data-width="wide"
+          <div class="demo-tabs" role="tablist" aria-label="Demo output">
+            <button
+              class="demo-tab"
+              id="demo-tab-preview"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="demo-panel-preview"
+            >
+              Preview
+            </button>
+            <button
+              class="demo-tab"
+              id="demo-tab-code"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="demo-panel-code"
+              tabindex="-1"
+            >
+              Code
+            </button>
+          </div>
+          <div class="demo-panel" id="demo-panel-preview" role="tabpanel" aria-labelledby="demo-tab-preview">
+            <div
+              id="home-demo"
+              role="region"
+              aria-label="Synthetic people adaptive result"
+              tabindex="0"
+              data-width="wide"
+            >
+              <noscript
+                ><p>Enable JavaScript to run the sample. The documentation remains readable without it.</p></noscript
               >
-                <noscript
-                  ><p>Enable JavaScript to run the sample. The documentation remains readable without it.</p></noscript
-                >
-              </div>
-              <p class="caption" id="demo-status" role="status"></p>
-              <details class="demo-source">
-                <summary>View the runtime call</summary>
-                <pre tabindex="0"><code id="demo-source"></code></pre>
-                <button id="copy-demo" type="button">Copy source</button><span id="copy-status" role="status"></span>
-              </details>
             </div>
+            <div id="home-trend" role="region" aria-label="Workforce headcount trend" tabindex="0" hidden></div>
+            <p class="caption" id="demo-status" role="status"></p>
+          </div>
+          <div class="demo-panel" id="demo-panel-code" role="tabpanel" aria-labelledby="demo-tab-code" hidden>
+            <p class="demo-code-label">Intent for the current view — evaluated locally, zero model calls</p>
+            <pre class="demo-code" tabindex="0"><code id="demo-intent"></code></pre>
+            <p class="demo-code-label">Runtime call</p>
+            <pre class="demo-code" tabindex="0"><code id="demo-source"></code></pre>
+            <p class="demo-code-actions">
+              <button id="copy-demo" type="button">Copy source</button
+              ><span class="caption" id="copy-status" role="status"></span>
+            </p>
           </div>
         </aside>
-      </section>
-
-      <section class="shell proof" aria-labelledby="proof-title">
-        <div class="section-intro">
-          <p class="eyebrow">LIVE PROOF, NOT SLIDES</p>
-          <h2 id="proof-title">Same intent. Different context. Different view.</h2>
-          <p>
-            Three Regions rendered by the real runtime — not screenshots. The first two run the identical browse intent
-            and differ only in container width. The third answers an analyze intent with a chart.
-          </p>
-        </div>
-        <div class="proof-grid">
-          <figure class="proof-pane proof-pane-wide">
-            <figcaption>
-              <strong>Wide container</strong>
-              <code>{ kind: 'browse', resource: 'people' }</code>
-              <span>renders a table</span>
-            </figcaption>
-            <div
-              class="proof-scroll"
-              role="region"
-              tabindex="0"
-              aria-label="Live table view produced by the people browse intent in a wide container"
-            >
-              <div id="home-proof-wide" class="proof-target proof-target-wide"></div>
-            </div>
-          </figure>
-          <figure class="proof-pane">
-            <figcaption>
-              <strong>Compact container</strong>
-              <code>{ kind: 'browse', resource: 'people' }</code>
-              <span>renders cards</span>
-            </figcaption>
-            <div
-              class="proof-scroll"
-              role="region"
-              tabindex="0"
-              aria-label="Live card view produced by the same people browse intent in a compact container"
-            >
-              <div id="home-proof-narrow" class="proof-target proof-target-narrow"></div>
-            </div>
-          </figure>
-          <figure class="proof-pane">
-            <figcaption>
-              <strong>A different task</strong>
-              <code>{ kind: 'analyze', resource: 'workforce-headcount' }</code>
-              <span>renders a chart</span>
-            </figcaption>
-            <div
-              class="proof-scroll"
-              role="region"
-              tabindex="0"
-              aria-label="Live trend chart produced by the headcount analyze intent"
-            >
-              <div id="home-proof-trend" class="proof-target"></div>
-            </div>
-          </figure>
-        </div>
-        <p class="caption proof-note">
-          Each Region measures its own container and picks among the views you registered — no hand-written breakpoints.
-        </p>
       </section>
 
       <section class="shell approach" aria-labelledby="approach-title">

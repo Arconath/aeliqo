@@ -7,21 +7,24 @@ contract: 'Disclose selected identities or server predicate scope; never imply u
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-SelectionSummary tells people whether selection contains observed record keys or a server-side predicate.
-It never turns a predicate into a claim that every matching record is loaded; Clear selection emits a
-request for the application to handle.
+Show what is selected: picked record keys or a server-side filter. Clear selection sends a request for the application to handle.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Show a selected count next to a table or list.
+- Distinguish chosen records from a server-side selection scope.
+- Offer a clear action the host confirms.
 
 ## When to use a different component
 
-Use FilterBuilder when people need to change the predicate. SelectionSummary reports the existing scoped selection and clear request.
+- Use FilterBuilder when people need to change the filter itself.
+- Use Table when browsing and selecting rows is the main task.
 
 ## Properties and defaults
 

@@ -7,21 +7,25 @@ contract: 'One validated value or aggregate with units, scope and unavailable st
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Metric presents one application-supplied value with a label, optional unit, description, and scope. It
-formats numeric values with the chosen locale; a missing value becomes an unavailable state instead of an
-invented zero.
+Show one labeled value with its unit and scope. A missing value reads as unavailable, never as an invented zero.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Show a single KPI, count, or total on a dashboard.
+- Report a value the application already computed and validated.
+- Attach a unit, description, and scope to a number.
+- Show an unavailable state when the value is missing.
 
 ## When to use a different component
 
-Use Delta to compare compatible values. Metric reports one supplied value with its label and scope.
+- Use Delta to compare a current value against a baseline.
+- Use Trend to show how a value changes over time.
 
 ## Properties and defaults
 

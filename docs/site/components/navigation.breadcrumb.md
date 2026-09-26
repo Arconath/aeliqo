@@ -7,19 +7,24 @@ contract: 'Reversible context path; approved routes and current-location semanti
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Show the application-supplied path to the current location as an ordered set of links. The last item marks the current page; the host supplies approved destinations rather than asking the component to infer routes.
+Shows the path to the current page as an ordered list of links. You supply the approved destinations; the last item marks the current location.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Pages nested under parents, like Reports → Weekly report.
+- Letting users jump back up the hierarchy.
+- Marking the current location inside a navigable trail.
 
 ## When to use a different component
 
-Use Tabs for sibling views, not a path. Breadcrumb marks navigable ancestors and the current location.
+- Use Tabs to switch between sibling views, not a path.
+- Use TreeNav for a hierarchy users expand and browse.
 
 ## Properties and defaults
 

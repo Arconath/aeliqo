@@ -7,21 +7,24 @@ contract: 'Two quantitative axes, declared units, stable point selection and non
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Scatter positions each supplied record using two declared quantitative axes. Its point selection refers
-to a stable Result identity, while the exact data table preserves values that are hard to read from the
-plot. Proximity is a visual relationship, not evidence of causation.
+Plot records as points on two numeric axes. Nearby points suggest correlation, not causation; exact values stay in the data table.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Compare two measures per record, like cost versus usage.
+- Spot clusters and outliers across many points.
+- Select a point that stays tied to its source row.
 
 ## When to use a different component
 
-Use Relationship for declared source and target edges. Scatter compares numeric positions and does not imply a link or cause.
+- Use Relationship for declared edges between entities.
+- Use Trend when one axis is time.
 
 ## Properties and defaults
 

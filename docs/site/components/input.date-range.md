@@ -7,19 +7,24 @@ contract: 'Explicit inclusive/exclusive boundaries, timezone/calendar policy and
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Edit a start and end calendar date together and emit a range value that includes boundary and calendar meaning. The current value uses the Gregorian calendar and `timezone: 'calendar'`; inclusive ranges allow equal endpoints, while exclusive ranges require the start to precede the end.
+A pair of date fields that edits a start and end date as one range value. Boundary policy and calendar meaning travel with the value instead of being inferred.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- You need a start and end date that stay consistent together.
+- The range must declare whether its endpoints are inclusive or exclusive.
+- Timezone and calendar policy must travel with the submitted value.
 
 ## When to use a different component
 
-Use DateField for one calendar date. A range needs explicit boundary and timezone meaning.
+- Use [DateField](/components/input.date-field/) when only one calendar date is needed.
+- Use [Form](/components/input.form/) when the range submits alongside related fields.
 
 ## Properties and defaults
 
@@ -38,11 +43,12 @@ Relevant states:
 {{aeliqo:outcome}}
 
 The range is invalid when a required endpoint is missing or the endpoints are
-out of order. The event detail includes both dates, the boundary policy,
-`timezone: 'calendar'`, `calendar: 'gregory'`, and validity. Native form
-submission contributes only `${name}[start]` and `${name}[end]` when the pair
-is valid; the host must carry the boundary and calendar policy into any query
-or action instead of inferring them from those two submitted fields.
+out of order. Inclusive ranges allow equal endpoints; exclusive ranges require
+the start to precede the end. The event detail includes both dates, the
+boundary policy, `timezone: 'calendar'`, `calendar: 'gregory'`, and validity.
+Native form submission contributes only `${name}[start]` and `${name}[end]`
+when the pair is valid; the host carries the boundary and calendar policy
+into any query or action.
 
 ## Keyboard, focus, and accessibility
 
