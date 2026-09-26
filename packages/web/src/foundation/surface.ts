@@ -63,14 +63,14 @@ export class AeliqoSurfaceElement extends AeliqoFoundationElement {
         background: var(--aeliqo-color-surface, #f8fafc);
         border: var(--aeliqo-control-border-width, 0.0625rem) solid
           var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b));
-        border-radius: var(--aeliqo-radius-medium, 0.625rem);
+        border-radius: var(--aeliqo-radius-medium, 0.5rem);
         padding: var(--aeliqo-space-16, 1rem);
       }
       .tone-raised {
         background: var(--aeliqo-color-surface, #f8fafc);
         border: var(--aeliqo-control-border-width, 0.0625rem) solid
           var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b));
-        border-radius: var(--aeliqo-radius-medium, 0.625rem);
+        border-radius: var(--aeliqo-radius-medium, 0.5rem);
         box-shadow: var(--aeliqo-elevation-raised, 0 0.25rem 0.75rem -0.5rem #0f172a33);
         padding: var(--aeliqo-space-16, 1rem);
       }

@@ -59,56 +59,66 @@ export const aeliqoInputStyles = [
     }
 
     .label-text {
-      font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+      font-weight: var(--aeliqo-typography-font-weight-medium, 500);
+    }
+
+    [part='description'],
+    [part='error'],
+    [part='pending'] {
+      font-size: var(--aeliqo-typography-font-size-sm, 0.875rem);
+      line-height: var(--aeliqo-typography-line-height-normal, 1.5);
     }
 
     [part='description'] {
       color: var(--aeliqo-input-description, var(--aeliqo-color-muted, #4b5563));
-      font-size: var(--aeliqo-typography-font-size-caption, 0.75rem);
-      line-height: var(--aeliqo-typography-line-height-normal, 1.5);
     }
 
     [part='error'] {
       color: var(--aeliqo-input-error, var(--aeliqo-color-danger, #b91c1c));
-      font-size: 0.9em;
     }
 
     [part='pending'] {
       color: var(--aeliqo-color-muted, #4b5563);
-      font-size: 0.9em;
     }
 
     :is(input, textarea, select, button, [role='combobox']):focus-visible {
-      outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-input-focus, var(--aeliqo-color-focus, #4338ca));
-      outline-offset: var(--aeliqo-focus-offset, 0.125rem);
-      box-shadow: 0 0 0 0.25rem
-        color-mix(in srgb, var(--aeliqo-input-focus, var(--aeliqo-color-focus, #4338ca)) 16%, transparent);
+      border-color: var(--aeliqo-input-focus, var(--aeliqo-color-focus, #4338ca));
+      box-shadow: 0 0 0 var(--aeliqo-focus-ring-width, 0.1875rem)
+        color-mix(
+          in srgb,
+          var(--aeliqo-input-focus, var(--aeliqo-color-focus, #4338ca)) calc(var(--aeliqo-focus-ring-alpha, 0.3) * 100%),
+          transparent
+        );
+      outline: none;
     }
 
     :is(input, textarea, select) {
       background: var(--aeliqo-input-background, var(--aeliqo-color-canvas, #fff));
       border: var(--aeliqo-control-border-width, 0.0625rem) solid
         var(--aeliqo-input-border, var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b)));
-      border-radius: var(--aeliqo-radius-medium, 0.625rem);
+      border-radius: var(--aeliqo-radius-medium, 0.5rem);
+      box-shadow: var(--aeliqo-elevation-xs, 0 1px 2px rgb(15 23 42 / 0.05));
       box-sizing: border-box;
       color: inherit;
       font: inherit;
+      font-size: var(--aeliqo-typography-font-size-sm, 0.875rem);
       inline-size: 100%;
-      min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+      min-block-size: var(--aeliqo-control-min-target, 2.25rem);
       min-inline-size: 0;
-      padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-control-inline-padding, 0.75rem);
+      padding: var(--aeliqo-space-6, 0.375rem) var(--aeliqo-control-inline-padding, 0.75rem);
     }
 
     :is(input, textarea, select):not(:disabled):hover:not([aria-invalid='true']) {
       border-color: color-mix(
         in srgb,
-        var(--aeliqo-color-accent, #4338ca) 52%,
-        var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b))
+        var(--aeliqo-input-border, var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b))) 75%,
+        var(--aeliqo-input-color, var(--aeliqo-color-text, #111827))
       );
     }
 
     :is(input[type='checkbox'], input[type='radio']) {
       accent-color: var(--aeliqo-color-accent, #4338ca);
+      box-shadow: none;
       cursor: pointer;
       min-block-size: 0;
       padding: 0;
@@ -118,7 +128,7 @@ export const aeliqoInputStyles = [
       background: var(--aeliqo-color-surface, #f8fafc);
       color: var(--aeliqo-color-muted, #4b5563);
       cursor: not-allowed;
-      opacity: 1;
+      opacity: 0.55;
     }
 
     :is(input, textarea, select)[aria-invalid='true'] {
@@ -126,14 +136,22 @@ export const aeliqoInputStyles = [
     }
 
     :is(input, textarea, select)[aria-invalid='true']:focus-visible {
-      box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--aeliqo-color-danger, #b91c1c) 16%, transparent);
-      outline-color: var(--aeliqo-color-danger, #b91c1c);
+      border-color: var(--aeliqo-color-danger, #b91c1c);
+      box-shadow: 0 0 0 var(--aeliqo-focus-ring-width, 0.1875rem)
+        color-mix(
+          in srgb,
+          var(--aeliqo-color-danger, #b91c1c) calc(var(--aeliqo-focus-ring-alpha, 0.3) * 100%),
+          transparent
+        );
     }
 
     input:focus-visible + .switch-track {
-      box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--aeliqo-color-focus, #4338ca) 16%, transparent);
-      outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-color-focus, #4338ca);
-      outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+      box-shadow: 0 0 0 var(--aeliqo-focus-ring-width, 0.1875rem)
+        color-mix(
+          in srgb,
+          var(--aeliqo-color-focus, #4338ca) calc(var(--aeliqo-focus-ring-alpha, 0.3) * 100%),
+          transparent
+        );
     }
 
     input:disabled + .switch-track {
@@ -154,6 +172,17 @@ export const aeliqoInputStyles = [
     }
 
     @media (forced-colors: active) {
+      :is(input, textarea, select, button, [role='combobox']):focus-visible {
+        box-shadow: none;
+        outline: 2px solid Highlight;
+        outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+      }
+
+      input:focus-visible + .switch-track {
+        outline: 2px solid Highlight;
+        outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+      }
+
       :is(input, textarea, select)[aria-invalid='true'] {
         border-color: LinkText;
       }

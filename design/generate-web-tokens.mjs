@@ -29,11 +29,14 @@ const shadow = (value) => {
   return `${part(value.offsetX)} ${part(value.offsetY)} ${part(value.blur)} ${part(value.spread)} ${value.color}`;
 };
 
+const isShadowEntry = (item) => item && typeof item === 'object' && item.offsetX !== undefined;
+
 function cssValue(token) {
   const value = token?.$value;
   if (typeof value === 'string' || typeof value === 'number') return String(value);
   if (Array.isArray(value)) {
     if (value.every((item) => typeof item === 'number')) return `cubic-bezier(${value.join(', ')})`;
+    if (value.every(isShadowEntry)) return value.map(shadow).join(', ');
     return value.join(', ');
   }
   if (value?.hex !== undefined) return value.hex;

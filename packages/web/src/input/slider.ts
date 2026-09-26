@@ -171,7 +171,7 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
         min-inline-size: 0;
       }
       input[type='number'] {
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: var(--aeliqo-control-min-target, 2.25rem);
       }
       @media (max-width: 30rem) {
         .slider-row {

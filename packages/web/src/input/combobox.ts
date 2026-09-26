@@ -413,8 +413,8 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
       [part='listbox'] {
         background: var(--aeliqo-color-canvas, #fff);
         border: 1px solid var(--aeliqo-color-border, #64748b);
-        border-radius: var(--aeliqo-radius-small, 0.375rem);
-        box-shadow: 0 0.25rem 0.75rem rgb(15 23 42 / 18%);
+        border-radius: var(--aeliqo-radius-medium, 0.5rem);
+        box-shadow: var(--aeliqo-elevation-lg, 0 8px 24px rgb(15 23 42 / 0.12), 0 0 0 1px rgb(15 23 42 / 0.04));
         list-style: none;
         margin: 0.25rem 0 0;
         max-block-size: 16rem;
@@ -430,12 +430,14 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
         display: flex;
         gap: 0.5rem;
         justify-content: space-between;
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
-        padding: 0.65rem 0.75rem;
+        min-block-size: var(--aeliqo-control-compact-target, 2rem);
+        padding: var(--aeliqo-space-6, 0.375rem) var(--aeliqo-space-10, 0.625rem);
       }
       [part='option'] {
+        border-radius: var(--aeliqo-radius-small, 0.375rem);
         flex-direction: column;
         align-items: flex-start;
+        position: relative;
       }
       .label-text,
       [part='option'] span,
@@ -448,10 +450,41 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
         color: var(--aeliqo-color-muted, #4b5563);
       }
       [part='option'].active {
-        background: var(--aeliqo-color-surface, #f1f5f9);
+        background: var(
+          --_aeliqo-accent-subtle,
+          color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 8%, var(--aeliqo-color-surface, #f8fafc))
+        );
+      }
+      [part='option'][aria-selected='true'] {
+        background: var(
+          --_aeliqo-accent-selected,
+          color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 14%, var(--aeliqo-color-surface, #f8fafc))
+        );
+        padding-inline-end: var(--aeliqo-space-32, 2rem);
+      }
+      [part='option'][aria-selected='true']::after {
+        color: var(--aeliqo-color-accent, #4338ca);
+        content: '✓';
+        inset-block-start: 50%;
+        inset-inline-end: var(--aeliqo-space-10, 0.625rem);
+        position: absolute;
+        transform: translateY(-50%);
+      }
+      [part='option'][aria-selected='true'].active {
+        background: color-mix(in srgb, var(--aeliqo-color-accent, #4338ca) 20%, var(--aeliqo-color-surface, #f8fafc));
       }
       [part='option'][aria-disabled='true'] {
         color: var(--aeliqo-color-muted, #4b5563);
+      }
+      @media (forced-colors: active) {
+        [part='option'].active,
+        [part='option'][aria-selected='true'] {
+          background: Highlight;
+          color: HighlightText;
+        }
+        [part='option'][aria-selected='true']::after {
+          color: HighlightText;
+        }
       }
       @media (max-width: 30rem) {
         :host {

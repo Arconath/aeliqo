@@ -64,7 +64,8 @@ function safeContext(options: WebMcpAdapterOptions): WebMcpDetection {
     if (!validModelContext(options.modelContext)) throw new TypeError('The supplied WebMCP modelContext is invalid.');
     return Object.freeze({ evidence, supported: true, modelContext: options.modelContext });
   }
-  if (Object.hasOwn(options, 'document')) return detectWebMcp({ document: options.document, evidence });
+  if (Object.hasOwn(options, 'document') || Object.hasOwn(options, 'navigator'))
+    return detectWebMcp({ document: options.document, navigator: options.navigator, evidence });
   return detectWebMcp();
 }
 

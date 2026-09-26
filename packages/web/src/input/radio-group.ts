@@ -120,14 +120,14 @@ export class AeliqoRadioGroupElement extends AeliqoFieldElement<string> {
         flex-wrap: wrap;
       }
       legend {
-        font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+        font-weight: var(--aeliqo-typography-font-weight-medium, 500);
         margin-block-end: var(--aeliqo-space-4, 0.25rem);
       }
       [part='option'] {
         align-items: center;
         display: inline-flex;
         gap: var(--aeliqo-space-8, 0.5rem);
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: var(--aeliqo-control-min-target, 2.25rem);
       }
       [part='option'].disabled {
         color: var(--aeliqo-color-muted, #4b5563);

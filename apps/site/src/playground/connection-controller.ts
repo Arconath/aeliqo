@@ -5,20 +5,25 @@ export type PlaygroundConnection =
   | { readonly state: 'available'; readonly kind: 'webmcp'; readonly label: string }
   | { readonly state: 'unavailable'; readonly kind: 'local' | 'webmcp'; readonly label: string };
 
+async function checkWebmcp(): Promise<PlaygroundConnection> {
+  const { detectWebMcp } = await import('@aeliqo/agent/webmcp');
+  const hostDocument = typeof document === 'undefined' ? undefined : document;
+  const hostNavigator = typeof navigator === 'undefined' ? undefined : navigator;
+  const detected =
+    hostDocument === undefined && hostNavigator === undefined
+      ? detectWebMcp()
+      : detectWebMcp({ document: hostDocument, navigator: hostNavigator, evidence: 'native' });
+  return detected.supported
+    ? { state: 'available', kind: 'webmcp', label: 'Native WebMCP is available (experimental).' }
+    : {
+        state: 'unavailable',
+        kind: 'webmcp',
+        label: `Native WebMCP is unavailable in this browser. ${detected.reason ?? 'Without AI remains available.'}`,
+      };
+}
+
 export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<PlaygroundConnection> {
-  if (kind === 'webmcp') {
-    const { detectWebMcp } = await import('@aeliqo/agent/webmcp');
-    const hostDocument = typeof document === 'undefined' ? undefined : document;
-    const detected =
-      hostDocument === undefined ? detectWebMcp() : detectWebMcp({ document: hostDocument, evidence: 'native' });
-    return detected.supported
-      ? { state: 'available', kind: 'webmcp', label: 'Native WebMCP is available (experimental).' }
-      : {
-          state: 'unavailable',
-          kind: 'webmcp',
-          label: `Native WebMCP is unavailable in this browser. ${detected.reason ?? 'Without AI remains available.'}`,
-        };
-  }
+  if (kind === 'webmcp') return checkWebmcp();
   try {
     const response = await fetch('/api/aeliqo/session', {
       headers: { accept: 'application/json', 'x-aeliqo-session-bootstrap': '1' },
