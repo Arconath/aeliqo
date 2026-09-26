@@ -7,21 +7,24 @@ contract: 'Temporal area/stack with compatible additive measures; reject mislead
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Area shows how a quantitative series changes across ordered time values, with a filled shape that makes
-magnitude salient. The bound visualization must declare compatible additive measures before stacking; the
-component does not invent aggregation from raw rows.
+Show change over time as a filled area so magnitude stands out. Stacking requires measures that add together legitimately.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Emphasize total magnitude over time, not only direction.
+- Stack series that sum to a meaningful total.
+- Keep missing values treated as the spec declares.
 
 ## When to use a different component
 
-Use Trend for a line-focused change over time. Use Scatter to compare two measures for each record.
+- Use Trend for change over time as a line without fill.
+- Use Scatter to compare two measures per record.
 
 ## Properties and defaults
 

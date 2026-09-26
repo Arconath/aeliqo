@@ -7,22 +7,25 @@ contract: 'Native table first; separate interactive-grid mode; sorting, paging, 
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Table keeps row and column relationships explicit with a native table by default; interactive grid mode
-is a separate choice for cell navigation. Sorting, paging, selection, and virtual-window events are
-requests. The application updates rows, Result evidence, and controlled state after handling each
-request.
+Show rows and columns in a native table, with an opt-in grid mode for cell navigation. Sorting, paging, and selection are requests the application answers.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Compare exact values across many columns.
+- Sort or page rows while the host owns the data.
+- Select rows by stable identity.
+- Handle large result sets through bounded pages or virtualization.
 
 ## When to use a different component
 
-Use RecordList when selection and compact browsing are the main task. Table suits column comparison and sorting.
+- Use RecordList for compact browsing without column comparison.
+- Use SelectionSummary to report a selection rather than display rows.
 
 ## Properties and defaults
 

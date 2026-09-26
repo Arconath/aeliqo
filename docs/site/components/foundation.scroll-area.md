@@ -7,19 +7,24 @@ contract: 'Preserve native scrolling, focus visibility, zoom and platform afford
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Wrap long content in a native scroll viewport with an application-supplied label. Its `axis` and `tabIndex` determine which directions scroll and whether keyboard users can enter the region; child focus order remains intact.
+A native scroll viewport with an accessible label for overflow content. `axis` sets scroll direction; `tabIndex` controls whether keyboard users can enter the region.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A panel or sidebar whose content overflows its bounds.
+- Content that scrolls independently of the page.
+- Regions keyboard users enter and scroll with arrow keys.
 
 ## When to use a different component
 
-Use normal page scrolling when the whole page should move. ScrollArea is for a labelled region with its own bounded overflow.
+- Use SplitPane when two regions need a resizable divider instead.
+- Use Surface for a labelled section that doesn't scroll on its own.
 
 ## Properties and defaults
 

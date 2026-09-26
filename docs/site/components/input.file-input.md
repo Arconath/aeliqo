@@ -7,19 +7,24 @@ contract: 'Native file selection; host owns upload and validation; no file bytes
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Open the native file picker and expose selected file metadata for host review. The component checks configured count and size limits, but the application owns file bytes, upload, and server validation.
+Opens the native file picker and reports selected file metadata. It checks configured count and size limits; the host owns bytes, upload, and server validation.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- People choose local files to attach or upload.
+- The form must declare file count or size limits.
+- The host needs file names and sizes before deciding to upload.
 
 ## When to use a different component
 
-Use Form to coordinate file metadata with other fields. FileInput does not upload, scan, or persist the selected file.
+- Use [Form](/components/input.form/) when the file selection submits with other fields.
+- Use [FieldGroup](/components/input.field-group/) when the picker belongs inside a labelled group.
 
 ## Properties and defaults
 

@@ -7,19 +7,24 @@ contract: 'Calendar date rather than timezone-shifted timestamp; typed entry and
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Edit one calendar date through a native date input while preserving date-only values. The component checks its declared bounds and emits changes; the host gives the date its timezone and business meaning before querying data.
+A native date input for one calendar date, with typed entry and picker kept in agreement. Values stay date-only; the host adds timezone and business meaning.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- You need one calendar date, such as a birthday or report date.
+- The value must stay a date, not a timezone-shifted timestamp.
+- Valid dates fall inside a declared range.
 
 ## When to use a different component
 
-Use DateRange when the task needs both a start and end date. Use Form to coordinate this date with related fields.
+- Use [DateRange](/components/input.date-range/) when the task needs a start and an end date.
+- Use [Form](/components/input.form/) when the date submits alongside related fields.
 
 ## Properties and defaults
 

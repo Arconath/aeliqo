@@ -7,19 +7,24 @@ contract: 'Binary setting with visible label; changing setting is not implicit b
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Present one binary setting with a native checkbox that exposes switch semantics. Toggling changes the local checked state and emits a typed change; application code decides whether that setting change has any business effect.
+A labelled on/off setting built on a native checkbox with switch semantics. Toggling emits a typed proposal; it is not an implicit submission.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A preference turns on or off with immediate visible effect.
+- The setting is binary; there is no mixed state.
+- The label should stay short and always visible.
 
 ## When to use a different component
 
-Use Checkbox for a form choice or a state that can be mixed. Switch is for a boolean preference.
+- Use [Checkbox](/components/input.checkbox/) for a form choice or a state that can be mixed.
+- Use [Form](/components/input.form/) when the change submits alongside other fields.
 
 ## Properties and defaults
 

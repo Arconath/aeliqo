@@ -7,21 +7,24 @@ contract: 'Selected entity facts including missing fields; record identity persi
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Detail shows the fields of one application-supplied record as labeled facts. It can expose the record
-identity and uses a visible missing-value label, while selection and record lookup stay with the
-application.
+Show the fields of one selected record as labeled facts. Missing fields stay visible, and record identity persists across views.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Show every declared field of the record a person selected.
+- Keep missing fields visible instead of omitting them.
+- Display record identity next to a list, table, or editor.
 
 ## When to use a different component
 
-Use KeyValue for a compact group of facts without record identity. Detail makes the selected record and missing fields explicit.
+- Use KeyValue for a short fact list without record identity.
+- Use RecordEditor when the task is editing the record through a form.
 
 ## Properties and defaults
 

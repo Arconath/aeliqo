@@ -7,21 +7,26 @@ contract: 'A stable compare-set with compatible metrics and simultaneous compari
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Comparison places a bounded set of entities side by side in a table of supplied metrics. The application
-declares whether units and grain are compatible; changing the compare set emits a proposal and does not
-recalculate metric values.
+Comparison places a small set of chosen entities side by side across supplied metrics. Use it when people must weigh a few records at once.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A bounded set of entities needs the same metrics shown side by side.
+- The host has declared the metrics compatible in units and grain.
+- Compare-set changes must reach the host as a typed proposal.
+- Values are precomputed; the view must not recalculate them or infer causes.
 
 ## When to use a different component
 
-Use Breakdown to compare groups rather than selected entities. Use Table when people need to inspect the underlying records.
+- Use Breakdown to compare host-defined groups instead of chosen entities.
+- Use Table when users need to scan or sort the underlying records.
+- Use Metric for a single value with no compare set.
 
 ## Properties and defaults
 

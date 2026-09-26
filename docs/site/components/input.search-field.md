@@ -7,19 +7,24 @@ contract: 'Explicit/debounced query policy; composition input is not submitted m
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Add an explicit query-commit policy to a text field. Enter or `submitQuery()` emits a search request; `queryOnInput` can debounce typing, while IME composition suppresses premature requests.
+A search field that emits a query on Enter or `submitQuery()`. With `queryOnInput`, typing debounces the query and IME composition never submits early.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- People type a query the host runs against its own data.
+- You want an explicit submit gesture, a debounce policy, or both.
+- The query text is the value; nothing is picked from a list.
 
 ## When to use a different component
 
-Use Combobox when the query selects from known entities. SearchField leaves query interpretation and execution with the host.
+- Use [Combobox](/components/input.combobox/) when the query must resolve to a known option.
+- Use [TextField](/components/input.text-field/) when the text is stored data, not a query.
 
 ## Properties and defaults
 

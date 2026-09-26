@@ -7,19 +7,24 @@ contract: 'Contextual nonmodal surface with explicit focus/dismiss behavior and 
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Attach short contextual content to a trigger with an explicit open state and dismissal policy. The host chooses nonmodal or modal behavior, and the component emits a close request rather than executing an action.
+A contextual surface anchored to a trigger, with an explicit open state and dismissal policy. The host picks nonmodal or modal behavior; the component emits a close request, not an action.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Small content or actions belong next to the element that opened them.
+- The surrounding page should stay usable while the surface is open.
+- Open, close, and dismissal need explicit host control.
 
 ## When to use a different component
 
-Use Dialog for a blocking decision that needs a modal focus boundary. Popover keeps the surrounding task available.
+- Use [Tooltip](/components/feedback.tooltip/) for a short explanation with no interaction.
+- Use [Dialog](/components/feedback.dialog/) for a blocking decision that needs modal focus.
 
 ## Properties and defaults
 

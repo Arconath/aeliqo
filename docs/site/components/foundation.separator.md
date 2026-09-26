@@ -7,19 +7,24 @@ contract: 'Express visual or semantic separation without polluting keyboard orde
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Mark a boundary between adjacent sections using horizontal or vertical separator styling. Keep it decorative for a purely visual divider; expose separator semantics only when the boundary helps explain the content.
+A horizontal or vertical divider between adjacent sections. Keep it decorative for pure visuals; expose its semantics only when the boundary aids comprehension.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Splitting stacked sections with a horizontal rule.
+- Dividing inline items with a vertical rule.
+- Marking a boundary that helps explain the content structure.
 
 ## When to use a different component
 
-Use Surface to group content into a named region. Separator only marks a boundary between adjacent content.
+- Use Surface to group content into a labelled region.
+- Use Heading when the new section needs a title instead.
 
 ## Properties and defaults
 
