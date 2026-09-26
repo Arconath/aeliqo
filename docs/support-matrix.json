@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "product": "aeliqo",
   "candidate": {
-    "version": "0.5.1",
+    "version": "0.5.2",
     "status": "unreleased",
     "baseVersion": "0.4.2",
     "compatibility": "breaking"

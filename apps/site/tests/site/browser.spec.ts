@@ -24,6 +24,18 @@ test('the public playground uses the app facade without AI and through structure
   expect(errors).toEqual([]);
 });
 
+test('the scenario query parameter deep-links a documented playground example', async ({ page }) => {
+  await page.goto('/playground/?scenario=products');
+  await expect(page.locator('#pg-boot')).toBeHidden();
+  await expect(page.locator('#pg-scenario')).toHaveValue('products');
+  await expect(page.locator('#pg-journey-intent')).toHaveText('Browse products');
+  await page.locator('#pg-scenario').selectOption('knowledge');
+  await expect(page).toHaveURL(/scenario=knowledge/);
+  await page.goto('/playground/?scenario=bogus');
+  await expect(page.locator('#pg-boot')).toBeHidden();
+  await expect(page.locator('#pg-scenario')).toHaveValue('people');
+});
+
 test('public journeys show Jakarta people, daily attendance, and a composed workspace without AI', async ({ page }) => {
   await page.goto('/playground/');
   await page.getByRole('button', { name: 'People in Jakarta' }).click();

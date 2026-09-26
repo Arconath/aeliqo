@@ -9,7 +9,7 @@ import { AELIQO_DATA_CONFIG_SCHEMAS, AELIQO_DATA_REFS } from '../region/data-reg
 import { AELIQO_VISUALIZATION_CONFIG_SCHEMAS, AELIQO_VISUALIZATION_REFS } from '../region/visualization-registry.js';
 import { defineRecipe } from './define.js';
 import { comparisonSplitPlan } from './standard-comparison.js';
-import { barConfig, dataColumns, requestedFields } from './standard-data.js';
+import { barConfig, dataColumns, measureField, requestedFields, temporalField } from './standard-data.js';
 import { trendConfig } from './standard-trend.js';
 import type { RecipeContext, RecipeDefinition, StandardRecipeIntent } from './types.js';
 import { standardFormRecipe } from './standard-form.js';
@@ -194,13 +194,20 @@ function barView(context: RecipeContext): Outcome<SelectedView> | undefined {
   return { ok: true, value: { ...bar, values: config.values } };
 }
 
+const CONTEXT_VIEWS: Readonly<
+  Partial<Record<keyof typeof aliases, (context: RecipeContext) => Outcome<SelectedView> | undefined>>
+> = {
+  trend: trendView,
+  bar: barView,
+};
+
 function knownView(context: RecipeContext, name: keyof typeof aliases): Outcome<SelectedView> | undefined {
   const view = aliases[name]!;
   const operation = context.task.needs[0]?.operation;
   if (operation === undefined || !allowed(context, view.ref) || !supportsOperation(view.operations, operation))
     return undefined;
-  if (name === 'trend') return trendView(context);
-  if (name === 'bar') return barView(context);
+  const build = CONTEXT_VIEWS[name];
+  if (build !== undefined) return build(context);
   return { ok: true, value: viewWithValues(view, context) };
 }
 
@@ -336,8 +343,8 @@ function clarificationChoices(context: RecipeContext, kind: 'measure' | 'time') 
   if (context.result === undefined) return [];
   const requested = requestedFields(context);
   const compatible = context.result.fields.filter((field) => {
-    if (kind === 'time') return field.type.value === 'date' || field.type.value === 'instant';
-    return field.role === 'measure' && ['integer', 'float', 'decimal'].includes(field.type.value);
+    if (kind === 'time') return temporalField(field);
+    return measureField(field);
   });
   return compatible
     .filter((field) => requested.has(field.id))
@@ -485,8 +492,11 @@ export function recipeSupports(recipe: RecipeDefinition, input: StandardRecipeIn
   return recipe.intents.some((registered) => registered === input.kind);
 }
 
+const INTENT_OPERATIONS: Readonly<Partial<Record<RecipeContext['intent']['kind'], VersionRef>>> = {
+  compare: AELIQO_OPERATION_REFS.compare,
+  analyze: AELIQO_OPERATION_REFS.analyze,
+};
+
 export function standardOperationFor(kind: RecipeContext['intent']['kind']): VersionRef {
-  if (kind === 'compare') return AELIQO_OPERATION_REFS.compare;
-  if (kind === 'analyze') return AELIQO_OPERATION_REFS.analyze;
-  return AELIQO_OPERATION_REFS.read;
+  return INTENT_OPERATIONS[kind] ?? AELIQO_OPERATION_REFS.read;
 }

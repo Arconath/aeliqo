@@ -3,7 +3,7 @@ import type { InteractionPort } from '@aeliqo/core/interaction';
 import type { PresentationValues, ResolvedPresentationConfig } from '@aeliqo/core/presentation';
 import type { AeliqoPresentationRegistryOptions } from './registry-contracts.js';
 import { MAX_ITEMS, MAX_LABEL } from './registry-contracts.js';
-import { fieldMap, object as record } from './data-registry-common.js';
+import { fieldMap, numeric, object as record } from './data-registry-common.js';
 
 export const fail = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
@@ -110,7 +110,7 @@ export function temporalField(field: Result['fields'][number]): boolean {
 }
 
 export function numericField(field: Result['fields'][number]): boolean {
-  return field.type.value === 'integer' || field.type.value === 'float' || field.type.value === 'decimal';
+  return numeric(field.type);
 }
 
 export function unitKey(field: Result['fields'][number]): string {

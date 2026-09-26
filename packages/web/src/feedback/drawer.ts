@@ -1,14 +1,7 @@
 import { css, html } from 'lit';
 import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from '../foundation/base.js';
-import {
-  activeElement,
-  focusFirst,
-  focusableElements,
-  nextFrame,
-  restoreFocus,
-  emitAction,
-  safeElementId,
-} from '../navigation/shared.js';
+import { nextFrame, emitAction, safeElementId } from '../navigation/shared.js';
+import { OverlayFocus } from './focus-trap.js';
 import { aeliqoFeedbackStyles } from './shared.js';
 
 export type AeliqoDrawerMode = 'inline' | 'modal';
@@ -83,19 +76,16 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
   heading = 'Details';
   mode: AeliqoDrawerMode = 'inline';
   side: AeliqoDrawerSide = 'end';
-  private returnFocus: HTMLElement | undefined = undefined;
-  private pendingFocus: HTMLElement | undefined = undefined;
-  private focusEpoch = 0;
+  private readonly overlayFocus = new OverlayFocus(this);
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (!changed.has('mode') || !this.open) return;
-    const active = focusableElements(this).find((candidate) => candidate.matches(':focus'));
-    if (active !== undefined) this.pendingFocus = active;
+    this.overlayFocus.capturePending();
   }
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has('open') && !changed.has('mode')) return;
-    const epoch = ++this.focusEpoch;
+    const epoch = this.overlayFocus.nextEpoch();
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>('dialog');
     if (this.mode === 'modal' && dialog !== null) {
       this.syncModalDialog(dialog, epoch);
@@ -109,12 +99,11 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
       this.closeModalDialog(dialog);
       return;
     }
-    this.returnFocus ??= activeElement(this);
+    this.overlayFocus.rememberOpener();
     if (!dialog.open) this.showModalDialog(dialog);
-    const target = this.pendingFocus;
-    this.pendingFocus = undefined;
-    this.focusIfNeeded(dialog, epoch, target, true);
-    nextFrame(() => this.focusIfNeeded(dialog, epoch, target, false));
+    const target = this.overlayFocus.takePending();
+    this.overlayFocus.focusIfNeeded(dialog, epoch, this.open, target, true);
+    nextFrame(() => this.overlayFocus.focusIfNeeded(dialog, epoch, this.open, target, false));
   }
 
   private showModalDialog(dialog: HTMLDialogElement): void {
@@ -122,33 +111,22 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
     else dialog.setAttribute('open', '');
   }
 
-  private focusIfNeeded(
-    dialog: HTMLDialogElement,
-    epoch: number,
-    target: HTMLElement | undefined,
-    restoreTarget: boolean,
-  ): void {
-    if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
-    const focusables = focusableElements(dialog);
-    const current = focusables.find((candidate) => candidate.matches(':focus'));
-    if (restoreTarget && target?.isConnected && focusables.includes(target)) {
-      target.focus();
-      return;
-    }
-    if (current === undefined) focusFirst(dialog);
-  }
-
   private closeModalDialog(dialog: HTMLDialogElement): void {
     if (dialog.open && typeof dialog.close === 'function') dialog.close();
     else dialog.removeAttribute('open');
-    restoreFocus(this.returnFocus);
-    this.returnFocus = undefined;
+    this.overlayFocus.restoreOpener();
   }
 
   private focusInlineTarget(): void {
-    const target = this.pendingFocus;
-    this.pendingFocus = undefined;
+    const target = this.overlayFocus.takePending();
     if (target?.isConnected) target.focus();
+  }
+
+  private keydown(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') return;
+    const dialog = this.renderRoot.querySelector<HTMLDialogElement>('dialog');
+    if (dialog === null) return;
+    this.overlayFocus.trapTab(event, dialog);
   }
 
   private close(): void {
@@ -165,6 +143,7 @@ export class AeliqoDrawerElement extends AeliqoFoundationElement {
           event.preventDefault();
           this.close();
         }}
+        @keydown=${this.keydown}
       >
         <header part="header">
           <h2 id=${headingId}>${this.heading}</h2>

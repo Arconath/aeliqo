@@ -282,7 +282,10 @@ export class TaskEvaluationSession {
     if (!planned.ok) return planned;
     const accepted = planned.value;
     if (!this.acceptedPlanMatches(accepted, output))
-      return failure('runtime.evaluation-stale', 'The ADC plan does not match the fresh trusted task authority.');
+      return failure(
+        'runtime.evaluation-stale',
+        'The data service plan does not match the fresh trusted task authority.',
+      );
     const handle = this.allocateHandle(accepted, request.requestId);
     if (!handle.ok) return handle;
     const consumed = await this.consumeResult(handle.value, accepted);
@@ -365,7 +368,7 @@ export class TaskEvaluationSession {
       }
     } catch {
       subscription.cancel();
-      return failure('runtime.evaluation-failed', 'The ADC result stream could not be materialized.');
+      return failure('runtime.evaluation-failed', 'The data service result stream could not be materialized.');
     }
     return { ok: true, value: undefined };
   }

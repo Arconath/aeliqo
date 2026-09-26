@@ -3,6 +3,8 @@ import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from '../foundat
 import { emitAction } from '../navigation/shared.js';
 import { aeliqoFeedbackStyles, type AeliqoFeedbackTone, toneColor } from './shared.js';
 
+const TOAST_TONES: ReadonlySet<AeliqoFeedbackTone> = new Set(['neutral', 'info', 'success', 'warning', 'danger']);
+
 export class AeliqoToastElement extends AeliqoFoundationElement {
   static readonly properties = {
     open: { type: Boolean, reflect: true },
@@ -64,7 +66,7 @@ export class AeliqoToastElement extends AeliqoFoundationElement {
     if (emitAction(this, 'aeliqo-toast-dismiss', {})) this.open = false;
   }
   protected override render() {
-    const tone = ['neutral', 'info', 'success', 'warning', 'danger'].includes(this.tone) ? this.tone : 'info';
+    const tone = TOAST_TONES.has(this.tone) ? this.tone : 'info';
     return html`<div
       part="toast"
       role=${tone === 'danger' ? 'alert' : 'status'}

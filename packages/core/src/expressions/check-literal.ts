@@ -20,18 +20,28 @@ export function checkLiteral(node: LiteralExpression, path: readonly (string | n
   return { ok: true, value: { expression: node, type: node.type, context: 'row' } };
 }
 
+type LiteralChecker = (
+  type: SemanticType,
+  value: unknown,
+  path: readonly (string | number)[],
+) => Outcome<never> | undefined;
+
+const LITERAL_CHECKERS: Readonly<Record<string, LiteralChecker>> = {
+  integer: (_type, value, path) => checkIntegerLiteral(value, path),
+  float: (_type, value, path) => checkFloatLiteral(value, path),
+  boolean: (_type, value, path) => checkBooleanLiteral(value, path),
+  text: (_type, value, path) => checkTextLiteral(value, path),
+  date: checkDateLiteral,
+  instant: checkInstantLiteral,
+};
+
 function checkLiteralValue(
   type: SemanticType,
   value: unknown,
   path: readonly (string | number)[],
 ): Outcome<never> | undefined {
-  if (type.value === 'integer') return checkIntegerLiteral(value, path);
-  if (type.value === 'float') return checkFloatLiteral(value, path);
-  if (type.value === 'boolean') return checkBooleanLiteral(value, path);
-  if (type.value === 'text') return checkTextLiteral(value, path);
-  if (type.value === 'date') return checkDateLiteral(type, value, path);
-  if (type.value === 'instant') return checkInstantLiteral(type, value, path);
-  return checkDecimalLiteral(value, path);
+  const checker = LITERAL_CHECKERS[type.value];
+  return checker !== undefined ? checker(type, value, path) : checkDecimalLiteral(value, path);
 }
 
 function checkIntegerLiteral(value: unknown, path: readonly (string | number)[]): Outcome<never> | undefined {

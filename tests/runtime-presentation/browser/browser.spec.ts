@@ -115,3 +115,23 @@ test('guards focused editable controls when the region is mounted in a nested sh
     )
     .toBe('layout.narrow');
 });
+
+test('re-resolves live when media preferences change under auto observation', async ({ page }) => {
+  await page.goto('/tests/runtime-presentation/browser/index.html');
+  await page.evaluate(() => (window as typeof window & { observeMedia: () => void }).observeMedia());
+  await expect
+    .poll(() => page.evaluate(() => (window as typeof window & { contextReads: () => number }).contextReads()))
+    .toBeGreaterThan(0);
+  const before = await page.evaluate(() => (window as typeof window & { contextReads: () => number }).contextReads());
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect
+    .poll(() => page.evaluate(() => (window as typeof window & { contextReads: () => number }).contextReads()))
+    .toBeGreaterThan(before);
+  await page.evaluate(() => (window as typeof window & { disconnectObserved: () => void }).disconnectObserved());
+  const settled = await page.evaluate(() => (window as typeof window & { contextReads: () => number }).contextReads());
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.waitForTimeout(250);
+  expect(await page.evaluate(() => (window as typeof window & { contextReads: () => number }).contextReads())).toBe(
+    settled,
+  );
+});

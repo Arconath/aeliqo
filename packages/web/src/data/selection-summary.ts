@@ -4,7 +4,7 @@ import { AELIQO_WEB_VERSION } from '../version.js';
 import type { ResultRef } from '@aeliqo/core';
 import type { AeliqoDataScope, AeliqoDataStatus, AeliqoFilterPredicate, AeliqoSelectionDetail } from './types.js';
 import { AeliqoDataSelectionEvent } from './events.js';
-import { dataStyles, scopeText, statusTemplate } from './shared.js';
+import { dataStyles, displaysStatusSection, scopeText, statusTemplate } from './shared.js';
 
 export interface AeliqoSelectionScope {
   readonly kind: 'ids' | 'predicate';
@@ -49,7 +49,7 @@ export class AeliqoSelectionSummaryElement extends LitElement {
         ${this.clearable && (this.selectedKeys.length > 0 || this.selectionScope?.kind === 'predicate') ? html`<button part="clear" type="button" @click=${this.clearSelection}>Clear selection</button>` : nothing}
         ${scopeText(this.scope) ? html`<span part="scope">${scopeText(this.scope)}</span>` : nothing}
       </div>
-      ${status === 'loading' || status === 'partial' || status === 'stale' || status === 'error' || status === 'unavailable' ? statusTemplate(status, this.message) : nothing}
+      ${displaysStatusSection(status) ? statusTemplate(status, this.message) : nothing}
     `;
   }
 

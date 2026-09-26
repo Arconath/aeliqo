@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFile } from 'node:child_process';
-import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -12,6 +12,7 @@ import {
   docsArtifactPath,
 } from '../../docs/public-site/routes.mjs';
 import { componentPage, parseAuthoredPage, parseComponentDocument } from './component-documents.mjs';
+import { escape, filesAt } from './docs-lib.mjs';
 import {
   auditCatalogInventory,
   formatCatalogInventoryReport,
@@ -38,14 +39,6 @@ const outputRoot = resolve(root, outputIndex === -1 ? 'artifacts/public-docs' : 
 
 function command(commandName, args) {
   return execFileAsync(commandName, args, { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
-}
-
-function escape(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
 }
 
 const sourceMarker = /<aeliqo-source data-label="([^"]+)" data-path="([^"]+)"><\/aeliqo-source>/gu;
@@ -98,16 +91,6 @@ function hydrateProjectMarkup(markup, projects) {
       })
       .join('');
   });
-}
-
-async function filesAt(path, predicate = () => true) {
-  const result = [];
-  for (const item of await readdir(path, { withFileTypes: true })) {
-    const itemPath = join(path, item.name);
-    if (item.isDirectory()) result.push(...(await filesAt(itemPath, predicate)));
-    else if (predicate(itemPath)) result.push(itemPath);
-  }
-  return result.sort();
 }
 
 function classDeclaration(text, name) {
@@ -245,6 +228,12 @@ function componentLevel(component) {
   return 'No built-in semantic binding';
 }
 
+function componentTag(component) {
+  if (component.surfaces.includes('adaptive')) return 'adaptive';
+  if (component.surfaces.includes('semantic')) return 'semantic';
+  return 'standalone';
+}
+
 function componentCatalogPage(components) {
   return {
     id: 'components',
@@ -261,7 +250,7 @@ function componentCatalogPage(components) {
             .filter((component) => component.family === family)
             .map(
               (component) =>
-                `<li><a href="/components/${component.id}/"><strong>${component.name}</strong><small>${componentLevel(component)}</small></a></li>`,
+                `<li><a href="/components/${component.id}/"><strong>${escape(component.name)}</strong><span class="component-contract">${escape(component.contract)}</span><small data-level="${componentTag(component)}">${componentLevel(component)}</small></a></li>`,
             )
             .join('')}</ul>`,
       )

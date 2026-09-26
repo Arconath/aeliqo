@@ -70,17 +70,4 @@ export function freezeDeep<T>(value: T): T {
   return value;
 }
 
-export function canonical(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
-  if (typeof value !== 'object') {
-    const encoded = JSON.stringify(value);
-    return encoded === undefined ? 'undefined' : encoded;
-  }
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const record = value as Record<string, unknown>;
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`)
-    .join(',')}}`;
-}
+export { canonicalJson as canonical } from '../../canonical.js';

@@ -1,12 +1,33 @@
 ---
-id: "agent-recovery"
-path: "/agents/recovery/"
-section: "Connect agents"
-title: "Agent recovery"
-description: "Keep the application understandable when language is ambiguous, the provider fails, the session expires, or an action outcome is uncertain."
+id: 'agent-recovery'
+path: '/agents/recovery/'
+section: 'Connect agents'
+title: 'Agent recovery'
+description: 'Keep the application understandable when language is ambiguous, the provider fails, the session expires, or an action outcome is uncertain.'
 ---
 
 <h2>Ambiguous intent</h2><p>Return <code>needs-input</code> with bounded choices such as the intended period, resource, or action. Show the proposed filters and target view so the user can inspect the interpretation.</p>
+
+<p>For example, a trend request that leaves two eligible measures unresolved comes back as a receipt like:</p>
+
+**needs-input receipt**
+
+```json
+{
+  "status": "needs-input",
+  "requestId": "req-42",
+  "regionId": "people-main",
+  "diagnostics": [
+    {
+      "code": "web.recipe.needs-input.measure",
+      "message": "Choose one requested measure before rendering a trend: Present employees, Absence days.",
+      "retryable": false
+    }
+  ]
+}
+```
+
+<p>The honest response is a visible choice between the eligible measures—not a guessed chart.</p>
 <h2>Provider or transport failure</h2><p>Preserve the last still-authorized UI, explain that the connection failed, and keep manual controls available. Stop repeated failures that provide no new information.</p>
 <h2>Expired or revoked pairing</h2><p>Reject the call, cancel in-flight work, clear any now-unauthorized Region data, and require the trusted host to pair again.</p>
 <h2>Uncertain write</h2><p>If a remote write may have occurred, display an ambiguous receipt and a host-defined reconciliation action. Never report cancellation as rollback or automatically retry a non-idempotent write.</p>

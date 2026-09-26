@@ -13,12 +13,18 @@
   align-items: center;
   gap: 0.55rem;
   margin-bottom: 1.15rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface-raised) 80%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 4%, transparent);
 }
 .hero-status::before {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
   background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 18%, transparent);
   content: '';
 }
 .hero h1 {
@@ -227,11 +233,52 @@
 .demo-flow-arrow {
   color: var(--faint);
 }
+.demo-intent {
+  display: block;
+  margin: 0 0 0.7rem;
+  padding: 0.5rem 0.65rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: var(--bg);
+  font-family: ui-monospace, monospace;
+  font-size: var(--type-caption);
+  white-space: nowrap;
+}
+.demo-width {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+  color: var(--muted);
+  font-size: var(--type-compact-readable);
+}
+.demo-width > span {
+  font-weight: 650;
+}
+.demo-width button {
+  min-height: 1.9rem;
+  padding: 0.25rem 0.7rem;
+  font-size: var(--type-compact-readable);
+}
+.demo-width button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--on-accent);
+  background: var(--accent);
+}
 #home-demo {
   min-height: 13rem;
   padding-block: var(--space-3);
   overflow-x: auto;
   border-block: 1px solid var(--line);
+  transition: inline-size 180ms ease;
+}
+#home-demo[data-width='narrow'] {
+  inline-size: 20rem;
+  max-inline-size: 100%;
+  margin-inline: auto;
 }
 #home-demo aeliqo-region {
   display: block;

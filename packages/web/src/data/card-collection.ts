@@ -7,11 +7,17 @@ import type {
   AeliqoDataRecord,
   AeliqoDataScope,
   AeliqoDataStatus,
-  AeliqoSelectionDetail,
   AeliqoSelectionMode,
 } from './types.js';
 import { AeliqoDataLoadMoreEvent, AeliqoDataSelectionEvent } from './events.js';
-import { dataStyles, dataValueText, scopeText, stableDataRecordKey, statusTemplate } from './shared.js';
+import {
+  dataStyles,
+  dataValueText,
+  scopeText,
+  selectionChangeDetail,
+  stableDataRecordKey,
+  statusTemplate,
+} from './shared.js';
 
 /** Repeated records with explicit headings and a bounded load-more affordance. */
 export class AeliqoCardCollectionElement extends LitElement {
@@ -95,24 +101,15 @@ export class AeliqoCardCollectionElement extends LitElement {
   }
 
   private readonly requestSelection = (key: string | undefined): void => {
-    if (key === undefined || this.selection === 'none') return;
-    const next = new Set(this.selectedKeys);
-    if (this.selection === 'single') {
-      next.clear();
-      next.add(key);
-    } else if (next.has(key)) next.delete(key);
-    else next.add(key);
-    const keys = [...next];
-    const detail: AeliqoSelectionDetail =
-      keys.length === 0
-        ? { mode: 'clear', entity: this.entity, keys: [], ...(this.scope === undefined ? {} : { scope: this.scope }) }
-        : {
-            mode: 'ids',
-            entity: this.entity,
-            keys,
-            ...(this.result === undefined ? {} : { result: this.result }),
-            ...(this.scope === undefined ? {} : { scope: this.scope }),
-          };
+    const detail = selectionChangeDetail({
+      selection: this.selection,
+      keys: this.selectedKeys,
+      key,
+      entity: this.entity,
+      result: this.result,
+      scope: this.scope,
+    });
+    if (detail === undefined) return;
     this.dispatchEvent(new AeliqoDataSelectionEvent('aeliqo-card-selection', detail));
   };
 

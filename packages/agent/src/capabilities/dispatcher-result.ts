@@ -16,6 +16,7 @@ import type {
   AgentCapabilityTransport,
   AgentJsonValue,
 } from './types.js';
+import { isRecord } from '../guards.js';
 import { diagnostic, failure, validId, validText } from './dispatcher-common.js';
 
 const FAILED_STATES = new Set<AgentCapabilityState>([
@@ -50,10 +51,6 @@ const STABLE_PINS = [
   'experienceRevision',
   'functionRegistryDigest',
 ] as const;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function validDiagnosticPath(path: unknown): boolean {
   if (path === undefined) return true;
@@ -203,12 +200,15 @@ export function hasDataOutput(value: AgentJsonValue | undefined, refs: readonly 
   return value !== undefined || (refs !== undefined && refs.length > 0);
 }
 
+const OPERATION_STATES: Readonly<Partial<Record<OperationGrant, ReadonlySet<AgentCapabilityState>>>> = {
+  'experience.commit': COMMIT_STATES,
+  'task.evaluate': EVALUATION_STATES,
+};
+
 export function allowedState(operation: OperationGrant, state: AgentCapabilityState): boolean {
   if (ANY_OPERATION_STATES.has(state)) return true;
   if (operation.endsWith('.propose')) return PROPOSAL_STATES.has(state);
-  if (operation === 'experience.commit') return COMMIT_STATES.has(state);
-  if (operation === 'task.evaluate') return EVALUATION_STATES.has(state);
-  return READ_STATES.has(state);
+  return (OPERATION_STATES[operation] ?? READ_STATES).has(state);
 }
 
 function identityChanged(before: AgentCapabilityAuthority, after: AgentCapabilityAuthority): boolean {

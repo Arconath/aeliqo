@@ -11,23 +11,15 @@ export interface AeliqoTabItem {
 
 export type AeliqoTabsActivation = 'automatic' | 'manual';
 
+const HORIZONTAL_KEYS: Readonly<Record<string, -1 | 1>> = { ArrowLeft: -1, ArrowRight: 1 };
+const VERTICAL_KEYS: Readonly<Record<string, -1 | 1>> = { ArrowUp: -1, ArrowDown: 1 };
+
 function nextTabIndex(key: string, orientation: string, current: number, count: number): number | undefined {
-  const forwardKey = orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight';
-  const backwardKey = orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
-  if (key === forwardKey) return (current + 1) % count;
-  if (key === backwardKey) return (current - 1 + count) % count;
   if (key === 'Home') return 0;
   if (key === 'End') return count - 1;
-  return undefined;
-}
-
-function activatesOnMove(key: string, orientation: string): boolean {
-  return (
-    key === 'Home' ||
-    key === 'End' ||
-    key === (orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight') ||
-    key === (orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft')
-  );
+  const direction = (orientation === 'vertical' ? VERTICAL_KEYS : HORIZONTAL_KEYS)[key];
+  if (direction === undefined) return undefined;
+  return (current + direction + count) % count;
 }
 
 export class AeliqoTabsElement extends AeliqoFoundationElement {
@@ -124,8 +116,7 @@ export class AeliqoTabsElement extends AeliqoFoundationElement {
     event.preventDefault();
     const button = this.renderRoot.querySelector<HTMLElement>(`[data-tab-id="${CSS.escape(enabled[next]!.item.id)}"]`);
     button?.focus();
-    if (this.activation === 'automatic' && activatesOnMove(event.key, this.orientation))
-      this.setSelected(enabled[next]!.item.id);
+    if (this.activation === 'automatic') this.setSelected(enabled[next]!.item.id);
   }
 
   protected override render() {

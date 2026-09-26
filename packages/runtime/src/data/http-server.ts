@@ -62,7 +62,7 @@ type Authentication =
 
 function serverPaths(configured?: Partial<HttpDataPaths>): HttpDataPaths {
   const paths = { ...DEFAULT_PATHS, ...configured };
-  if (new Set(Object.values(paths)).size !== 3) throw new TypeError('ADC endpoint paths must be distinct.');
+  if (new Set(Object.values(paths)).size !== 3) throw new TypeError('data service endpoint paths must be distinct.');
   for (const path of Object.values(paths)) validateServerPath(path);
   return paths;
 }
@@ -77,7 +77,7 @@ function validateServerPath(path: string): void {
     url.search ||
     url.hash
   )
-    throw new TypeError('ADC server paths must be absolute URL paths.');
+    throw new TypeError('data service server paths must be absolute URL paths.');
 }
 
 function createServerConfig(options: DataHttpServerOptions): ServerConfig {
@@ -109,14 +109,14 @@ function preflight(request: Request, config: ServerConfig): Preflight {
   if (request.method !== 'POST')
     return {
       kind: 'response',
-      response: requestFailure('data.method', 'The ADC endpoint requires POST.', 405, config.allowedOrigin),
+      response: requestFailure('data.method', 'The data service endpoint requires POST.', 405, config.allowedOrigin),
     };
   if (!isJsonRequest(request))
     return {
       kind: 'response',
       response: requestFailure(
         'data.content-type',
-        'ADC requests require application/json.',
+        'data service requests require application/json.',
         415,
         config.allowedOrigin,
       ),
@@ -126,7 +126,7 @@ function preflight(request: Request, config: ServerConfig): Preflight {
       kind: 'response',
       response: requestFailure(
         'data.http-busy',
-        'The ADC host has reached its concurrent request limit.',
+        'The data service host has reached its concurrent request limit.',
         429,
         config.allowedOrigin,
         true,
@@ -138,7 +138,7 @@ function preflight(request: Request, config: ServerConfig): Preflight {
 function routeFailure(): Response {
   return json(
     errorPayload('unknown-request', [
-      { code: 'data.route', message: 'The ADC endpoint was not found.', retryable: false },
+      { code: 'data.route', message: 'The data service endpoint was not found.', retryable: false },
     ]),
     404,
   );
@@ -206,7 +206,7 @@ async function authenticateRequest(
     outcome = await life.wait(() => config.authenticate!(authRequest));
   } catch (error) {
     if (error instanceof DataStreamError) throw error;
-    reject('data.authorization', 'The ADC authentication failed.');
+    reject('data.authorization', 'The data service authentication failed.');
   }
   if (!outcome.ok)
     return {
@@ -296,10 +296,10 @@ function encodeMetadataResponse<
     canonical(response.target) !== canonical(target) ||
     !within(response.effectiveBudget, budget)
   )
-    reject('data.http-correlation', 'The ADC service response does not match its request.');
+    reject('data.http-correlation', 'The data service service response does not match its request.');
   const encoded = JSON.stringify(response);
   if (encoder.encode(encoded).byteLength > Math.min(config.maximumBytes, budget.maxBytes))
-    reject('data.http-budget', 'The ADC response exceeds its byte budget.');
+    reject('data.http-budget', 'The data service response exceeds its byte budget.');
   life.check();
   return new Response(encoded, {
     status: 200,

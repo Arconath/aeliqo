@@ -18,6 +18,27 @@ Choose a registered temporal field, calendar, timezone, bucket grain, and visibl
 
 The approved attendance rate is **present eligible employee-days / eligible employee-days**. Its synthetic daily values are 1 on September 1, 0.5 on September 2, and 1 on September 3. September 4–5 have no observations; the fixture labels them as missing instead of plotting zero. September 6 is marked future in that fixture. A partial month is not presented as complete coverage.
 
+## Request the analysis
+
+An `analyze` intent names the registered meaning and the declared temporal policy. This is the request the maintained tutorial sends for its headcount trend:
+
+**analyze intent**
+
+```json
+{
+  "version": "1",
+  "id": "monthly-headcount",
+  "kind": "analyze",
+  "resource": "workforce-headcount",
+  "measures": [{ "id": "month-end-headcount", "revision": "1" }],
+  "time": { "field": "month", "grain": "month", "calendar": "gregorian", "timezone": "UTC" },
+  "preferredView": "trend",
+  "sort": [{ "field": "month", "direction": "asc" }]
+}
+```
+
+The measure must be a registered meaning on that resource at that revision; an ad-hoc aggregate such as “average of headcount” is not accepted.
+
 ## Select an eligible presentation
 
 The resolver may choose a trend when the Result has a compatible time field, registered measure, and renderer. The application can pin a valid view, but a preference does not bypass eligibility or authority. The browser attendance example renders a chart and exposes the metric, denominator, period, timezone, and missing coverage as text. When both the approved rate and count are requested without a choice, it asks which metric to show. See [adaptive regions](/guides/adaptive-region/) and [runnable examples](/examples/).

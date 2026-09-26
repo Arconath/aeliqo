@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /** Build, inspect, scan, type-check, and consume the five exact public package tarballs. */
-import { spawnSync } from 'node:child_process';
 import { access, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, join, relative, resolve } from 'node:path';
@@ -18,14 +17,15 @@ import {
   sha256,
   sha512Integrity,
 } from './candidate-lib.mjs';
+import { flagValue } from './cli.mjs';
+import { run as command, runBuffer as commandBuffer } from './run.mjs';
 import { RELEASE_SOURCE_STATUS_ARGS, assertReleaseSourceClean } from './source-state.mjs';
 import { isReleaseVersion } from './metadata.mjs';
 import { externalConsumer } from './candidate-consumer.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const arguments_ = process.argv.slice(2);
-const versionIndex = arguments_.indexOf('--version');
-const version = versionIndex === -1 ? RELEASE_VERSION : arguments_[versionIndex + 1];
+const version = flagValue(arguments_, '--version') ?? RELEASE_VERSION;
 if (!isReleaseVersion(version))
   throw new Error(`Expected --version ${RELEASE_VERSION} or a unique ${RELEASE_VERSION}-rc.N version`);
 const positional = [];
@@ -40,33 +40,6 @@ if (positional.length > 1) throw new Error('Expected at most one candidate outpu
 const output = resolve(root, positional[0] ?? 'artifacts/release-candidate');
 if (relative(root, output).startsWith('..')) throw new Error('Candidate output must remain within the repository');
 
-function command(commandName, args, options = {}) {
-  const result = spawnSync(commandName, args, {
-    cwd: options.cwd ?? root,
-    encoding: 'utf8',
-    timeout: options.timeout ?? 300_000,
-    env: options.env ?? process.env,
-  });
-  if (result.error || result.status !== 0)
-    throw new Error(
-      `${commandName} ${args.join(' ')} failed\n${result.error?.message ?? ''}\n${result.stdout ?? ''}\n${result.stderr ?? ''}`,
-    );
-  return result.stdout.trim();
-}
-function commandBuffer(commandName, args, options = {}) {
-  const result = spawnSync(commandName, args, {
-    cwd: options.cwd ?? root,
-    encoding: null,
-    maxBuffer: options.maxBuffer ?? 128 * 1024 * 1024,
-    timeout: options.timeout ?? 300_000,
-    env: options.env ?? process.env,
-  });
-  if (result.error || result.status !== 0) {
-    const stderr = Buffer.isBuffer(result.stderr) ? result.stderr.toString('utf8') : String(result.stderr ?? '');
-    throw new Error(`${commandName} ${args.join(' ')} failed\n${result.error?.message ?? ''}\n${stderr}`);
-  }
-  return result.stdout;
-}
 function requireVersion(actual, expected, label) {
   if (actual !== expected) throw new Error(`${label} ${expected} is required; received ${actual}`);
 }

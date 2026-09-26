@@ -4,6 +4,9 @@ import { AeliqoSplitChangeEvent } from './events.js';
 
 export type AeliqoSplitOrientation = 'horizontal' | 'vertical';
 
+const HORIZONTAL_KEYS: Readonly<Record<string, -1 | 1>> = { ArrowLeft: -1, ArrowRight: 1 };
+const VERTICAL_KEYS: Readonly<Record<string, -1 | 1>> = { ArrowUp: -1, ArrowDown: 1 };
+
 function keyboardPosition(
   key: string,
   orientation: AeliqoSplitOrientation,
@@ -15,14 +18,9 @@ function keyboardPosition(
 ): number | undefined {
   if (key === 'Home') return minimum;
   if (key === 'End') return maximum;
-  if (orientation === 'horizontal') {
-    if (key === 'ArrowLeft') return position - (rtl ? -step : step);
-    if (key === 'ArrowRight') return position + (rtl ? -step : step);
-    return undefined;
-  }
-  if (key === 'ArrowUp') return position - step;
-  if (key === 'ArrowDown') return position + step;
-  return undefined;
+  const direction = (orientation === 'horizontal' ? HORIZONTAL_KEYS : VERTICAL_KEYS)[key];
+  if (direction === undefined) return undefined;
+  return position + direction * (orientation === 'horizontal' && rtl ? -step : step);
 }
 
 /** Resizable two-pane layout with a typed, controlled position proposal. */

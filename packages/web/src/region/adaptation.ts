@@ -36,6 +36,17 @@ function boundedLocale(value: unknown): string {
   }
 }
 
+const ENVIRONMENT_QUERIES = [
+  '(any-pointer: fine)',
+  '(any-pointer: coarse)',
+  '(pointer: fine)',
+  '(pointer: coarse)',
+  '(hover: hover)',
+  '(hover: none)',
+  '(prefers-reduced-motion: reduce)',
+  '(forced-colors: active)',
+] as const;
+
 function media(target: Window | undefined, query: string): boolean | undefined {
   try {
     return target?.matchMedia(query).matches;
@@ -203,10 +214,13 @@ export interface AeliqoRegionAdaptation {
   disconnect(): void;
 }
 
+const EDITABLE_TAGS: ReadonlySet<string> = new Set(['input', 'textarea', 'select']);
+const EDITABLE_ROLES: ReadonlySet<string> = new Set(['textbox', 'combobox', 'spinbutton']);
+
 function editableTarget(value: Element | undefined): boolean {
   if (value === undefined) return false;
   const tag = value.localName;
-  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+  if (EDITABLE_TAGS.has(tag)) {
     return (
       !value.hasAttribute('disabled') &&
       !value.hasAttribute('readonly') &&
@@ -215,11 +229,7 @@ function editableTarget(value: Element | undefined): boolean {
   }
   const contentEditable = value.getAttribute('contenteditable');
   if (contentEditable !== null && contentEditable !== 'false') return true;
-  return (
-    value.getAttribute('role') === 'textbox' ||
-    value.getAttribute('role') === 'combobox' ||
-    value.getAttribute('role') === 'spinbutton'
-  );
+  return EDITABLE_ROLES.has(value.getAttribute('role') ?? '');
 }
 
 function deepestActive(root: Document | Element): Element | undefined {
@@ -437,6 +447,19 @@ function createAdaptationController(
   });
 }
 
+function observeEnvironmentMedia(element: Element | undefined, onChange: () => void): readonly MediaQueryList[] {
+  const view = regionWindow(element);
+  if (view === undefined || typeof view.matchMedia !== 'function') return [];
+  const lists: MediaQueryList[] = [];
+  for (const query of ENVIRONMENT_QUERIES) {
+    const list = view.matchMedia(query);
+    if (typeof list.addEventListener !== 'function') continue;
+    list.addEventListener('change', onChange);
+    lists.push(list);
+  }
+  return lists;
+}
+
 /** Bind a measured region element to the runtime adaptation transaction. */
 export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOptions): AeliqoRegionAdaptation {
   const measure = options.measure ?? (() => measureAeliqoRegionEnvironment(options.element));
@@ -478,11 +501,18 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
     void retry;
   };
   let observer: ResizeObserver | undefined;
-  if (options.autoObserve !== false && typeof ResizeObserver !== 'undefined') {
-    observer = new ResizeObserver(() => {
-      void request();
-    });
-    observer.observe(options.element);
+  let mediaLists: readonly MediaQueryList[] = [];
+  const onMediaChange = (): void => {
+    if (!disposed) void request();
+  };
+  if (options.autoObserve !== false) {
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => {
+        void request();
+      });
+      observer.observe(options.element);
+    }
+    mediaLists = observeEnvironmentMedia(options.element, onMediaChange);
   }
   return {
     controller,
@@ -491,6 +521,7 @@ export function createAeliqoRegionAdaptation(options: AeliqoRegionAdaptationOpti
     disconnect: () => {
       disposed = true;
       observer?.disconnect();
+      for (const list of mediaLists) list.removeEventListener('change', onMediaChange);
       guard.dispose();
       controller.dispose();
     },

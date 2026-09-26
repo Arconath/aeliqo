@@ -194,13 +194,21 @@ function changeEventValue(event: Event, requireText: boolean): DraftEventValue |
 }
 
 function draftEventValue(ref: string, values: Record<string, unknown>, event: Event): DraftEventValue | undefined {
-  if (ref === 'input.number-field') return numberEventValue(event, values);
-  if (ref === 'input.slider') return sliderEventValue(event, values);
-  if (ref === 'input.search-field') {
-    const query = searchDetail(event);
-    if (query !== undefined) return { raw: query };
+  switch (ref) {
+    case 'input.number-field':
+      return numberEventValue(event, values);
+    case 'input.slider':
+      return sliderEventValue(event, values);
+    case 'input.search-field': {
+      const query = searchDetail(event);
+      if (query !== undefined) return { raw: query };
+      break;
+    }
+    case 'input.text-field':
+    case 'input.text-area':
+    case 'input.date-field':
+      return commitEventValue(event);
   }
-  if (['input.text-field', 'input.text-area', 'input.date-field'].includes(ref)) return commitEventValue(event);
   return changeEventValue(event, ref === 'input.combobox');
 }
 

@@ -189,13 +189,16 @@ function hasMultiple(values: Map<string, Set<string>>): boolean {
   return [...values.values()].some((related) => related.size > 1);
 }
 
+const CARDINALITY_VIOLATIONS: Readonly<Partial<Record<Cardinality, (collection: RelationshipCollection) => boolean>>> =
+  {
+    'one-to-one': (collection) => hasMultiple(collection.sourceCounts) || hasMultiple(collection.targetCounts),
+    'many-to-one': (collection) => hasMultiple(collection.sourceCounts),
+    'one-to-many': (collection) => hasMultiple(collection.targetCounts),
+  };
+
 function validateCardinality(cardinality: Cardinality, collection: RelationshipCollection): Outcome<true> {
-  if (cardinality === 'one-to-one' && (hasMultiple(collection.sourceCounts) || hasMultiple(collection.targetCounts)))
-    return fail('cardinality', 'The materialized relationship violates one-to-one cardinality.');
-  if (cardinality === 'many-to-one' && hasMultiple(collection.sourceCounts))
-    return fail('cardinality', 'The materialized relationship violates many-to-one cardinality.');
-  if (cardinality === 'one-to-many' && hasMultiple(collection.targetCounts))
-    return fail('cardinality', 'The materialized relationship violates one-to-many cardinality.');
+  if (CARDINALITY_VIOLATIONS[cardinality]?.(collection) === true)
+    return fail('cardinality', `The materialized relationship violates ${cardinality} cardinality.`);
   return { ok: true, value: true };
 }
 

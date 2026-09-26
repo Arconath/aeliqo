@@ -6,6 +6,8 @@ import type { ScopeBinding, ScopeLeaveDecision, ScopeLeaveState, ScopeSelector, 
 
 const MAX_REVISION = 128;
 
+const STATUS_ONLY_DECISIONS: ReadonlySet<string> = new Set(['clean', 'discard', 'stay']);
+
 export class InvalidScopeGuardError extends TypeError {}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -31,7 +33,7 @@ function readLeaveState(binding: ScopeBinding, selector: ScopeSelector): ScopeLe
 function leaveDecision(value: unknown): ScopeLeaveDecision {
   if (!isRecord(value) || typeof value.status !== 'string')
     throw new InvalidScopeGuardError('The host returned an invalid scope leave decision.');
-  if (['clean', 'discard', 'stay'].includes(value.status) && Object.keys(value).length === 1)
+  if (STATUS_ONLY_DECISIONS.has(value.status) && Object.keys(value).length === 1)
     return Object.freeze({ status: value.status }) as ScopeLeaveDecision;
   if (value.status === 'needs-input') {
     if (Object.keys(value).some((key) => key !== 'status' && key !== 'diagnostic'))

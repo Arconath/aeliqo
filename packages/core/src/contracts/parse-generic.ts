@@ -4,6 +4,8 @@ import { wireFailure } from '../diagnostics/wire.js';
 import { canonicalJSON, parseInspectedSchema } from './parse-schema.js';
 import type { Contract, ContractKind, Outcome } from './types.js';
 
+const VERSIONED_CONTRACT_KINDS: ReadonlySet<ContractKind> = new Set(['catalog', 'task', 'result', 'experience']);
+
 /** A successful parse validates wire shape only. It grants no effect or business meaning. */
 export function parseContract<K extends ContractKind>(kind: K, input: unknown): Outcome<Contract<K>> {
   const inspected = inspectWire(input);
@@ -15,7 +17,7 @@ export function parseContract<K extends ContractKind>(kind: K, input: unknown): 
 }
 
 function isVersionedContract(kind: ContractKind): boolean {
-  return kind === 'catalog' || kind === 'task' || kind === 'result' || kind === 'experience';
+  return VERSIONED_CONTRACT_KINDS.has(kind);
 }
 
 /** Stable object-key ordering; arrays, decimal scale and signed zero are preserved. */

@@ -1,6 +1,6 @@
 # Aeliqo vNext — Adaptive Application UI specification
 
-Status: FINAL PLANNING REVISION 3 (2026-09-19), implementation brief requested by the owner; proposed vNext APIs are not current exports. Research baseline and sources: `04-RESEARCH.md`. This specification and its contract detail in `08-CONTRACTS.md` supersede v1/v2 and conflicting chat sketches. They do not supersede repository security policy. Use the whole final-v3 pack, not an old ZIP plus this file. Implement through `02-EXECPLAN.md` and prove the requirements in `03-ACCEPTANCE.md`.
+Status: FINAL PLANNING REVISION 3 (2026-09-19); proposed vNext APIs are not current exports. This specification and its contract detail in `08-CONTRACTS.md` supersede v1/v2 and conflicting chat sketches. They do not supersede repository security policy. Requirements are proven against `03-ACCEPTANCE.md`.
 
 ## 1. Product contract
 
@@ -73,7 +73,7 @@ export function People({ rows }: { rows: readonly Person[] }) {
   const surface = useDataSurface({
     id: 'people-main',
     data: rows,
-    getRowId: row => row.id,
+    getRowId: (row) => row.id,
   });
   return <AdaptiveSurface surface={surface} />;
 }
@@ -136,7 +136,6 @@ export function PeoplePage() {
 
 Provider contract: the provider shares a host-created runtime and never disposes what it did not create. The owner disposes an explicit runtime at application teardown; a providerless helper disposes its own scope. Preserve the existing `app` provider path through a documented migration/compatibility adapter; do not silently change its meaning.
 
-
 #### 3.2.1 Application scope is an explicit lifecycle controller
 
 A workspace/tenant/organization/project **selector is not authorization**. Browser selection may come from application state or a validated URL. The server resolves it against authenticated identity and current membership for every relevant operation. The scope controller coordinates UI isolation; it cannot establish backend trust by itself. Nested scopes can only narrow the server-approved parent context and use full lineage, never concatenated IDs that may collide.
@@ -182,8 +181,7 @@ This is the minimal normative behavioral interface. Use existing Outcome/Diagnos
 ```ts
 export type SurfaceRevision = string;
 export type SurfacePhase =
-  | 'idle' | 'loading' | 'ready' | 'needs-input'
-  | 'unsupported' | 'denied' | 'failed' | 'disposed'; // aggregate phase; data/transport states remain discriminated substate
+  'idle' | 'loading' | 'ready' | 'needs-input' | 'unsupported' | 'denied' | 'failed' | 'disposed'; // aggregate phase; data/transport states remain discriminated substate
 
 export interface SurfaceAddress {
   readonly runtimeId: string;
@@ -212,8 +210,10 @@ export type RequestResult =
   | { readonly status: 'committed'; readonly revision: SurfaceRevision }
   | { readonly status: 'proposed'; readonly proposalId: string }
   | { readonly status: 'needs-input'; readonly diagnosticCode: string }
-  | { readonly status: 'unsupported' | 'denied' | 'stale' |
-      'cancelled' | 'disposed' | 'failed'; readonly diagnosticCode: string };
+  | {
+      readonly status: 'unsupported' | 'denied' | 'stale' | 'cancelled' | 'disposed' | 'failed';
+      readonly diagnosticCode: string;
+    };
 
 export interface SurfaceController<I, S> {
   readonly id: string;

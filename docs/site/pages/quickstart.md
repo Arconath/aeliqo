@@ -17,7 +17,7 @@ description: 'Run and test a local People surface in React without an account, m
 
 <aeliqo-release-status></aeliqo-release-status>
 
-This tutorial targets the stable `0.5.1` release. Keep installed Aeliqo
+This tutorial targets the stable `0.5.2` release. Keep installed Aeliqo
 packages on exactly the same version.
 
 <span id="create-the-project"></span>
@@ -38,10 +38,10 @@ application-owned rows and makes no model or remote data request.
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aeliqo/core": "0.5.1",
-    "@aeliqo/runtime": "0.5.1",
-    "@aeliqo/web": "0.5.1",
-    "@aeliqo/react": "0.5.1",
+    "@aeliqo/core": "0.5.2",
+    "@aeliqo/runtime": "0.5.2",
+    "@aeliqo/web": "0.5.2",
+    "@aeliqo/react": "0.5.2",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

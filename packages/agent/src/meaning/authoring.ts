@@ -15,6 +15,7 @@ import type {
   MeaningProposalInput,
   MeaningProposalPolicy,
 } from './types.js';
+import { isRecord } from '../guards.js';
 
 function failure<T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
   return {
@@ -26,7 +27,7 @@ function failure<T>(code: string, message: string, path?: readonly (string | num
 const DEFAULT_SCOPES: readonly MeaningDefinition['scope'][] = Object.freeze(['session', 'personal']);
 
 function isPolicyObject(policy: unknown): policy is MeaningProposalPolicy {
-  return policy !== null && typeof policy === 'object' && !Array.isArray(policy);
+  return isRecord(policy);
 }
 
 function validatePolicyShape(policy: MeaningProposalPolicy): Outcome<void> {

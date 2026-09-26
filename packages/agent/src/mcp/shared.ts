@@ -2,11 +2,13 @@ import { parseWireValue, WIRE_LIMITS, type Diagnostic, type Outcome } from '@ael
 import type { CallToolResult } from './types.js';
 import { AELIQO_MCP_TOOL_META } from './types.js';
 import { AELIQO_AGENT_VERSION } from '../version.js';
+import { boundedId, boundedText, isRecord } from '../guards.js';
+
+export { boundedId as validId, boundedText as validText, isRecord };
 
 export const ADAPTER_VERSION = '1' as const;
 const MAX_TEXT_BYTES = 256 * 1024;
 export const MAX_DEFINITION_COUNT = 256;
-const MAX_DESCRIPTION_LENGTH = WIRE_LIMITS.text;
 export const DEFAULT_SERVER_NAME = 'aeliqo-agent';
 export const DEFAULT_SERVER_VERSION = AELIQO_AGENT_VERSION;
 
@@ -18,10 +20,6 @@ export function failure<T>(code: string, message: string, path?: readonly (strin
     ...(path === undefined ? {} : { path: [...path] }),
   };
   return { ok: false, diagnostics: [diagnostic] };
-}
-
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 export function safeJson(value: unknown): string | undefined {
@@ -42,24 +40,11 @@ export function boundedWire(value: unknown): Outcome<unknown> {
     : checked;
 }
 
-function boundedText(value: unknown): Outcome<string> {
+function boundedResultText(value: unknown): Outcome<string> {
   if (typeof value !== 'string') return failure('agent.mcp.result', 'The MCP result text was malformed.');
   if (new TextEncoder().encode(value).byteLength > MAX_TEXT_BYTES)
     return failure('agent.mcp.bytes', 'The MCP result text exceeds its byte budget.');
   return { ok: true, value };
-}
-
-export function validText(value: unknown, max: number = MAX_DESCRIPTION_LENGTH): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= max && !/[\u0000-\u001f\u007f]/u.test(value);
-}
-
-export function validId(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= WIRE_LIMITS.id &&
-    !/[\s\u0000-\u001f\u007f]/u.test(value)
-  );
 }
 
 function envelope<T>(outcome: Outcome<T>) {
@@ -83,7 +68,7 @@ export function requestIdFromContext(context: {
   readonly mcpReq: { readonly id: string | number; readonly _meta?: Record<string, unknown> };
 }): string {
   const supplied = context.mcpReq._meta?.[AELIQO_MCP_TOOL_META];
-  if (isRecord(supplied) && validId(supplied.requestId)) return supplied.requestId;
+  if (isRecord(supplied) && boundedId(supplied.requestId)) return supplied.requestId;
   return String(context.mcpReq.id);
 }
 
@@ -97,7 +82,7 @@ export function textFromResult(result: CallToolResult): Outcome<unknown> {
   const block = result.content.find((candidate) => isRecord(candidate) && candidate.type === 'text');
   if (!isRecord(block) || typeof block.text !== 'string')
     return failure('agent.mcp.result', 'The MCP server returned no bounded JSON result.');
-  const bounded = boundedText(block.text);
+  const bounded = boundedResultText(block.text);
   if (!bounded.ok) return bounded;
   try {
     return boundedWire(JSON.parse(bounded.value) as unknown);

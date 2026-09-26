@@ -1,9 +1,11 @@
 import { parseTask, parseWireValue, WIRE_LIMITS } from '@aeliqo/core';
 import type { Contract, Diagnostic } from '@aeliqo/core';
+import { canonicalDigest as digest, canonicalJson as canonical } from '../canonical.js';
 import type { RegionDocument, RegionDocumentInput, RegionPersistence } from './types.js';
 import type { RegionHistoryEntry, RegionOutcome, RegionReadSet, RegionSnapshot } from '../regions/types.js';
 
 const VERSION = '1' as const;
+const HISTORY_KINDS: ReadonlySet<string> = new Set(['commit', 'data', 'revoke']);
 const failure = <T>(code: string, message: string): RegionOutcome<T> => ({
   ok: false,
   diagnostics: [{ code, message, retryable: false } as Diagnostic],
@@ -17,30 +19,6 @@ function frozen<T>(value: T): T {
   }
   for (const child of Object.values(value as Record<string, unknown>)) frozen(child);
   return Object.freeze(value);
-}
-
-function canonical(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
-  if (typeof value !== 'object') {
-    const encoded = JSON.stringify(value);
-    return encoded === undefined ? 'undefined' : encoded;
-  }
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const record = value as Record<string, unknown>;
-  return `{${Object.keys(record)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`)
-    .join(',')}}`;
-}
-
-function digest(value: unknown): string {
-  let hash = 2166136261;
-  for (const character of canonical(value)) {
-    hash ^= character.codePointAt(0)!;
-    hash = Math.imul(hash, 16777619);
-  }
-  return `h${(hash >>> 0).toString(16).padStart(8, '0')}`;
 }
 
 function validId(value: unknown): value is string {
@@ -147,11 +125,7 @@ function validChangedResults(value: unknown, scopeDigest: string): boolean {
 }
 
 function validHistoryIdentity(record: Record<string, unknown>): boolean {
-  return (
-    ['commit', 'data', 'revoke'].includes(String(record.kind)) &&
-    validId(record.taskRevision) &&
-    validId(record.regionRevision)
-  );
+  return HISTORY_KINDS.has(String(record.kind)) && validId(record.taskRevision) && validId(record.regionRevision);
 }
 
 function validHistoryClock(record: Record<string, unknown>): boolean {

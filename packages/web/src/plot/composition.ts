@@ -136,9 +136,14 @@ function prepareUnits(
 }
 
 function descendants(node: PlotNode, prepared: ReadonlyMap<PlotNode, Prepared>): Prepared[] {
-  if (node.kind === 'unit') return [prepared.get(node)!];
-  if (node.kind === 'facet') return descendants(node.child, prepared);
-  return node.children.flatMap((child) => descendants(child, prepared));
+  switch (node.kind) {
+    case 'unit':
+      return [prepared.get(node)!];
+    case 'facet':
+      return descendants(node.child, prepared);
+    default:
+      return node.children.flatMap((child) => descendants(child, prepared));
+  }
 }
 
 function matches(prepared: Prepared, row: PlotDatum, filters: readonly Filter[]): boolean {

@@ -1,6 +1,14 @@
 import type { Catalog, Expression, QuerySpec, VersionRef } from '../../contracts/types.js';
 import type { JoinSpec, PredicateSpec, QueryOutcome, SemiJoinSpec, SortSpec, TimeBucketSpec } from '../types.js';
-import { failure, fieldKey, relationKey, semanticType, unsupported, type CatalogEntity } from './shared.js';
+import {
+  BUCKET_GRAINS,
+  failure,
+  fieldKey,
+  relationKey,
+  semanticType,
+  unsupported,
+  type CatalogEntity,
+} from './shared.js';
 import { fieldExpression, literalExpression } from './expressions.js';
 import { querySpecPredicate } from './query-spec-predicate.js';
 import { relationshipFor } from './relations.js';
@@ -173,7 +181,7 @@ function makeTimeBucket(
     return failure('query.field', `Field ${bucket.field} is not declared on ${query.entity}.`, ['timeBucket', 'field']);
   if (temporalField.type.value !== 'instant' && temporalField.type.value !== 'date')
     return failure('query.period-type', 'Time buckets require a date or instant field.', ['timeBucket']);
-  if (!['day', 'week', 'month', 'quarter', 'year'].includes(bucket.grain))
+  if (!BUCKET_GRAINS.has(bucket.grain))
     return unsupported(
       'temporal-grain',
       'The requested temporal grain is not in the bounded evaluator subset.',
@@ -308,8 +316,8 @@ export function validateQueryDelivery(query: QuerySpec): QueryOutcome<void> {
   if (query.page !== undefined)
     return unsupported(
       'query.pagination',
-      'Delivery paging requires the ADC adapter and does not define the query population.',
-      ['Use topK for an explicit ranked population, or execute paging through the ADC adapter.'],
+      'Delivery paging requires the data service adapter and does not define the query population.',
+      ['Use topK for an explicit ranked population, or execute paging through the data service adapter.'],
       ['page'],
     );
   if (query.topK !== undefined && query.order.length === 0)

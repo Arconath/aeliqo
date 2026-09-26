@@ -106,39 +106,43 @@ function renderNode(
   graphic = true,
   data = true,
 ): unknown {
-  if (node.kind === 'unit')
-    return renderGeometry(node.geometry, label, context, graphic, data, node.displayedIdentities);
-  if (node.kind === 'facet') {
-    return html`<section part="facet" aria-label=${label}>
-      ${node.children.map(
-        (child) =>
-          html`<section aria-label=${node.field + ': ' + child.label}>
-            ${data ? html`<h3>${node.field}: ${child.label}</h3>` : nothing}
-            ${renderNode(child.node, label + ', ' + node.field + ': ' + child.label, context, graphic, data)}
-          </section>`,
-      )}
-    </section>`;
+  switch (node.kind) {
+    case 'unit':
+      return renderGeometry(node.geometry, label, context, graphic, data, node.displayedIdentities);
+    case 'facet':
+      return html`<section part="facet" aria-label=${label}>
+        ${node.children.map(
+          (child) =>
+            html`<section aria-label=${node.field + ': ' + child.label}>
+              ${data ? html`<h3>${node.field}: ${child.label}</h3>` : nothing}
+              ${renderNode(child.node, label + ', ' + node.field + ': ' + child.label, context, graphic, data)}
+            </section>`,
+        )}
+      </section>`;
+    case 'concat':
+      return html`<section part=${'concat-' + node.direction} aria-label=${label}>
+        ${node.children.map((child, index) =>
+          renderNode(child, label + ', panel ' + (index + 1), context, graphic, data),
+        )}
+      </section>`;
+    default:
+      return html`<section aria-label=${label}>
+        ${data ? html`<h3>${label}</h3>` : nothing}
+        <div part="layer">
+          ${node.children.map(
+            (child, index) =>
+              html`<div>${renderNode(child, label + ', layer ' + (index + 1), context, true, false)}</div>`,
+          )}
+        </div>
+        ${
+          data
+            ? node.children.map((child, index) =>
+                renderNode(child, label + ', layer ' + (index + 1), context, false, true),
+              )
+            : nothing
+        }
+      </section>`;
   }
-  if (node.kind === 'concat') {
-    return html`<section part=${'concat-' + node.direction} aria-label=${label}>
-      ${node.children.map((child, index) =>
-        renderNode(child, label + ', panel ' + (index + 1), context, graphic, data),
-      )}
-    </section>`;
-  }
-  return html`<section aria-label=${label}>
-    ${data ? html`<h3>${label}</h3>` : nothing}
-    <div part="layer">
-      ${node.children.map(
-        (child, index) => html`<div>${renderNode(child, label + ', layer ' + (index + 1), context, true, false)}</div>`,
-      )}
-    </div>
-    ${
-      data
-        ? node.children.map((child, index) => renderNode(child, label + ', layer ' + (index + 1), context, false, true))
-        : nothing
-    }
-  </section>`;
 }
 
 function renderGeometry(

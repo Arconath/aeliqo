@@ -78,7 +78,7 @@ function validSemanticTemporal(value: unknown, type: unknown): boolean {
   );
 }
 
-function semanticType(value: unknown): value is SemanticType {
+export function semanticType(value: unknown): value is SemanticType {
   const candidate = record(value);
   if (candidate === undefined || !validSemanticBase(candidate)) return false;
   return (

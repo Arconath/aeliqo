@@ -7,6 +7,7 @@ import {
   type VersionRef,
 } from '@aeliqo/core';
 import type { AgentCapabilityLimits, AgentCapabilityManifest, AgentCapabilityRegistry } from './types.js';
+import { boundedId as validId } from '../guards.js';
 
 const failure = <T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> => ({
   ok: false,
@@ -14,15 +15,6 @@ const failure = <T>(code: string, message: string, path?: readonly (string | num
 });
 
 export const capabilityRefKey = (ref: VersionRef): string => JSON.stringify([ref.id, ref.revision]);
-
-function validId(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= WIRE_LIMITS.id &&
-    !/[\s\u0000-\u001f\u007f]/u.test(value)
-  );
-}
 
 function validLabel(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0 && value.length <= WIRE_LIMITS.label;

@@ -4,6 +4,8 @@ import { aeliqoFeedbackStyles } from './shared.js';
 
 export type AeliqoSkeletonVariant = 'text' | 'rect' | 'circle';
 
+const SKELETON_VARIANTS: ReadonlySet<AeliqoSkeletonVariant> = new Set(['text', 'rect', 'circle']);
+
 /** Reserves the shape of loading content without claiming that content exists. */
 export class AeliqoSkeletonElement extends AeliqoFoundationElement {
   static readonly properties = {
@@ -65,7 +67,7 @@ export class AeliqoSkeletonElement extends AeliqoFoundationElement {
   animated = true;
 
   protected override render() {
-    const variant: AeliqoSkeletonVariant = ['text', 'rect', 'circle'].includes(this.variant) ? this.variant : 'text';
+    const variant: AeliqoSkeletonVariant = SKELETON_VARIANTS.has(this.variant) ? this.variant : 'text';
     const count = Number.isSafeInteger(this.lines) ? Math.min(12, Math.max(1, this.lines)) : 3;
     return html`<div
       part="skeleton"

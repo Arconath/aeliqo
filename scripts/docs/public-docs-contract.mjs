@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile, realpath } from 'node:fs/promises';
 import { basename, dirname, resolve, sep } from 'node:path';
 import { isReleaseVersion, RELEASE_VERSION } from '../release/metadata.mjs';
+import { hasExactKeys } from './docs-lib.mjs';
 
 export const PUBLIC_DOCS_SCHEMA = 'aeliqo.public-docs.v1';
 export const PUBLIC_DOCS_MANIFEST_SCHEMA = 'aeliqo.public-docs-manifest.v1';
@@ -18,10 +19,8 @@ function assertObject(value, label) {
 }
 
 function assertExactKeys(value, expected, label) {
-  const actual = Object.keys(value).sort();
-  const wanted = [...expected].sort();
-  if (JSON.stringify(actual) !== JSON.stringify(wanted)) {
-    throw new Error(`${label} has unexpected fields: ${actual.join(', ')}`);
+  if (!hasExactKeys(value, expected)) {
+    throw new Error(`${label} has unexpected fields: ${Object.keys(value).sort().join(', ')}`);
   }
 }
 

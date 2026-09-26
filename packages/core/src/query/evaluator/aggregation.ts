@@ -1,5 +1,6 @@
 import type { Expression, Outcome, SemanticType } from '../../contracts/types.js';
 import type { FunctionSignature } from '../../expressions/types.js';
+import { isAggregateOperation } from '../../expressions/standard-signatures.js';
 import type { AggregateSpec, QueryOutcome, QueryRow, QueryValue } from '../types.js';
 import { failure, relationKey, unsupported, type EvalGroup, type EvalState } from './shared.js';
 import { tick } from './execution-budget.js';
@@ -28,7 +29,7 @@ function registeredAggregate(item: AggregateSpec, state: EvalState): Outcome<Fun
 }
 
 function isAggregateFunction(signature: FunctionSignature): boolean {
-  return ['aggregate', 'ratio-of-sums', 'mean-of-rates'].includes(signature.operation);
+  return isAggregateOperation(signature.operation);
 }
 
 function valuesForPolicy(
@@ -71,11 +72,14 @@ function evaluateNonAggregateCall(
   return evaluateCall(state, signature, arguments_, types);
 }
 
+const DIVIDE_SIGNATURES: Readonly<Record<NonNullable<FunctionSignature['zeroDenominator']>, string>> = {
+  error: 'core.divide.error',
+  unknown: 'core.divide.unknown',
+  null: 'core.divide.null',
+};
+
 function resolveDivision(state: EvalState, policy: FunctionSignature['zeroDenominator']): Outcome<FunctionSignature> {
-  let id: string;
-  if (policy === 'error') id = 'core.divide.error';
-  else if (policy === 'unknown') id = 'core.divide.unknown';
-  else id = 'core.divide.null';
+  const id = DIVIDE_SIGNATURES[policy ?? 'null'];
   const candidate = state.registry.resolve({ id, revision: '1' });
   if (candidate === undefined) return failure('query.function', `Function ${id}@1 is not registered.`);
   return trustedLocalSignature(candidate);
@@ -190,18 +194,22 @@ function evaluateAggregateResult(context: AggregateContext): QueryOutcome<QueryV
   if (!available.ok) return available;
   if (available.value === null) return { ok: true, value: null };
   if (signature.operation === 'mean-of-rates') return meanOfRates(state, available.value);
-  if (signature.ref.id === 'core.aggregate.count') return { ok: true, value: available.value.length };
-  if (signature.ref.id === 'core.aggregate.count-distinct') {
-    const expression = item.arguments[0];
-    const type = expression === undefined ? undefined : expressionValueType(expression, group.schema, state.registry);
-    return { ok: true, value: new Set(available.value.map((value) => scalarKey(value, type))).size };
+  switch (signature.ref.id) {
+    case 'core.aggregate.count':
+      return { ok: true, value: available.value.length };
+    case 'core.aggregate.count-distinct': {
+      const expression = item.arguments[0];
+      const type = expression === undefined ? undefined : expressionValueType(expression, group.schema, state.registry);
+      return { ok: true, value: new Set(available.value.map((value) => scalarKey(value, type))).size };
+    }
+    case 'core.aggregate.sum': {
+      const expression = item.arguments[0];
+      if (expression === undefined) return failure('query.aggregate', 'Input.');
+      return sumValues(state, available.value, expressionSemanticType(expression, group.schema, state.registry));
+    }
+    default:
+      return unsupportedAggregate(context);
   }
-  if (signature.ref.id === 'core.aggregate.sum') {
-    const expression = item.arguments[0];
-    if (expression === undefined) return failure('query.aggregate', 'Input.');
-    return sumValues(state, available.value, expressionSemanticType(expression, group.schema, state.registry));
-  }
-  return unsupportedAggregate(context);
 }
 
 function aggregatePolicy(

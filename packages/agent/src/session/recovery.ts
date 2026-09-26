@@ -1,6 +1,7 @@
 import type { AgentStopReason } from '@aeliqo/core/agent';
 import type { AgentCapabilityReceipt, AgentCapabilityRequest, AgentCapabilityState } from '../capabilities/types.js';
 import type { AgentRecoveryReceipt } from './types.js';
+import { isRecord } from '../guards.js';
 
 const successfulStops: Readonly<Partial<Record<AgentCapabilityState, AgentStopReason>>> = {
   bound: 'complete',
@@ -53,10 +54,6 @@ export function defaultRecovery(): AgentRecoveryReceipt {
     reason: 'No host recovery receipt was provided; retain only host-authorized state and offer manual controls.',
     safeToRetry: false,
   });
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function validRef(value: unknown): boolean {

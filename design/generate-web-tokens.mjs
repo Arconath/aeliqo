@@ -136,8 +136,12 @@ if (checkOnly) {
     if (error?.code === 'ENOENT') currentSite = undefined;
     else throw error;
   }
-  if (current !== output || currentSite !== siteOutput) {
+  if (current !== output) {
     console.error(`Generated token file is stale: ${outputPath}`);
+    process.exitCode = 1;
+  }
+  if (currentSite !== siteOutput) {
+    console.error(`Generated token file is stale: ${siteOutputPath}`);
     process.exitCode = 1;
   }
 } else {

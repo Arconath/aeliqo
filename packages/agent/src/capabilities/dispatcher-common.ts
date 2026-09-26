@@ -1,4 +1,4 @@
-import { parseWireValue, WIRE_LIMITS, type Diagnostic, type Outcome, type VersionRef } from '@aeliqo/core';
+import { parseWireValue, type Diagnostic, type Outcome, type VersionRef } from '@aeliqo/core';
 import type { AgentCapabilityTransport } from './types.js';
 
 export function failure<T>(code: string, message: string, path?: readonly (string | number)[]): Outcome<T> {
@@ -12,18 +12,7 @@ export function diagnostic(code: string, message: string, path?: readonly (strin
   return { code, message, retryable: false, ...(path === undefined ? {} : { path: [...path] }) };
 }
 
-export function validId(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= WIRE_LIMITS.id &&
-    !/[\s\u0000-\u001f\u007f]/u.test(value)
-  );
-}
-
-export function validText(value: unknown, max: number = WIRE_LIMITS.text): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= max;
-}
+export { boundedId as validId, boundedString as validText } from '../guards.js';
 
 export function utf8Bytes(value: unknown): number | undefined {
   try {
@@ -77,8 +66,9 @@ export function sameRef(left: VersionRef, right: VersionRef): boolean {
   return left.id === right.id && left.revision === right.revision;
 }
 
+const TRANSPORTS: ReadonlySet<AgentCapabilityTransport> = new Set(['manual', 'mcp', 'webmcp', 'byok', 'direct']);
+
 export function normalizeTransport(input: unknown): AgentCapabilityTransport {
-  if (input === 'manual' || input === 'mcp' || input === 'webmcp' || input === 'byok' || input === 'direct')
-    return input;
-  return 'direct';
+  const candidate = input as AgentCapabilityTransport;
+  return TRANSPORTS.has(candidate) ? candidate : 'direct';
 }

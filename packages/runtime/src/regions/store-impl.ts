@@ -39,7 +39,7 @@ import {
   retainResultHandle,
 } from './result-handles.js';
 import { resolveStoreConfiguration } from './store-options.js';
-import { restoreWithDeadline } from './restore-deadline.js';
+import { restoreWithDeadline } from './deadline.js';
 
 interface RestorePreparation {
   readonly document: RegionDocument;

@@ -5,6 +5,7 @@ import {
   normalizeAgentCapabilityAuthority,
 } from '../capabilities/dispatcher.js';
 import type { AgentCapabilityAuthority, AgentCapabilityHost, AgentCapabilityRequest } from '../capabilities/types.js';
+import { boundedId as id, isRecord, localSchemaReferences, strictId } from '../guards.js';
 import type {
   AgentModelScope,
   AgentModelToolEndpoint,
@@ -19,27 +20,12 @@ const failure = <T>(code: string, message: string): Outcome<T> => ({
   diagnostics: [{ code, message, retryable: false }],
 });
 
-const id = (value: unknown): value is string =>
-  typeof value === 'string' &&
-  value.length > 0 &&
-  value.length <= WIRE_LIMITS.id &&
-  !/[\s\u0000-\u001f\u007f]/u.test(value);
-
 const bound = (value: number, ceiling: number): boolean => Number.isSafeInteger(value) && value > 0 && value <= ceiling;
 
 function freeze<T>(value: T): T {
   if (value === null || typeof value !== 'object') return value;
   if (Array.isArray(value)) return Object.freeze(value.map(freeze)) as T;
   return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, child]) => [key, freeze(child)]))) as T;
-}
-
-function localSchemaReferences(value: unknown): boolean {
-  if (value === null || typeof value !== 'object') return true;
-  if (Array.isArray(value)) return value.every(localSchemaReferences);
-  return Object.entries(value).every(
-    ([key, child]) =>
-      (key !== '$ref' || (typeof child === 'string' && child.startsWith('#'))) && localSchemaReferences(child),
-  );
 }
 
 interface EndpointLease {
@@ -76,8 +62,10 @@ type EndpointBoundary<T> =
   | { readonly kind: 'aborted' }
   | { readonly kind: 'failed' };
 
+const SUPPORTED_TRANSPORTS: ReadonlySet<AgentToolTransport> = new Set(['manual', 'mcp', 'webmcp', 'byok']);
+
 function supportedTransport(value: unknown): value is AgentToolTransport {
-  return value === 'manual' || value === 'mcp' || value === 'webmcp' || value === 'byok';
+  return SUPPORTED_TRANSPORTS.has(value as AgentToolTransport);
 }
 
 function validPairing(input: AgentToolEndpointOptions): boolean {
@@ -152,20 +140,16 @@ function validBindingIdentity(
   value: unknown,
   tools: ReadonlyMap<string, AgentToolDefinition>,
 ): value is AgentToolBinding {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+  if (!isRecord(value)) return false;
   const binding = value as unknown as AgentToolBinding;
   return (
-    typeof binding.name === 'string' &&
-    /^[A-Za-z0-9_-]{1,64}$/u.test(binding.name) &&
-    !tools.has(binding.name) &&
-    id(binding.capability?.id) &&
-    id(binding.capability?.revision)
+    strictId(binding.name) && !tools.has(binding.name) && id(binding.capability?.id) && id(binding.capability?.revision)
   );
 }
 
 function validInputSchema(binding: AgentToolBinding): boolean {
   const schema = binding.inputSchema;
-  if (schema === null || typeof schema !== 'object' || Array.isArray(schema) || schema.type !== 'object') return false;
+  if (!isRecord(schema) || schema.type !== 'object') return false;
   if (!localSchemaReferences(schema)) return false;
   return new TextEncoder().encode(JSON.stringify(schema)).byteLength <= 65_536;
 }
@@ -272,11 +256,16 @@ function pairedHost(state: EndpointState): AgentCapabilityHost {
   return { readContext: (request) => readPairedContext(state, request) };
 }
 
+const BOUNDARY_FAILURES: Readonly<
+  Record<Exclude<EndpointBoundary<unknown>['kind'], 'value'>, readonly [string, string]>
+> = {
+  aborted: ['agent.protocol.cancelled', 'The tool request was cancelled.'],
+  deadline: ['agent.protocol.time-budget', 'The tool request exceeded its time budget.'],
+  failed: ['agent.protocol.failed', 'The tool request failed safely.'],
+};
+
 function boundaryOutcome<T>(state: EndpointState, result: EndpointBoundary<Outcome<T>>): Outcome<T> {
-  if (result.kind === 'aborted') return failure('agent.protocol.cancelled', 'The tool request was cancelled.');
-  if (result.kind === 'deadline')
-    return failure('agent.protocol.time-budget', 'The tool request exceeded its time budget.');
-  if (result.kind === 'failed') return failure('agent.protocol.failed', 'The tool request failed safely.');
+  if (result.kind !== 'value') return failure(...BOUNDARY_FAILURES[result.kind]);
   if (remaining(state) === 0) return failure('agent.protocol.stale', 'The tool pairing expired before delivery.');
   return result.value;
 }

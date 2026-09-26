@@ -10,7 +10,26 @@ description: 'Bind surfaces to a host-authorized workspace and fence stale work 
 
 ## Resolve and authorize in the host
 
-Create a scope at the application composition root with `runtime.createScope({ initial, binding })`. The binding resolves the selector and authorizes the target using current host state. `prepareActivation` synchronously rechecks the target and captured previous revisions before acceptance; `activate` commits host effects; `deactivate` compensates them. `attach()` starts the initially inert scope. The full typed binding example and lifecycle contract are in the [runtime package guide](/reference/packages/).
+Create a scope at the application composition root with `runtime.createScope({ initial, binding })`. The binding resolves the selector and authorizes the target using current host state. `prepareActivation` synchronously rechecks the target and captured previous revisions before acceptance; `activate` commits host effects; `deactivate` compensates them. `attach()` starts the initially inert scope. The full lifecycle contract is in the [runtime package guide](/reference/packages/).
+
+**scope.ts**
+
+```ts
+import type { ScopeBinding } from '@aeliqo/runtime/scopes';
+
+const binding: ScopeBinding = {
+  resolve: (selector) => host.resolveWorkspace(selector),
+  authorize: (resolution) => host.authorizeWorkspace(resolution),
+  prepareActivation: (target, context) => host.acceptWorkspaceActivation(target, context),
+  activate: (target, context) => host.commitWorkspaceActivation(target, context),
+  deactivate: (active, reason) => host.releaseWorkspaceActivation(active, reason),
+};
+
+const workspace = runtime.createScope({ initial: { kind: 'workspace', id: 'acme' }, binding });
+const detach = workspace.attach();
+```
+
+Every `host.*` callback reads current application state; the selector object alone grants nothing.
 
 Keep the host's data and action permissions on every request. A child Result, cursor, proposal, action, subscription, and renderer address carries the activation it started under. A later activation with the same workspace ID has a new epoch: late work from A1 cannot commit to A2 after a switch through B.
 

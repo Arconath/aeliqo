@@ -76,6 +76,14 @@ const DATA_COMPONENTS: readonly DataManifestComponent[] = [
   'selectionSummary',
 ];
 
+const SELECTION_COMPONENTS: ReadonlySet<DataManifestComponent | 'table'> = new Set([
+  'table',
+  'recordList',
+  'cardCollection',
+  'selectionSummary',
+]);
+const COMPARE_COMPONENTS: ReadonlySet<DataManifestComponent | 'table'> = new Set(['table', 'delta', 'detail']);
+
 const fail = <T>(code: string, message: string): Outcome<T> => ({
   ok: false,
   diagnostics: [{ code: `web.data.presentation.${code}`, message, retryable: false }],
@@ -152,12 +160,7 @@ function shouldRead(component: DataManifestComponent | 'table', config: AeliqoDa
 }
 
 function supportsSelection(component: DataManifestComponent | 'table'): boolean {
-  return (
-    component === 'table' ||
-    component === 'recordList' ||
-    component === 'cardCollection' ||
-    component === 'selectionSummary'
-  );
+  return SELECTION_COMPONENTS.has(component);
 }
 
 function operationsFor(
@@ -169,8 +172,7 @@ function operationsFor(
     if (!operations.some((candidate) => versionKey(candidate) === versionKey(operation))) operations.push(operation);
   };
   if (shouldRead(component, config)) add(AELIQO_DATA_PRESENTATION_OPERATIONS.read);
-  if (component === 'table' || component === 'delta' || component === 'detail')
-    add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
+  if (COMPARE_COMPONENTS.has(component)) add(AELIQO_DATA_PRESENTATION_OPERATIONS.compare);
   if (component === 'filterBuilder') add(AELIQO_DATA_PRESENTATION_OPERATIONS.filter);
   if (supportsSelection(component) && config.ports.some((port) => port.payload === 'selection'))
     add(AELIQO_DATA_PRESENTATION_OPERATIONS.selection);
@@ -252,33 +254,35 @@ function buildManifest(
   });
 }
 
+const ADAPTIVE_QUALITY: Readonly<
+  Partial<Record<DataManifestComponent, (environment: PresentationEnvironment) => Outcome<PresentationQuality>>>
+> = {
+  cardCollection: (environment) => {
+    const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 640;
+    return {
+      ok: true,
+      value: {
+        taskFit: narrow ? 90 : 75,
+        informationDensity: narrow ? 70 : 60,
+        interactionEffort: narrow ? 5 : 10,
+        legibilityPenalty: 0,
+      },
+    };
+  },
+  recordList: () => ({
+    ok: true,
+    value: { taskFit: 80, informationDensity: 55, interactionEffort: 5, legibilityPenalty: 0 },
+  }),
+  detail: () => ({
+    ok: true,
+    value: { taskFit: 95, informationDensity: 70, interactionEffort: 5, legibilityPenalty: 0 },
+  }),
+};
+
 function adaptiveQuality(
   component: DataManifestComponent,
 ): ((environment: PresentationEnvironment) => Outcome<PresentationQuality>) | undefined {
-  if (component === 'cardCollection')
-    return (environment) => {
-      const narrow = environment.inlineSize.state === 'known' && environment.inlineSize.value < 640;
-      return {
-        ok: true,
-        value: {
-          taskFit: narrow ? 90 : 75,
-          informationDensity: narrow ? 70 : 60,
-          interactionEffort: narrow ? 5 : 10,
-          legibilityPenalty: 0,
-        },
-      };
-    };
-  if (component === 'recordList')
-    return () => ({
-      ok: true,
-      value: { taskFit: 80, informationDensity: 55, interactionEffort: 5, legibilityPenalty: 0 },
-    });
-  if (component === 'detail')
-    return () => ({
-      ok: true,
-      value: { taskFit: 95, informationDensity: 70, interactionEffort: 5, legibilityPenalty: 0 },
-    });
-  return undefined;
+  return ADAPTIVE_QUALITY[component];
 }
 
 /** Build the eight canonical data manifests that complement the existing data.table@1 manifest. */

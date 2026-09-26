@@ -69,16 +69,21 @@
       <section id="pg-guided" aria-labelledby="pg-guided-title">
         <h3 id="pg-guided-title">Pick a task</h3>
         <div id="pg-steps" class="pg-steps"></div>
-        <p class="pg-note">
-          Each task sends a predefined request through the real runtime. No model is called.
-        </p>
+        <p class="pg-note">Each task sends a predefined request through the real runtime. No model is called.</p>
       </section>
       <section class="pg-public-journeys" aria-labelledby="pg-journeys-title">
         <h3 id="pg-journeys-title">Explore 0.5 journeys</h3>
         <div class="pg-steps">
-          <button type="button" data-journey="jakarta"><strong>People in Jakarta</strong><span>Commit a location filter on the People view.</span></button>
-          <button type="button" data-journey="attendance"><strong>Daily attendance</strong><span>Inspect an approved rate, period, coverage, and metric choice.</span></button>
-          <button type="button" data-journey="workspace"><strong>Analytical workspace</strong><span>Render a registered summary, trend, and breakdown together.</span></button>
+          <button type="button" data-journey="jakarta">
+            <strong>People in Jakarta</strong><span>Commit a location filter on the People view.</span>
+          </button>
+          <button type="button" data-journey="attendance">
+            <strong>Daily attendance</strong><span>Inspect an approved rate, period, coverage, and metric choice.</span>
+          </button>
+          <button type="button" data-journey="workspace">
+            <strong>Analytical workspace</strong
+            ><span>Render a registered summary, trend, and breakdown together.</span>
+          </button>
         </div>
       </section>
       <details id="pg-manual" class="pg-structured">
@@ -95,8 +100,8 @@
       <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
         <h3 id="pg-connected-title">Connect an agent</h3>
         <p>
-          MCP, WebMCP, and a locally configured model use the same validated Playground tools. Actions still require your
-          confirmation.
+          MCP, WebMCP, and a locally configured model use the same validated Playground tools. Actions still require
+          your confirmation.
         </p>
         <label
           >Connection<select id="pg-connection-kind" data-playground-boot-control disabled>
@@ -134,13 +139,19 @@
           <p class="pg-kicker">Live canvas</p>
           <h2 id="pg-result-title">Employees</h2>
         </div>
-        <span id="pg-view-badge" class="visually-hidden">Waiting for intent</span>
+        <span id="pg-view-badge" class="pg-view-badge" data-state="pending">Waiting for intent</span>
       </header>
       <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to show the first view.</p>
       <ol class="pg-journey" aria-label="Current runtime journey">
-        <li><small>01 · Intent</small><strong id="pg-journey-intent">Choose a task</strong><span>Registered request</span></li>
-        <li><small>02 · Result</small><strong id="pg-journey-result">Waiting</strong><span>Evaluated with app data</span></li>
-        <li><small>03 · View</small><strong id="pg-journey-view">Waiting</strong><span>Presentation chosen</span></li>
+        <li data-stage="intent" data-state="pending">
+          <small>01 · Intent</small><strong id="pg-journey-intent">Choose a task</strong><span>Registered request</span>
+        </li>
+        <li data-stage="result" data-state="pending">
+          <small>02 · Result</small><strong id="pg-journey-result">Waiting</strong><span>Evaluated with app data</span>
+        </li>
+        <li data-stage="view" data-state="pending">
+          <small>03 · View</small><strong id="pg-journey-view">Waiting</strong><span>Presentation chosen</span>
+        </li>
       </ol>
       <p id="pg-result-definition" class="pg-result-definition" hidden></p>
       <p id="pg-committed-filter" class="pg-result-definition" hidden></p>
@@ -148,20 +159,34 @@
       <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
       <section id="pg-attendance-journey" class="pg-fixture" hidden aria-label="Daily attendance journey">
         <p data-testid="period">September 2026 · Asia/Jakarta · complete local days through 5 September only</p>
-        <p data-testid="metric-policy">Approved attendance rate: Present eligible employee-days / eligible employee-days. Approved leave is excluded from both counts.</p>
-        <p data-testid="coverage">4–5 September: no observations, so no points. 6 September: future at the fixed as-of; excluded. The full month is not complete.</p>
+        <p data-testid="metric-policy">
+          Approved attendance rate: Present eligible employee-days / eligible employee-days. Approved leave is excluded
+          from both counts.
+        </p>
+        <p data-testid="coverage">
+          4–5 September: no observations, so no points. 6 September: future at the fixed as-of; excluded. The full month
+          is not complete.
+        </p>
         <p data-testid="attendance-status" role="status" hidden>Loading attendance</p>
         <div id="attendance-host"></div>
         <h3>Observed daily values</h3>
         <ul data-testid="daily-values"></ul>
         <button type="button" id="compare-metrics">Compare attendance metrics</button>
-        <div id="metric-choice" hidden><label for="attendance-metric">Attendance metric</label>
-          <select id="attendance-metric"><option value="attendance.rate">Attendance rate</option><option value="attendance.present">Present employee-days</option></select>
-          <button type="button" id="apply-metric">Show selected attendance metric</button></div>
+        <div id="metric-choice" hidden>
+          <label for="attendance-metric">Attendance metric</label>
+          <select id="attendance-metric">
+            <option value="attendance.rate">Attendance rate</option>
+            <option value="attendance.present">Present employee-days</option>
+          </select>
+          <button type="button" id="apply-metric">Show selected attendance metric</button>
+        </div>
       </section>
       <section id="pg-workspace-journey" class="pg-fixture" hidden aria-label="Analytical workspace journey">
         <p>One registered goal with summary, daily trend, and employee breakdown.</p>
-        <p>Scope: synthetic attendance · Filter: Engineering · Observed days: 1–2 September 2026 · Presentation: registered workspace pattern.</p>
+        <p>
+          Scope: synthetic attendance · Filter: Engineering · Observed days: 1–2 September 2026 · Presentation:
+          registered workspace pattern.
+        </p>
         <button type="button" id="request-anomaly">Request anomaly</button>
         <button type="button" id="fail-breakdown">Fail breakdown update</button>
         <p data-testid="goal-status" role="status" hidden>Loading</p>

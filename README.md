@@ -12,14 +12,14 @@ cannot supply HTML, executable code, permissions, or an unregistered view.
 
 ## Quick start
 
-The stable `0.5.1` packages are available on npm. For a browser app using
+The stable `0.5.2` packages are available on npm. For a browser app using
 Aeliqo's Web Components, install these packages at the same exact version:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.5.1 \
-  @aeliqo/runtime@0.5.1 \
-  @aeliqo/web@0.5.1
+  @aeliqo/core@0.5.2 \
+  @aeliqo/runtime@0.5.2 \
+  @aeliqo/web@0.5.2
 ```
 
 The [local React quickstart](https://docs.aeliqo.com/start/) renders and filters
@@ -27,7 +27,7 @@ an array without a model or backend. The
 [registered app tutorial](https://docs.aeliqo.com/start/registered-app/)
 connects application-owned data and authority to a Region.
 
-The breaking `0.5` line is the current release (`0.5.1`). `0.4.2` remains available
+The breaking `0.5` line is the current release (`0.5.2`). `0.4.2` remains available
 for older applications. Never mix package versions in one application.
 
 For React, the local surface API renders a complete application-owned array:
@@ -50,7 +50,8 @@ The common application entry points are:
 ```ts
 import { defineResource } from '@aeliqo/core';
 import { createAeliqoRuntime } from '@aeliqo/runtime';
-import { createAeliqoApp, registerAeliqoElements } from '@aeliqo/web';
+import { registerAeliqoElements } from '@aeliqo/web';
+import { createAeliqoApp } from '@aeliqo/web/app';
 import { AeliqoProvider, AeliqoRegion } from '@aeliqo/react';
 import { createAppToolEndpoint } from '@aeliqo/agent';
 ```

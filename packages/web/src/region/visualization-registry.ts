@@ -22,6 +22,7 @@ import type {
   ValidatedPresentation,
 } from '@aeliqo/core/presentation';
 import { materializeVisualizationRows } from '../visualization/materialization.js';
+import { allowedKeys } from './data-registry-common.js';
 import type { VisualizationDataset } from '../visualization/types.js';
 import { renderAeliqoVisualizationPresentationNode } from './visualization-renderer.js';
 import { nothing, type TemplateResult } from 'lit';
@@ -219,7 +220,7 @@ function snapshotContext(context: VisualizationBindingContext): Outcome<Visualiz
   if (inspected.value === null || typeof inspected.value !== 'object' || Array.isArray(inspected.value))
     return fail('context', 'Visualization binding context must be a bounded object.');
   const candidate = inspected.value as Record<string, unknown>;
-  if (Object.keys(candidate).some((key) => !['results', 'catalog', 'relationships', 'histograms'].includes(key)))
+  if (!allowedKeys(candidate, ['results', 'catalog', 'relationships', 'histograms']))
     return fail('context', 'Visualization binding context has an unsupported shape.');
   const results = contextResults(candidate.results);
   if (!results.ok) return results;

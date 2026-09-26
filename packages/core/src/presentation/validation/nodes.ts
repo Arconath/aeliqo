@@ -74,11 +74,18 @@ function matchesDataTaskOutput(
 
 function validateTaskBinding(result: Result, input: PresentationNodeResolutionInput): Outcome<undefined> {
   const task = input.prepared.task;
-  if (task.kind === 'presentation' && !input.cache.taskInputs.has(refKey(result.ref)))
-    return fail('binding', 'The result is not one of the queryless task inputs.');
-  if (task.kind === 'data' && !matchesDataTaskOutput(result, task, input))
-    return fail('binding', 'The result does not belong to the declared task output.');
-  if (task.kind === 'form') return fail('binding', 'Queryless forms do not implicitly consume result data.');
+  switch (task.kind) {
+    case 'presentation':
+      if (!input.cache.taskInputs.has(refKey(result.ref)))
+        return fail('binding', 'The result is not one of the queryless task inputs.');
+      break;
+    case 'data':
+      if (!matchesDataTaskOutput(result, task, input))
+        return fail('binding', 'The result does not belong to the declared task output.');
+      break;
+    case 'form':
+      return fail('binding', 'Queryless forms do not implicitly consume result data.');
+  }
   return { ok: true, value: undefined };
 }
 

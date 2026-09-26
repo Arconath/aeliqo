@@ -4,6 +4,7 @@ import { WIRE_LIMITS } from '../limits.js';
 import type { PlotSpec, PlotNode, PlotUnit, PlotEncoding } from './types.js';
 import type { Outcome, Result, SemanticType } from '../types.js';
 import { resultRefKey } from '../stable.js';
+import { isNumeric } from '../visualization/validation-common.js';
 
 export interface BoundPlotUnit {
   readonly node: PlotUnit;
@@ -27,8 +28,6 @@ const fail = (code: string, message: string): Outcome<never> => ({
   ok: false,
   diagnostics: [{ code: `plot.${code}`, message, retryable: false }],
 });
-
-const numeric = (type: SemanticType): boolean => ['integer', 'float', 'decimal'].includes(type.value);
 
 function signature(encoding: PlotEncoding, type: SemanticType): string {
   return JSON.stringify([
@@ -66,7 +65,7 @@ function fieldType(result: Result, encoding: PlotEncoding): SemanticType {
 }
 
 function validateScale(encoding: PlotEncoding, type: SemanticType): Outcome<void> {
-  if ((encoding.scale === 'linear' || encoding.scale === 'log') && !numeric(type))
+  if ((encoding.scale === 'linear' || encoding.scale === 'log') && !isNumeric(type))
     return fail('scale', 'A quantitative scale requires a numeric field.');
   if (encoding.scale === 'temporal' && type.value !== 'date' && type.value !== 'instant')
     return fail('scale', 'A temporal scale requires a date or instant field.');

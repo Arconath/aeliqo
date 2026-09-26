@@ -24,7 +24,11 @@ export interface WebRegion {
   readonly target: HTMLElement;
   readonly element: AeliqoRegionElement;
   resize?: ResizeObserver;
-  resizeFrame?: number;
+  media?: {
+    readonly lists: readonly MediaQueryList[];
+    readonly onChange: () => void;
+  };
+  adaptFrame?: number;
   /** Cancels an in-flight presentation before it can publish after a newer render. */
   presentationAbort?: AbortController;
   sequence: number;
@@ -126,6 +130,13 @@ function measuredSize(value: number): PresentationEnvironment['inlineSize'] {
 function mediaMatches(view: Window | null, query: string): boolean {
   return view?.matchMedia(query).matches === true;
 }
+
+export const ADAPTIVE_MEDIA_QUERIES = [
+  '(pointer: coarse)',
+  '(hover: hover)',
+  '(prefers-reduced-motion: reduce)',
+  '(forced-colors: active)',
+] as const;
 
 function targetLocale(region: WebRegion, view: Window | null): string {
   return region.target.lang || region.target.ownerDocument.documentElement.lang || view?.navigator.language || 'en-US';

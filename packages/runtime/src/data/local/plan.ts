@@ -125,7 +125,7 @@ function validatePlanningAuthorization(
   initialCatalog: LocalDataServiceState['currentCatalog'],
   initialSnapshot: LocalDataServiceState['snapshot'],
 ): Outcome<void> {
-  if (context.signal?.aborted) return failure('data.aborted', 'The ADC plan was cancelled.');
+  if (context.signal?.aborted) return failure('data.aborted', 'The data service plan was cancelled.');
   if (!isCurrentPlan(state, { initialCatalog, initialSnapshot }))
     return failure('data.stale-plan', 'The catalog or source changed while authorization was being resolved.');
   if (grant.rowPolicy !== undefined && grant.policyRevision === undefined)

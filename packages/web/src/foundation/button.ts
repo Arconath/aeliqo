@@ -5,6 +5,8 @@ import { aeliqoFoundationThemeStyles } from './base.js';
 export type AeliqoButtonVariant = 'solid' | 'outline' | 'ghost' | 'danger';
 export type AeliqoButtonSize = 'small' | 'medium' | 'large';
 
+const BUTTON_VARIANTS: ReadonlySet<AeliqoButtonVariant> = new Set(['solid', 'outline', 'ghost', 'danger']);
+
 /** Native button behavior with an explicit, cancellable application action proposal. */
 export class AeliqoButtonElement extends AeliqoActionElement {
   static readonly properties = {
@@ -25,8 +27,7 @@ export class AeliqoButtonElement extends AeliqoActionElement {
   override type: AeliqoActionType = 'button';
 
   protected override render() {
-    const variant =
-      this.variant === 'outline' || this.variant === 'ghost' || this.variant === 'danger' ? this.variant : 'solid';
+    const variant = BUTTON_VARIANTS.has(this.variant) ? this.variant : 'solid';
     const size = this.size === 'small' || this.size === 'large' ? this.size : 'medium';
     return html`
       <button

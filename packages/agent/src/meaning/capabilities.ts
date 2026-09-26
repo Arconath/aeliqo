@@ -1,4 +1,5 @@
 import { parseWireValue, WIRE_LIMITS, type MeaningDefinition, type Outcome, type VersionRef } from '@aeliqo/core';
+import { boundedId as validId, isRecord } from '../guards.js';
 import type {
   AgentCapabilityContext,
   AgentCapabilityHandlerResult,
@@ -20,19 +21,8 @@ function failure<T>(code: string, message: string, path?: readonly (string | num
   };
 }
 
-function validId(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= WIRE_LIMITS.id &&
-    !/[\s\u0000-\u001f\u007f]/u.test(value)
-  );
-}
-
 function asRecord(value: unknown): Record<string, unknown> | undefined {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
+  return isRecord(value) ? value : undefined;
 }
 
 function proposalMeaning(object: Record<string, unknown>): Record<string, unknown> | undefined {
@@ -95,12 +85,21 @@ function output<T>(state: AgentCapabilityHandlerResult<T>['state'], value: T): A
   return { state, value };
 }
 
+/** Diagnostic-code substrings classify an activation failure; the first match wins. */
+const FAILURE_MARKERS: readonly {
+  readonly markers: readonly string[];
+  readonly state: AgentCapabilityHandlerResult<unknown>['state'];
+}[] = [
+  { markers: ['cancelled'], state: 'cancelled' },
+  { markers: ['stale', 'revoked'], state: 'stale' },
+  { markers: ['unsupported'], state: 'unsupported' },
+  { markers: ['unknown', 'invalid', 'conflict', 'shape'], state: 'invalid' },
+];
+
 function activationFailureState(codes: readonly string[]): AgentCapabilityHandlerResult<unknown>['state'] {
-  if (codes.some((code) => code.includes('cancelled'))) return 'cancelled';
-  if (codes.some((code) => code.includes('stale') || code.includes('revoked'))) return 'stale';
-  if (codes.some((code) => code.includes('unsupported'))) return 'unsupported';
-  if (codes.some((code) => ['unknown', 'invalid', 'conflict', 'shape'].some((part) => code.includes(part))))
-    return 'invalid';
+  for (const { markers, state } of FAILURE_MARKERS) {
+    if (codes.some((code) => markers.some((marker) => code.includes(marker)))) return state;
+  }
   return 'denied';
 }
 

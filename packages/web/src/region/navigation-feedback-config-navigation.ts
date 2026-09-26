@@ -34,6 +34,15 @@ import {
   type ResolvedPresentation,
 } from './navigation-feedback-config-common.js';
 
+function registeredEntry<T extends { readonly id: string }>(
+  entries: readonly T[] | undefined,
+  ref: string,
+  message: string,
+): Outcome<T> {
+  const entry = entries?.find((candidate) => candidate.id === ref);
+  return entry === undefined ? fail('binding', message) : { ok: true, value: entry };
+}
+
 interface BreadcrumbProjection {
   readonly items: readonly RecordValue[];
   readonly operations: readonly VersionRef[];
@@ -45,8 +54,13 @@ export function breadcrumbConfig(
 ): Outcome<ResolvedPresentation> {
   const checked = configRecord(values, ['bindingRevision', 'bindingRef'], bindings);
   if (!checked.ok) return checked;
-  const entry = bindings.breadcrumbs?.find((candidate) => candidate.id === checked.value.bindingRef);
-  if (entry === undefined) return fail('binding', 'Breadcrumb bindingRef is not registered.');
+  const registered = registeredEntry(
+    bindings.breadcrumbs,
+    checked.value.bindingRef,
+    'Breadcrumb bindingRef is not registered.',
+  );
+  if (!registered.ok) return registered;
+  const entry = registered.value;
   const contents = contentMap(bindings);
   const projection = breadcrumbItems(entry.items, contents, routeMap(bindings));
   if (!projection.ok) return projection;
@@ -131,8 +145,9 @@ export function menuConfig(
 ): Outcome<ResolvedPresentation> {
   const checked = configRecord(values, ['bindingRevision', 'bindingRef'], bindings);
   if (!checked.ok) return checked;
-  const entry = bindings.menus?.find((candidate) => candidate.id === checked.value.bindingRef);
-  if (entry === undefined) return fail('binding', 'Menu bindingRef is not registered.');
+  const registered = registeredEntry(bindings.menus, checked.value.bindingRef, 'Menu bindingRef is not registered.');
+  if (!registered.ok) return registered;
+  const entry = registered.value;
   const contents = contentMap(bindings);
   const projection = menuItems(entry.items, contents, routeMap(bindings), actionMap(bindings));
   if (!projection.ok) return projection;
@@ -241,8 +256,13 @@ export function paginationConfig(
 ): Outcome<ResolvedPresentation> {
   const checked = configRecord(values, ['bindingRevision', 'bindingRef'], bindings);
   if (!checked.ok) return checked;
-  const entry = bindings.pagination?.find((candidate) => candidate.id === checked.value.bindingRef);
-  if (entry === undefined) return fail('binding', 'Pagination bindingRef is not registered.');
+  const registered = registeredEntry(
+    bindings.pagination,
+    checked.value.bindingRef,
+    'Pagination bindingRef is not registered.',
+  );
+  if (!registered.ok) return registered;
+  const entry = registered.value;
   const label = content(contentMap(bindings), entry.labelRef, 'pagination label');
   if (!label.ok) return label;
   const canMove = paginationCanMove(entry);
@@ -283,8 +303,9 @@ export function tabsConfig(
     bindings,
   );
   if (!checked.ok) return checked;
-  const entry = bindings.tabs?.find((candidate) => candidate.id === checked.value.bindingRef);
-  if (entry === undefined) return fail('binding', 'Tabs bindingRef is not registered.');
+  const registered = registeredEntry(bindings.tabs, checked.value.bindingRef, 'Tabs bindingRef is not registered.');
+  if (!registered.ok) return registered;
+  const entry = registered.value;
   if (!validTabChildren(entry, node))
     return fail('children', 'Tabs cannot bind child panels to disabled or missing tab items.');
   const invalidConfig = tabsConfigError(checked.value.input, entry);
@@ -380,8 +401,9 @@ export function treeConfig(
 ): Outcome<ResolvedPresentation> {
   const checked = configRecord(values, ['bindingRevision', 'bindingRef', 'expandedIds', 'selectedId'], bindings);
   if (!checked.ok) return checked;
-  const entry = bindings.trees?.find((candidate) => candidate.id === checked.value.bindingRef);
-  if (entry === undefined) return fail('binding', 'Tree bindingRef is not registered.');
+  const registered = registeredEntry(bindings.trees, checked.value.bindingRef, 'Tree bindingRef is not registered.');
+  if (!registered.ok) return registered;
+  const entry = registered.value;
   const context = treeContext(checked.value.input, bindings);
   const nodes = renderTreeNodes(entry.nodes, context);
   const selectionError = treeSelectionError(checked.value.input, context.ids);
@@ -498,8 +520,13 @@ export function feedbackBase(
 }> {
   const checked = configRecord(values, allowed, bindings);
   if (!checked.ok) return checked;
-  const entry = bindings.feedback?.find((candidate) => candidate.id === checked.value.bindingRef);
-  if (entry === undefined) return fail('binding', 'Feedback bindingRef is not registered.');
+  const registered = registeredEntry(
+    bindings.feedback,
+    checked.value.bindingRef,
+    'Feedback bindingRef is not registered.',
+  );
+  if (!registered.ok) return registered;
+  const entry = registered.value;
   return {
     ok: true,
     value: { input: checked.value.input, entry, contents: contentMap(bindings), actions: actionMap(bindings) },

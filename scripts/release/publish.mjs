@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /** Fail-closed, resumable publication of an already verified candidate. */
-import { spawnSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { classifyRegistryVersionResponse, readJson } from './candidate-lib.mjs';
+import { flagValue } from './cli.mjs';
 import {
   NPM_REGISTRY,
   assertCandidateIdentity,
@@ -13,18 +13,16 @@ import {
   assertTagMayAdvance,
   assertTrustedPublishingContext,
   expectedIntegrity,
+  fetchRegistryJson,
 } from './publication-lib.mjs';
+import { run, runBuffer } from './run.mjs';
 import { RELEASE_SOURCE_STATUS_ARGS, assertReleaseSourceClean } from './source-state.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
-const value = (flag) => {
-  const index = args.indexOf(flag);
-  return index === -1 ? undefined : args[index + 1];
-};
-const candidatePath = resolve(root, value('--candidate') ?? 'artifacts/release-candidate/manifest.json');
-const output = resolve(root, value('--output') ?? 'artifacts/release-candidate/publication.json');
-const tag = value('--tag');
+const candidatePath = resolve(root, flagValue(args, '--candidate') ?? 'artifacts/release-candidate/manifest.json');
+const output = resolve(root, flagValue(args, '--output') ?? 'artifacts/release-candidate/publication.json');
+const tag = flagValue(args, '--tag');
 if (!/^(next|latest)$/.test(tag ?? '')) throw new Error('--tag must be next for an RC or latest for a stable release');
 if (relative(root, candidatePath).startsWith('..') || relative(root, output).startsWith('..'))
   throw new Error('Release paths must remain inside the repository');
@@ -32,26 +30,27 @@ const candidate = await readJson(candidatePath);
 assertCandidateIdentity(candidate, { tag });
 
 function gitOutput(commandArgs) {
-  const result = spawnSync('git', commandArgs, { cwd: root, encoding: 'utf8', timeout: 30_000 });
-  if (result.error || result.status !== 0) throw new Error(`git ${commandArgs.join(' ')} failed`);
-  return result.stdout.trim();
+  return run('git', commandArgs, {
+    cwd: root,
+    timeout: 30_000,
+    describeFailure: () => new Error(`git ${commandArgs.join(' ')} failed`),
+  });
 }
 function tarBuffer(commandArgs) {
-  const result = spawnSync('tar', commandArgs, {
+  return runBuffer('tar', commandArgs, {
     cwd: root,
-    encoding: null,
     timeout: 30_000,
-    maxBuffer: 128 * 1024 * 1024,
+    describeFailure: () => new Error(`tar ${commandArgs.join(' ')} failed`),
   });
-  if (result.error || result.status !== 0) throw new Error(`tar ${commandArgs.join(' ')} failed`);
-  return result.stdout;
 }
 function publishTarball(path) {
   const publishArgs = ['publish', path, '--access', 'public', '--registry', NPM_REGISTRY, '--provenance'];
   publishArgs.push('--tag', tag);
-  const result = spawnSync('npm', publishArgs, { cwd: root, encoding: 'utf8', timeout: 300_000 });
-  if (result.error || result.status !== 0)
-    throw new Error(`npm publish failed\n${result.stdout ?? ''}\n${result.stderr ?? ''}`);
+  run('npm', publishArgs, {
+    cwd: root,
+    timeout: 300_000,
+    describeFailure: (result) => new Error(`npm publish failed\n${result.stdout ?? ''}\n${result.stderr ?? ''}`),
+  });
 }
 
 async function waitForRegistryPublication(item, expectedVersion) {
@@ -70,40 +69,14 @@ async function waitForRegistryPublication(item, expectedVersion) {
   return { after, afterPackage };
 }
 async function registryState(item) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20_000);
-  try {
-    const url = `${NPM_REGISTRY}/${encodeURIComponent(item.name)}/${encodeURIComponent(candidate.version)}`;
-    const response = await fetch(url, {
-      redirect: 'error',
-      signal: controller.signal,
-      headers: { accept: 'application/json' },
-    });
-    let payload;
-    try {
-      payload = await response.json();
-    } catch {
-      payload = undefined;
-    }
-    return classifyRegistryVersionResponse(response.status, payload, item.name, candidate.version, item.integrity);
-  } finally {
-    clearTimeout(timer);
-  }
+  const url = `${NPM_REGISTRY}/${encodeURIComponent(item.name)}/${encodeURIComponent(candidate.version)}`;
+  const { status, payload } = await fetchRegistryJson(url);
+  return classifyRegistryVersionResponse(status, payload, item.name, candidate.version, item.integrity);
 }
 async function registryPackage(item) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20_000);
-  try {
-    const response = await fetch(`${NPM_REGISTRY}/${encodeURIComponent(item.name)}`, {
-      redirect: 'error',
-      signal: controller.signal,
-      headers: { accept: 'application/json' },
-    });
-    const payload = await response.json();
-    return classifyRegistryPackageResponse(response.status, payload, item.name, tag);
-  } finally {
-    clearTimeout(timer);
-  }
+  const url = `${NPM_REGISTRY}/${encodeURIComponent(item.name)}`;
+  const { status, payload } = await fetchRegistryJson(url, { strictJson: true });
+  return classifyRegistryPackageResponse(status, payload, item.name, tag);
 }
 
 const head = gitOutput(['rev-parse', 'HEAD']);

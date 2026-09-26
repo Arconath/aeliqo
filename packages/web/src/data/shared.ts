@@ -1,7 +1,14 @@
 import { css, html, nothing, type TemplateResult } from 'lit';
 import { scalarIdentity } from '@aeliqo/core';
-import type { Result } from '@aeliqo/core';
-import type { AeliqoDataRecord, AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue } from './types.js';
+import type { Result, ResultRef } from '@aeliqo/core';
+import type {
+  AeliqoDataRecord,
+  AeliqoDataScope,
+  AeliqoDataStatus,
+  AeliqoDataValue,
+  AeliqoSelectionDetail,
+  AeliqoSelectionMode,
+} from './types.js';
 
 /** Materialized observations remain readable even when population coverage is unknown. */
 export function materializedDataStatus(result: Result): AeliqoDataStatus {
@@ -86,6 +93,53 @@ export function scopeText(scope: AeliqoDataScope | undefined, locale?: string): 
   const count = scopeCountText(scope, indonesian);
   if (count !== undefined) parts.push(count);
   return parts.length === 0 ? undefined : parts.join('; ');
+}
+
+const STATUS_BANNER_STATES: ReadonlySet<AeliqoDataStatus> = new Set(['loading', 'partial', 'stale', 'empty']);
+const STATUS_SECTION_STATES: ReadonlySet<AeliqoDataStatus> = new Set([
+  'loading',
+  'partial',
+  'stale',
+  'error',
+  'unavailable',
+]);
+
+/** Statuses that render a status banner alongside the component content. */
+export function displaysStatusBanner(status: AeliqoDataStatus): boolean {
+  return STATUS_BANNER_STATES.has(status);
+}
+
+/** Statuses that render a standalone status section instead of content. */
+export function displaysStatusSection(status: AeliqoDataStatus): boolean {
+  return STATUS_SECTION_STATES.has(status);
+}
+
+/** Controlled selection toggles: single mode replaces, multiple mode toggles. */
+export function selectionChangeDetail(input: {
+  readonly selection: AeliqoSelectionMode;
+  readonly keys: readonly string[];
+  readonly key: string | undefined;
+  readonly entity: string;
+  readonly result: ResultRef | undefined;
+  readonly scope: AeliqoDataScope | undefined;
+}): AeliqoSelectionDetail | undefined {
+  if (input.key === undefined || input.selection === 'none') return undefined;
+  const next = new Set(input.keys);
+  if (input.selection === 'single') {
+    next.clear();
+    next.add(input.key);
+  } else if (next.has(input.key)) next.delete(input.key);
+  else next.add(input.key);
+  const keys = [...next];
+  return keys.length === 0
+    ? { mode: 'clear', entity: input.entity, keys: [], ...(input.scope === undefined ? {} : { scope: input.scope }) }
+    : {
+        mode: 'ids',
+        entity: input.entity,
+        keys,
+        ...(input.result === undefined ? {} : { result: input.result }),
+        ...(input.scope === undefined ? {} : { scope: input.scope }),
+      };
 }
 
 export function statusTemplate(status: AeliqoDataStatus, message?: string): TemplateResult | typeof nothing {

@@ -35,16 +35,7 @@ export class AeliqoKeyValueElement extends LitElement {
     return html`
       <dl part="list" data-status=${this.status}>${this.items.map((item) => this.renderItem(item))}</dl>
       ${scope ? html`<p part="scope">${scope}</p>` : nothing}
-      ${
-        this.status === 'loading' ||
-        this.status === 'partial' ||
-        this.status === 'stale' ||
-        this.status === 'empty' ||
-        this.status === 'error' ||
-        this.status === 'unavailable'
-          ? statusTemplate(this.status, this.message)
-          : nothing
-      }
+      ${this.status === 'ready' ? nothing : statusTemplate(this.status, this.message)}
     `;
   }
 

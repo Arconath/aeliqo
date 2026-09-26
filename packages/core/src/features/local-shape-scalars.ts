@@ -51,11 +51,16 @@ function canonicalDecimal(value: unknown): string | undefined {
 }
 
 function canonicalPrimitive(value: unknown, kind?: LocalDataFieldKind): string {
-  if (typeof value === 'number' && Object.is(value, -0)) return `${kind ?? 'number'}:0`;
-  if (typeof value === 'string') return `${kind ?? 'text'}:${value}`;
-  if (typeof value === 'boolean') return `${kind ?? 'boolean'}:${value ? 'true' : 'false'}`;
-  if (typeof value === 'number') return `${kind ?? 'number'}:${String(value)}`;
-  return 'unsupported';
+  switch (typeof value) {
+    case 'number':
+      return Object.is(value, -0) ? `${kind ?? 'number'}:0` : `${kind ?? 'number'}:${String(value)}`;
+    case 'string':
+      return `${kind ?? 'text'}:${value}`;
+    case 'boolean':
+      return `${kind ?? 'boolean'}:${value ? 'true' : 'false'}`;
+    default:
+      return 'unsupported';
+  }
 }
 
 export function canonicalIdentity(value: unknown, kind?: LocalDataFieldKind): string {

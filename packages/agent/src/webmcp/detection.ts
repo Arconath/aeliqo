@@ -1,19 +1,16 @@
 import type { WebMcpDetection, WebMcpDetectionOptions, WebMcpModelContext } from './types.js';
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
+import { isRecord } from '../guards.js';
 
 function isModelContext(value: unknown): value is WebMcpModelContext {
   return (
-    isObject(value) &&
+    isRecord(value) &&
     typeof value.registerTool === 'function' &&
     (value.getTools === undefined || typeof value.getTools === 'function')
   );
 }
 
 function modelContextFromDocument(documentLike: unknown): WebMcpModelContext | undefined {
-  if (!isObject(documentLike)) return undefined;
+  if (!isRecord(documentLike)) return undefined;
   try {
     const context = documentLike.modelContext;
     return isModelContext(context) ? context : undefined;

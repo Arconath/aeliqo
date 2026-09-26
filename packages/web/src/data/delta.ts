@@ -2,10 +2,12 @@ import { css, html, LitElement, nothing } from 'lit';
 import { aeliqoThemeStyles } from '../styles/theme.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
 import type { AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue } from './types.js';
-import { dataStyles, dataStatusMessage, scopeText, statusTemplate } from './shared.js';
+import { dataStyles, dataStatusMessage, displaysStatusBanner, scopeText, statusTemplate } from './shared.js';
 import { calculateAeliqoDelta, type AeliqoDeltaMode } from './delta-calculation.js';
 
 export { calculateAeliqoDelta, type AeliqoDeltaMode } from './delta-calculation.js';
+
+const DISPLAYABLE_STATUSES: ReadonlySet<AeliqoDataStatus> = new Set(['ready', 'partial', 'stale']);
 
 /** Displays a comparison supplied by the host. Percentage points and
  * relative percentage change use distinct modes and labels. */
@@ -67,7 +69,7 @@ export class AeliqoDeltaElement extends LitElement {
   }
 
   private canDisplayStatus(): boolean {
-    return this.status === 'ready' || this.status === 'partial' || this.status === 'stale';
+    return DISPLAYABLE_STATUSES.has(this.status);
   }
 
   private renderedValue(canDisplay: boolean, result: ReturnType<typeof calculateAeliqoDelta> | undefined): string {
@@ -98,8 +100,7 @@ export class AeliqoDeltaElement extends LitElement {
   }
 
   private renderStatus() {
-    if (this.status !== 'loading' && this.status !== 'partial' && this.status !== 'stale' && this.status !== 'empty')
-      return nothing;
+    if (!displaysStatusBanner(this.status)) return nothing;
     return statusTemplate(this.status, this.message);
   }
 

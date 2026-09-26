@@ -1,4 +1,5 @@
 import type { Outcome } from '@aeliqo/core';
+import type { OperationGrant } from '@aeliqo/core/agent';
 import type { AgentCapabilityReceipt } from '../capabilities/types.js';
 import type { AgentModelToolEndpoint, AgentToolDefinition, AgentToolTransport } from '../protocol/types.js';
 import { runToolModel } from '../model/loop.js';
@@ -128,31 +129,31 @@ function validTargets(targets: readonly string[]): boolean {
 }
 
 function makePairing(
-  scope: ScopeController,
-  client: AgentClient,
+  input: ConnectAgentInput,
   targetIds: readonly string[],
   transport: AgentToolTransport,
 ): { readonly pairing?: PairingState; readonly status: AgentConnectionSnapshot['status'] } {
-  const current = scope.getSnapshot();
-  const resolved = resolvedTargets(client, targetIds);
+  const current = input.scope.getSnapshot();
+  const resolved = resolvedTargets(input.client, targetIds);
   const sessionId = freshId('session');
   const goalEpoch = freshId('goal');
   const endpoint = makeScopedSurfaceEndpoint({
-    scope,
+    scope: input.scope,
     sessionId,
     goalEpoch,
     targets: resolved.targets,
     transport,
     expiresAt: Date.now() + DEFAULT_LEASE,
+    ...(input.grants === undefined ? {} : { grants: input.grants }),
   });
   if (!endpoint.ok) return { status: 'denied' };
   let handle: AgentClientHandle | undefined;
   if (current.active && resolved.complete) {
     try {
-      handle = connectClient(client, {
+      handle = connectClient(input.client, {
         sessionId,
         goalEpoch,
-        scope,
+        scope: input.scope,
         targets: targetIds,
         endpoint: endpoint.value,
         transport,
@@ -229,6 +230,8 @@ interface ConnectAgentInput {
   readonly scope: ScopeController;
   readonly client: AgentClient;
   readonly targets: readonly string[];
+  /** Host-delegated grant ceiling for the pairing; intersected with the endpoint's required operations. */
+  readonly grants?: readonly OperationGrant[];
 }
 
 function validateConnectionInput(input: ConnectAgentInput): void {
@@ -256,7 +259,7 @@ function createConnectionState(
     closed: false,
   };
   if (initialStatus === undefined) {
-    const created = makePairing(input.scope, input.client, targetIds, transport);
+    const created = makePairing(input, targetIds, transport);
     state.current = created.pairing;
     state.status = created.status;
   }
@@ -277,7 +280,7 @@ function subscribeScope(
     state.current = undefined;
     state.status = 'stale';
     if (!next.active) return;
-    const rebound = makePairing(input.scope, input.client, targetIds, transport);
+    const rebound = makePairing(input, targetIds, transport);
     state.current = rebound.pairing;
     state.status = rebound.status;
   });

@@ -42,10 +42,12 @@ export function countInputTokens(
   return estimatedTokenCount(state, request);
 }
 
+/** Boundary stops pass through unchanged; every other string becomes 'failed'. */
+const PASSTHROUGH_STOPS: ReadonlySet<ToolModelStop> = new Set(['cancelled', 'budget', 'failed']);
+
 export function invalidCountStop(value: number | ToolModelStop): ToolModelStop | undefined {
   if (typeof value !== 'string') return undefined;
-  if (value === 'cancelled' || value === 'budget' || value === 'failed') return value;
-  return 'failed';
+  return PASSTHROUGH_STOPS.has(value) ? value : 'failed';
 }
 
 export async function requestModelResponse(

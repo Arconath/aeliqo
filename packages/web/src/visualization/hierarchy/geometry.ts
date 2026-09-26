@@ -13,9 +13,14 @@ export function compileHierarchyVisualization(
   inputs: VisualizationInputs,
   options: HierarchyGeometryOptions = {},
 ): Outcome<HierarchyVisualizationGeometry> {
-  const view = inputs.visualization?.view;
-  if (view === 'tree') return compileTreeGeometry(inputs, options);
-  if (view === 'treemap') return compileTreemapGeometry(inputs, options);
-  if (view === 'relationship') return compileRelationshipGeometry(inputs, options);
-  return fail('view', 'The hierarchy surface requires a tree, treemap or relationship specification.');
+  switch (inputs.visualization?.view) {
+    case 'tree':
+      return compileTreeGeometry(inputs, options);
+    case 'treemap':
+      return compileTreemapGeometry(inputs, options);
+    case 'relationship':
+      return compileRelationshipGeometry(inputs, options);
+    default:
+      return fail('view', 'The hierarchy surface requires a tree, treemap or relationship specification.');
+  }
 }

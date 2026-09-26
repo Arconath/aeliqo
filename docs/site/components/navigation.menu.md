@@ -68,6 +68,6 @@ Keep the menu within the visible viewport and its commands keyboard reachable. A
 
 ## Version
 
-This page documents the 0.5.0 component contract. Keep every installed
+This page documents the Aeliqo 0.5 component contract. Keep every installed
 Aeliqo package on the same exact version and check the release status
 before installing from the registry.

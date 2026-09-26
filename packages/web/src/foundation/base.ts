@@ -36,17 +36,21 @@ export function clampNumber(value: number, minimum: number, maximum: number): nu
   return Math.min(maximum, Math.max(minimum, value));
 }
 
-/** Accept only application-resolved destinations; model payloads never supply hrefs directly. */
-export function safeResolvedHref(value: string | undefined): string | undefined {
-  if (value === undefined || value.length === 0 || value.length > 4096) return undefined;
+const SAFE_PROTOCOLS: ReadonlySet<string> = new Set(['http:', 'https:', 'mailto:', 'tel:']);
+
+function parsedProtocol(value: string): string | undefined {
   try {
-    const parsed = new URL(value, 'https://aeliqo.invalid');
-    const protocol = parsed.protocol.toLowerCase();
-    if (!['http:', 'https:', 'mailto:', 'tel:'].includes(protocol)) return undefined;
-    return value;
+    return new URL(value, 'https://aeliqo.invalid').protocol.toLowerCase();
   } catch {
     return undefined;
   }
+}
+
+/** Accept only application-resolved destinations; model payloads never supply hrefs directly. */
+export function safeResolvedHref(value: string | undefined): string | undefined {
+  if (value === undefined || value.length === 0 || value.length > 4096) return undefined;
+  const protocol = parsedProtocol(value);
+  return protocol !== undefined && SAFE_PROTOCOLS.has(protocol) ? value : undefined;
 }
 
 export function initialsForName(name: string): string {
@@ -62,11 +66,6 @@ export function initialsForName(name: string): string {
 
 export function imageHref(value: string | undefined): string | undefined {
   if (value === undefined || value.length === 0 || value.length > 4096) return undefined;
-  try {
-    const parsed = new URL(value, 'https://aeliqo.invalid');
-    const protocol = parsed.protocol.toLowerCase();
-    return protocol === 'http:' || protocol === 'https:' ? value : undefined;
-  } catch {
-    return undefined;
-  }
+  const protocol = parsedProtocol(value);
+  return protocol === 'http:' || protocol === 'https:' ? value : undefined;
 }

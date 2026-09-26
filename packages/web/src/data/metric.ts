@@ -2,7 +2,14 @@ import { css, html, LitElement, nothing } from 'lit';
 import { aeliqoThemeStyles } from '../styles/theme.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
 import type { AeliqoDataScope, AeliqoDataStatus, AeliqoDataValue } from './types.js';
-import { dataValueText, dataStatusMessage, scopeText, dataStyles, statusTemplate } from './shared.js';
+import {
+  dataValueText,
+  dataStatusMessage,
+  displaysStatusBanner,
+  scopeText,
+  dataStyles,
+  statusTemplate,
+} from './shared.js';
 
 export type AeliqoMetricFormat = 'plain' | 'number' | 'percent';
 
@@ -85,9 +92,8 @@ export class AeliqoMetricElement extends LitElement {
   }
 
   private renderStatus(status: AeliqoDataStatus) {
-    if (status === 'loading' || status === 'partial' || status === 'stale' || status === 'empty')
-      return statusTemplate(status, this.message);
-    return nothing;
+    if (!displaysStatusBanner(status)) return nothing;
+    return statusTemplate(status, this.message);
   }
 
   private get scopeText(): string | undefined {

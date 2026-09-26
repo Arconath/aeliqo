@@ -400,9 +400,15 @@ function compileStandard(intent: Exclude<Intent, { kind: 'custom' }>, context: I
     return failure('intent.unknown-view', 'View ' + intent.preferredView + ' is not allowed for ' + resource.id + '.', [
       'preferredView',
     ]);
-  if (intent.kind === 'create' || intent.kind === 'edit') return compileForm(intent, context);
-  if (intent.kind === 'analyze') return compileAnalyze(intent, context);
-  return compileReadIntent(intent, context);
+  switch (intent.kind) {
+    case 'create':
+    case 'edit':
+      return compileForm(intent, context);
+    case 'analyze':
+      return compileAnalyze(intent, context);
+    default:
+      return compileReadIntent(intent, context);
+  }
 }
 
 function validatePreferredView(preferredView: string | undefined, resource: ResourceDefinition): Outcome<void> {

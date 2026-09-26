@@ -1,5 +1,6 @@
 import { validateCommitReadSet } from '@aeliqo/core';
 import { awaitAgentBoundary, capabilityCanonical } from '../capabilities/dispatcher.js';
+import type { BoundaryResult } from '../capabilities/dispatcher-boundary.js';
 import type { AgentCapabilityOperation, AgentCapabilityReceipt, AgentJsonValue } from '../capabilities/types.js';
 import type { AgentModelScope, AgentModelToolEndpoint } from '../protocol/types.js';
 import { requiredIndex, snapshot } from './loop-validation.js';
@@ -12,6 +13,13 @@ import type {
   ToolModelRequest,
   ToolModelStop,
 } from './types.js';
+
+/** A bounded-wait failure kind maps to the loop's stop reason. */
+const BOUNDARY_STOPS: Readonly<Record<Exclude<BoundaryResult<unknown>['kind'], 'value'>, ToolModelStop>> = {
+  aborted: 'cancelled',
+  deadline: 'budget',
+  failed: 'failed',
+};
 
 export interface SeenToolCall {
   readonly fingerprint: string;
@@ -112,10 +120,8 @@ export async function boundary<T>(
   const timeout = remainingTime(state);
   if (timeout === 0) return 'budget';
   const result = await awaitAgentBoundary(work, state.signal, timeout);
-  if (result.kind === 'aborted') return 'cancelled';
-  if (result.kind === 'deadline') return 'budget';
-  if (result.kind === 'failed') return 'failed';
-  return result.value;
+  if (result.kind === 'value') return result.value;
+  return BOUNDARY_STOPS[result.kind];
 }
 
 function stablePinsMatch(

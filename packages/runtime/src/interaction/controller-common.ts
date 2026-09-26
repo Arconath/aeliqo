@@ -1,5 +1,6 @@
 import { WIRE_LIMITS } from '@aeliqo/core';
 import { parseInteractionState } from '@aeliqo/core/interaction';
+import { canonicalJson } from '../canonical.js';
 import type { InteractionState as CoreInteractionState, ResultRef } from '@aeliqo/core';
 import type { RegionSnapshot } from '../regions/types.js';
 import type {
@@ -50,19 +51,10 @@ export function freeze<T>(value: T): T {
   return Object.freeze(value);
 }
 
-export function canonical(value: unknown): string {
-  if (value === undefined) return 'undefined';
-  if (value === null || typeof value !== 'object') return JSON.stringify(value) ?? 'undefined';
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
-}
+export { canonicalJson as canonical };
 
 export function eventIdentity(event: InteractionEvent, sourcePortId: string | undefined): string {
-  return `${canonical(event)}\u0000${sourcePortId === undefined ? '' : sourcePortId}`;
+  return `${canonicalJson(event)}\u0000${sourcePortId === undefined ? '' : sourcePortId}`;
 }
 
 export function refKey(ref: ResultRef): string {

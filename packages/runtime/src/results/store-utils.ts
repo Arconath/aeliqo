@@ -1,5 +1,6 @@
 import { parseResultEvent, WIRE_LIMITS } from '@aeliqo/core';
 import type { Diagnostic, Result, ResultRef } from '@aeliqo/core';
+import { canonicalJson as canonical } from '../canonical.js';
 import type { Outcome } from './internal-types.js';
 import type { ResultBeginInput, ResultCacheKey, ResultEvent, ResultStatus } from './types.js';
 
@@ -49,21 +50,6 @@ export function parseAndFreezeEvent(input: unknown): Outcome<ResultEvent> {
   if (!parsed.ok)
     return failure('data.result-event-shape', 'The result event does not match the canonical bounded contract.');
   return { ok: true, value: frozen(parsed.value) };
-}
-
-function canonical(value: unknown): string {
-  if (value === null) return 'null';
-  if (typeof value === 'number') return Object.is(value, -0) ? '-0' : JSON.stringify(value);
-  if (typeof value !== 'object') {
-    const encoded = JSON.stringify(value);
-    return encoded === undefined ? 'undefined' : encoded;
-  }
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
 }
 
 export async function lineageDigest(
@@ -172,11 +158,22 @@ export function sameRefParts(ref: ResultRef, input: ResultCacheKey): boolean {
   );
 }
 
+const ERROR_STATUS_CODES: ReadonlyMap<string, ResultStatus> = new Map([
+  ['data.aborted', 'cancelled'],
+  ['data.cancelled', 'cancelled'],
+  ['data.denied', 'denied'],
+]);
+
+const ERROR_STATUS_PREFIXES: ReadonlyArray<readonly [string, ResultStatus]> = [
+  ['data.authorization', 'denied'],
+  ['data.unsupported', 'unsupported'],
+  ['data.stale', 'stale'],
+];
+
 export function statusForError(code: string): ResultStatus {
-  if (code === 'data.aborted' || code === 'data.cancelled') return 'cancelled';
-  if (code === 'data.denied' || code.startsWith('data.authorization')) return 'denied';
-  if (code === 'data.unsupported' || code.startsWith('data.unsupported')) return 'unsupported';
-  if (code.startsWith('data.stale')) return 'stale';
+  const exact = ERROR_STATUS_CODES.get(code);
+  if (exact !== undefined) return exact;
+  for (const [prefix, status] of ERROR_STATUS_PREFIXES) if (code.startsWith(prefix)) return status;
   return 'failed';
 }
 

@@ -1,5 +1,6 @@
 import type { Outcome } from '@aeliqo/core';
 import type { AgentModelToolEndpoint, AgentToolEndpoint } from '@aeliqo/agent/protocol';
+import { isRecord } from './guards.js';
 import type { PlaygroundSession } from './session.js';
 
 type BridgeOperation = 'authorize' | 'discover' | 'invoke';
@@ -17,10 +18,6 @@ const BRIDGE_CALL_KEYS = new Set(['id', 'transport', 'operation', 'name', 'input
 
 export interface LocalHostConnection {
   close(): void;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function hasUnknownBridgeFields(value: Readonly<Record<string, unknown>>): boolean {

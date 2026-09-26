@@ -1,14 +1,7 @@
 import { css, html } from 'lit';
 import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from '../foundation/base.js';
-import {
-  activeElement,
-  focusFirst,
-  focusableElements,
-  nextFrame,
-  restoreFocus,
-  emitAction,
-  safeElementId,
-} from '../navigation/shared.js';
+import { nextFrame, emitAction, safeElementId } from '../navigation/shared.js';
+import { OverlayFocus } from './focus-trap.js';
 import { aeliqoFeedbackStyles } from './shared.js';
 
 export class AeliqoDialogElement extends AeliqoFoundationElement {
@@ -76,20 +69,17 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
   heading = 'Dialog';
   modal = true;
   closeOnEscape = true;
-  private returnFocus: HTMLElement | undefined = undefined;
-  private pendingFocus: HTMLElement | undefined = undefined;
-  private focusEpoch = 0;
+  private readonly overlayFocus = new OverlayFocus(this);
   private shownModal: boolean | undefined = undefined;
 
   protected override willUpdate(changed: Map<string, unknown>): void {
     if (!changed.has('modal') || !this.open) return;
-    const active = focusableElements(this).find((candidate) => candidate.matches(':focus'));
-    if (active !== undefined) this.pendingFocus = active;
+    this.overlayFocus.capturePending();
   }
 
   protected override updated(changed: Map<string, unknown>): void {
     if (!changed.has('open') && !changed.has('modal')) return;
-    const epoch = ++this.focusEpoch;
+    const epoch = this.overlayFocus.nextEpoch();
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>('dialog');
     if (dialog === null) return;
     if (!this.open) {
@@ -100,12 +90,11 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
   }
 
   private openDialog(dialog: HTMLDialogElement, epoch: number): void {
-    this.returnFocus ??= activeElement(this);
+    this.overlayFocus.rememberOpener();
     this.syncDialogMode(dialog);
-    const target = this.pendingFocus;
-    this.pendingFocus = undefined;
-    this.focusIfNeeded(dialog, epoch, target, true);
-    nextFrame(() => this.focusIfNeeded(dialog, epoch, target, false));
+    const target = this.overlayFocus.takePending();
+    this.overlayFocus.focusIfNeeded(dialog, epoch, this.open, target, true);
+    nextFrame(() => this.overlayFocus.focusIfNeeded(dialog, epoch, this.open, target, false));
   }
 
   private syncDialogMode(dialog: HTMLDialogElement): void {
@@ -127,28 +116,11 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
     else dialog.setAttribute('open', '');
   }
 
-  private focusIfNeeded(
-    dialog: HTMLDialogElement,
-    epoch: number,
-    target: HTMLElement | undefined,
-    restoreTarget: boolean,
-  ): void {
-    if (epoch !== this.focusEpoch || !this.open || !dialog.isConnected) return;
-    const focusables = focusableElements(dialog);
-    const current = focusables.find((candidate) => candidate.matches(':focus'));
-    if (restoreTarget && target?.isConnected && focusables.includes(target)) {
-      target.focus();
-      return;
-    }
-    if (current === undefined) focusFirst(dialog);
-  }
-
   private closeDialog(dialog: HTMLDialogElement): void {
     if (dialog.open && typeof dialog.close === 'function') dialog.close();
     else dialog.removeAttribute('open');
     this.shownModal = undefined;
-    restoreFocus(this.returnFocus);
-    this.returnFocus = undefined;
+    this.overlayFocus.restoreOpener();
   }
 
   private close(): void {
@@ -166,25 +138,7 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
     if (!this.modal || event.key !== 'Tab') return;
     const dialog = this.renderRoot.querySelector<HTMLDialogElement>('dialog');
     if (dialog === null) return;
-    this.trapTabFocus(event, dialog);
-  }
-
-  private trapTabFocus(event: KeyboardEvent, dialog: HTMLDialogElement): void {
-    const focusables = focusableElements(dialog);
-    const first = focusables[0];
-    const last = focusables.at(-1);
-    if (first === undefined || last === undefined) return;
-    const target = event.target;
-    const active = target instanceof HTMLElement && focusables.includes(target) ? target : activeElement(this);
-    if (event.shiftKey && active === first) {
-      event.preventDefault();
-      last.focus();
-      return;
-    }
-    if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    this.overlayFocus.trapTab(event, dialog);
   }
   protected override render() {
     const headingId = safeElementId(`${this.id || 'aeliqo-dialog'}-heading`, 'aeliqo-dialog-heading');

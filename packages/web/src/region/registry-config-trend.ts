@@ -5,6 +5,7 @@ import type {
   ResolvedPresentationConfig,
 } from '@aeliqo/core/presentation';
 import { AELIQO_OPERATION_REFS, MAX_ITEMS } from './registry-contracts.js';
+import { allowedKeys } from './data-registry-common.js';
 import {
   fail,
   fieldMap,
@@ -149,7 +150,7 @@ function seriesField(
 }
 
 function validSeriesKeys(candidate: Record<string, unknown>): boolean {
-  return Object.keys(candidate).every((key) => key === 'field' || key === 'label' || key === 'unit');
+  return allowedKeys(candidate, ['field', 'label', 'unit']);
 }
 
 function seriesLabel(candidate: Record<string, unknown>, descriptorLabel: string, field: string): Outcome<string> {

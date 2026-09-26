@@ -4,6 +4,7 @@ import type { AeliqoSelectionScope } from '../data/selection-summary.js';
 import { stableDataRecordKey } from '../data/shared.js';
 import type { AeliqoFilterChangeDetail, AeliqoFilterPredicate } from '../data/types.js';
 import type { AeliqoDataResolvedNode } from './data-registry.js';
+import { allowedKeys, COMPARISON_OPERATORS } from './data-registry-common.js';
 import {
   exactKeys,
   exactRecord,
@@ -177,7 +178,7 @@ function idsSelection(
   node: AeliqoDataResolvedNode,
   entity: string,
 ): ValidatedSelection | undefined {
-  if (!hasOnlyKeys(selection, ['mode', 'entity', 'keys', 'result'])) return undefined;
+  if (!allowedKeys(selection, ['mode', 'entity', 'keys', 'result'])) return undefined;
   const checkedResult = resultRef(selection.result);
   if (checkedResult === undefined || !sameRef(checkedResult, node.result.ref)) return undefined;
   if (!Array.isArray(selection.keys) || !exactKeys(selection.keys)) return undefined;
@@ -189,7 +190,7 @@ function predicateSelection(
   node: AeliqoDataResolvedNode,
   entity: string,
 ): ValidatedSelection | undefined {
-  if (!hasOnlyKeys(selection, ['mode', 'entity', 'predicate', 'queryDigest', 'populationDigest'])) return undefined;
+  if (!allowedKeys(selection, ['mode', 'entity', 'predicate', 'queryDigest', 'populationDigest'])) return undefined;
   const queryDigest = selection.queryDigest;
   const populationDigest = selection.populationDigest;
   if (typeof queryDigest !== 'string' || queryDigest !== node.result.ref.queryDigest) return undefined;
@@ -202,10 +203,6 @@ function predicateSelection(
     queryDigest,
     populationDigest,
   };
-}
-
-function hasOnlyKeys(value: Record<string, unknown>, allowed: readonly string[]): boolean {
-  return Object.keys(value).every((key) => allowed.includes(key));
 }
 
 function normalizedScalar(value: unknown): Scalar | undefined {
@@ -288,7 +285,7 @@ function validLogicalGroup(
   context: PredicateValidationContext,
   depth: number,
 ): boolean {
-  if (!hasOnlyKeys(predicate, ['op', 'predicates']) || !Array.isArray(predicate.predicates)) return false;
+  if (!allowedKeys(predicate, ['op', 'predicates']) || !Array.isArray(predicate.predicates)) return false;
   if (predicate.predicates.length === 0 || predicate.predicates.length > 128) return false;
   return predicate.predicates.every((child) => checkPredicate(child, context, depth + 1));
 }
@@ -328,18 +325,18 @@ function predicateField(
 }
 
 function validNullPredicate(predicate: Record<string, unknown>): boolean {
-  return hasOnlyKeys(predicate, ['op', 'field', 'negate']) && typeof predicate.negate === 'boolean';
+  return allowedKeys(predicate, ['op', 'field', 'negate']) && typeof predicate.negate === 'boolean';
 }
 
 function validComparisonPredicate(predicate: Record<string, unknown>, fieldType: SemanticType): boolean {
-  if (!hasOnlyKeys(predicate, ['op', 'field', 'comparison', 'value'])) return false;
-  if (!['eq', 'ne', 'lt', 'lte', 'gt', 'gte'].includes(String(predicate.comparison))) return false;
+  if (!allowedKeys(predicate, ['op', 'field', 'comparison', 'value'])) return false;
+  if (!COMPARISON_OPERATORS.has(String(predicate.comparison))) return false;
   const scalar = normalizedScalar(predicate.value);
   return scalar !== undefined && validateScalar(scalar, fieldType).ok;
 }
 
 function validInPredicate(predicate: Record<string, unknown>, fieldType: SemanticType): boolean {
-  if (!hasOnlyKeys(predicate, ['op', 'field', 'values']) || !Array.isArray(predicate.values)) return false;
+  if (!allowedKeys(predicate, ['op', 'field', 'values']) || !Array.isArray(predicate.values)) return false;
   if (predicate.values.length === 0 || predicate.values.length > 128) return false;
   return predicate.values.every((value) => validScalar(value, fieldType));
 }

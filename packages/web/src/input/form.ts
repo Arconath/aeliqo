@@ -3,6 +3,15 @@ import { AeliqoFoundationElement } from '../foundation/base.js';
 import { AeliqoFormResetEvent, AeliqoFormSubmitEvent } from './events.js';
 import { aeliqoInputStyles } from './base.js';
 
+const BUTTON_INPUT_TYPES: ReadonlySet<string> = new Set(['submit', 'reset', 'button', 'image']);
+const ENTER_OWNING_INPUT_TYPES: ReadonlySet<string> = new Set([
+  ...BUTTON_INPUT_TYPES,
+  'checkbox',
+  'radio',
+  'range',
+  'file',
+]);
+
 /** Native form boundary with explicit host-controlled submit handling. */
 export class AeliqoFormElement extends AeliqoFoundationElement {
   static readonly properties = {
@@ -104,7 +113,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   ): boolean {
     if (control instanceof HTMLButtonElement) return true;
     if (!(control instanceof HTMLInputElement)) return false;
-    return ['submit', 'reset', 'button', 'image'].includes(control.type);
+    return BUTTON_INPUT_TYPES.has(control.type);
   }
 
   private appendSlottedFieldValues(data: FormData): void {
@@ -176,12 +185,16 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
     const target = this.nativeControlFromEvent(event);
     if (!(target instanceof HTMLButtonElement) && !(target instanceof HTMLInputElement)) return;
     if (this.isEffectivelyDisabled(target) || target.form !== null) return;
-    if (target.type === 'reset') {
-      event.preventDefault();
-      this.reset();
-    } else if (target.type === 'submit' || target.type === 'image') {
-      event.preventDefault();
-      this.submitSlotted(target);
+    switch (target.type) {
+      case 'reset':
+        event.preventDefault();
+        this.reset();
+        break;
+      case 'submit':
+      case 'image':
+        event.preventDefault();
+        this.submitSlotted(target);
+        break;
     }
   };
 
@@ -208,7 +221,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
       return true;
     if (native instanceof HTMLButtonElement) return true;
     if (!(native instanceof HTMLInputElement)) return false;
-    return ['checkbox', 'radio', 'range', 'file', 'submit', 'reset', 'button', 'image'].includes(native.type);
+    return ENTER_OWNING_INPUT_TYPES.has(native.type);
   }
 
   private submitSlotted(submitter: HTMLElement | null): void {
@@ -398,7 +411,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
       control.indeterminate = false;
       return;
     }
-    if (['button', 'submit', 'reset', 'image'].includes(control.type)) return;
+    if (BUTTON_INPUT_TYPES.has(control.type)) return;
     control.value = control.defaultValue;
   }
 

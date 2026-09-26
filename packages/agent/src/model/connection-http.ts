@@ -3,6 +3,7 @@ import { ToolModelProviderError } from './connection-error.js';
 import { readModelSecret } from './auth-handle.js';
 import { withToolModelCost } from './connection-cost.js';
 import type { NormalizedToolModelConnection, ToolModelProviderObservation } from './connection-types.js';
+import { isRecord } from '../guards.js';
 
 function byteLength(value: string): number {
   return new TextEncoder().encode(value).byteLength;
@@ -68,14 +69,8 @@ async function boundedText(response: Response, limit: number): Promise<string> {
 function providerCode(value: string): string | undefined {
   try {
     const parsed = JSON.parse(value) as unknown;
-    const source =
-      parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
-        ? (parsed as { error?: unknown }).error
-        : undefined;
-    const code =
-      source !== null && typeof source === 'object' && !Array.isArray(source)
-        ? (source as { code?: unknown }).code
-        : undefined;
+    const source = isRecord(parsed) ? (parsed as { error?: unknown }).error : undefined;
+    const code = isRecord(source) ? (source as { code?: unknown }).code : undefined;
     return typeof code === 'string' && /^[A-Za-z0-9_.-]{1,128}$/u.test(code) ? code : undefined;
   } catch {
     return undefined;

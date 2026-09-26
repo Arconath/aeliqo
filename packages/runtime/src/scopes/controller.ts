@@ -25,6 +25,13 @@ import type {
 
 let nextScopeId = 1;
 
+const INVALIDATION_REASONS: ReadonlySet<ScopeInvalidationReason> = new Set([
+  'logout',
+  'revoked',
+  'expired',
+  'external-switch',
+]);
+
 export class ScopeControllerImpl implements ScopeController {
   private readonly lifecycle = new ScopeLifecycle();
   private readonly initial: ScopeSelector;
@@ -139,7 +146,7 @@ export class ScopeControllerImpl implements ScopeController {
   }
 
   invalidate(reason: ScopeInvalidationReason): void {
-    if (!['logout', 'revoked', 'expired', 'external-switch'].includes(reason))
+    if (!INVALIDATION_REASONS.has(reason))
       throw new TypeError('Scope invalidation reasons must use the closed runtime contract.');
     if (this.disposed || this.snapshot.status === 'denied') return;
     const before = this.snapshot;
@@ -253,10 +260,16 @@ export class ScopeControllerImpl implements ScopeController {
       throw new ScopeTransitionHostError('guard', error);
     }
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
-    if (decision.status === 'stay') return this.keepActive('cancelled', 'scope.guard-stay');
-    if (decision.status === 'needs-input')
-      return this.keepActive('needs-input', decision.diagnostic?.code ?? 'scope.guard-required');
-    if (decision.status !== 'save') return undefined;
+    switch (decision.status) {
+      case 'stay':
+        return this.keepActive('cancelled', 'scope.guard-stay');
+      case 'needs-input':
+        return this.keepActive('needs-input', decision.diagnostic?.code ?? 'scope.guard-required');
+      case 'save':
+        break;
+      default:
+        return undefined;
+    }
     const saved = await saveGuard(decision, signal);
     if (signal.aborted) return transitionFailure('cancelled', 'scope.transition-cancelled');
     if (!saved.ok) return this.keepActive('needs-input', firstDiagnosticCode(saved.diagnostics, 'scope.save-failed'));

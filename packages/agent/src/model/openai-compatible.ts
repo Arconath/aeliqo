@@ -15,6 +15,7 @@ import {
 import type { ToolModelCapability, ToolModelProtocolAdapter, ToolModelResponseContext } from './protocol.js';
 import type { ToolModelCall, ToolModelPort, ToolModelRequest, ToolModelResponse, ToolModelUsage } from './types.js';
 import { createToolModelContinuation, readToolModelContinuation } from './continuation.js';
+import { isRecord } from '../guards.js';
 
 export const OPENAI_COMPATIBLE_CHAT_PROTOCOL = 'openai-compatible-chat' as const;
 
@@ -22,10 +23,6 @@ const MAX_RESPONSE_CHOICES = 8;
 const MAX_TOOL_CALLS = 8;
 const MAX_ID_LENGTH = 256;
 const MAX_TEXT_LENGTH = WIRE_LIMITS.text;
-
-function object(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function boundedText(value: unknown, maximum: number = MAX_TEXT_LENGTH): value is string {
   return (
@@ -72,7 +69,8 @@ function inputMessage(message: ToolModelRequest['messages'][number]): Record<str
 
 function continuationText(continuation: unknown): string | undefined {
   if (continuation === undefined) return undefined;
-  if (!object(continuation) || !boundedText(continuation.reasoningContent)) return malformed('reasoning continuation');
+  if (!isRecord(continuation) || !boundedText(continuation.reasoningContent))
+    return malformed('reasoning continuation');
   return continuation.reasoningContent;
 }
 
@@ -144,7 +142,7 @@ function nestedUsageCount(
   maximum: number,
 ): number | undefined {
   const parent = usage?.[parentKey];
-  if (!object(parent)) return undefined;
+  if (!isRecord(parent)) return undefined;
   const value = parent[childKey];
   return validInteger(value, maximum) ? value : undefined;
 }
@@ -155,7 +153,7 @@ function providerUsage(
   text: string | undefined,
   calls: readonly ToolModelCall[],
 ): ToolModelUsage {
-  const provider = object(raw) ? raw : undefined;
+  const provider = isRecord(raw) ? raw : undefined;
   const input = usageCount(provider, 'prompt_tokens', 1_000_000, context.estimatedInputTokens);
   const output = usageCount(
     provider,
@@ -187,14 +185,14 @@ function responseMessage(input: unknown): {
   readonly message: Record<string, unknown>;
 } {
   if (
-    !object(input) ||
+    !isRecord(input) ||
     !Array.isArray(input.choices) ||
     input.choices.length === 0 ||
     input.choices.length > MAX_RESPONSE_CHOICES
   )
     return malformed('choices');
   const choice = input.choices[0];
-  if (!object(choice) || !object(choice.message)) return malformed('message');
+  if (!isRecord(choice) || !isRecord(choice.message)) return malformed('message');
   return { envelope: input, message: choice.message };
 }
 
@@ -207,10 +205,10 @@ function contentText(message: Record<string, unknown>): string | undefined {
 
 function parseToolCall(item: unknown): ToolModelCall {
   if (
-    !object(item) ||
+    !isRecord(item) ||
     item.type !== 'function' ||
     !boundedText(item.id, MAX_ID_LENGTH) ||
-    !object(item.function) ||
+    !isRecord(item.function) ||
     !boundedText(item.function.name, MAX_ID_LENGTH) ||
     typeof item.function.arguments !== 'string' ||
     new TextEncoder().encode(item.function.arguments).byteLength > WIRE_LIMITS.bytes

@@ -3,6 +3,7 @@ import type { AgentCapabilityReceipt } from '../capabilities/types.js';
 import type { AgentToolDefinition, AgentToolEndpoint } from '../protocol/types.js';
 import { normalizeDefinitions, nativeAnnotations } from './definitions.js';
 import { detectWebMcp } from './detection.js';
+import { isRecord } from '../guards.js';
 import type {
   WebMcpAdapter,
   WebMcpAdapterOptions,
@@ -41,15 +42,11 @@ function cancellationFailure<T>(closed: boolean): Outcome<T> {
   );
 }
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
 function safeEndpoint(options: WebMcpAdapterOptions): AgentToolEndpoint {
   if (
     options === null ||
     typeof options !== 'object' ||
-    !isObject(options.endpoint) ||
+    !isRecord(options.endpoint) ||
     typeof options.endpoint.discover !== 'function' ||
     typeof options.endpoint.invoke !== 'function' ||
     typeof options.endpoint.close !== 'function' ||
@@ -73,7 +70,7 @@ function safeContext(options: WebMcpAdapterOptions): WebMcpDetection {
 
 function validModelContext(value: unknown): value is WebMcpModelContext {
   return (
-    isObject(value) &&
+    isRecord(value) &&
     typeof value.registerTool === 'function' &&
     (value.getTools === undefined || typeof value.getTools === 'function')
   );

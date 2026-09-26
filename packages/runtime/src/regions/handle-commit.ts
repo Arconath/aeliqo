@@ -29,7 +29,7 @@ import {
 } from './result-handles.js';
 import type { StageRecord } from './handle-base.js';
 import { RegionStageHandle } from './handle-stage.js';
-import { authorizeWithDeadline } from './commit-deadline.js';
+import { authorizeWithDeadline } from './deadline.js';
 
 interface PreparedCommit {
   readonly taskRevision: string;

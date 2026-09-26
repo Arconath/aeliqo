@@ -7,7 +7,7 @@ import { createCatalogIndex } from '../semantics/catalog.js';
 import { validateMeaning } from '../semantics/meaning.js';
 import { evaluateLogicalPlan } from './evaluator.js';
 import { DEFAULT_LIMITS, buildPlan, lowerQuerySpec } from './planner.js';
-import { immutableSnapshot } from './planner/shared.js';
+import { failure, immutableSnapshot } from './planner/shared.js';
 import type {
   QueryLimits,
   QueryOutcome,
@@ -18,13 +18,6 @@ import type {
   LogicalPlan,
   RelationalQuery,
 } from './types.js';
-
-function failure<T>(code: string, message: string, path: readonly (string | number)[] = []): QueryOutcome<T> {
-  return {
-    ok: false,
-    diagnostics: [{ code, message, retryable: false, ...(path.length === 0 ? {} : { path: [...path] }) }],
-  };
-}
 
 function positiveInteger(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;

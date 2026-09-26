@@ -6,10 +6,16 @@ import type { AgentCapabilityContext, AgentCapabilityHandlerResult, AgentCapabil
 const DEFAULT_REF: VersionRef = Object.freeze({ id: 'aeliqo.task.binding', revision: '1' });
 
 function stateResult(outcome: AgentBindingOutcome): AgentCapabilityHandlerResult<Task | AgentBindingOutcome> {
-  if (outcome.state === 'bound') return { state: 'bound', value: outcome.value };
-  if (outcome.state === 'needs-choice') return { state: 'needs-choice', value: outcome, diagnostics: [] };
-  if (outcome.state === 'needs-meaning') return { state: 'needs-meaning', value: outcome, diagnostics: [] };
-  return { state: outcome.state, diagnostics: outcome.diagnostics };
+  switch (outcome.state) {
+    case 'bound':
+      return { state: 'bound', value: outcome.value };
+    case 'needs-choice':
+      return { state: 'needs-choice', value: outcome, diagnostics: [] };
+    case 'needs-meaning':
+      return { state: 'needs-meaning', value: outcome, diagnostics: [] };
+    default:
+      return { state: outcome.state, diagnostics: outcome.diagnostics };
+  }
 }
 
 /** Adapter for the production binder. It deliberately performs no query or

@@ -1,33 +1,27 @@
-import { parseContract, parseWireValue, type Diagnostic, type Outcome } from '@aeliqo/core';
-import type { AgentBindingOutcome, AgentLoopBudget, AgentStopReason } from '@aeliqo/core/agent';
-import type {
-  AgentAttempt,
-  AgentAttemptProgress,
-  AgentContainmentInput,
-  AgentContainmentOutcome,
-  AgentContainmentReceipt,
-  AgentRepairRequest,
-} from './loop-types.js';
-
-const DEADLINE = Symbol('agent-deadline');
-const ABORTED = Symbol('agent-aborted');
-const FAILED = Symbol('agent-failed');
-
-function diagnostic(code: string, message: string): Diagnostic {
-  return { code, message, retryable: false };
-}
+import { parseWireValue, type Outcome } from '@aeliqo/core';
+import { awaitAgentBoundary, type BoundaryResult } from './capabilities/dispatcher-boundary.js';
+import { capabilityCanonical } from './capabilities/dispatcher.js';
+import {
+  bindingBoundaryStop,
+  boundaryStop,
+  createRun,
+  elapsed,
+  loopStop,
+  normalizeBudget,
+  proposalDiagnostics,
+  progressFor,
+  receipt,
+  requestLimitStop,
+  stopForCandidateBudget,
+  stopOutcome,
+  terminalBinding,
+  type ContainmentRun,
+  type PreparedCandidate,
+} from './loop-state.js';
+import type { AgentContainmentInput, AgentContainmentOutcome, AgentRepairRequest } from './loop-types.js';
 
 function failure<T>(code: string, message: string): Outcome<T> {
-  return { ok: false, diagnostics: [diagnostic(code, message)] };
-}
-
-function safeNow(now: () => number): number {
-  try {
-    const value = now();
-    return Number.isFinite(value) ? value : Date.now();
-  } catch {
-    return Date.now();
-  }
+  return { ok: false, diagnostics: [{ code, message, retryable: false }] };
 }
 
 function bytes(value: unknown): number | undefined {
@@ -49,17 +43,7 @@ function localFingerprint(value: unknown): string {
   const parsed = parseWireValue(value);
   if (!parsed.ok) return 'invalid-candidate';
   try {
-    const canonical = (entry: unknown): string => {
-      if (entry === null) return 'null';
-      if (typeof entry !== 'object') return JSON.stringify(entry) ?? 'undefined';
-      if (Array.isArray(entry)) return `[${entry.map(canonical).join(',')}]`;
-      const object = entry as Record<string, unknown>;
-      return `{${Object.keys(object)
-        .sort()
-        .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-        .join(',')}}`;
-    };
-    const wire = canonical(parsed.value);
+    const wire = capabilityCanonical(parsed.value);
     let hash = 2166136261;
     for (const character of wire) {
       hash ^= character.codePointAt(0)!;
@@ -80,224 +64,16 @@ function candidateCanonical(value: unknown): string {
       return 'invalid:candidate';
     }
   }
-  const canonical = (entry: unknown): string => {
-    if (entry === null) return 'null';
-    if (typeof entry !== 'object') return JSON.stringify(entry) ?? 'undefined';
-    if (Array.isArray(entry)) return `[${entry.map(canonical).join(',')}]`;
-    const object = entry as Record<string, unknown>;
-    return `{${Object.keys(object)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-      .join(',')}}`;
-  };
-  return canonical(parsed.value);
+  return capabilityCanonical(parsed.value);
 }
 
-function stopOutcome(
-  state: AgentBindingOutcome['state'],
-  diagnostics?: readonly Diagnostic[],
-): AgentBindingOutcome | undefined {
-  if (state === 'bound' || state === 'needs-choice' || state === 'needs-meaning') return undefined;
-  const checked = parseContract('binding-outcome', {
-    state,
-    diagnostics:
-      diagnostics === undefined || diagnostics.length === 0
-        ? [diagnostic('agent.stop', 'The containment loop stopped before accepting a proposal.')]
-        : diagnostics,
-  });
-  return checked.ok ? checked.value : undefined;
-}
-
-function receipt(
-  stop: AgentStopReason,
-  attempts: readonly AgentAttempt[],
-  outcome?: AgentBindingOutcome,
-): AgentContainmentOutcome {
-  const value: AgentContainmentReceipt = Object.freeze({
-    stop,
-    attempts: Object.freeze([...attempts]),
-    ...(outcome === undefined ? {} : { outcome }),
-  });
-  return { ok: true, value };
-}
-
-function elapsed(start: number, now: () => number): number {
-  return Math.max(0, safeNow(now) - start);
-}
-
-type BoundedResult<T> =
-  | { readonly kind: 'value'; readonly value: T }
-  | { readonly kind: 'deadline' }
-  | { readonly kind: 'aborted' }
-  | { readonly kind: 'failed' };
-
-/** Await an untrusted provider/host boundary without allowing a late result
- * to continue the containment run. The child signal is always aborted when
- * this wait ends, including the successful case. */
-async function awaitBounded<T>(
-  producer: (signal: AbortSignal) => T | PromiseLike<T>,
-  parent: AbortSignal | undefined,
-  milliseconds: number,
-): Promise<BoundedResult<T>> {
-  // Do not even schedule untrusted work after the containment run has been
-  // cancelled.  Scheduling through Promise.resolve().then() here would call
-  // a producer once more despite an already-aborted parent signal.
-  if (parent?.aborted) return { kind: 'aborted' };
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  let removeParent: (() => void) | undefined;
-  let resolveDeadline!: () => void;
-  let resolveAborted!: () => void;
-  const deadline = new Promise<typeof DEADLINE>((resolve) => {
-    resolveDeadline = () => {
-      controller.abort();
-      resolve(DEADLINE);
-    };
-  });
-  const aborted = new Promise<typeof ABORTED>((resolve) => {
-    resolveAborted = () => {
-      controller.abort();
-      resolve(ABORTED);
-    };
-  });
-  if (parent !== undefined) {
-    const onAbort = (): void => resolveAborted();
-    if (registerParentAbort(parent, onAbort, resolveAborted)) return { kind: 'aborted' };
-    removeParent = () => parent.removeEventListener('abort', onAbort);
-  }
-  if (!controller.signal.aborted) {
-    timer = setTimeout(resolveDeadline, Math.max(0, milliseconds));
-  }
-  const work = Promise.resolve().then(() => producer(controller.signal));
-  try {
-    return await raceBoundary(work, deadline, aborted, parent);
-  } finally {
-    releaseBoundary(controller, timer, removeParent);
-  }
-}
-
-async function raceBoundary<T>(
-  work: Promise<T>,
-  deadline: Promise<typeof DEADLINE>,
-  aborted: Promise<typeof ABORTED>,
-  parent: AbortSignal | undefined,
-): Promise<BoundedResult<T>> {
-  try {
-    const result = await Promise.race([work, deadline, aborted]);
-    if (result === DEADLINE) return { kind: 'deadline' };
-    if (result === ABORTED) return { kind: 'aborted' };
-    return { kind: 'value', value: result as T };
-  } catch {
-    if (parent?.aborted) return { kind: 'aborted' };
-    return { kind: 'failed' };
-  }
-}
-
-function releaseBoundary(
-  controller: AbortController,
-  timer: ReturnType<typeof setTimeout> | undefined,
-  removeParent: (() => void) | undefined,
-): void {
-  controller.abort();
-  if (timer !== undefined) clearTimeout(timer);
-  removeParent?.();
-}
-
-function registerParentAbort(parent: AbortSignal, onAbort: () => void, abort: () => void): boolean {
-  if (parent.aborted) {
-    abort();
-    return true;
-  }
-  parent.addEventListener('abort', onAbort, { once: true });
-  return false;
-}
-
-async function proposeWithBudget(
+/** Await an untrusted proposal callback behind the shared bounded boundary. */
+function proposeWithBudget(
   callback: (input: AgentRepairRequest) => unknown | Promise<unknown>,
   request: AgentRepairRequest,
   milliseconds: number,
-): Promise<unknown | typeof DEADLINE | typeof ABORTED | typeof FAILED> {
-  const result = await awaitBounded((signal) => callback({ ...request, signal }), request.signal, milliseconds);
-  if (result.kind === 'deadline') return DEADLINE;
-  if (result.kind === 'aborted') return ABORTED;
-  if (result.kind === 'failed') return FAILED;
-  return result.value;
-}
-
-interface ContainmentBudget {
-  readonly maxTurns: number;
-  readonly maxRepairs: number;
-  readonly maxMilliseconds: number;
-  readonly maxProposalBytes: number;
-}
-
-function normalizeBudget(input: AgentLoopBudget): Outcome<ContainmentBudget> {
-  const checked = parseContract('agent-loop-budget', input);
-  if (!checked.ok) return { ok: false, diagnostics: checked.diagnostics };
-  return { ok: true, value: checked.value as unknown as ContainmentBudget };
-}
-
-interface ContainmentRun {
-  readonly input: AgentContainmentInput;
-  readonly budget: ContainmentBudget;
-  readonly now: () => number;
-  readonly start: number;
-  readonly attempts: AgentAttempt[];
-  candidate: unknown;
-  hasCandidate: boolean;
-  repairs: number;
-  previousFingerprint: string | undefined;
-  previousCanonical: string | undefined;
-  previousState: AgentBindingOutcome['state'] | undefined;
-  lastOutcome: AgentBindingOutcome | undefined;
-}
-
-function createRun(input: AgentContainmentInput, budget: ContainmentBudget): ContainmentRun {
-  return {
-    input,
-    budget,
-    now: input.now ?? Date.now,
-    start: safeNow(input.now ?? Date.now),
-    attempts: [],
-    candidate: input.initial,
-    hasCandidate: input.initial !== undefined,
-    repairs: 0,
-    previousFingerprint: undefined,
-    previousCanonical: undefined,
-    previousState: undefined,
-    lastOutcome: undefined,
-  };
-}
-
-function loopStop(run: ContainmentRun): AgentContainmentOutcome | undefined {
-  if (run.input.signal?.aborted) return receipt('cancelled', run.attempts, run.lastOutcome);
-  if (elapsed(run.start, run.now) >= run.budget.maxMilliseconds)
-    return receipt('time-budget', run.attempts, run.lastOutcome);
-  return undefined;
-}
-
-function proposalDiagnostics(run: ContainmentRun): readonly Diagnostic[] {
-  const state = run.lastOutcome?.state;
-  if (state === 'invalid' || state === 'stale' || state === 'unsupported' || state === 'denied')
-    return run.lastOutcome?.diagnostics ?? [];
-  return [];
-}
-
-function requestLimitStop(run: ContainmentRun): AgentContainmentOutcome | undefined {
-  if (run.attempts.length > 0 && run.repairs >= run.budget.maxRepairs)
-    return receipt('repair-budget', run.attempts, run.lastOutcome);
-  if (run.attempts.length >= run.budget.maxTurns) return receipt('turn-budget', run.attempts, run.lastOutcome);
-  return undefined;
-}
-
-function proposalStop(
-  run: ContainmentRun,
-  proposed: unknown | typeof DEADLINE | typeof ABORTED | typeof FAILED,
-): AgentContainmentOutcome | undefined {
-  if (proposed === DEADLINE) return receipt('time-budget', run.attempts, run.lastOutcome);
-  if (proposed === ABORTED || run.input.signal?.aborted) return receipt('cancelled', run.attempts, run.lastOutcome);
-  if (proposed === FAILED) return receipt('unavailable', run.attempts, run.lastOutcome);
-  return undefined;
+): Promise<BoundaryResult<unknown>> {
+  return awaitAgentBoundary((signal) => callback({ ...request, signal }), request.signal, milliseconds);
 }
 
 async function requestCandidate(run: ContainmentRun): Promise<AgentContainmentOutcome | undefined> {
@@ -310,7 +86,7 @@ async function requestCandidate(run: ContainmentRun): Promise<AgentContainmentOu
     diagnostics: proposalDiagnostics(run),
     signal: run.input.signal ?? new AbortController().signal,
   };
-  let proposed: unknown | typeof DEADLINE | typeof ABORTED | typeof FAILED;
+  let proposed: BoundaryResult<unknown>;
   try {
     proposed = await proposeWithBudget(
       run.input.propose,
@@ -320,19 +96,13 @@ async function requestCandidate(run: ContainmentRun): Promise<AgentContainmentOu
   } catch {
     return receipt('unavailable', run.attempts, run.lastOutcome);
   }
-  const stop = proposalStop(run, proposed);
+  const stop = boundaryStop(run, proposed);
   if (stop !== undefined) return stop;
-  run.candidate = proposed;
+  if (proposed.kind !== 'value') return receipt('unavailable', run.attempts, run.lastOutcome);
+  run.candidate = proposed.value;
   run.hasCandidate = true;
   if (run.attempts.length > 0) run.repairs += 1;
   return undefined;
-}
-
-interface PreparedCandidate {
-  readonly fingerprint: string;
-  readonly canonical: string;
-  readonly proposalBytes: number;
-  readonly exceedsByteBudget: boolean;
 }
 
 type PreparationResult =
@@ -352,17 +122,14 @@ async function prepareCandidate(run: ContainmentRun): Promise<PreparationResult>
         exceedsByteBudget: true,
       },
     };
-  const result = await awaitBounded(
+  const result = await awaitAgentBoundary(
     (signal) => run.input.binder.fingerprint(run.candidate, { signal, goalEpoch: run.input.goalEpoch }),
     run.input.signal,
     Math.max(0, run.budget.maxMilliseconds - elapsed(run.start, run.now)),
   );
-  if (result.kind === 'deadline')
-    return { kind: 'stopped', value: receipt('time-budget', run.attempts, run.lastOutcome) };
-  if (result.kind === 'aborted' || run.input.signal?.aborted)
-    return { kind: 'stopped', value: receipt('cancelled', run.attempts, run.lastOutcome) };
-  if (result.kind === 'failed')
-    return { kind: 'stopped', value: receipt('unavailable', run.attempts, run.lastOutcome) };
+  const stop = boundaryStop(run, result);
+  if (stop !== undefined) return { kind: 'stopped', value: stop };
+  if (result.kind !== 'value') return { kind: 'stopped', value: receipt('unavailable', run.attempts, run.lastOutcome) };
   return {
     kind: 'ready',
     value: {
@@ -374,90 +141,11 @@ async function prepareCandidate(run: ContainmentRun): Promise<PreparationResult>
   };
 }
 
-function stopForCandidateBudget(run: ContainmentRun, prepared: PreparedCandidate): AgentContainmentOutcome | undefined {
-  if (prepared.exceedsByteBudget) {
-    const outcome = stopOutcome('invalid', [
-      diagnostic('agent.byte-budget', 'The proposal exceeds the configured byte budget.'),
-    ]);
-    run.attempts.push({
-      turn: run.attempts.length + 1,
-      state: 'invalid',
-      fingerprint: prepared.fingerprint,
-      proposalBytes: prepared.proposalBytes,
-      progress: 'none',
-    });
-    return receipt('byte-budget', run.attempts, outcome);
-  }
-  if (
-    run.previousFingerprint !== undefined &&
-    run.previousFingerprint === prepared.fingerprint &&
-    run.previousCanonical === prepared.canonical
-  ) {
-    run.attempts.push({
-      turn: run.attempts.length + 1,
-      state: run.lastOutcome?.state ?? 'invalid',
-      fingerprint: prepared.fingerprint,
-      proposalBytes: prepared.proposalBytes,
-      progress: 'none',
-    });
-    return receipt('no-progress', run.attempts, run.lastOutcome);
-  }
-  return undefined;
-}
-
-function progressFor(
-  run: ContainmentRun,
-  state: AgentBindingOutcome['state'],
-  fingerprint: string,
-): AgentAttemptProgress {
-  if (run.previousFingerprint === undefined) return 'new';
-  if (run.previousState !== state || run.previousFingerprint !== fingerprint) return 'gap-closed';
-  return 'none';
-}
-
-function terminalBinding(
-  state: AgentBindingOutcome['state'],
-  outcome: AgentBindingOutcome | undefined,
-  attempts: readonly AgentAttempt[],
-): AgentContainmentOutcome | undefined {
-  if (outcome === undefined) return undefined;
-  switch (state) {
-    case 'bound':
-      return receipt('complete', attempts, outcome);
-    case 'needs-choice':
-      return receipt('needs-choice', attempts, outcome);
-    case 'needs-meaning':
-      return receipt('needs-meaning', attempts, outcome);
-    case 'unsupported':
-      return receipt('unsupported', attempts, outcome);
-    case 'denied':
-      return receipt('denied', attempts, outcome);
-    case 'stale':
-      return receipt('stale', attempts, outcome);
-    default:
-      return undefined;
-  }
-}
-
-function bindingBoundaryStop(
-  run: ContainmentRun,
-  result: BoundedResult<Outcome<AgentBindingOutcome>>,
-): AgentContainmentOutcome | undefined {
-  if (result.kind === 'deadline') return receipt('time-budget', run.attempts, run.lastOutcome);
-  if (result.kind === 'aborted' || run.input.signal?.aborted)
-    return receipt('cancelled', run.attempts, run.lastOutcome);
-  if (result.kind === 'failed') return receipt('unavailable', run.attempts, run.lastOutcome);
-  if (run.input.signal?.aborted) return receipt('cancelled', run.attempts, run.lastOutcome);
-  if (elapsed(run.start, run.now) >= run.budget.maxMilliseconds)
-    return receipt('time-budget', run.attempts, run.lastOutcome);
-  return undefined;
-}
-
 async function bindCandidate(
   run: ContainmentRun,
   prepared: PreparedCandidate,
 ): Promise<AgentContainmentOutcome | undefined> {
-  const result = await awaitBounded(
+  const result = await awaitAgentBoundary(
     (signal) =>
       run.input.binder.bind(run.candidate, {
         signal,

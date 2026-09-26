@@ -3,6 +3,8 @@ import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from '../foundat
 import { emitAction } from '../navigation/shared.js';
 import { aeliqoFeedbackStyles, type AeliqoFeedbackTone, toneColor } from './shared.js';
 
+const ALERT_TONES: ReadonlySet<AeliqoFeedbackTone> = new Set(['neutral', 'info', 'success', 'warning', 'danger']);
+
 export class AeliqoAlertElement extends AeliqoFoundationElement {
   static readonly properties = {
     open: { type: Boolean, reflect: true },
@@ -61,7 +63,7 @@ export class AeliqoAlertElement extends AeliqoFoundationElement {
     emitAction(this, 'aeliqo-alert-action', {});
   }
   protected override render() {
-    const tone = ['neutral', 'info', 'success', 'warning', 'danger'].includes(this.tone) ? this.tone : 'info';
+    const tone = ALERT_TONES.has(this.tone) ? this.tone : 'info';
     return html`<div
       part="alert"
       role=${tone === 'danger' || tone === 'warning' ? 'alert' : 'status'}

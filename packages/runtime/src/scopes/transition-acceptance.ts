@@ -97,8 +97,15 @@ export async function prepareTransition(input: TransitionAcceptanceInput): Promi
   return prepared.ok ? input.activate() : input.retain(prepared);
 }
 
+function disposedFailure(state: AcceptanceState): ScopeTransitionResult | undefined {
+  return state.disposed || state.snapshot.status === 'disposed'
+    ? transitionFailure('disposed', 'scope.disposed')
+    : undefined;
+}
+
 function activationBoundaryFailure(input: ActivationBoundaryInput): ScopeTransitionResult | undefined {
-  if (input.disposed || input.snapshot.status === 'disposed') return transitionFailure('disposed', 'scope.disposed');
+  const terminal = disposedFailure(input);
+  if (terminal !== undefined) return terminal;
   if (input.snapshot.status === 'denied') return transitionFailure('denied', 'scope.inactive');
   if (
     input.id !== input.transitionId ||
@@ -111,7 +118,8 @@ function activationBoundaryFailure(input: ActivationBoundaryInput): ScopeTransit
 
 function publishedBoundaryFailure(input: TransitionCommitInput, epoch: number): ScopeTransitionResult | undefined {
   const state = input.readState();
-  if (state.disposed || state.snapshot.status === 'disposed') return transitionFailure('disposed', 'scope.disposed');
+  const terminal = disposedFailure(state);
+  if (terminal !== undefined) return terminal;
   if (state.snapshot.status === 'denied') return transitionFailure('denied', 'scope.inactive');
   if (
     input.id !== state.transitionId ||
@@ -126,7 +134,8 @@ function publishedBoundaryFailure(input: TransitionCommitInput, epoch: number): 
 
 function failedBoundaryTerminal(input: TransitionCommitInput): ScopeTransitionResult | undefined {
   const state = input.readState();
-  if (state.disposed || state.snapshot.status === 'disposed') return transitionFailure('disposed', 'scope.disposed');
+  const terminal = disposedFailure(state);
+  if (terminal !== undefined) return terminal;
   if (state.snapshot.status === 'denied' && state.snapshot.invalidationReason !== undefined)
     return transitionFailure('denied', 'scope.inactive');
   return undefined;

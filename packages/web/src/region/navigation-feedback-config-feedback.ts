@@ -7,7 +7,7 @@ import type {
   AeliqoNavigationFeedbackContent,
 } from './navigation-feedback-types.js';
 import { AELIQO_NAVIGATION_FEEDBACK_REFS } from './navigation-feedback-contracts.js';
-import { EMPTY_STATE_KINDS, FEEDBACK_TONES, fail } from './navigation-feedback-support.js';
+import { EMPTY_STATE_KINDS, FEEDBACK_TONES, SKELETON_VARIANTS, fail } from './navigation-feedback-support.js';
 import {
   actionValue,
   baseValues,
@@ -312,7 +312,7 @@ function skeletonConfig(
 function skeletonConfigError(input: Record<string, unknown>): string | undefined {
   if (input.lines !== undefined && !validSkeletonLines(input.lines))
     return 'Skeleton lines must be between one and twelve.';
-  if (input.variant !== undefined && !['text', 'rect', 'circle'].includes(input.variant as string))
+  if (input.variant !== undefined && !SKELETON_VARIANTS.includes(input.variant as string))
     return 'Skeleton variant is unsupported.';
   if (!optionalBoolean(input.animated)) return 'Skeleton animated must be boolean.';
   return undefined;

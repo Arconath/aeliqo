@@ -1,5 +1,6 @@
 import type { SemanticType } from '../contracts/types.js';
-import { grainOf, isNumericType, sameStringSet } from '../semantics/type-utils.js';
+import { SCALAR_TYPE_VALUES } from '../contracts/scalars.js';
+import { grainOf, sameStringSet } from '../semantics/type-utils.js';
 import type { TypedExpression } from './types.js';
 
 export function sameOrBroadcastGrain(left: TypedExpression, right: TypedExpression): boolean {
@@ -28,13 +29,7 @@ export function scalarMultiplyUnitsAreSafe(left: TypedExpression, right: TypedEx
 
 export function sameComparisonValueKind(left: SemanticType, right: SemanticType): boolean {
   if (left.value !== right.value) return false;
-  return (
-    isNumericType(left) ||
-    left.value === 'boolean' ||
-    left.value === 'text' ||
-    left.value === 'date' ||
-    left.value === 'instant'
-  );
+  return SCALAR_TYPE_VALUES.has(left.value);
 }
 
 export function isConditionalScalar(argument: TypedExpression): boolean {

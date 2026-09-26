@@ -45,12 +45,16 @@ function releaseRegion(context: WebAppContext, region: WebRegion): void {
   region.sequence++;
   cancelPendingPresentation(region);
   cancelActiveAction(region);
-  if (region.resizeFrame !== undefined) {
-    region.target.ownerDocument.defaultView?.cancelAnimationFrame(region.resizeFrame);
-    delete region.resizeFrame;
+  if (region.adaptFrame !== undefined) {
+    region.target.ownerDocument.defaultView?.cancelAnimationFrame(region.adaptFrame);
+    delete region.adaptFrame;
   }
   region.resize?.disconnect();
   delete region.resize;
+  if (region.media !== undefined) {
+    for (const list of region.media.lists) list.removeEventListener('change', region.media.onChange);
+    delete region.media;
+  }
   region.runtimeSubscription?.();
   region.element.dispose();
   region.element.remove();

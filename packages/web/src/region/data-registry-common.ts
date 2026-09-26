@@ -37,8 +37,12 @@ export function unitKey(type: SemanticType): string {
   return JSON.stringify([type.unit.dimension, type.unit.symbol, type.unit.currency ?? null]);
 }
 
+export const NUMERIC_TYPE_VALUES: ReadonlySet<SemanticType['value']> = new Set(['integer', 'float', 'decimal']);
+
+export const COMPARISON_OPERATORS: ReadonlySet<string> = new Set(['eq', 'ne', 'lt', 'lte', 'gt', 'gte']);
+
 export function numeric(type: SemanticType): boolean {
-  return type.value === 'integer' || type.value === 'float' || type.value === 'decimal';
+  return NUMERIC_TYPE_VALUES.has(type.value);
 }
 
 export function validFieldList(raw: unknown, result: Result, field = 'fields'): Outcome<readonly string[]> {

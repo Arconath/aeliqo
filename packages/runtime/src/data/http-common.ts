@@ -32,7 +32,11 @@ export function diagnostics(error: unknown): readonly [Diagnostic, ...Diagnostic
   const diagnostic =
     error instanceof DataStreamError
       ? error.diagnostic
-      : { code: 'data.http-network', message: 'The ADC transport failed before completion.', retryable: false };
+      : {
+          code: 'data.http-network',
+          message: 'The data service transport failed before completion.',
+          retryable: false,
+        };
   return [diagnostic];
 }
 
@@ -42,6 +46,12 @@ export function positive(value: number, name: string, ceiling = Number.MAX_SAFE_
   return value;
 }
 
+/**
+ * Canonical form for ADC wire-correlation equality only. Unlike
+ * ../canonical.js this normalizes `-0` exactly as the JSON transport does, so
+ * a request object still matches the peer's echoed (wire-normalized) copy.
+ * Do not use for persisted evidence or digests.
+ */
 export function canonical(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -101,7 +111,9 @@ export class Lifetime {
     if (performance.now() >= this.deadline && !this.signal.aborted) this.expire();
     if (!this.signal.aborted) return;
     const message =
-      this.code === 'data.aborted' ? 'The ADC request was cancelled.' : 'The ADC transport deadline expired.';
+      this.code === 'data.aborted'
+        ? 'The data service request was cancelled.'
+        : 'The data service transport deadline expired.';
     reject(this.code, message);
   }
 
@@ -225,13 +237,17 @@ export function asError(requestId: string, errors: readonly Diagnostic[]): Resul
   };
 }
 
+const STATUS_RULES: ReadonlyArray<readonly [RegExp, number]> = [
+  [/denied|authorization|origin/, 403],
+  [/stale|cursor|expired/, 409],
+  [/unsupported/, 422],
+  [/budget/, 413],
+  [/timeout/, 408],
+];
+
 export function statusFor(errors: readonly Diagnostic[]): number {
   const code = errors[0]?.code ?? '';
-  if (/denied|authorization|origin/.test(code)) return 403;
-  if (/stale|cursor|expired/.test(code)) return 409;
-  if (code.includes('unsupported')) return 422;
-  if (code.includes('budget')) return 413;
-  if (code.includes('timeout')) return 408;
+  for (const [pattern, status] of STATUS_RULES) if (pattern.test(code)) return status;
   return 400;
 }
 
@@ -253,7 +269,7 @@ export function json(value: unknown, status: number, origin?: string): Response 
 export function originUrl(value: string): URL {
   const url = new URL(value);
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.hash)
-    throw new TypeError('ADC endpoints require an HTTP(S) URL without embedded credentials or a fragment.');
+    throw new TypeError('data service endpoints require an HTTP(S) URL without embedded credentials or a fragment.');
   return url;
 }
 

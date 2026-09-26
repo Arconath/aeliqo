@@ -1,12 +1,12 @@
 ---
-id: "agents-quickstart"
-path: "/agents/quickstart/"
-section: "Connect agents"
-title: "Agent quickstart"
-description: "Expose the three standard tools for one expiring Region session while the same app remains usable manually."
+id: 'agents-quickstart'
+path: '/agents/quickstart/'
+section: 'Connect agents'
+title: 'Agent quickstart'
+description: 'Expose the three standard tools for one expiring Region session while the same app remains usable manually.'
 ---
 
-<p class="lead">Start after the resource and Region work without AI. The endpoint delegates render calls to the existing app; it does not create a second runtime. The <a href="/start/">React tutorial</a> contains the complete People app used here.</p>
+<p class="lead">Start after the resource and Region work without AI. The endpoint delegates render calls to the existing app; it does not create a second runtime. The <a href="/start/registered-app/">React tutorial</a> contains the complete People app used here.</p>
 <h2>Create the endpoint</h2>
 
 Create this file alongside the tutorial's <code>src/app.ts</code>. The host calls
@@ -41,7 +41,7 @@ export function createPeopleAgentSession(app: TutorialApp) {
 ```
 
 The code matches the maintained
-<a href="/start/">tutorial's <code>src/agent.ts</code></a>. Its endpoint is a
+<a href="/start/registered-app/">tutorial's <code>src/agent.ts</code></a>. Its endpoint is a
 bounded tool session, not a model connection; connect a host-controlled MCP
 transport separately. Keep <code>app</code> alive for the session and dispose
 it from the application owner after disconnecting clients.

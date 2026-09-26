@@ -2,7 +2,7 @@ import type { Diagnostic, Outcome, ResultRef, Task } from '@aeliqo/core';
 import { WIRE_LIMITS } from '@aeliqo/core';
 import type { CohortResolver } from './types.js';
 import type { DataService, QueryBudget, ReadContext } from '../data/types.js';
-import type { ResultHandle, ResultSnapshot } from '../results/types.js';
+import type { ResultHandle, ResultSnapshot, ResultStatus } from '../results/types.js';
 import type { MaterializedTaskOutput, TaskEvaluatorOptions, TrustedEvaluationContext } from './types.js';
 
 export const DEFAULT_BUDGET: QueryBudget = Object.freeze({
@@ -195,16 +195,11 @@ export function reuseAuthorityMatches(handle: ResultHandle, context: TrustedEval
   );
 }
 
+const FAILURE_STATUSES: ReadonlySet<ResultStatus> = new Set(['failed', 'denied', 'unsupported', 'stale', 'cancelled']);
+
 export function outputFailure(snapshot: ResultSnapshot): Outcome<never> | undefined {
   const status = snapshot.status;
-  if (
-    status !== 'failed' &&
-    status !== 'denied' &&
-    status !== 'unsupported' &&
-    status !== 'stale' &&
-    status !== 'cancelled'
-  )
-    return undefined;
+  if (!FAILURE_STATUSES.has(status)) return undefined;
   const diagnostic = snapshot.diagnostics[0];
   return failure(diagnostic?.code ?? 'runtime.evaluation-failed', diagnostic?.message ?? 'The task output failed.');
 }

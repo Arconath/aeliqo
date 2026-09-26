@@ -4,6 +4,8 @@ import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from './base.js'
 export type AeliqoHeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 export type AeliqoHeadingSize = 'display' | 'heading' | 'title' | 'body';
 
+const HEADING_SIZES: ReadonlySet<AeliqoHeadingSize> = new Set(['display', 'heading', 'title', 'body']);
+
 /** Heading level controls document hierarchy; visual size is independently selectable. */
 export class AeliqoHeadingElement extends AeliqoFoundationElement {
   static readonly properties = {
@@ -17,7 +19,7 @@ export class AeliqoHeadingElement extends AeliqoFoundationElement {
   text = '';
 
   protected override render() {
-    const size = this.size === 'display' || this.size === 'title' || this.size === 'body' ? this.size : 'heading';
+    const size = HEADING_SIZES.has(this.size) ? this.size : 'heading';
     const content = html`<slot>${this.text}</slot>`;
     switch (this.level) {
       case 1:

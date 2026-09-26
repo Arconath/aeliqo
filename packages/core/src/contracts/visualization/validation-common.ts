@@ -1,4 +1,5 @@
 import type { Outcome, SemanticType } from '../types.js';
+import { NUMERIC_TYPE_VALUES } from '../scalars.js';
 export { resultRefKey, versionRefKey } from '../stable.js';
 
 export const fail = (code: string, message: string): Outcome<never> => ({
@@ -6,7 +7,7 @@ export const fail = (code: string, message: string): Outcome<never> => ({
   diagnostics: [{ code: `visualization.${code}`, message, retryable: false }],
 });
 
-export const isNumeric = (type: SemanticType): boolean => ['integer', 'float', 'decimal'].includes(type.value);
+export const isNumeric = (type: SemanticType): boolean => NUMERIC_TYPE_VALUES.has(type.value);
 
 export function isTemporal(type: SemanticType): boolean {
   if (type.value !== 'date' && type.value !== 'instant') return false;

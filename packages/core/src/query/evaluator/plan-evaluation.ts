@@ -1,6 +1,7 @@
 import type { Catalog, MeaningDefinition, Outcome } from '../../contracts/types.js';
 import type { FunctionRegistry } from '../../expressions/types.js';
 import { DEFAULT_LIMITS } from '../planner.js';
+import { isJoinOperation } from '../planner/shared.js';
 import type { LogicalPlan, PlanNode, QueryExecutionContext, QueryLimits, QueryResult, QuerySource } from '../types.js';
 import { failure, isPlainDataRecord, safePositiveCount, type EvalRelation, type EvalState } from './shared.js';
 import { validateExecutionContext, validateLogicalPlan } from './plan-validation.js';
@@ -150,7 +151,7 @@ function validateIntermediateBudget(
   if (!result.ok) return result;
   const overRows = result.value.rows.length > context.maxRows!;
   const overBytes = outputBytes(result.value.rows) > context.maxBytes!;
-  const isJoin = node.op === 'join' || node.op === 'semijoin';
+  const isJoin = isJoinOperation(node.op);
   const overJoinRows = isJoin && result.value.rows.length > limits.maxJoinRows;
   if (overRows || overBytes || overJoinRows)
     return failure('query.budget', 'Query intermediate exceeds its effective materialization budget.');

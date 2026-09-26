@@ -5,6 +5,7 @@ import type {
   PresentationEnvironment,
   ValidatedPresentation,
 } from '@aeliqo/core/presentation';
+import { canonicalJson as canonical } from '../canonical.js';
 import type { RegionFailure, RegionOutcome, RegionReadSet, RegionSnapshot } from '../regions/types.js';
 import type {
   PresentationAdaptationContext,
@@ -21,16 +22,6 @@ export const adaptationFailure = <T>(code: string, message: string): RegionOutco
 interface ContextInput {
   readonly source: PresentationAdaptationContextSource;
   readonly input: PresentationAdaptationReadInput;
-}
-
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
-  const object = value as Record<string, unknown>;
-  return `{${Object.keys(object)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonical(object[key])}`)
-    .join(',')}}`;
 }
 
 export function samePlan(left: PresentationPlan | undefined, right: PresentationPlan | undefined): boolean {

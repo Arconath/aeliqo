@@ -4,6 +4,16 @@ import type { AeliqoDataStatus } from '../data/types.js';
 import { AELIQO_WEB_VERSION } from '../version.js';
 
 export const COMPOUND_VERSION = AELIQO_WEB_VERSION;
+
+const STATUS_TEXT: Record<AeliqoDataStatus, string> = {
+  ready: '',
+  loading: 'Loading authorized data…',
+  empty: 'No matching records.',
+  partial: 'Showing a partial result.',
+  stale: 'This result is stale and needs refresh.',
+  error: 'The authorized data could not be displayed.',
+  unavailable: 'This data is unavailable.',
+};
 export const compoundStyles = css`
   :host {
     box-sizing: border-box;
@@ -101,14 +111,7 @@ export abstract class AeliqoCompoundElement extends LitElement {
   static readonly aeliqoVersion = COMPOUND_VERSION;
   static readonly shadowRootOptions: ShadowRootInit = { mode: 'open', delegatesFocus: true };
   protected statusText(status: AeliqoDataStatus, message = ''): string {
-    if (message) return message;
-    if (status === 'loading') return 'Loading authorized data…';
-    if (status === 'partial') return 'Showing a partial result.';
-    if (status === 'stale') return 'This result is stale and needs refresh.';
-    if (status === 'error') return 'The authorized data could not be displayed.';
-    if (status === 'unavailable') return 'This data is unavailable.';
-    if (status === 'empty') return 'No matching records.';
-    return '';
+    return message || STATUS_TEXT[status] || '';
   }
   protected statusTemplate(status: AeliqoDataStatus, message = ''): string {
     return this.statusText(status, message);

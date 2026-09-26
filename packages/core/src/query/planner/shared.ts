@@ -1,12 +1,26 @@
 import { WIRE_LIMITS } from '../../contracts/limits.js';
+import { NUMERIC_TYPE_VALUES } from '../../contracts/scalars.js';
 import type { Catalog, Expression, FieldDefinition, SemanticType } from '../../contracts/types.js';
 import { versionRefKey as relationKey } from '../../contracts/stable.js';
 import type { FunctionRegistry } from '../../expressions/types.js';
-import type { QueryField, QueryOutcome, QuerySchema } from '../types.js';
+import type { PlanOperation, QueryField, QueryOutcome, QuerySchema } from '../types.js';
 
 export const PLAN_ENTITY = '__aeliqo_plan__';
 export type CatalogEntity = Catalog['entities'][number];
 export type CatalogRelationship = Catalog['relationships'][number];
+
+export const BUCKET_GRAINS: ReadonlySet<string> = new Set(['day', 'week', 'month', 'quarter', 'year']);
+
+const JOIN_OPERATIONS: ReadonlySet<PlanOperation> = new Set(['join', 'semijoin']);
+const FANOUT_CARDINALITIES: ReadonlySet<CatalogRelationship['cardinality']> = new Set(['one-to-many', 'many-to-many']);
+
+export function isJoinOperation(operation: PlanOperation): boolean {
+  return JOIN_OPERATIONS.has(operation);
+}
+
+export function isFanoutCardinality(cardinality: CatalogRelationship['cardinality']): boolean {
+  return FANOUT_CARDINALITIES.has(cardinality);
+}
 
 export const DEFAULT_LIMITS = Object.freeze({
   maxNodes: 256,
@@ -57,14 +71,10 @@ export function safePositive(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
 }
 
+const SNAPSHOT_PRIMITIVE_TYPES: ReadonlySet<string> = new Set(['string', 'boolean', 'number', 'undefined']);
+
 function isSnapshotPrimitive(value: unknown): boolean {
-  return (
-    value === null ||
-    typeof value === 'string' ||
-    typeof value === 'boolean' ||
-    typeof value === 'number' ||
-    typeof value === 'undefined'
-  );
+  return value === null || SNAPSHOT_PRIMITIVE_TYPES.has(typeof value);
 }
 
 function existingSnapshot(value: object, active: WeakSet<object>, seen: WeakMap<object, unknown>): unknown | undefined {
@@ -161,7 +171,7 @@ export function scanSchema(entity: CatalogEntity): QuerySchema {
 }
 
 export function roleForType(type: SemanticType): FieldDefinition['role'] {
-  if (type.value === 'integer' || type.value === 'float' || type.value === 'decimal') return 'measure';
+  if (NUMERIC_TYPE_VALUES.has(type.value)) return 'measure';
   return 'attribute';
 }
 

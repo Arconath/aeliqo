@@ -17,13 +17,13 @@ function validIdentifier(value: unknown, label: string): boolean {
 }
 
 function validateReadGrant(grant: ReadGrant): Outcome<ReadGrant> {
-  if (!isRecord(grant)) return authorizationFailure('The ADC authorization returned an invalid outcome.');
+  if (!isRecord(grant)) return authorizationFailure('The data service authorization returned an invalid outcome.');
   if (!validIdentifier(grant.scopeDigest, 'scopeDigest'))
-    return authorizationFailure('The ADC authorization returned an invalid scope digest.');
+    return authorizationFailure('The data service authorization returned an invalid scope digest.');
   if (grant.cursorPartition !== undefined && !validIdentifier(grant.cursorPartition, 'cursorPartition'))
-    return authorizationFailure('The ADC authorization returned an invalid cursor partition.');
+    return authorizationFailure('The data service authorization returned an invalid cursor partition.');
   if (grant.policyRevision !== undefined && !validIdentifier(grant.policyRevision, 'policyRevision'))
-    return authorizationFailure('The ADC authorization returned an invalid policy revision.');
+    return authorizationFailure('The data service authorization returned an invalid policy revision.');
   const entityError = validateEntityScope(grant.entities);
   if (entityError !== undefined) return authorizationFailure(entityError);
   const fieldError = validateFieldScope(grant.fields);
@@ -31,26 +31,26 @@ function validateReadGrant(grant: ReadGrant): Outcome<ReadGrant> {
   const budgetError = validateBudgetScope(grant.maxBudget);
   if (budgetError !== undefined) return authorizationFailure(budgetError);
   if (grant.rowPolicy !== undefined && typeof grant.rowPolicy !== 'function')
-    return authorizationFailure('The ADC authorization returned an invalid row policy.');
+    return authorizationFailure('The data service authorization returned an invalid row policy.');
   return { ok: true, value: grant };
 }
 
 function validateEntityScope(entities: ReadGrant['entities']): string | undefined {
   if (entities === undefined) return undefined;
   if (!Array.isArray(entities) || entities.length > WIRE_LIMITS.array || hasDuplicates(entities))
-    return 'The ADC authorization returned an invalid entity scope.';
+    return 'The data service authorization returned an invalid entity scope.';
   if (!entities.every((entity) => validIdentifier(entity, 'entity scope')))
-    return 'The ADC authorization returned an invalid entity scope.';
+    return 'The data service authorization returned an invalid entity scope.';
   return undefined;
 }
 
 function validateFieldScope(fields: ReadGrant['fields']): string | undefined {
   if (fields === undefined) return undefined;
   if (fields === null || typeof fields !== 'object' || Array.isArray(fields))
-    return 'The ADC authorization returned an invalid field scope.';
+    return 'The data service authorization returned an invalid field scope.';
   for (const [entity, fieldIds] of Object.entries(fields)) {
     if (!validIdentifier(entity, 'field scope entity') || !validFieldList(fieldIds))
-      return 'The ADC authorization returned an invalid field scope.';
+      return 'The data service authorization returned an invalid field scope.';
   }
   return undefined;
 }
@@ -63,10 +63,11 @@ function validFieldList(fields: readonly string[]): boolean {
 function validateBudgetScope(budget: ReadGrant['maxBudget']): string | undefined {
   if (budget === undefined) return undefined;
   if (budget === null || typeof budget !== 'object' || Array.isArray(budget))
-    return 'The ADC authorization returned an invalid budget.';
+    return 'The data service authorization returned an invalid budget.';
   const allowed = new Set(['maxRows', 'maxBytes', 'maxMessages', 'maxMilliseconds', 'maxColumns']);
   for (const [key, value] of Object.entries(budget)) {
-    if (!allowed.has(key) || !isSafePositive(value)) return 'The ADC authorization returned an invalid budget.';
+    if (!allowed.has(key) || !isSafePositive(value))
+      return 'The data service authorization returned an invalid budget.';
   }
   return undefined;
 }
@@ -76,19 +77,19 @@ function hasDuplicates(values: readonly string[]): boolean {
 }
 
 function denialDiagnostics(value: unknown): Outcome<ReadGrant> {
-  if (!isRecord(value)) return authorizationFailure('The ADC authorization returned malformed diagnostics.');
+  if (!isRecord(value)) return authorizationFailure('The data service authorization returned malformed diagnostics.');
   const diagnosticsValue = value.diagnostics;
   if (
     !Array.isArray(diagnosticsValue) ||
     diagnosticsValue.length === 0 ||
     diagnosticsValue.length > WIRE_LIMITS.diagnostics
   )
-    return authorizationFailure('The ADC authorization returned malformed diagnostics.');
+    return authorizationFailure('The data service authorization returned malformed diagnostics.');
   const diagnostics: Diagnostic[] = [];
   for (const candidate of diagnosticsValue) {
     const parsed = parseResultEvent({ kind: 'error', requestId: 'authorization', error: candidate });
     if (!parsed.ok || parsed.value.kind !== 'error')
-      return authorizationFailure('The ADC authorization returned malformed diagnostics.');
+      return authorizationFailure('The data service authorization returned malformed diagnostics.');
     diagnostics.push(parsed.value.error);
   }
   return { ok: false, diagnostics: diagnostics as [Diagnostic, ...Diagnostic[]] };
@@ -99,10 +100,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function normalizeAuthorizationOutcome(value: unknown): Outcome<ReadGrant> {
-  if (!isRecord(value)) return authorizationFailure('The ADC authorization returned an invalid outcome.');
+  if (!isRecord(value)) return authorizationFailure('The data service authorization returned an invalid outcome.');
   if (value.ok === true) return validateReadGrant(value.value as ReadGrant);
   if (value.ok === false) return denialDiagnostics(value);
-  return authorizationFailure('The ADC authorization returned an invalid outcome.');
+  return authorizationFailure('The data service authorization returned an invalid outcome.');
 }
 
 interface Deadline {
@@ -111,7 +112,7 @@ interface Deadline {
   readonly cleanup: () => void;
 }
 
-export function makeDeadline(context: ReadContext, milliseconds: number): Deadline {
+function makeDeadline(context: ReadContext, milliseconds: number): Deadline {
   const controller = new AbortController();
   let timedOut = false;
   const onParentAbort = () => controller.abort();
@@ -200,7 +201,8 @@ async function authorizeResult(
 }
 
 function defaultGrant(context: ReadContext): Promise<Outcome<ReadGrant>> {
-  if (context.signal?.aborted) return Promise.resolve(failure('data.aborted', 'The ADC authorization was cancelled.'));
+  if (context.signal?.aborted)
+    return Promise.resolve(failure('data.aborted', 'The data service authorization was cancelled.'));
   return Promise.resolve({ ok: true, value: { scopeDigest: DEFAULT_SCOPE, cursorPartition: DEFAULT_SCOPE } });
 }
 
@@ -219,7 +221,7 @@ function startAuthorization(
     const result = authorize({ ...required, ...(query === undefined ? {} : { query }) });
     return { ok: true, value: Promise.resolve(result) };
   } catch {
-    return failure('data.authorization', 'The ADC authorization failed.');
+    return failure('data.authorization', 'The data service authorization failed.');
   }
 }
 
@@ -229,9 +231,9 @@ function awaitAuthorization(
 ): Promise<Outcome<ReadGrant>> {
   if (signal === undefined)
     return pending.then(normalizeAuthorizationOutcome, () =>
-      failure('data.authorization', 'The ADC authorization failed.'),
+      failure('data.authorization', 'The data service authorization failed.'),
     );
-  if (signal.aborted) return Promise.resolve(failure('data.aborted', 'The ADC authorization was cancelled.'));
+  if (signal.aborted) return Promise.resolve(failure('data.aborted', 'The data service authorization was cancelled.'));
   return new Promise((resolve) => {
     let settled = false;
     const finish = (result: Outcome<ReadGrant>) => {
@@ -240,16 +242,39 @@ function awaitAuthorization(
       signal.removeEventListener('abort', onAbort);
       resolve(result.ok ? validateReadGrant(result.value) : result);
     };
-    const onAbort = () => finish(failure('data.aborted', 'The ADC authorization was cancelled.'));
+    const onAbort = () => finish(failure('data.aborted', 'The data service authorization was cancelled.'));
     signal.addEventListener('abort', onAbort, { once: true });
     pending.then(
       (result) => finish(normalizeAuthorizationOutcome(result)),
-      () => finish(failure('data.authorization', 'The ADC authorization failed.')),
+      () => finish(failure('data.authorization', 'The data service authorization failed.')),
     );
   });
 }
 
-export async function authorizeWithDeadline(
+/**
+ * Await one host/expensive operation under a fresh linked deadline. The
+ * expired callback supplies the outcome when no budget remains; a lapsed
+ * deadline that was not a caller abort fails with `data.budget`.
+ */
+export async function awaitBoundedResult<T>(
+  context: ReadContext,
+  milliseconds: number,
+  expired: () => Outcome<T>,
+  timeoutMessage: string,
+  run: (signal: AbortSignal) => Promise<Outcome<T>>,
+): Promise<Outcome<T>> {
+  if (milliseconds <= 0) return expired();
+  const deadline = makeDeadline(context, milliseconds);
+  try {
+    const result = await run(deadline.signal);
+    if (deadline.timedOut() && !context.signal?.aborted) return failure('data.budget', timeoutMessage);
+    return result;
+  } finally {
+    deadline.cleanup();
+  }
+}
+
+export function authorizeWithDeadline(
   authorize: AuthorizeRead | undefined,
   operation: 'describe' | 'plan' | 'execute',
   requestId: string,
@@ -258,64 +283,52 @@ export async function authorizeWithDeadline(
   milliseconds: number,
   query?: QuerySpec,
 ): Promise<Outcome<ReadGrant>> {
-  if (milliseconds <= 0) return expiredAuthorization(context);
-  const deadline = makeDeadline(context, milliseconds);
-  try {
-    const result = await authorizeResult(
-      authorize,
-      operation,
-      requestId,
-      target,
-      { ...context, signal: deadline.signal },
-      query,
-    );
-    if (deadline.timedOut() && !context.signal?.aborted)
-      return failure('data.budget', 'Authorization exceeded the effective time budget.');
-    return result;
-  } finally {
-    deadline.cleanup();
-  }
+  return awaitBoundedResult(
+    context,
+    milliseconds,
+    () => expiredAuthorization(context),
+    'Authorization exceeded the effective time budget.',
+    (signal) => authorizeResult(authorize, operation, requestId, target, { ...context, signal }, query),
+  );
 }
 
 function expiredAuthorization(context: ReadContext): Outcome<ReadGrant> {
-  if (context.signal?.aborted) return failure('data.aborted', 'The ADC authorization was cancelled.');
+  if (context.signal?.aborted) return failure('data.aborted', 'The data service authorization was cancelled.');
   return failure('data.budget', 'Authorization exceeded the effective time budget.');
 }
 
 async function digest(value: unknown, prefix: string): Promise<string> {
   const text = canonical(value);
   const subtle = globalThis.crypto?.subtle;
-  if (subtle === undefined) throw new Error('WebCrypto SHA-256 is required for ADC digests.');
+  if (subtle === undefined) throw new Error('WebCrypto SHA-256 is required for data service digests.');
   const bytes = new Uint8Array(await subtle.digest('SHA-256', new TextEncoder().encode(text)));
   let encoded = '';
   for (const byte of bytes) encoded += byte.toString(16).padStart(2, '0');
   return `${prefix}-${encoded}`;
 }
 
-export async function digestWithDeadline(
+export function digestWithDeadline(
   value: unknown,
   prefix: string,
   context: ReadContext,
   milliseconds: number,
 ): Promise<Outcome<string>> {
-  if (milliseconds <= 0) return expiredDigest(context);
-  const deadline = makeDeadline(context, milliseconds);
-  try {
-    const result = await resolveValueWithAbort(
-      digest(value, prefix),
-      deadline.signal,
-      'data.crypto',
-      'WebCrypto SHA-256 is required for immutable ADC identities.',
-    );
-    if (deadline.timedOut() && !context.signal?.aborted)
-      return failure('data.budget', 'The ADC operation exceeded the effective time budget.');
-    return result;
-  } finally {
-    deadline.cleanup();
-  }
+  return awaitBoundedResult(
+    context,
+    milliseconds,
+    () => expiredDigest(context),
+    'The data service operation exceeded the effective time budget.',
+    (signal) =>
+      resolveValueWithAbort(
+        digest(value, prefix),
+        signal,
+        'data.crypto',
+        'WebCrypto SHA-256 is required for immutable data service identities.',
+      ),
+  );
 }
 
 function expiredDigest(context: ReadContext): Outcome<string> {
-  if (context.signal?.aborted) return failure('data.aborted', 'The ADC operation was cancelled.');
-  return failure('data.budget', 'The ADC operation exceeded the effective time budget.');
+  if (context.signal?.aborted) return failure('data.aborted', 'The data service operation was cancelled.');
+  return failure('data.budget', 'The data service operation exceeded the effective time budget.');
 }

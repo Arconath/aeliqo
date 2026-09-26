@@ -1,18 +1,16 @@
 import type { Intent } from '@aeliqo/core';
 import type { WebRenderReceipt } from '@aeliqo/web/app';
 import { createActionReviewController } from './action-review.js';
-import { checkConnection, sendLocalPrompt } from './connection-controller.js';
+import { createConnectionFlow } from './connection-flow.js';
 import { evidenceFor, selectedView, viewLabel, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
 import { fixtureEvidence } from './fixture-inspector.js';
-import { createFixtureJourneys, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
-import { connectLocalHost, type LocalHostConnection } from './local-host.js';
-import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario, type ScenarioId } from './scenarios.js';
+import { createFixtureJourneys, FIXTURE_JOURNEYS, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
+import { createJourneyTracker, journeyStagesFor } from './journey.js';
+import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario } from './scenarios.js';
 import { findScenario, labelIntent, renderScenarioControls } from './scenario-controls.js';
 import { createPlaygroundSession, type PlaygroundSession } from './session.js';
 
 type Mode = 'without-ai' | 'connected';
-type ConnectionCheck = Awaited<ReturnType<typeof checkConnection>>;
-type LocalPromptReceipt = Awaited<ReturnType<typeof sendLocalPrompt>>;
 const modeLabels: Readonly<Record<Mode, string>> = {
   'without-ai': 'Without AI',
   connected: 'Connect AI',
@@ -47,6 +45,7 @@ const modelCalls = required<HTMLElement>('#pg-model-calls');
 const journeyIntent = required<HTMLElement>('#pg-journey-intent');
 const journeyResult = required<HTMLElement>('#pg-journey-result');
 const journeyView = required<HTMLElement>('#pg-journey-view');
+const setJourney = createJourneyTracker(document.querySelectorAll<HTMLElement>('.pg-journey li'), viewBadge).set;
 const inspector = required<HTMLDialogElement>('#pg-inspector');
 const inspectorSummary = required<HTMLElement>('#pg-inspector-summary');
 const inspectorContent = required<HTMLElement>('#pg-inspector-content');
@@ -63,21 +62,36 @@ const prompt = required<HTMLTextAreaElement>('#pg-prompt');
 const send = required<HTMLButtonElement>('#pg-send');
 const exportButton = required<HTMLButtonElement>('#pg-export');
 const exportNote = required<HTMLElement>('#pg-export-note');
-const region = required<HTMLElement>('#pg-region');
 const attendancePanel = required<HTMLElement>('#pg-attendance-journey');
 const workspacePanel = required<HTMLElement>('#pg-workspace-journey');
+const modeButtons = document.querySelectorAll<HTMLButtonElement>('[data-mode]');
+const inspectorButtons = document.querySelectorAll<HTMLButtonElement>('[data-inspector]');
+const FIXTURE_PANELS: Readonly<Record<FixtureJourney, HTMLElement>> = {
+  attendance: attendancePanel,
+  workspace: workspacePanel,
+};
 
+const requestedScenario = new URLSearchParams(window.location.search).get('scenario') ?? '';
 let mode: Mode = 'without-ai';
-let scenario: PlaygroundScenario = PLAYGROUND_SCENARIOS[0]!;
+let scenario: PlaygroundScenario = findScenario(requestedScenario);
 let activeRequest: AbortController | undefined;
 let session: PlaygroundSession;
 let last: PlaygroundEvidence = {};
 let inspectorSection: InspectorSection = 'intent';
-let connection: 'none' | 'local' | 'webmcp' = 'none';
-let modelCallCount = 0;
-let localHost: LocalHostConnection | undefined;
-let localModelReady = false;
 let activeJourney: 'standard' | FixtureJourney = 'standard';
+
+const connectionFlow = createConnectionFlow(
+  {
+    kind: connectionKind,
+    status: connectionStatus,
+    label: connectionLabel,
+    dot: connectionDot,
+    prompt,
+    send,
+    modelCalls,
+  },
+  () => session,
+);
 
 function stringify(value: unknown): string {
   try {
@@ -120,17 +134,9 @@ const actionReview = createActionReviewController({
   setError,
 });
 
-function updateComposer(): void {
-  const ready = connection === 'local' && localModelReady;
-  prompt.disabled = !ready;
-  send.disabled = !ready;
-  send.textContent = 'Send to local agent';
-  prompt.placeholder = ready ? 'Describe the interface you want' : 'Available after a connection is ready';
-}
-
 function renderInspector(): void {
   if (activeJourney !== 'standard') {
-    const panel = activeJourney === 'attendance' ? attendancePanel : workspacePanel;
+    const panel = FIXTURE_PANELS[activeJourney];
     const evidence = fixtureEvidence(
       activeJourney,
       inspectorSection,
@@ -149,30 +155,21 @@ function renderInspector(): void {
 
 function resetSession(): void {
   activeRequest?.abort();
-  localHost?.close();
-  localHost = undefined;
   session?.dispose();
   regionHost.replaceChildren();
   session = createPlaygroundSession(actionReview.handle, applyAgentReceipt);
   last = {};
   actionReview.reset();
-  connection = 'none';
-  localModelReady = false;
-  connectionKind.value = 'detect';
-  modelCallCount = 0;
-  modelCalls.textContent = '0';
-  connectionLabel.textContent = 'No agent · manual runtime';
-  connectionStatus.textContent = 'No local host detected. Without AI remains available.';
-  connectionDot.dataset.state = 'disconnected';
+  connectionFlow.reset();
   showStandardJourney();
   setExportAvailability(false);
   prompt.value = '';
-  updateComposer();
   setError();
   status.textContent = 'Session reset. Choose a task.';
   journeyIntent.textContent = 'Choose a task';
   journeyResult.textContent = 'Waiting';
   journeyView.textContent = 'Waiting';
+  setJourney('pending', 'pending', 'pending');
   viewBadge.textContent = 'Waiting for intent';
   resultTitle.textContent = 'Employees';
   resultDefinition.hidden = true;
@@ -190,33 +187,27 @@ function renderScenario(): void {
 function showStandardJourney(): void {
   fixtureJourneys.hide();
   activeJourney = 'standard';
-  region.hidden = false;
+  regionHost.hidden = false;
 }
 
 function showFixtureJourney(kind: FixtureJourney): void {
   activeRequest?.abort();
-  localHost?.close();
-  localHost = undefined;
-  session.disconnectWebMcp();
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  showConnection('No agent · synthetic journey', 'disconnected');
+  connectionFlow.disconnect();
+  connectionFlow.show('No agent · synthetic journey', 'disconnected');
   setMode('without-ai');
   activeJourney = kind;
   setExportAvailability(true);
-  region.hidden = true;
+  regionHost.hidden = true;
   committedFilter.hidden = true;
   setError();
-  journeyIntent.textContent = kind === 'attendance' ? 'Analyze daily attendance' : 'Engineering attendance overview';
+  const spec = FIXTURE_JOURNEYS[kind];
+  journeyIntent.textContent = spec.intentLabel;
   journeyResult.textContent = 'Evaluating…';
   journeyView.textContent = 'Waiting';
-  resultTitle.textContent = kind === 'attendance' ? 'Daily attendance' : 'Analytical workspace';
+  setJourney('done', 'active', 'pending');
+  resultTitle.textContent = spec.title;
   resultDefinition.hidden = false;
-  resultDefinition.textContent =
-    kind === 'attendance'
-      ? 'Approved rate: present eligible employee-days / eligible employee-days. September 2026, Asia/Jakarta.'
-      : 'One registered goal with summary, daily trend, and employee breakdown in a single Region.';
+  resultDefinition.textContent = spec.definition;
   status.textContent = 'Evaluating the registered synthetic journey…';
   void fixtureJourneys.show(kind);
   renderInspector();
@@ -232,10 +223,12 @@ const fixtureJourneys = createFixtureJourneys({
     journeyView.textContent = state.view;
     viewBadge.textContent = state.view;
     status.textContent = state.status;
+    setJourney(...journeyStagesFor(state.receipt));
   },
   onError() {
     setError('The synthetic journey could not load. Reload the page to retry.');
     journeyResult.textContent = 'Could not complete';
+    setJourney('done', 'failed', 'pending');
   },
 });
 
@@ -248,21 +241,33 @@ async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<
   resultTitle.textContent = activeStep?.label ?? `${scenario.label} result`;
   resultDefinition.textContent = activeStep?.definition ?? '';
   resultDefinition.hidden = activeStep?.definition === undefined;
-  if (receipt.status === 'renderer-ready') {
-    committedFilter.hidden = intent.id !== 'people-jakarta';
-    committedFilter.textContent =
-      intent.id === 'people-jakarta' ? 'Committed filter · Location: Jakarta · Scope: synthetic People' : '';
-    journeyResult.textContent = 'Evaluated';
-    journeyView.textContent = viewLabel(selectedView(receipt));
-    status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
-  } else {
-    const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
-    journeyResult.textContent = 'Could not complete';
-    journeyView.textContent = 'No new view';
-    status.textContent = message;
-    setError(message);
+  switch (receipt.status) {
+    case 'renderer-ready':
+      applyReadyReceipt(intent, receipt);
+      break;
+    default:
+      applyFailedReceipt(receipt);
   }
   renderInspector();
+}
+
+function applyReadyReceipt(intent: Intent, receipt: WebRenderReceipt): void {
+  committedFilter.hidden = intent.id !== 'people-jakarta';
+  committedFilter.textContent =
+    intent.id === 'people-jakarta' ? 'Committed filter · Location: Jakarta · Scope: synthetic People' : '';
+  journeyResult.textContent = 'Evaluated';
+  journeyView.textContent = viewLabel(selectedView(receipt));
+  setJourney('done', 'done', 'done');
+  status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
+}
+
+function applyFailedReceipt(receipt: WebRenderReceipt): void {
+  const message = receipt.diagnostics[0]?.message ?? `The request ended as ${receipt.status}.`;
+  journeyResult.textContent = 'Could not complete';
+  journeyView.textContent = 'No new view';
+  setJourney('done', 'failed', 'pending');
+  status.textContent = message;
+  setError(message);
 }
 
 async function applyAgentReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<void> {
@@ -280,6 +285,7 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
   journeyIntent.textContent = labelIntent(scenario, intent);
   journeyResult.textContent = 'Checking…';
   journeyView.textContent = 'Waiting';
+  setJourney('done', 'active', 'pending');
   status.textContent = 'Checking the request and evaluating the result…';
   trigger?.setAttribute('aria-busy', 'true');
   try {
@@ -290,6 +296,7 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
     if (!controller.signal.aborted) {
       journeyResult.textContent = 'Could not complete';
       journeyView.textContent = 'No new view';
+      setJourney('done', 'failed', 'pending');
       setError('The playground request failed safely. Reset the session and try again.');
     }
   } finally {
@@ -300,122 +307,32 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
 
 function setMode(next: Mode): void {
   mode = next;
-  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
-    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  for (const button of modeButtons) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
   guidedPanel.hidden = mode !== 'without-ai';
   manualPanel.hidden = mode !== 'without-ai';
   connectedPanel.hidden = mode !== 'connected';
   modeLabel.textContent = modeLabels[mode];
 }
 
+const MODES = ['without-ai', 'connected'] as const satisfies readonly Mode[];
+const INSPECTOR_SECTIONS = [
+  'intent',
+  'task',
+  'result',
+  'presentation',
+  'diagnostics',
+] as const satisfies readonly InspectorSection[];
+
 function modeFrom(value: string | undefined): Mode | undefined {
-  return value === 'without-ai' || value === 'connected' ? value : undefined;
+  return MODES.find((candidate) => candidate === value);
 }
 
 function inspectorFrom(value: string | undefined): InspectorSection | undefined {
-  return value === 'intent' ||
-    value === 'task' ||
-    value === 'result' ||
-    value === 'presentation' ||
-    value === 'diagnostics'
-    ? value
-    : undefined;
+  return INSPECTOR_SECTIONS.find((candidate) => candidate === value);
 }
 
-function showConnection(label: string, state: string): void {
-  connectionStatus.textContent = label;
-  connectionLabel.textContent = label;
-  connectionDot.dataset.state = state;
-}
-
-function changeConnectionKind(): void {
-  if (connection === 'local' && connectionKind.value !== 'detect') {
-    localHost?.close();
-    localHost = undefined;
-    localModelReady = false;
-    connection = 'none';
-    showConnection('The local agent connection was closed.', 'disconnected');
-  }
-  if (connection === 'webmcp' && connectionKind.value !== 'webmcp') {
-    session.disconnectWebMcp();
-    connection = 'none';
-    showConnection('The WebMCP connection was closed.', 'disconnected');
-  }
-  updateComposer();
-}
-
-async function registerWebMcpConnection(): Promise<void> {
-  const registered = await session.connectWebMcp();
-  if (registered.ok) {
-    connection = 'webmcp';
-    localModelReady = false;
-    updateComposer();
-    showConnection(`Native WebMCP registered ${registered.value.registrations} tools (experimental).`, 'connected');
-    return;
-  }
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  showConnection(registered.diagnostics[0]?.message ?? 'WebMCP registration failed safely.', 'unavailable');
-}
-
-async function pairDetectedLocalHost(result: Extract<ConnectionCheck, { readonly state: 'connected' }>): Promise<void> {
-  try {
-    localHost = await connectLocalHost(session);
-    connection = 'local';
-    localModelReady = result.modelConfigured;
-    updateComposer();
-    showConnection(result.label, 'connected');
-  } catch (cause) {
-    connection = 'none';
-    localModelReady = false;
-    updateComposer();
-    const label = cause instanceof Error ? cause.message : 'The local host pairing failed safely.';
-    showConnection(label, 'unavailable');
-  }
-}
-
-async function applyConnectionCheck(kind: 'webmcp' | 'detect', result: ConnectionCheck): Promise<void> {
-  if (kind === 'webmcp' && result.state === 'available') {
-    await registerWebMcpConnection();
-    return;
-  }
-  if (result.state === 'connected') {
-    await pairDetectedLocalHost(result);
-    return;
-  }
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  showConnection(result.label, result.state);
-}
-
-function promptStatus(receipt: LocalPromptReceipt): string {
-  if (receipt.stop === 'renderer-ready') {
-    const unit = receipt.toolCalls === 1 ? 'tool call' : 'tool calls';
-    return `The local agent completed ${receipt.toolCalls} validated ${unit}.`;
-  }
-  if (receipt.stop === 'no-commit' && receipt.message !== undefined)
-    return `No validated UI change was made. Agent draft: ${receipt.message}`;
-  return `The local agent stopped as ${receipt.stop}; no unsupported claim is shown as success.`;
-}
-
-async function submitLocalPrompt(): Promise<void> {
-  const value = prompt.value.trim();
-  if (connection !== 'local' || value.length === 0) return;
-  const controller = new AbortController();
-  connectionStatus.textContent = 'Waiting for the local agent proposal…';
-  send.disabled = true;
-  try {
-    const receipt = await sendLocalPrompt(value, controller.signal);
-    modelCallCount += receipt.modelRequests;
-    modelCalls.textContent = String(modelCallCount);
-    connectionStatus.textContent = promptStatus(receipt);
-  } catch {
-    connectionStatus.textContent = 'The local agent request failed. No UI change was committed.';
-  } finally {
-    send.disabled = connection !== 'local';
-  }
+function isFixtureJourney(value: string | undefined): value is FixtureJourney {
+  return value === 'attendance' || value === 'workspace';
 }
 
 for (const item of PLAYGROUND_SCENARIOS) {
@@ -427,6 +344,9 @@ for (const item of PLAYGROUND_SCENARIOS) {
 scenarioSelect.value = scenario.id;
 scenarioSelect.addEventListener('change', () => {
   scenario = findScenario(scenarioSelect.value);
+  const url = new URL(window.location.href);
+  url.searchParams.set('scenario', scenario.id);
+  window.history.replaceState(null, '', url);
   renderScenario();
   void runIntent(scenario.steps[0]!.intent());
 });
@@ -439,10 +359,9 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-journey
       void runIntent(jakartaPeopleIntent(), undefined, true);
       return;
     }
-    if (button.dataset.journey === 'attendance' || button.dataset.journey === 'workspace')
-      showFixtureJourney(button.dataset.journey);
+    if (isFixtureJourney(button.dataset.journey)) showFixtureJourney(button.dataset.journey);
   });
-for (const button of document.querySelectorAll<HTMLButtonElement>('[data-mode]'))
+for (const button of modeButtons)
   button.addEventListener('click', () => {
     const next = modeFrom(button.dataset.mode);
     if (next !== undefined) setMode(next);
@@ -468,30 +387,17 @@ required<HTMLButtonElement>('#pg-inspect').addEventListener('click', () => {
   inspector.showModal();
 });
 required<HTMLButtonElement>('#pg-inspector-close').addEventListener('click', () => inspector.close());
-for (const button of document.querySelectorAll<HTMLButtonElement>('[data-inspector]'))
+for (const button of inspectorButtons)
   button.addEventListener('click', () => {
     const next = inspectorFrom(button.dataset.inspector);
     if (next === undefined) return;
     inspectorSection = next;
-    for (const candidate of document.querySelectorAll<HTMLButtonElement>('[data-inspector]'))
-      candidate.setAttribute('aria-pressed', String(candidate === button));
+    for (const candidate of inspectorButtons) candidate.setAttribute('aria-pressed', String(candidate === button));
     renderInspector();
   });
-required<HTMLButtonElement>('#pg-connect').addEventListener('click', async () => {
-  localHost?.close();
-  localHost = undefined;
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
-  connectionStatus.textContent = 'Checking capability…';
-  const kind = connectionKind.value === 'webmcp' ? 'webmcp' : 'detect';
-  const result = await checkConnection(kind);
-  await applyConnectionCheck(kind, result);
-});
-connectionKind.addEventListener('change', changeConnectionKind);
-send.addEventListener('click', () => {
-  void submitLocalPrompt();
-});
+required<HTMLButtonElement>('#pg-connect').addEventListener('click', () => void connectionFlow.connect());
+connectionKind.addEventListener('change', () => connectionFlow.changeKind());
+send.addEventListener('click', () => void connectionFlow.submitPrompt());
 
 resetSession();
 renderScenario();
@@ -502,12 +408,6 @@ appRoot.removeAttribute('aria-busy');
 void runIntent(scenario.steps[0]!.intent());
 window.addEventListener('pagehide', () => {
   activeRequest?.abort();
-  localHost?.close();
-  localHost = undefined;
+  connectionFlow.close();
   session.dispose();
-  connection = 'none';
-  localModelReady = false;
-  updateComposer();
 });
-
-export type { ScenarioId };

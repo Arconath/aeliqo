@@ -3,6 +3,8 @@ import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from './base.js'
 
 export type AeliqoBadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
+const BADGE_TONES: ReadonlySet<AeliqoBadgeTone> = new Set(['neutral', 'info', 'success', 'warning', 'danger']);
+
 /** Text-first status/category marker; tone never carries the only meaning. */
 export class AeliqoBadgeElement extends AeliqoFoundationElement {
   static readonly properties = {
@@ -14,10 +16,7 @@ export class AeliqoBadgeElement extends AeliqoFoundationElement {
   tone: AeliqoBadgeTone = 'neutral';
 
   protected override render() {
-    const tone =
-      this.tone === 'info' || this.tone === 'success' || this.tone === 'warning' || this.tone === 'danger'
-        ? this.tone
-        : 'neutral';
+    const tone = BADGE_TONES.has(this.tone) ? this.tone : 'neutral';
     return html`<span part="badge" class=${`tone-${tone}`}><slot>${this.text}</slot></span>`;
   }
 

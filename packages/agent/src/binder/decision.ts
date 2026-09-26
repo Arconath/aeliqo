@@ -1,14 +1,11 @@
 import { WIRE_LIMITS } from '@aeliqo/core';
 import type { AgentBindingDecision } from '../binder-types.js';
+import { isRecord } from '../guards.js';
 import { validId, validText } from './common.js';
 
 type Choice = Extract<AgentBindingDecision, { readonly state: 'needs-choice' }>['choices'][number];
 type MeaningDecision = Extract<AgentBindingDecision, { readonly state: 'needs-meaning' }>;
 type ChoiceDecision = Extract<AgentBindingDecision, { readonly state: 'needs-choice' }>;
-
-function record(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
 
 function validPath(value: unknown): value is readonly (string | number)[] | undefined {
   if (value === undefined) return true;
@@ -26,7 +23,7 @@ function decisionIdentity(record: Record<string, unknown>): boolean {
 }
 
 function normalizeChoice(value: unknown): Choice | undefined {
-  if (!record(value)) return undefined;
+  if (!isRecord(value)) return undefined;
   if (!validId(value.id) || !validText(value.label) || !validText(value.consequence)) return undefined;
   return Object.freeze({ id: value.id, label: value.label, consequence: value.consequence });
 }
@@ -74,7 +71,7 @@ function normalizeMeaningDecision(record: Record<string, unknown>): MeaningDecis
 }
 
 export function normalizeDecision(input: unknown): AgentBindingDecision | undefined {
-  if (!record(input)) return undefined;
+  if (!isRecord(input)) return undefined;
   if (input.state !== 'needs-choice' && input.state !== 'needs-meaning') return undefined;
   if (!decisionIdentity(input)) return undefined;
   if (input.state === 'needs-choice') return normalizeChoiceDecision(input);

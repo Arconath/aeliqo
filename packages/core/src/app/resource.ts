@@ -30,6 +30,9 @@ function validIdentifier(value: string): boolean {
   return value.length > 0 && value.length <= 160 && !/[\s\u0000-\u001f\u007f]/u.test(value);
 }
 
+const WRAPPER_SCHEMA_TYPES: ReadonlySet<string> = new Set(['default', 'prefault', 'readonly', 'catch']);
+const SCALAR_VALUE_TYPES: ReadonlySet<string> = new Set(['string', 'number', 'boolean']);
+
 function unwrap(schema: ZodRuntimeSchema): {
   readonly schema: ZodRuntimeSchema;
   readonly nullable: boolean;
@@ -43,7 +46,7 @@ function unwrap(schema: ZodRuntimeSchema): {
     seen.add(current);
     if (current.type === 'nullable') nullable = true;
     else if (current.type === 'optional') optional = true;
-    else if (!['default', 'prefault', 'readonly', 'catch'].includes(current.type ?? '')) break;
+    else if (!WRAPPER_SCHEMA_TYPES.has(current.type ?? '')) break;
     const inner = current.unwrap?.();
     if (inner === undefined) break;
     current = inner;
@@ -90,23 +93,38 @@ export function inferResourceFieldType(schema: z.ZodType): Outcome<SemanticType>
 }
 
 function literalType(value: unknown): SemanticType['value'] | undefined {
-  if (typeof value === 'boolean') return 'boolean';
-  if (typeof value === 'string') return 'text';
-  if (typeof value !== 'number') return undefined;
-  return Number.isInteger(value) ? 'integer' : 'float';
+  switch (typeof value) {
+    case 'boolean':
+      return 'boolean';
+    case 'string':
+      return 'text';
+    case 'number':
+      return Number.isInteger(value) ? 'integer' : 'float';
+    default:
+      return undefined;
+  }
 }
 
+const STRING_FORMAT_TYPES: Readonly<Record<string, SemanticType['value']>> = {
+  date: 'date',
+  datetime: 'instant',
+};
+
 function typeFromSchema(runtime: ZodRuntimeSchema): SemanticType['value'] | undefined {
-  if (runtime.type === 'string') {
-    if (runtime.format === 'date') return 'date';
-    if (runtime.format === 'datetime') return 'instant';
-    return 'text';
+  switch (runtime.type) {
+    case 'string':
+      return STRING_FORMAT_TYPES[runtime.format ?? ''] ?? 'text';
+    case 'boolean':
+      return 'boolean';
+    case 'number':
+      return runtime.isInt === true ? 'integer' : 'float';
+    case 'enum':
+      return 'text';
+    case 'literal':
+      return literalType(runtime.values?.values().next().value);
+    default:
+      return undefined;
   }
-  if (runtime.type === 'boolean') return 'boolean';
-  if (runtime.type === 'number') return runtime.isInt === true ? 'integer' : 'float';
-  if (runtime.type === 'enum') return 'text';
-  if (runtime.type !== 'literal') return undefined;
-  return literalType(runtime.values?.values().next().value);
 }
 
 function temporalFor(value: SemanticType['value']): SemanticType['temporal'] | undefined {
@@ -119,8 +137,7 @@ function inferredValues(schema: z.ZodType): readonly (string | number | boolean)
   const runtime = unwrap(schema).schema;
   if (runtime.type !== 'enum' && runtime.type !== 'literal') return undefined;
   const values = [...(runtime.type === 'enum' ? (runtime.options ?? []) : (runtime.values ?? []))].filter(
-    (value): value is string | number | boolean =>
-      typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean',
+    (value): value is string | number | boolean => SCALAR_VALUE_TYPES.has(typeof value),
   );
   return values.length === 0 ? undefined : Object.freeze(values);
 }
@@ -160,8 +177,7 @@ function validFieldValue(
   prior: readonly (string | number | boolean)[],
   schema: z.ZodType,
 ): value is string | number | boolean {
-  const scalar =
-    typeof value === 'string' || typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value));
+  const scalar = SCALAR_VALUE_TYPES.has(typeof value) && (typeof value !== 'number' || Number.isFinite(value));
   if (!scalar) return false;
   if (typeof value === 'string' && (value.length === 0 || value.length > 160)) return false;
   if (prior.some((candidate) => Object.is(candidate, value))) return false;

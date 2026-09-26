@@ -21,6 +21,7 @@ import {
   validateAggregateSemantics,
   validQuerySchema,
 } from './validation-common.js';
+import { isFanoutCardinality } from '../planner/shared.js';
 
 export type ValidNode = PlanRecord & {
   readonly id: string;
@@ -398,7 +399,7 @@ function declaredJoinRelationship(
 }
 
 function validateJoinPolicy(node: ValidNode, relation: NonNullable<ReturnType<typeof relationship>>): Outcome<void> {
-  const fanout = relation.cardinality === 'one-to-many' || relation.cardinality === 'many-to-many';
+  const fanout = isFanoutCardinality(relation.cardinality);
   if (fanout && node.op === 'join') return failure('query.plan', 'A regular join cannot use a fanout relationship.');
   if (node.op === 'join' && !['inner', 'left'].includes(String((node.spec as PlanRecord).kind)))
     return failure('query.plan', 'Join kind is invalid.');

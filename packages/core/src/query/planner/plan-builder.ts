@@ -5,6 +5,7 @@ import {
   DEFAULT_LIMITS,
   failure,
   fieldKey,
+  isFanoutCardinality,
   safePositive,
   scanSchema,
   unsupported,
@@ -150,7 +151,7 @@ function addJoin(prepared: PreparedBuild, index: number): QueryOutcome<void> {
     );
   const valid = validateRelationship(relation, input.root, spec.rightEntity, 'join', catalog, index);
   if (!valid.ok) return valid;
-  if (relation.cardinality === 'one-to-many' || relation.cardinality === 'many-to-many')
+  if (isFanoutCardinality(relation.cardinality))
     return unsupported(
       'query.fanout',
       'A regular join could multiply source facts under the declared cardinality.',
