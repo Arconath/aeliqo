@@ -129,6 +129,8 @@ jobs:
       - name: Run the site-surface checks
         if: steps.scope.outputs.mode == 'site'
         run: |
+          pnpm build:platform
+          pnpm build:agent
           pnpm format:check
           pnpm lint
           pnpm site:test
