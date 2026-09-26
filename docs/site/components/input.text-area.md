@@ -7,19 +7,24 @@ contract: 'Multiline editing preserves draft, selection and composition across u
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Edit multiline text in a native textarea while preserving caret position and IME composition through unrelated updates. The component emits draft changes and commit events; the host owns persistence and validation.
+A labelled multi-line text area that keeps caret position and IME composition intact across updates. It emits draft and commit events; the host owns persistence and validation.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- You need more than one line of text, such as notes or a description.
+- The field needs a label and a visible starting height.
+- The host owns validation and persistence of the committed text.
 
 ## When to use a different component
 
-Use TextField when only one line is valid. Use Form to coordinate submission and validation across controls.
+- Use [TextField](/components/input.text-field/) when only one line is valid.
+- Use [Form](/components/input.form/) when the text submits alongside other fields.
 
 ## Properties and defaults
 

@@ -7,19 +7,24 @@ contract: 'Arrange children in logical reading order with tokenized spacing.'
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Lay out slotted children in their existing reading order with the declared direction, gap, alignment, and wrapping. Stack provides spacing and arrangement, leaving interaction and semantic grouping to its children.
+Lays out children in reading order with the direction, gap, alignment, and wrap you set. Children keep their own semantics and focus order.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Spacing items evenly along one row or column.
+- Toolbars, button rows, or stacked form sections.
+- Gaps and alignment from design tokens, not ad-hoc margins.
 
 ## When to use a different component
 
-Use Grid when children need rows and columns. Stack lays items out in one direction.
+- Use Grid when items need rows and columns.
+- Use SplitPane when two regions must be user-resizable.
 
 ## Properties and defaults
 

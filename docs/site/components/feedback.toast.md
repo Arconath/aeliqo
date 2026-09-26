@@ -7,19 +7,24 @@ contract: 'Bounded transient feedback; essential errors remain persistently avai
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Announce transient feedback while `open` and optionally dismiss it after the configured duration. Important failures need a persistent home elsewhere; the toast only reports the host's result and emits a dismissal request.
+Transient feedback shown while `open`, dismissed on a timer or by request. Important failures need a persistent home elsewhere; the toast only reports the host's result.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Confirming an action that already finished, such as a save.
+- The feedback is brief and can disappear without loss.
+- Anything important also lives in a persistent place.
 
 ## When to use a different component
 
-Use Alert for information that belongs in the reading flow. Toast is transient feedback and should not be the only record of a result.
+- Use [Alert](/components/feedback.alert/) for a message that must stay in the reading flow.
+- Use [EmptyState](/components/feedback.empty-state/) when a region needs a lasting explanation.
 
 ## Properties and defaults
 

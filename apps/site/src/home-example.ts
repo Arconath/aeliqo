@@ -62,56 +62,31 @@ function createHomeApp(resources: AeliqoAppOptions['resources']): AeliqoApp {
   return createAeliqoApp({ resources, authority: { read: readHomeAuthority } });
 }
 
+function siteTheme(): 'light' | 'dark' {
+  const applied = document.documentElement.dataset.theme;
+  if (applied === 'light' || applied === 'dark') return applied;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 function mountRegion(app: AeliqoApp, target: HTMLElement, regionId: string, resourceId: string): void {
   const mounted = app.mount({ target, regionId, resourceId });
   if (!mounted.ok) throw new Error(mounted.diagnostics[0].message);
-  mounted.value.setAttribute('data-aeliqo-theme', 'light');
+  mounted.value.setAttribute('data-aeliqo-theme', siteTheme());
 }
 
-export interface HomePeopleExample {
-  render(team?: string): Promise<WebRenderReceipt>;
-  dispose(): void;
-}
+export type HomeDemoView = 'table' | 'cards' | 'chart';
 
-/** A small real consumer of the same public app facade used by the playground. */
-export function mountPeopleExample(target: HTMLElement): HomePeopleExample {
-  const app = createHomeApp([{ resource: people, data: homeDataService(people, { people: PEOPLE }) }]);
-  mountRegion(app, target, 'home-demo', 'people');
-  let request = 0;
-
-  return Object.freeze({
-    render(team = 'all') {
-      const intent: Intent = {
-        version: '1',
-        id: `home-browse-${++request}`,
-        kind: 'browse',
-        resource: 'people',
-        fields: ['name', 'team', 'location'],
-        ...(team === 'all' ? {} : { filter: { op: 'compare', field: 'team', comparison: 'eq', value: team } }),
-      };
-      return app.render({ regionId: 'home-demo', intent });
-    },
-    dispose() {
-      app.dispose();
-    },
-  });
-}
-
-export interface HomeProofExample {
-  render(): Promise<void>;
+export interface HomeDemoExample {
+  render(team: string, view: HomeDemoView): Promise<WebRenderReceipt>;
   dispose(): void;
 }
 
 /**
- * Three live Regions that prove context-driven view selection: the same browse
- * intent becomes a table in a wide container and cards in a compact one, while
- * an analyze intent becomes a chart.
+ * One live runtime driving the landing demo: the same browse intent becomes a
+ * table in a wide container and cards in a compact one, while a chart option
+ * answers an analyze intent on the headcount resource in a second region.
  */
-export function mountProofExample(targets: {
-  readonly wide: HTMLElement;
-  readonly narrow: HTMLElement;
-  readonly trend: HTMLElement;
-}): HomeProofExample {
+export function mountHomeDemo(targets: { readonly people: HTMLElement; readonly trend: HTMLElement }): HomeDemoExample {
   const app = createHomeApp([
     { resource: people, data: homeDataService(people, { people: PEOPLE }) },
     {
@@ -119,43 +94,35 @@ export function mountProofExample(targets: {
       data: homeDataService(HEADCOUNT_RESOURCE, { 'workforce-headcount': HEADCOUNT_RECORDS }),
     },
   ]);
-  mountRegion(app, targets.wide, 'home-proof-wide', 'people');
-  mountRegion(app, targets.narrow, 'home-proof-narrow', 'people');
-  mountRegion(app, targets.trend, 'home-proof-trend', 'workforce-headcount');
+  mountRegion(app, targets.people, 'home-demo', 'people');
+  mountRegion(app, targets.trend, 'home-trend', 'workforce-headcount');
   let request = 0;
 
-  const render = async (): Promise<void> => {
-    const browse: Intent = {
-      version: '1',
-      id: `home-proof-browse-${++request}`,
-      kind: 'browse',
-      resource: 'people',
-      fields: ['name', 'team', 'location'],
-    };
-    const analyze: Intent = {
-      version: '1',
-      id: `home-proof-analyze-${request}`,
-      kind: 'analyze',
-      resource: 'workforce-headcount',
-      measures: [{ id: 'month-end-headcount', revision: '1' }],
-      time: { field: 'month', grain: 'month', calendar: 'gregorian', timezone: 'UTC' },
-      preferredView: 'trend',
-      sort: [{ field: 'month', direction: 'asc' }],
-    };
-    const panes = [targets.wide, targets.narrow, targets.trend];
-    const receipts = await Promise.all([
-      app.render({ regionId: 'home-proof-wide', intent: browse }),
-      app.render({ regionId: 'home-proof-narrow', intent: browse }),
-      app.render({ regionId: 'home-proof-trend', intent: analyze }),
-    ]);
-    for (const [index, receipt] of receipts.entries()) {
-      if (receipt.status !== 'renderer-ready')
-        panes[index]!.textContent = 'This view could not be rendered in this browser.';
-    }
-  };
-
   return Object.freeze({
-    render,
+    render(team: string, view: HomeDemoView) {
+      if (view === 'chart') {
+        const analyze: Intent = {
+          version: '1',
+          id: `home-analyze-${++request}`,
+          kind: 'analyze',
+          resource: 'workforce-headcount',
+          measures: [{ id: 'month-end-headcount', revision: '1' }],
+          time: { field: 'month', grain: 'month', calendar: 'gregorian', timezone: 'UTC' },
+          preferredView: 'trend',
+          sort: [{ field: 'month', direction: 'asc' }],
+        };
+        return app.render({ regionId: 'home-trend', intent: analyze });
+      }
+      const browse: Intent = {
+        version: '1',
+        id: `home-browse-${++request}`,
+        kind: 'browse',
+        resource: 'people',
+        fields: ['name', 'team', 'location'],
+        ...(team === 'all' ? {} : { filter: { op: 'compare', field: 'team', comparison: 'eq', value: team } }),
+      };
+      return app.render({ regionId: 'home-demo', intent: browse });
+    },
     dispose() {
       app.dispose();
     },

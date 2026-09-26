@@ -7,19 +7,24 @@ contract: 'Display optional identity image; fallback initials and privacy-safe a
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Show one person's identity with an optional image and a name-based initials fallback when the image is absent or fails. Set `alt` for a meaningful image; use `decorative` only when nearby text already names the person.
+Shows one person's image, with initials as fallback when the image is missing or fails. Set `alt` on meaningful images; mark it `decorative` only when nearby text already names the person.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Showing who created or owns a record, comment, or message.
+- A compact identity cue in a list row, header, or byline.
+- Cases where a remote image may fail; initials cover the fallback.
 
 ## When to use a different component
 
-Use Text when the person’s name must remain visible. Avatar is a compact identity cue, not a replacement for record details.
+- Use Text when the person's name must always stay visible.
+- Use RecordList when each row needs record fields, not only identity.
 
 ## Properties and defaults
 

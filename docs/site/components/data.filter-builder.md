@@ -7,21 +7,24 @@ contract: 'Typed predicates, AND/OR/null handling, visible inherited scope and e
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-FilterBuilder turns allowed fields and operators into a local predicate draft. Apply validates the draft
-and emits a proposal that includes the visible inherited predicate; the application authorizes and
-executes the query. Typing a value never runs a query.
+Build filter clauses from allowed fields and operators. Apply emits a request; the application authorizes and runs the query.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Let people compose typed field clauses with AND/OR logic.
+- Keep inherited filters visible next to the local draft.
+- Delay execution until an explicit Apply request.
 
 ## When to use a different component
 
-Use SelectionSummary to report the active selection. FilterBuilder edits predicates and applies them only after an explicit request.
+- Use SelectionSummary to report the active selection instead of editing it.
+- Use Table to browse and sort the filtered rows.
 
 ## Properties and defaults
 

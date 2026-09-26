@@ -7,21 +7,26 @@ contract: 'Source, freshness, completeness, provenance and unsupported claims di
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-QualityPanel reports application-supplied source, freshness, completeness, provenance, and unsupported
-claims. It labels missing metadata as not supplied and lists unsupported claims separately; it does not
-independently verify the data source.
+QualityPanel reports a view's source, freshness, completeness, provenance, and unsupported claims. Use it when people must judge how much to trust the data.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A view must disclose where its data came from and when it refreshed.
+- Completeness and provenance need a dedicated, labeled surface.
+- Unsupported claims must stay visible as cautions, never as facts.
+- Missing metadata should appear as not supplied rather than disappear.
 
 ## When to use a different component
 
-Use Alert for one warning. QualityPanel summarizes source, freshness, completeness, and provenance while keeping unsupported claims visible.
+- Use Alert for one warning that needs immediate attention.
+- Use Badge for a single freshness or status label.
+- Use KeyValue or Detail for general record fields, not quality metadata.
 
 ## Properties and defaults
 

@@ -7,21 +7,24 @@ contract: 'Dated events/intervals with timezone semantics, explicit overlaps and
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Timeline orders supplied dated events or intervals and lays overlapping intervals into separate lanes
-when the declared calendar supports a visual layout. The chronological data table remains available for
-exact endpoints and for calendars the graphic cannot render.
+Order dated events or intervals chronologically. Overlapping intervals get separate lanes; exact dates stay in the data table.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Show events or spans in chronological order.
+- Display overlapping intervals in separate lanes.
+- Keep exact start and end times readable beside the graphic.
 
 ## When to use a different component
 
-Use CalendarGrid for a calendar-shaped date layout. Timeline is for chronological order or elapsed time.
+- Use CalendarGrid for a calendar-shaped layout of dates.
+- Use Trend for a continuous measure over time.
 
 ## Properties and defaults
 

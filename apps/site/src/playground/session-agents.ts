@@ -90,7 +90,7 @@ function trackEndpoint(inner: AgentModelToolEndpoint, state: AgentConnectionStat
 
 async function connectAgent(
   options: AgentConnectionOptions,
-  transport: Extract<AgentToolTransport, 'byok' | 'mcp'>,
+  transport: Extract<AgentToolTransport, 'byok' | 'mcp' | 'manual'>,
   goalEpoch: string = crypto.randomUUID(),
 ) {
   const target = options.getTarget();
@@ -156,6 +156,8 @@ export function createPlaygroundAgentConnections(options: AgentConnectionOptions
   return {
     connectAgent: (transport: Extract<AgentToolTransport, 'byok' | 'mcp'>, goalEpoch?: string) =>
       connectAgent(options, transport, goalEpoch),
+    /** The scripted demo uses the same validated endpoint with no external transport. */
+    connectDemoAgent: () => connectAgent(options, 'manual', 'playground-demo'),
     connectWebMcp: () => connectWebMcp(options),
     disconnectWebMcp() {
       options.state.webMcp?.close();

@@ -1,40 +1,73 @@
 ---
 id: 'byok'
 path: '/agents/byok/'
-section: 'Connect agents'
+section: 'AI agents'
 title: 'Bring your own model'
 description: 'Connect a provider through a trusted local host while keeping credentials outside the browser.'
 ---
 
-BYOK connects a user's own provider account to Aeliqo's bounded tool loop. The
-local runner keeps the key in a trusted host process. The public Playground has
-no browser provider-key field and does not send requests directly to a model.
+BYOK connects your own provider account to Aeliqo's bounded tool loop. The
+local runner keeps the key in its host process. The public playground has no
+browser provider-key field and never calls a model directly.
 
-## Configure the local runner
+## Set the model variables
 
-Copy the example file, then set all three model values in `apps/site/.env.local`:
+1. Copy the example file:
 
-```sh
-cp apps/site/.env.example apps/site/.env.local
-```
+   ```bash
+   cp apps/site/.env.example apps/site/.env.local
+   ```
 
-```dotenv
-AELIQO_MODEL_BASE_URL=https://your-provider.example/v1/
-AELIQO_MODEL=your-tool-capable-model
-AELIQO_MODEL_API_KEY=your-local-secret
-```
+2. Set every required value in `apps/site/.env.local`:
 
-Start the runner from the repository root:
+   ```dotenv
+   AELIQO_MODEL_BASE_URL=https://your-provider.example/v1/
+   AELIQO_MODEL=your-tool-capable-model
+   AELIQO_MODEL_PROTOCOL=openai-compatible-chat
+   AELIQO_MODEL_AUTH_SCHEME=bearer
+   AELIQO_MODEL_API_KEY=your-local-secret
+   AELIQO_MODEL_CAPABILITIES=tool-calls,usage,request-cancellation
+   ```
 
-```sh
-pnpm playground:local
-```
+   `AELIQO_MODEL_PROTOCOL` also accepts `openai-compatible-responses`; that
+   profile requires HTTPS with bearer auth and no `request-retry` capability.
+   `AELIQO_MODEL_AUTH_SCHEME` accepts `bearer`, `header`, or `none`. Choose
+   `header` and set `AELIQO_MODEL_AUTH_HEADER` for a custom header. Choose
+   `none` only for a local endpoint, and omit the key. Capabilities must
+   include `tool-calls`.
 
-Open the local URL it prints, choose **Connect AI**, and select the local
-host. The prompt control stays unavailable until the runner has a complete
-configuration and the browser acknowledges the session. The runner binds to
-loopback by default. For an HTTP test endpoint on loopback, also set
-`AELIQO_ALLOW_INSECURE_MODEL_HTTP=1`; remote model endpoints must use HTTPS.
+3. For a loopback HTTP test endpoint, also set
+   `AELIQO_ALLOW_INSECURE_MODEL_HTTP=1`. Remote model endpoints must use HTTPS.
+
+## Start the runner and pair
+
+1. From the repository root, run:
+
+   ```bash
+   pnpm playground:local
+   ```
+
+2. Open the printed address, `http://127.0.0.1:4174/playground/`. Use this
+   local copy — the hosted site cannot pair with your runner because the
+   browser blocks cross-site pairing.
+3. Choose **Connect AI**, keep **Local Playground host**, and choose **Check
+   connection**.
+   You should see “Local runner connected — MCP endpoint and model are ready”.
+   With an incomplete model configuration, the prompt stays disabled and the
+   status tells you to configure a model in the local process.
+
+## Send a prompt
+
+Type a request and choose **Send to local agent**. The runner calls your
+provider, turns replies into bounded tool calls, and the browser validates
+each one against the paired Region. A proposal that fails validation commits
+nothing. A `no-commit` reply appears as an agent draft, not a UI change.
+
+The host sets a short-lived HttpOnly session cookie. The browser pairs its
+current Region over a same-origin event stream, and your prompt goes to the
+same-origin runner. The runner owns provider configuration and credentials.
+The browser receives bounded tool calls, validates them against its current
+Region, and reports the resulting receipt.
 
 ## Keep the host boundary
 
@@ -45,22 +78,16 @@ loopback by default. For an HTTP test endpoint on loopback, also set
 - Do not store prompts or credentials by default.
 
 The local runner pairs one browser Region with an expiring session. Disconnect
-and reset cancel pending work and release the pairing. See [agent recovery](/agents/recovery/)
-and [data boundaries](/concepts/safety/) for failure handling.
+and reset cancel pending work and release the pairing. See
+[agent recovery](/agents/recovery/) and [data boundaries](/concepts/safety/)
+for failure handling.
 
-## Prompt from the local host
+## Plan a shared deployment
 
-In **Connect AI**, select **Local Playground host** and check the connection.
-The host sets a short-lived, HttpOnly session cookie. The browser pairs its
-current Region over a same-origin event stream, and the prompt is sent to the
-same-origin runner. The runner owns provider configuration and credentials.
-The browser receives bounded tool calls, validates them against its current
-Region, and reports the resulting receipt. A failed proposal does not commit
-an unsupported UI change.
+The static production site runs no model. The local runner is a loopback
+development option. A shared server needs authenticated users, scoped
+sessions, origin and CSRF checks, rate and cost limits, and an explicit
+retention policy before it can accept model requests. Keep model output as
+validated intents; never render generated HTML or execute generated code.
 
-The static production site does not run a model. The local runner is a
-loopback development option. A shared server deployment needs authenticated
-users, scoped sessions, origin and CSRF checks, rate and cost limits, and an
-explicit retention policy before it can accept model requests. Keep model
-output as validated intents; never render generated HTML or execute generated
-code.
+<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/agents/mcp/"><span>MCP transport</span><small>Let an external client drive the same session.</small><b aria-hidden="true">→</b></a><a href="/agents/recovery/"><span>Agent recovery</span><small>Handle expiry, failure, and uncertain outcomes.</small><b aria-hidden="true">→</b></a></nav>

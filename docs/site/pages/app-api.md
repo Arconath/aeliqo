@@ -3,14 +3,15 @@ id: "app-api"
 path: "/reference/app-api/"
 section: "Reference"
 title: "Application API"
-description: "Lifecycle, ownership, outcomes, and extension points for the Aeliqo 0.5.0 application facade."
+description: "Lifecycle, ownership, outcomes, and extension points for the Aeliqo 0.5 application facade."
 ---
+
+<p class="lead">Create one app, mount Regions, and send intents. Every call returns a typed receipt with a stable outcome.</p>
+<aeliqo-release-status></aeliqo-release-status>
 
 Import the application facade from `@aeliqo/web/app`. This entry point uses
 `@aeliqo/runtime`; component-only consumers can import the web package root.
-<aeliqo-release-status></aeliqo-release-status>
-
-This page follows the 0.5.0 source and its exact package version.
+This page follows the 0.5 source and its exact package version.
 
 <h2>createAeliqoApp</h2>
 
@@ -20,7 +21,7 @@ This page follows the 0.5.0 source and its exact package version.
 createAeliqoApp(options: AeliqoAppOptions): AeliqoApp
 ```
 
-<p><strong>Required:</strong> a resources array with at least one resource/data binding, plus an authority adapter. <strong>Optional:</strong> runtime ID, custom intents, action port, result store and result-store options, region/render limits, recipes, views, form-state adapter, and an action-event callback. Standard recipes are used when no recipes are supplied.</p>
+<p><strong>Required:</strong> a resources array with at least one resource/data binding, plus an authority adapter. <strong>Optional:</strong> a runtime ID, custom intents, an action port, a result store and its options, and region/render limits. You can also pass recipes, views, a form-state adapter, and an action-event callback. Standard recipes are used when no recipes are supplied.</p>
 <h2>mount</h2>
 
 **Signature**

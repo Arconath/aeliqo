@@ -7,19 +7,26 @@ contract: 'Label, description, validation, autocomplete and IME-safe controlled/
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Edit a single line in a native text input with a persistent label, descriptions, and validation feedback. Controlled and default values share the same field boundary, while composition-aware updates avoid disrupting active typing.
+A labelled single-line text input with description and validation feedback. Typed drafts and IME composition stay intact while the host controls the value.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- You need one line of free text, such as a name, email, or title.
+- The field needs a visible label, hint text, or validation message.
+- The value benefits from browser autocomplete or IME composition.
+- You want a controlled or uncontrolled initial value.
 
 ## When to use a different component
 
-Use TextArea when more than one line is valid. Use SearchField when the value is a query with a host-owned execution policy.
+- Use [TextArea](/components/input.text-area/) when the value can span more than one line.
+- Use [SearchField](/components/input.search-field/) when the text is a query the host runs.
+- Use [NumberField](/components/input.number-field/) when the value must stay an exact number.
 
 ## Properties and defaults
 

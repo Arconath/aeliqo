@@ -7,21 +7,24 @@ contract: 'Explicit compatible baseline; zero denominator and percentage-point v
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Delta displays the change between an application-supplied current value and baseline. Choose absolute,
-relative, or percentage-point mode deliberately; incompatible values and an undefined relative
-denominator render as unavailable instead of a misleading number.
+Show the change between a current value and a baseline, as absolute, relative, or percentage-point. Incompatible inputs read as unavailable, not a misleading number.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Compare this period against a baseline or a previous period.
+- Show change as an absolute, relative, or percentage-point difference.
+- Report movement where both values share the same unit and meaning.
 
 ## When to use a different component
 
-Use Metric when only one value is available. Delta needs compatible current and baseline values from the host.
+- Use Metric when only one value exists, with no baseline to compare.
+- Use Table when comparing many current-versus-baseline pairs at once.
 
 ## Properties and defaults
 

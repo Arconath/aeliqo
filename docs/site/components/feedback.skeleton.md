@@ -7,19 +7,24 @@ contract: 'Stable reserved geometry with reduced motion and a named loading stat
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Reserve a visible shape for content that is still loading. Line count and variant describe the expected geometry; the host must replace it with an actual result, empty state, or error rather than leaving it as data evidence.
+Reserves a visible shape for content that is still loading. Line count and variant describe the expected geometry; the host replaces it with the real result.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Content is loading and its rough shape is already known.
+- You want to reserve space so the layout does not jump.
+- Reduced-motion settings should stop the pulse animation.
 
 ## When to use a different component
 
-Use Progress when progress can be measured. Replace Skeleton with ready content, an empty state, or an error when the result is known.
+- Use [Progress](/components/feedback.progress/) when the host can measure real progress.
+- Use [EmptyState](/components/feedback.empty-state/) once the result is known to be empty.
 
 ## Properties and defaults
 

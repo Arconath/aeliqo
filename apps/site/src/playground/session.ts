@@ -20,6 +20,7 @@ export interface PlaygroundSession {
     transport: Extract<AgentToolTransport, 'byok' | 'mcp'>,
     goalEpoch?: string,
   ): Promise<Outcome<AgentModelToolEndpoint>>;
+  connectDemoAgent(): Promise<Outcome<AgentModelToolEndpoint>>;
   connectWebMcp(): Promise<Outcome<{ readonly registrations: number; readonly evidence: WebMcpEvidence }>>;
   disconnectWebMcp(): void;
   dispose(): void;
@@ -69,6 +70,12 @@ function createSessionApp(
 type PlaygroundSessionActionHandler = (event: AeliqoAppActionEvent) => void | Promise<void>;
 type SessionApp = ReturnType<typeof createAeliqoApp>;
 
+function siteTheme(): 'light' | 'dark' {
+  const applied = document.documentElement.dataset.theme;
+  if (applied === 'light' || applied === 'dark') return applied;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 function createSessionRenderer(app: SessionApp) {
   let mountedResource: string | undefined;
   let mountedTarget: HTMLElement | undefined;
@@ -83,7 +90,7 @@ function createSessionRenderer(app: SessionApp) {
           regionId: REGION_ID,
           diagnostics: mounted.diagnostics,
         };
-      mounted.value.setAttribute('data-aeliqo-theme', 'light');
+      mounted.value.setAttribute('data-aeliqo-theme', siteTheme());
       mountedResource = intent.resource;
       mountedTarget = target;
     }
@@ -122,6 +129,7 @@ export function createPlaygroundSession(
     render: renderer.render,
     context: () => app.runtime.context(REGION_ID),
     connectAgent: connections.connectAgent,
+    connectDemoAgent: connections.connectDemoAgent,
     connectWebMcp: connections.connectWebMcp,
     disconnectWebMcp: connections.disconnectWebMcp,
     dispose() {

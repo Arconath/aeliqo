@@ -1,16 +1,16 @@
 ---
 id: "frameworks"
 path: "/start/frameworks/"
-section: "Start"
+section: "Get started"
 title: "Framework setup"
 description: "Use the same web implementation from Vanilla, React, Vue, and server-rendered hosts without creating a second renderer."
 ---
 
-## Vanilla
+<p class="lead">Every framework uses the same web implementation. You never write a second renderer — you wire lifecycle and trusted state.</p>
 
-Create one application instance for one security context, mount each Region
-once, render typed intents, and release both the Region and application when
-the host removes the surface.
+## Use it in plain TypeScript
+
+Create one app per security context. Mount each region once. Dispose of both when the host removes the surface.
 
 ```ts
 import { createAeliqoApp } from '@aeliqo/web/app';
@@ -24,16 +24,11 @@ app.unmount('people-main');
 app.dispose();
 ```
 
-Use `unmount` when one Region leaves while the application continues. Use
-`dispose` once for the whole application; it cancels owned work and releases
-all remaining Regions.
+Call `unmount` when one region leaves while the app lives on. Call `dispose` once for the whole app — it cancels work and releases every region.
 
-## React
+## Use it in React
 
-Create the app outside render or behind a stable memoized factory. The Provider
-shares that application-owned instance and deliberately does not dispose it.
-`AeliqoRegion` mounts and unmounts its Region, aborts an outdated render when
-the `intent` prop changes, and reports the trusted receipt through `onReceipt`.
+Create the app outside render, or behind a stable memoized factory. `AeliqoProvider` shares that instance and does not dispose it. `AeliqoRegion` mounts and unmounts its region, aborts a stale render when `intent` changes, and reports each result through `onReceipt`.
 
 **PeopleRegion.tsx**
 
@@ -56,31 +51,23 @@ export function PeopleRegion({ app, intent }) {
 }
 ```
 
-When an intent switches to another resource, use a stable key such as
-`key={intent.resource}` so React closes the old Region before mounting the new
-resource. Dispose the app from the owner that created it, such as the route or
-application shell cleanup.
+When a request switches resources, set `key={intent.resource}` so React closes the old region before opening the new one. Dispose the app from whoever created it — route cleanup or app shell.
 
-## Vue and other custom element hosts
+## Use it in Vue or another custom-element host
 
-Call `registerAeliqoElements()` once in the client entry. Set arrays, objects,
-and functions as DOM properties through a template ref rather than serializing
-them into attributes. Subscribe to native custom events on mount and remove the
-same listeners on unmount. Keep the app instance and authority in the host; a
-framework wrapper should not create another compiler or renderer.
+Call `registerAeliqoElements()` once in your client entry:
 
-## SSR and hydration
+```ts
+import { registerAeliqoElements } from '@aeliqo/web/register';
+```
 
-Use server-safe entry points during module evaluation. Do not register custom
-elements, read `document`, or share principal, ResultStore, Region, or action
-confirmation state between requests. Load Lit hydration support before the
-client imports `@aeliqo/web/app`, then register elements inside the client
-boundary. Keep the server and browser packages on the same exact version.
+Pass arrays, objects, and functions as DOM properties through a template ref — not serialized attributes. Add native event listeners on mount and remove them on unmount. Keep the app instance and permissions in the host; a wrapper must not create a second compiler or renderer.
 
-Hydration acceptance checks should prove that declarative shadow roots are
-reused, event listeners are not duplicated, dirty inputs keep their values,
-focus order remains correct, and a readable fallback remains when JavaScript
-does not run.
+## Render on the server
 
-<div class="doc-checklist"><ul><li>One runtime instance per application security context.</li><li>One mount/dispose pair per Region lifecycle.</li><li>No DOM access from server module evaluation.</li><li>No second compiler or renderer implemented in the framework wrapper.</li></ul></div>
+Use the server-safe entry points while modules evaluate. Do not register elements, touch `document`, or share the signed-in user, results, regions, or action state between requests. Load Lit hydration support before the client imports `@aeliqo/web/app`. Keep server and browser packages on the same exact version.
+
+Hydration is correct when shadow roots are reused and listeners stay single. Dirty inputs keep their values and focus order holds. A readable fallback remains without JavaScript.
+
+<div class="doc-checklist"><ul><li>One app instance per security context.</li><li>One mount/dispose pair per region.</li><li>No DOM access during server module evaluation.</li><li>No second compiler or renderer inside a framework wrapper.</li></ul></div>
 <nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/ship/ssr/"><span>SSR and hydration</span><small>Review request isolation, registration, and fallback behavior.</small><b aria-hidden="true">→</b></a><a href="/reference/app-api/"><span>App API</span><small>Read lifecycle signatures and outcomes.</small><b aria-hidden="true">→</b></a></nav>

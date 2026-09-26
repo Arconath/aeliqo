@@ -7,19 +7,24 @@ contract: 'Resize adjacent regions by pointer and keyboard while respecting mini
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Arrange two slotted panes around a resizable separator with bounded `min`, `max`, and `step` values. Pointer and keyboard changes emit a position proposal; use `position` for controlled layout or `defaultPosition` for initial local state.
+Two panes around a divider that users resize by pointer or keyboard. `min`, `max`, and `step` bound the range; changes emit a position request.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A sidebar and detail view the user rebalances.
+- Two regions that must stay usable within set limits.
+- Layouts where keyboard users need the same resize control.
 
 ## When to use a different component
 
-Use Grid for a fixed responsive layout. SplitPane is for panes that users can resize.
+- Use Grid for a fixed responsive layout users can't resize.
+- Use ScrollArea when one region needs bounded overflow scrolling.
 
 ## Properties and defaults
 

@@ -7,19 +7,24 @@ contract: 'Preserve logical document hierarchy independent of visual size.'
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Render heading text at the requested document level while choosing its visual size separately. Changing its appearance does not change the heading level announced to assistive technology.
+A heading at the document level you set, with visual size chosen separately. Changing `size` never changes the level announced to assistive technology.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Titling a section in the document outline.
+- Keeping the outline truthful when the design needs a different size.
+- Any heading screen readers should announce at a fixed level.
 
 ## When to use a different component
 
-Use Text for body copy. Keep heading levels tied to the document outline even when visual size changes.
+- Use Text for body copy and non-heading strings.
+- Use Separator for a visual boundary that isn't a title.
 
 ## Properties and defaults
 

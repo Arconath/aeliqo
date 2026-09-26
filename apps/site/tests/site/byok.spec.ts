@@ -8,10 +8,13 @@ test('public playground keeps model credentials and provider transport outside t
   await page.getByRole('button', { name: 'Connect AI' }).click();
   await expect(page.locator('#pg-deepseek-key')).toHaveCount(0);
   await expect(page.locator('#pg-connection-kind option')).toHaveText([
+    'Demo agent (scripted)',
+    'Hosted MCP relay',
     'Local Playground host',
     'WebMCP (experimental)',
   ]);
-  await page.getByRole('button', { name: 'Check local connection' }).click();
+  await page.locator('#pg-connection-kind').selectOption('detect');
+  await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
   await expect(page.locator('#pg-prompt')).toBeDisabled();
   await page.getByRole('button', { name: 'Without AI' }).click();

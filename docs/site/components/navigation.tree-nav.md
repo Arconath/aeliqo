@@ -7,19 +7,24 @@ contract: 'Hierarchical navigation with stable node identities, expansion and ke
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Show a bounded hierarchy of identified navigation nodes with tree keyboard semantics. The component validates node IDs and structure, tracks expanded branches locally, and emits selection or expansion events for the host to coordinate with routing.
+A bounded tree of navigation nodes with stable IDs and tree keyboard semantics. It tracks expansion locally and emits selection or expansion requests.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Navigating sections nested more than one level deep.
+- Trees users expand, collapse, and select by keyboard.
+- Hierarchies keyed by stable, unique node IDs.
 
 ## When to use a different component
 
-Use Breadcrumb for a short path with one current location. TreeNav suits hierarchical sections with expansion and selection.
+- Use Breadcrumb for a short path to one current location.
+- Use Menu for a flat list of commands, not a hierarchy.
 
 ## Properties and defaults
 
@@ -37,14 +42,13 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
-Node IDs must be unique, nonempty strings of at most 160 characters. Cycles,
-invalid node shapes, duplicate IDs, and more than 512 nodes produce a visible
-status message in place of the tree. `expandedIds` synchronizes the initial
-or externally updated expansion set; after an uncancelled expand event, this
-element also updates its local expansion state. After an uncancelled selection
-event it updates `selectedId`. The host should observe those events to keep
-routing and application state aligned, and can pass new props to reconcile
-the tree with an external navigation change.
+Node IDs must be unique, nonempty, and at most 160 characters. Cycles,
+invalid shapes, duplicate IDs, or more than 512 nodes render a status
+message instead of the tree. `expandedIds` sets the expansion set; after an
+uncancelled expand event, the element also updates it locally. An
+uncancelled selection event updates `selectedId`. Watch those events to
+keep routing aligned, and pass new props to reconcile external navigation
+changes.
 
 ## Keyboard, focus, and accessibility
 

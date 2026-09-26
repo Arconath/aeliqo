@@ -5,7 +5,17 @@ export type PlaygroundConnection =
   | { readonly state: 'available'; readonly kind: 'webmcp'; readonly label: string }
   | { readonly state: 'unavailable'; readonly kind: 'local' | 'webmcp'; readonly label: string };
 
-async function checkWebmcp(): Promise<PlaygroundConnection> {
+const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+export function isLoopbackHost(hostname: string): boolean {
+  return LOOPBACK_HOSTNAMES.has(hostname) || hostname.endsWith('.localhost');
+}
+
+function isLoopbackOrigin(): boolean {
+  return typeof window === 'undefined' || isLoopbackHost(window.location.hostname);
+}
+
+async function checkWebMcp(): Promise<PlaygroundConnection> {
   const { detectWebMcp } = await import('@aeliqo/agent/webmcp');
   const hostDocument = typeof document === 'undefined' ? undefined : document;
   const hostNavigator = typeof navigator === 'undefined' ? undefined : navigator;
@@ -18,38 +28,50 @@ async function checkWebmcp(): Promise<PlaygroundConnection> {
     : {
         state: 'unavailable',
         kind: 'webmcp',
-        label: `Native WebMCP is unavailable in this browser. ${detected.reason ?? 'Without AI remains available.'}`,
+        label:
+          'Native WebMCP is unavailable in this browser. The note above explains how to try it — the demo agent works without it.',
       };
 }
 
-export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<PlaygroundConnection> {
-  if (kind === 'webmcp') return checkWebmcp();
+function localUnavailable(label: string): PlaygroundConnection {
+  return { state: 'unavailable', kind: 'local', label };
+}
+
+async function checkLocalHost(): Promise<PlaygroundConnection> {
+  if (!isLoopbackOrigin())
+    return localUnavailable(
+      'The hosted page cannot reach your local runner — the browser blocks cross-site pairing for security reasons. Run `pnpm playground:local` in the repo and open the printed http://127.0.0.1:4174/playground/ address instead.',
+    );
   try {
     const response = await fetch('/api/aeliqo/session', {
       headers: { accept: 'application/json', 'x-aeliqo-session-bootstrap': '1' },
       cache: 'no-store',
     });
     if (!response.ok)
-      return {
-        state: 'unavailable',
-        kind: 'local',
-        label: 'Local host is not running. Without AI remains available.',
-      };
+      return localUnavailable(
+        'No local runner answered. Run `pnpm playground:local` in the repo and open the printed local address — or pick the scripted demo agent.',
+      );
     const value: unknown = await response.json();
     if (!isRecord(value) || value.status !== 'ready')
-      return { state: 'unavailable', kind: 'local', label: 'Local host returned an invalid session response.' };
+      return localUnavailable('The local runner returned an invalid session response.');
     const modelConfigured = value.modelConfigured === true;
     return {
       state: 'connected',
       kind: 'local',
       modelConfigured,
       label: modelConfigured
-        ? 'Local agent host connected. BYOK and MCP are ready.'
-        : 'Local agent host connected for MCP. Configure a model in the local process to enable this composer.',
+        ? 'Local runner connected — MCP endpoint and model are ready.'
+        : 'Local runner connected — MCP endpoint is ready. Configure a model in the local process to enable prompts.',
     };
   } catch {
-    return { state: 'unavailable', kind: 'local', label: 'Local host is not running. Without AI remains available.' };
+    return localUnavailable(
+      'No local runner answered. Run `pnpm playground:local` in the repo and open the printed local address — or pick the scripted demo agent.',
+    );
   }
+}
+
+export async function checkConnection(kind: 'detect' | 'webmcp'): Promise<PlaygroundConnection> {
+  return kind === 'webmcp' ? checkWebMcp() : checkLocalHost();
 }
 
 export interface LocalPromptReceipt {

@@ -263,7 +263,7 @@ const scenarios: readonly PlaygroundScenario[] = [
       {
         id: 'people-detail',
         label: 'Open Ada',
-        description: 'A detail intent keeps stable identity.',
+        description: 'A detail request keeps stable identity.',
         intent: () =>
           intent({ version: '1', id: 'people-detail', kind: 'detail', resource: 'people', identity: { id: 'p-1' } }),
       },
@@ -399,7 +399,7 @@ const scenarios: readonly PlaygroundScenario[] = [
   {
     id: 'knowledge',
     label: 'Knowledge',
-    description: 'Search content, open a reading view, and run a consumer-defined intent.',
+    description: 'Search content, open a reading view, and run a consumer-defined request.',
     steps: [
       {
         id: 'knowledge-search',
@@ -433,7 +433,7 @@ const scenarios: readonly PlaygroundScenario[] = [
       {
         id: 'knowledge-related',
         label: 'Security topic',
-        description: 'A namespaced custom intent compiles outside core and uses the same validator.',
+        description: 'A namespaced custom request compiles outside core and uses the same validator.',
         intent: () =>
           intent({
             version: '1',
