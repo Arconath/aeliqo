@@ -25,13 +25,17 @@ git diff --quiet
 git diff --cached --quiet
 
 sdk_revision="$SOURCE_SHA"
+# The registry artifacts are bound to the revision that published the packages;
+# a site-only redeploy binds them to the earlier published source instead.
+registry_source="${AELIQO_REGISTRY_SOURCE:-$SOURCE_SHA}"
+[[ "$registry_source" =~ ^[0-9a-f]{40}$ ]]
 release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
 sdk_version="$(jq -er --arg version "$release_version" '.version | select(. == $version)' packages/core/package.json)"
 test "$AELIQO_EXPORT_VERIFIED_VERSION" = "$release_version"
-jq -e --arg version "$release_version" --arg sha "$SOURCE_SHA" \
+jq -e --arg version "$release_version" --arg sha "$registry_source" \
   '.version == $version and .expectedSourceRevision == $sha and .provenanceVerified == true and (.packages | length) == 5' \
   artifacts/site-release-policy/registry-consumer.json >/dev/null
-jq -e --arg version "$release_version" --arg sha "$SOURCE_SHA" \
+jq -e --arg version "$release_version" --arg sha "$registry_source" \
   '.schema == "aeliqo.export-registry.v1" and .status == "passed" and .version == $version and .sourceRevision == $sha and
    (.scenarios | length) == 4 and ([.scenarios[].build] | all(. == "passed")) and
    (.tags | length) == 5 and ([.tags[]] | all(. == $version))' \

@@ -95,19 +95,19 @@ jobs:
           corepack prepare pnpm@11.24.0 --activate
           pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium firefox webkit
-      # Pull requests take the lane matching their changed paths; pushes to main
-      # and owner dispatches always run the full matrix because release and site
-      # publication require a same-SHA full-quality success.
+      # Pull requests and pushes to main take the lane matching their changed
+      # paths; owner dispatches always run the full matrix because package
+      # publication requires a same-SHA full-quality success. Site redeploys
+      # accept the site lane when package-affecting source is unchanged.
       - name: Select the check scope for this change
         id: scope
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           set -Eeuo pipefail
           mode=full
-          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$BASE_SHA" ]; then
-            [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          if [ "$EVENT_NAME" != "workflow_dispatch" ] && [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
             git fetch --quiet --depth=1 origin "$BASE_SHA"
             site_only=true
             changed=0

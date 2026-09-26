@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       stable_publish_run_id:
-        description: Successful same-SHA stable package publication run
-        required: true
+        description: Successful same-SHA stable package publication run; omit only when the deploy changes site-surface files alone
+        required: false
         type: string
 
 permissions:
@@ -58,37 +58,77 @@ jobs:
           STABLE_RUN_ID: ${{ inputs.stable_publish_run_id }}
         run: |
           set -Eeuo pipefail
-          [[ "$STABLE_RUN_ID" =~ ^[1-9][0-9]*$ ]]
           RELEASE_VERSION="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
-          gh api "repos/$GH_REPO/actions/runs/$STABLE_RUN_ID" > artifacts/site-release-policy/stable-run.json
-          jq -e --arg sha "$SOURCE_SHA" '
-            .head_sha == $sha and .head_branch == "main" and
-            .event == "workflow_dispatch" and .status == "completed" and
-            .conclusion == "success" and .path == ".github/workflows/release-publish.yml"
-          ' artifacts/site-release-policy/stable-run.json >/dev/null
+          # Two publication modes share one verified identity:
+          # - release mode passes a stable publish run bound to SOURCE_SHA;
+          # - site-only mode finds the stable run that published RELEASE_VERSION
+          #   and requires package-affecting source to be identical since then,
+          #   so redeploying docs/site does not republish unchanged packages.
+          if [[ "$STABLE_RUN_ID" =~ ^[1-9][0-9]*$ ]]; then
+            PUBLISHED_SHA="$SOURCE_SHA"
+            gh api "repos/$GH_REPO/actions/runs/$STABLE_RUN_ID" > artifacts/site-release-policy/stable-run.json
+            jq -e --arg sha "$SOURCE_SHA" '
+              .head_sha == $sha and .head_branch == "main" and
+              .event == "workflow_dispatch" and .status == "completed" and
+              .conclusion == "success" and .path == ".github/workflows/release-publish.yml"
+            ' artifacts/site-release-policy/stable-run.json >/dev/null
+          elif [ -z "$STABLE_RUN_ID" ]; then
+            gh api --method GET "repos/$GH_REPO/actions/workflows/release-publish.yml/runs" \
+              -f branch=main -f event=workflow_dispatch -f status=success -f per_page=30 \
+              --jq '.workflow_runs | map({id,head_sha,conclusion,status}) | sort_by(-.id)' \
+              > artifacts/site-release-policy/publish-runs.json
+            PUBLISHED_SHA=""
+            PUBLISH_RUN_ID=""
+            while IFS=$'\t' read -r run_id head_sha; do
+              artifact_name="aeliqo-npm-publication-$RELEASE_VERSION-$head_sha"
+              if gh api "repos/$GH_REPO/actions/runs/$run_id/artifacts" \
+                --jq '.artifacts[].name' | grep -qx "$artifact_name"; then
+                PUBLISHED_SHA="$head_sha"
+                PUBLISH_RUN_ID="$run_id"
+                break
+              fi
+            done < <(jq -er '.[] | select(.conclusion == "success" and .status == "completed") | [.id, .head_sha] | @tsv' \
+              artifacts/site-release-policy/publish-runs.json)
+            if [ -z "$PUBLISHED_SHA" ]; then
+              echo "No stable publication of $RELEASE_VERSION exists to deploy against." >&2
+              exit 1
+            fi
+            git fetch --quiet --depth=1 origin "$PUBLISHED_SHA"
+            while IFS= read -r path; do
+              case "$path" in
+                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*) ;;
+                *) echo "Package-affecting path changed since published source $PUBLISHED_SHA: $path" >&2; exit 1 ;;
+              esac
+            done < <(git diff --name-only "$PUBLISHED_SHA" "$SOURCE_SHA")
+            STABLE_RUN_ID="$PUBLISH_RUN_ID"
+          else
+            echo "stable_publish_run_id must be a numeric run id or empty." >&2
+            exit 1
+          fi
           mkdir -p artifacts/approved-stable
           gh run download "$STABLE_RUN_ID" --repo "$GH_REPO" \
-            --name "aeliqo-npm-publication-$RELEASE_VERSION-$SOURCE_SHA" --dir artifacts/approved-stable
+            --name "aeliqo-npm-publication-$RELEASE_VERSION-$PUBLISHED_SHA" --dir artifacts/approved-stable
           APPROVED_DIR=artifacts/approved-stable/release-candidate
           node scripts/release/verify-approved-stable.mjs \
             --candidate "$APPROVED_DIR/manifest.json" \
             --publication "$APPROVED_DIR/publication.json" \
-            --consumer "$APPROVED_DIR/registry-consumer.json" --source "$SOURCE_SHA"
+            --consumer "$APPROVED_DIR/registry-consumer.json" --source "$PUBLISHED_SHA"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
           pnpm install --frozen-lockfile
           node scripts/release/registry-consumer.mjs --version "$RELEASE_VERSION" \
             --expected-candidate "$APPROVED_DIR/manifest.json" \
-            --require-provenance-source "$SOURCE_SHA" \
+            --require-provenance-source "$PUBLISHED_SHA" \
             --output artifacts/site-release-policy/registry-consumer.json
           node scripts/release/verify-approved-stable.mjs \
             --candidate "$APPROVED_DIR/manifest.json" \
             --publication "$APPROVED_DIR/publication.json" \
-            --consumer artifacts/site-release-policy/registry-consumer.json --source "$SOURCE_SHA"
+            --consumer artifacts/site-release-policy/registry-consumer.json --source "$PUBLISHED_SHA"
           node --experimental-strip-types scripts/release/verify-export-registry.mjs \
-            --version "$RELEASE_VERSION" --source "$SOURCE_SHA" \
+            --version "$RELEASE_VERSION" --source "$PUBLISHED_SHA" \
             --output artifacts/site-release-policy/export-consumer.json
           echo "AELIQO_EXPORT_VERIFIED_VERSION=$RELEASE_VERSION" >> "$GITHUB_ENV"
+          echo "AELIQO_REGISTRY_SOURCE=$PUBLISHED_SHA" >> "$GITHUB_ENV"
       - name: Publish, attest, and scan the immutable site image
         env:
           GH_TOKEN: ${{ github.token }}
@@ -97,6 +137,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           SOURCE_SHA: ${{ github.sha }}
           AELIQO_EXPORT_VERIFIED_VERSION: ${{ env.AELIQO_EXPORT_VERIFIED_VERSION }}
+          AELIQO_REGISTRY_SOURCE: ${{ env.AELIQO_REGISTRY_SOURCE }}
         run: apps/site/scripts/ci/publish-production-image.sh
       - name: Upload immutable image identity, provenance, SBOM, and vulnerability report
         if: always()
