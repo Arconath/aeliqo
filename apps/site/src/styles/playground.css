@@ -282,9 +282,11 @@
 }
 .pg-menu {
   position: relative;
+  padding: 0;
+  border: 0;
 }
 .pg-menu > summary {
-  display: inline-flex;
+  display: flex;
   min-height: 2.1rem;
   align-items: center;
   gap: 0.3rem;
@@ -523,4 +525,9 @@
 .pg-public-journeys {
   border-block-start: 1px solid var(--line);
   padding-block-start: var(--space-4);
+}
+@media (pointer: coarse) {
+  .pg-toolbar :is(button, select, summary) {
+    min-height: var(--aeliqo-control-min-target);
+  }
 }

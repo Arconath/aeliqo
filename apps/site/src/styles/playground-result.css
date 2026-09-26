@@ -393,10 +393,8 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
   .pg-menu-body {
-    position: static;
+    width: min(15rem, calc(100vw - 2rem));
     min-width: 0;
-    margin-block-start: 0.4rem;
-    box-shadow: none;
   }
   .pg-menu {
     justify-self: end;
