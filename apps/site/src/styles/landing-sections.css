@@ -1,29 +1,3 @@
-.ownership-strip {
-  border-block: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface-raised) 82%, var(--surface));
-}
-.ownership-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-6);
-  padding-block: 1.35rem;
-}
-.ownership-row > span {
-  color: var(--line-strong);
-}
-.ownership-row p {
-  display: grid;
-  gap: 0.2rem;
-  margin: 0;
-}
-.ownership-row strong {
-  font-size: var(--type-code);
-}
-.ownership-row p span {
-  color: var(--muted);
-  font-size: var(--type-compact);
-}
 .use-cases {
   padding-block: clamp(5.5rem, 10vw, 9.5rem);
 }
@@ -81,7 +55,7 @@
 }
 .use-case-list strong {
   font-size: 1.2rem;
-  letter-spacing: -0.03em;
+  letter-spacing: var(--tracking-tight);
 }
 .use-case-list p {
   margin: 0;
@@ -90,64 +64,7 @@
 .use-case-list b {
   color: var(--accent);
   font-size: var(--type-compact-readable);
-  font-weight: 650;
-}
-.proof {
-  padding-block: clamp(4.5rem, 8vw, 7.5rem);
-}
-.proof-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-8);
-}
-.proof-pane {
-  min-width: 0;
-  margin: 0;
-}
-.proof-pane-wide {
-  grid-column: 1 / -1;
-}
-.proof-pane figcaption {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.35rem 0.7rem;
-  margin-bottom: 0.7rem;
-  font-size: var(--type-compact-readable);
-}
-.proof-pane figcaption code {
-  padding: 0.15rem 0.55rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  color: var(--muted);
-  background: var(--surface-raised);
-  font-size: var(--type-caption);
-}
-.proof-pane figcaption span {
-  color: var(--accent);
-  font-weight: 650;
-}
-.proof-scroll {
-  min-width: 0;
-  padding: 0.9rem;
-  overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-soft);
-  background: var(--surface-raised);
-}
-.proof-target {
-  min-height: 12rem;
-}
-.proof-target-wide {
-  min-inline-size: 42rem;
-}
-.proof-target-narrow {
-  inline-size: 19rem;
-  max-inline-size: 100%;
-  margin-inline: auto;
-}
-.proof-note {
-  margin-top: var(--space-6);
+  font-weight: var(--weight-strong);
 }
 .approach {
   display: grid;
@@ -193,7 +110,7 @@
 }
 .approach-list h3 {
   margin: 0 0 var(--space-2);
-  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  font-size: clamp(1.15rem, 1.5vw, 1.35rem);
 }
 .approach-list p {
   margin: 0 0 var(--space-4);
@@ -202,8 +119,8 @@
 }
 .approach-list a {
   color: var(--accent);
-  font-size: 0.84rem;
-  font-weight: 650;
+  font-size: var(--type-small);
+  font-weight: var(--weight-strong);
   text-decoration: none;
 }
 .boundary-section {
@@ -267,12 +184,8 @@
   }
   .approach,
   .boundary-grid,
-  .section-intro,
-  .proof-grid {
+  .section-intro {
     grid-template-columns: 1fr;
-  }
-  .proof-pane-wide {
-    grid-column: auto;
   }
   .section-intro .eyebrow {
     grid-column: auto;
@@ -288,33 +201,11 @@
   }
   .hero h1 {
     max-width: 14ch;
-    font-size: clamp(2.65rem, 12vw, 4rem);
+    font-size: clamp(2.1rem, 10vw, 3rem);
   }
-  .product-window {
-    padding: 0.7rem;
-  }
-  .product-window > header {
+  .demo-bar {
     align-items: flex-start;
-    padding-inline: 0.2rem;
-  }
-  .runtime-state {
-    font-size: var(--type-micro);
-  }
-  .product-canvas {
-    padding: 0.8rem;
-  }
-  .demo-heading {
-    grid-template-columns: 1fr;
-    gap: 0.8rem;
-  }
-  .demo-controls {
-    grid-template-columns: 1fr 1fr;
-  }
-  .demo-controls label {
-    grid-column: 1 / -1;
-  }
-  .demo-flow-arrow {
-    display: none;
+    flex-direction: column;
   }
   .use-case-list a {
     grid-template-columns: 2rem minmax(0, 1fr) auto;
@@ -334,31 +225,17 @@
 }
 @media (forced-colors: active) {
   .product-window,
-  .demo-stage,
-  .demo-intent,
-  .proof-scroll,
-  .proof-pane figcaption code,
+  .demo-view,
+  #home-demo,
+  #home-trend,
   .boundary-section {
     border-color: CanvasText;
     box-shadow: none;
   }
-  .demo-width button[aria-pressed='true'] {
-    color: HighlightText;
-    background: Highlight;
+  .demo-view button[aria-pressed='true'] {
+    border-color: Highlight;
   }
-  .product-window {
-    color: CanvasText;
-    background: Canvas;
-  }
-  .product-mark {
-    color: HighlightText;
-    background: Highlight;
-  }
-  .runtime-state {
-    color: CanvasText;
-  }
-  .demo-flow-step[aria-current='step'] {
-    color: HighlightText;
-    background: Highlight;
+  .demo-tab[aria-selected='true'] {
+    border-bottom-color: Highlight;
   }
 }
