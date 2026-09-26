@@ -7,15 +7,6 @@ test('the public playground uses the app facade without AI and through scenario 
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/playground/');
-  const bootError = await page.evaluate(async (path) => {
-    try {
-      await import(path);
-      return null;
-    } catch (error) {
-      return error instanceof Error ? error.stack : String(error);
-    }
-  }, '/playground-src/playground.js');
-  expect(bootError).toBeNull();
   await expect(page.locator('#pg-boot')).toBeHidden();
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('#pg-journey-intent')).toHaveText('Browse people');

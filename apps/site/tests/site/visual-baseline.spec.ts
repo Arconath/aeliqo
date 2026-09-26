@@ -30,7 +30,7 @@ for (const route of routes) {
 
         if (route.id === 'landing') await expect(page.locator('#demo-status')).toContainText('4 of 4');
         if (route.id === 'docs')
-          await expect(page.getByRole('heading', { level: 1 })).toContainText('Build your first');
+          await expect(page.getByRole('heading', { level: 1 })).toHaveText('Build interfaces that adapt to the task');
         if (route.id === 'component') {
           await expect(page.locator('[data-preview-status]')).toHaveText('Interactive preview loaded.');
         }
