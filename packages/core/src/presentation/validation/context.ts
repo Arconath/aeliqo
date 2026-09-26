@@ -1,4 +1,4 @@
-import { parseEnvironment, parseResult } from '../../contracts/parse.js';
+import { parseEnvironment, parseResult, parsePresentationPlan } from '../../contracts/parse.js';
 import { validateCommitReadSet } from '../../contracts/commit.js';
 import { WIRE_LIMITS } from '../../contracts/limits.js';
 import { resolveExperienceConstraints } from '../../contracts/experience/index.js';
@@ -116,6 +116,8 @@ export function preparePresentationContext(context: PresentationContext): Outcom
   const results = prepareAuthorizedResults(context.results, current.value.results);
   if (!results.ok) return results;
 
+  const incumbent = prepareIncumbent(context);
+  if (!incumbent.ok) return incumbent;
   const task = freezePresentation(constraints.value.task);
   const experience = freezePresentation(constraints.value.experience);
   const environmentValue = freezePresentation(environment.value);
@@ -126,6 +128,7 @@ export function preparePresentationContext(context: PresentationContext): Outcom
     results: results.value,
     current: currentValue,
     environment: environmentValue,
+    ...(incumbent.value === undefined ? {} : { incumbent: incumbent.value }),
   });
   return {
     ok: true,
@@ -141,4 +144,14 @@ export function preparePresentationContext(context: PresentationContext): Outcom
       patternContext,
     }),
   };
+}
+
+function prepareIncumbent(context: PresentationContext) {
+  if (context.incumbent === undefined) return { ok: true as const, value: undefined };
+  const parsed = parsePresentationPlan(context.incumbent);
+  if (!parsed.ok) return parsed;
+  const refs = parsed.value.nodes.flatMap((node) => (node.result === undefined ? [] : [node.result]));
+  const current = validateCommitReadSet(parsed.value.preconditions, context.current, refs);
+  if (!current.ok) return current;
+  return { ok: true as const, value: freezePresentation(parsed.value) };
 }

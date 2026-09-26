@@ -110,7 +110,7 @@
       "name": "TextField",
       "family": "input",
       "license": "Apache-2.0",
-      "contract": "Label, description, validation, autocomplete and IME-safe controlled/uncontrolled value.",
+      "contract": "Label, description, validation, autocomplete and an IME-safe local value draft.",
       "surfaces": ["standalone", "semantic"]
     },
     {
@@ -366,7 +366,7 @@
       "name": "Detail",
       "family": "data",
       "license": "Apache-2.0",
-      "contract": "Selected entity facts including missing fields; record identity persists across views.",
+      "contract": "Selected entity facts including missing fields; identity visibility is explicit.",
       "surfaces": ["standalone", "semantic", "adaptive"]
     },
     {
@@ -558,7 +558,7 @@
       "name": "FormFlow",
       "family": "compound",
       "license": "Apache-2.0",
-      "contract": "Task-based steps, draft persistence, validation and reversible navigation before commit.",
+      "contract": "Task-based steps, draft continuity, validation and reversible navigation before commit.",
       "surfaces": ["standalone"]
     },
     {

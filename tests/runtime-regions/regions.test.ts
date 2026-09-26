@@ -1349,3 +1349,62 @@ describe('transactional region store', () => {
     if (!created.ok) expect(created.diagnostics[0]?.code).toBe('runtime.region-denied');
   });
 });
+
+it.each([
+  'principalKey',
+  'scopeDigest',
+  'policyRevision',
+  'catalogRevision',
+  'experienceRevision',
+  'functionRegistryDigest',
+] as const)('rechecks %s changed by the final projection before publication', async (field) => {
+  const { region } = create();
+  const before = region.snapshot();
+  const staged = await region.stage({
+    requestId: 'projection-authority',
+    expected: before.readSet!,
+    state: { task: task() },
+  });
+  if (!staged.ok) throw Error('Stage failed');
+  const result = await region.commit(staged.value, {
+    recheck() {
+      authority = {
+        ...authority,
+        [field]: `${authority[field]}-changed`,
+        ...(field === 'scopeDigest' ? { results: [] } : {}),
+      };
+      return { ok: true, value: undefined };
+    },
+  });
+  expect(result).toMatchObject({ ok: false, diagnostics: [{ code: 'runtime.region-stale' }] });
+  expect(region.snapshot()).toEqual(before);
+  region.dispose();
+});
+
+it('honors cancellation reentered by the post-projection authority read', async () => {
+  const abort = new AbortController();
+  let applied = false;
+  const { region } = create({
+    readAuthority() {
+      if (applied) abort.abort();
+      return { ok: true, value: authority };
+    },
+  });
+  const before = region.snapshot();
+  const staged = await region.stage({
+    requestId: 'projection-abort',
+    expected: before.readSet!,
+    state: { task: task() },
+  });
+  if (!staged.ok) throw Error('Stage failed');
+  const result = await region.commit(staged.value, {
+    signal: abort.signal,
+    recheck() {
+      applied = true;
+      return { ok: true, value: undefined };
+    },
+  });
+  expect(result).toMatchObject({ ok: false, diagnostics: [{ code: 'runtime.region-cancelled' }] });
+  expect(region.snapshot()).toEqual(before);
+  region.dispose();
+});

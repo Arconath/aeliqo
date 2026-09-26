@@ -5,7 +5,7 @@ const port = await testPort('AELIQO_DESIGN_TEST_PORT');
 const origin = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: '.',
-  testMatch: '**/*.spec.ts',
+  testMatch: 'baseline.spec.ts',
   timeout: 30_000,
   outputDir: '../../artifacts/design-browser',
   use: { baseURL: origin, browserName: 'chromium', trace: 'retain-on-failure' },

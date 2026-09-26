@@ -1,0 +1,13 @@
+{
+  "status": "unapproved",
+  "baselineSHA": null,
+  "fixtureSHA": null,
+  "review": null,
+  "runner": null,
+  "reproducibility": {
+    "requiredCapturesPerSource": 2,
+    "byteIdenticalRepeats": true,
+    "maxDiffPixels": 0,
+    "threshold": 0
+  }
+}

@@ -13,17 +13,19 @@ contract: 'Bounded quantity with keyboard and text alternative; steps and units 
 
 ## Purpose
 
-A native range control for one bounded quantity with a visible value and unit. It applies `min`, `max`, and `step` to changes; the host interprets the result.
+A native range control paired with an editable numeric field for one bounded quantity. The host can
+set `value`; either control updates that local property and shows its unit. `min`, `max`, and `step`
+constrain edits, while the host decides what to retain or persist.
 
 ## When to use it
 
 - People adjust a quantity inside declared bounds, such as volume or confidence.
-- An approximate position is enough; exact digits are not required.
-- The current value and unit should stay visible beside the track.
+- A range is useful, but people also need to enter an exact value directly.
+- The current value and unit should stay visible beside the track and numeric field.
 
 ## When to use a different component
 
-- Use [NumberField](/components/input.number-field/) when the exact value matters or people type digits.
+- Use [NumberField](/components/input.number-field/) when a range control would not help people choose the value.
 - Use [Form](/components/input.form/) when the value submits alongside other fields.
 
 ## Properties and defaults
@@ -73,6 +75,4 @@ Give the track its own row in narrow forms. Keep its numeric label and unit visi
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

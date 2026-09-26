@@ -38,7 +38,16 @@ export function AeliqoRegion({
   useEffect(() => {
     if (intent === undefined || target.current === null) return;
     const controller = new AbortController();
-    void app.render({ regionId, intent, signal: controller.signal }).then((outcome) => receipt.current?.(outcome));
+    void app.render({ regionId, intent, signal: controller.signal }).then(
+      (outcome) => {
+        try {
+          receipt.current?.(outcome);
+        } catch {
+          // Host receipt observers must not become unhandled rejections.
+        }
+      },
+      () => undefined,
+    );
     return () => {
       controller.abort();
     };

@@ -256,7 +256,7 @@ async function setBoundedRows(host: Locator, id: 'trend' | 'timeline' | 'tree'):
 for (const variant of REVIEW_VARIANTS) {
   test.describe(`${variant} visualization interactions`, () => {
     for (const id of VISUALIZATIONS) {
-      test(`${id} selects a stable identity with exact result lineage`, async ({ page }) => {
+      test(`${id} selects a stable identity with exact result lineage`, async ({ page }, info) => {
         const session = await openVisualization(page, id, variant);
         const { identity, result, rowText, reorderedIndex } = expectedSelection[id];
         const button = session.host.locator('[part=data] tbody button').first();
@@ -282,11 +282,12 @@ for (const variant of REVIEW_VARIANTS) {
         const axe = await new AxeBuilder({ page }).include(`#fixture aeliqo-${id}`).analyze();
         expect(axe.violations).toEqual([]);
         expect(session.errors).toEqual([]);
+        await page.screenshot({ path: info.outputPath('selected-reordered.png'), fullPage: true });
       });
     }
 
     for (const id of VISUALIZATIONS) {
-      test(`${id} keeps the existing partial and empty data states honest`, async ({ page }) => {
+      test(`${id} keeps the existing partial and empty data states honest`, async ({ page }, info) => {
         const session = await openVisualization(page, id, variant);
         await setVisualizationState(session.host, 'partial');
         await expect(session.host.locator('[part=scope]')).toContainText('Partial');
@@ -304,6 +305,7 @@ for (const variant of REVIEW_VARIANTS) {
         // Loading and error remain host/materialization concerns covered by the
         // existing state suite; this matrix does not invent unsupported props.
         expect(session.errors).toEqual([]);
+        await page.screenshot({ path: info.outputPath('empty.png'), fullPage: true });
       });
     }
   });
@@ -311,7 +313,7 @@ for (const variant of REVIEW_VARIANTS) {
 
 for (const id of ['trend', 'timeline', 'tree'] as const) {
   for (const variant of REVIEW_VARIANTS) {
-    test(`${id} ${variant} paginates 30 rows while retaining a bounded data-only path`, async ({ page }) => {
+    test(`${id} ${variant} paginates 30 rows while retaining a bounded data-only path`, async ({ page }, info) => {
       const session = await openVisualization(page, id, variant);
       await setBoundedRows(session.host, id);
       await expect(session.host.locator('svg')).toHaveCount(0);
@@ -336,6 +338,7 @@ for (const id of ['trend', 'timeline', 'tree'] as const) {
       expect(pageOne.at(-1)?.[1]).toBe(id === 'tree' ? 'node-24' : 'row-24');
       await expect(session.host.locator('[role="status"]')).toContainText(/budget|density/i);
       expect(session.errors).toEqual([]);
+      await page.screenshot({ path: info.outputPath('bounded-page.png'), fullPage: true });
     });
   }
 }

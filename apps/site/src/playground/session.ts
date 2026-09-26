@@ -1,12 +1,14 @@
 import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import { type Intent, type Outcome } from '@aeliqo/core';
-import type { AgentModelToolEndpoint, AgentToolTransport } from '@aeliqo/agent/protocol';
 import { createAeliqoApp, type AeliqoAppActionEvent, type WebRenderReceipt } from '@aeliqo/web/app';
 import { STANDARD_RECIPES } from '@aeliqo/web/recipes';
 import type { WebMcpEvidence } from '@aeliqo/agent/webmcp';
 import { customIntentRecipe, knowledgeArticleView, PLAYGROUND_INTENTS } from './scenarios.js';
 import { createPlaygroundData, readPlaygroundFormState } from './session-data.js';
-import { createPlaygroundAgentConnections } from './session-agents.js';
+import { createPlaygroundAgentConnections, type BrowserToolState } from './session-agents.js';
+
+import { dailyAttendanceIntent } from '../../../../examples/vnext/attendance/data.js';
+import { LAYOUT_STATE_MAPPINGS, LAYOUT_PATTERNS, LAYOUT_VIEWS } from '../../../../examples/vnext/workspace/page.js';
 
 const REGION_ID = 'playground-main';
 const PRINCIPAL = 'public-demo';
@@ -16,12 +18,9 @@ export interface PlaygroundSession {
   readonly regionId: string;
   render(target: HTMLElement, intent: Intent, signal?: AbortSignal): Promise<WebRenderReceipt>;
   context(): ReturnType<ReturnType<typeof createAeliqoApp>['runtime']['context']>;
-  connectAgent(
-    transport: Extract<AgentToolTransport, 'byok' | 'mcp'>,
-    goalEpoch?: string,
-  ): Promise<Outcome<AgentModelToolEndpoint>>;
-  connectDemoAgent(): Promise<Outcome<AgentModelToolEndpoint>>;
-  connectWebMcp(): Promise<Outcome<{ readonly registrations: number; readonly evidence: WebMcpEvidence }>>;
+  connectWebMcp(
+    onState?: (state: BrowserToolState) => void,
+  ): Promise<Outcome<{ readonly registrations: number; readonly evidence: WebMcpEvidence }>>;
   disconnectWebMcp(): void;
   dispose(): void;
 }
@@ -30,6 +29,7 @@ function createSessionApp(
   data: ReturnType<typeof createPlaygroundData>,
   agentEgress: { enabled: boolean },
   onActionEvent: PlaygroundSessionActionHandler,
+  onPresentation?: (receipt: WebRenderReceipt) => void,
 ) {
   const authority = {
     read: () => ({
@@ -59,8 +59,11 @@ function createSessionApp(
     intents: PLAYGROUND_INTENTS,
     actionPort: data.actionPort,
     recipes: [...STANDARD_RECIPES, customIntentRecipe],
-    views: [knowledgeArticleView],
+    views: [knowledgeArticleView, ...LAYOUT_VIEWS],
+    patterns: LAYOUT_PATTERNS,
+    stateMappings: LAYOUT_STATE_MAPPINGS,
     onActionEvent,
+    ...(onPresentation === undefined ? {} : { onPresentation }),
     formState: {
       read: ({ resource, intent }) => readPlaygroundFormState(data.records, data.revisions, resource, intent),
     },
@@ -94,7 +97,21 @@ function createSessionRenderer(app: SessionApp) {
       mountedResource = intent.resource;
       mountedTarget = target;
     }
-    return app.render({ regionId: REGION_ID, intent, ...(signal === undefined ? {} : { signal }) });
+    const daily = dailyAttendanceIntent();
+    const bounded =
+      intent.resource === 'daily-attendance' && intent.kind === 'analyze' && daily.kind === 'analyze'
+        ? {
+            ...intent,
+            filter:
+              intent.filter === undefined
+                ? daily.filter
+                : {
+                    op: 'and' as const,
+                    predicates: [daily.filter!, intent.filter],
+                  },
+          }
+        : intent;
+    return app.render({ regionId: REGION_ID, intent: bounded, ...(signal === undefined ? {} : { signal }) });
   };
   return {
     render,
@@ -109,12 +126,13 @@ function createSessionRenderer(app: SessionApp) {
 export function createPlaygroundSession(
   onActionEvent: PlaygroundSessionActionHandler,
   onAgentRender?: (intent: Intent, receipt: WebRenderReceipt) => void | Promise<void>,
+  onPresentation?: (receipt: WebRenderReceipt) => void,
 ): PlaygroundSession {
   const functions = createQueryFunctionRegistry({ version: '2' });
   if (!functions.ok) throw new Error(functions.diagnostics[0].message);
   const data = createPlaygroundData(functions.value);
-  const agentEgress = { enabled: false, webMcp: undefined, endpoints: new Set<AgentModelToolEndpoint>() };
-  const app = createSessionApp(data, agentEgress, onActionEvent);
+  const agentEgress = { enabled: false };
+  const app = createSessionApp(data, agentEgress, onActionEvent, onPresentation);
   const renderer = createSessionRenderer(app);
   const connections = createPlaygroundAgentConnections({
     app,
@@ -128,8 +146,6 @@ export function createPlaygroundSession(
     regionId: REGION_ID,
     render: renderer.render,
     context: () => app.runtime.context(REGION_ID),
-    connectAgent: connections.connectAgent,
-    connectDemoAgent: connections.connectDemoAgent,
     connectWebMcp: connections.connectWebMcp,
     disconnectWebMcp: connections.disconnectWebMcp,
     dispose() {

@@ -13,7 +13,10 @@ contract: 'Searchable choice with APG behavior; stale remote options cannot over
 
 ## Purpose
 
-A searchable choice field that keeps the typed query separate from the committed option. Late remote responses are ignored, so stale options never overwrite current input.
+A searchable choice field with separate local `query` and selected `value` properties. The host can
+set the selected `value`; typing clears it, while choosing an option updates it and emits a typed
+change. Late remote responses are ignored, so stale options do not replace current results; the host
+owns query sourcing and persistence.
 
 ## When to use it
 
@@ -82,6 +85,4 @@ Keep the query draft and selected value distinct at narrow widths. Test long opt
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

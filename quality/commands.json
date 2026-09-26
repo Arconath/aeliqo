@@ -445,6 +445,21 @@
       "kind": "packages",
       "argv": ["pnpm", "test:release-tooling"],
       "timeoutSeconds": 600
+    },
+    {
+      "kind": "packages",
+      "argv": ["pnpm", "test:local-agent"],
+      "timeoutSeconds": 600
+    },
+    {
+      "kind": "unit",
+      "argv": ["pnpm", "test:visual:tooling"],
+      "timeoutSeconds": 180
+    },
+    {
+      "kind": "unit",
+      "argv": ["pnpm", "test:performance:paired:tooling"],
+      "timeoutSeconds": 180
     }
   ]
 }

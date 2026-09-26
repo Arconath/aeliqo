@@ -13,7 +13,8 @@ contract: 'Native-first modal semantics, focus containment/return and escape pol
 
 ## Purpose
 
-A modal dialog that contains focus while open. Escape and the close button follow the dismissal policy and emit a request; the host owns the action inside.
+A modal dialog that contains focus while open. `closeOnEscape` controls Escape dismissal; the close
+button always emits a close request. The host owns the action inside.
 
 ## When to use it
 
@@ -73,6 +74,4 @@ Keep modal actions reachable within the viewport. Let long content scroll withou
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

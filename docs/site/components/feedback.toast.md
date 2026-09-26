@@ -13,7 +13,8 @@ contract: 'Bounded transient feedback; essential errors remain persistently avai
 
 ## Purpose
 
-Transient feedback shown while `open`, dismissed on a timer or by request. Important failures need a persistent home elsewhere; the toast only reports the host's result.
+Transient feedback shown while `open`. Non-danger tones can dismiss on a timer or by request; danger
+tones remain open until dismissed. Keep important failures available in a persistent place too.
 
 ## When to use it
 
@@ -78,6 +79,4 @@ Allow long messages to wrap within the available width. Place transient feedback
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

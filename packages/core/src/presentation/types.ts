@@ -47,6 +47,8 @@ export interface PresentationPatternContext {
   readonly results: readonly Result[];
   readonly current: CommitPreconditions;
   readonly environment: PresentationEnvironment;
+  /** Parsed current presentation, for explicit registered state transfers. */
+  readonly incumbent?: PresentationPlan;
 }
 export interface PresentationPatternRequest {
   readonly id: string;

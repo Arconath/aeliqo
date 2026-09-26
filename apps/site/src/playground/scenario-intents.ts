@@ -2,8 +2,10 @@ import { createIntentCompilerRegistry } from '@aeliqo/core/app';
 import type { Outcome, Task } from '@aeliqo/core';
 import { defineRecipe, standardDataRecipe } from '@aeliqo/web/recipes';
 import * as z from 'zod';
+import { LAYOUT_INTENTS } from '../../../../examples/vnext/workspace/page.js';
 
 const customIntent = createIntentCompilerRegistry([
+  ...LAYOUT_INTENTS,
   {
     ref: { id: 'demo.knowledge.by-topic', revision: '1' },
     schema: z.object({ topic: z.string().min(1).max(80) }),

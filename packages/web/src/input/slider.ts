@@ -171,11 +171,11 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
         min-inline-size: 0;
       }
       input[type='number'] {
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: max(var(--_aeliqo-coarse-target, 0px), var(--aeliqo-control-min-target, 2.75rem));
       }
       @media (max-width: 30rem) {
         .slider-row {
-          grid-template-columns: minmax(5rem, 7rem) auto 1fr;
+          grid-template-columns: minmax(0, 7rem) auto minmax(0, 1fr);
         }
         input[type='range'] {
           grid-column: 1 / -1;

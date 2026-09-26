@@ -21,6 +21,8 @@ import {
 const sourceRevision = 'a'.repeat(40);
 const rc2 = `${RELEASE_VERSION}-rc.2`;
 const rc3 = `${RELEASE_VERSION}-rc.3`;
+const [releaseMajor, releaseMinor] = RELEASE_VERSION.split('.').map(Number);
+const futureLineRc = `${releaseMajor}.${releaseMinor + 1}.0-rc.1`;
 const packages = PUBLIC_PACKAGE_NAMES.map((name, index) => ({
   name,
   version: rc2,
@@ -220,7 +222,7 @@ test('trusted publishing and dist-tag movement fail closed', () => {
         name: packages[0].name,
         tag: 'next',
         desiredVersion: rc2,
-        currentVersion: '0.6.0-rc.1',
+        currentVersion: futureLineRc,
         versionAlreadyExists: false,
       }),
     /Refusing to move/,

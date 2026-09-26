@@ -199,8 +199,8 @@ const releaseStatusMarker = '<aeliqo-release-status></aeliqo-release-status>';
 function renderReleaseStatus(body, releaseStatus) {
   const message =
     releaseStatus === 'stable'
-      ? `Aeliqo ${RELEASE_VERSION} is the published stable release. Install all Aeliqo packages at the same exact version; 0.4.2 remains available for older integrations.`
-      : `Aeliqo ${RELEASE_VERSION} is a source candidate. The published stable line is 0.4.2; install the ${RELEASE_VERSION} packages only after registry publication.`;
+      ? `Aeliqo ${RELEASE_VERSION} is the published stable release. Install all Aeliqo packages at the same exact version.`
+      : `Aeliqo ${RELEASE_VERSION} is a source candidate. Install the ${RELEASE_VERSION} packages only after registry publication.`;
   return body.replaceAll(releaseStatusMarker, `<p class="release-status-note">${message}</p>`);
 }
 

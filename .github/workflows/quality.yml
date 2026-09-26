@@ -10,6 +10,17 @@ on:
         description: Exact source commit; required for release/* candidates and optional on main
         required: false
         type: string
+      visual_probe:
+        description: Also capture a full diagnostic visual probe; approved gate remains required
+        required: false
+        type: boolean
+        default: false
+
+      performance_probe:
+        description: Also measure same-source paired performance; approved gate remains required
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -186,5 +197,175 @@ jobs:
             artifacts/vnext-visual
             artifacts/release-candidate
             apps/site/artifacts
+          if-no-files-found: warn
+          retention-days: 7
+
+  visual:
+    needs: policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Require approved source pixel comparison
+        run: node scripts/visual/run.mjs --full
+      - name: Preserve visual source, environment, repeated captures, and diffs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-${{ env.SOURCE_SHA }}
+          path: artifacts/visual-regression
+          if-no-files-found: warn
+          retention-days: 7
+
+  visual-probe:
+    needs: policy
+    if: github.event_name == 'workflow_dispatch' && inputs.visual_probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Capture unapproved diagnostic evidence
+        run: node scripts/visual/run.mjs --probe --full
+      - name: Preserve visual source, environment, repeated captures, and diffs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-probe-${{ env.SOURCE_SHA }}
+          path: artifacts/visual-regression
+          if-no-files-found: warn
+          retention-days: 7
+
+  performance:
+    needs: policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Require approved paired performance comparison
+        run: node scripts/performance/compare.mjs
+      - name: Preserve paired source, environment, samples, and traces
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-performance-${{ env.SOURCE_SHA }}
+          path: artifacts/performance-paired
+          if-no-files-found: warn
+          retention-days: 7
+
+  performance-probe:
+    needs: policy
+    if: github.event_name == 'workflow_dispatch' && inputs.performance_probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Measure unapproved same-source stability
+        run: node scripts/performance/compare.mjs --probe --source "$SOURCE_SHA"
+      - name: Preserve paired source, environment, samples, and traces
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-performance-probe-${{ env.SOURCE_SHA }}
+          path: artifacts/performance-paired
           if-no-files-found: warn
           retention-days: 7

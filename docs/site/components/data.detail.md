@@ -2,7 +2,7 @@
 component: 'data.detail'
 title: 'Detail'
 family: 'data'
-contract: 'Selected entity facts including missing fields; record identity persists across views.'
+contract: 'Selected entity facts including missing fields; identity visibility is explicit.'
 ---
 
 ## Import and live example
@@ -13,13 +13,14 @@ contract: 'Selected entity facts including missing fields; record identity persi
 
 ## Purpose
 
-Show the fields of one selected record as labeled facts. Missing fields stay visible, and record identity persists across views.
+Show the declared fields of one selected record as labeled facts. Missing fields stay visible; set
+`showIdentity` to display the record key alongside them.
 
 ## When to use it
 
 - Show every declared field of the record a person selected.
 - Keep missing fields visible instead of omitting them.
-- Display record identity next to a list, table, or editor.
+- Display record identity next to a list, table, or editor by setting `showIdentity`.
 
 ## When to use a different component
 
@@ -73,6 +74,4 @@ Long field values wrap within the detail region. Keep record identity visible wh
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

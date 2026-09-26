@@ -19,6 +19,39 @@ The host supplies each resource's data adapter and a fresh authority response.
 Identity, grants, policy revisions, and read context stay with the host. An
 intent cannot grant itself access.
 
+## Transactional presentation (0.6)
+
+Most browser applications should use `createAeliqoApp` from `@aeliqo/web/app`.
+It connects the runtime transaction to the shared renderer automatically.
+A custom host renderer can instead supply `RuntimeRenderOptions` to
+`runtime.render(input, options)`. These types are exported from both
+`@aeliqo/runtime` and `@aeliqo/runtime/app`.
+
+The optional `prepare(candidate)` callback runs after bounded data evaluation,
+before publication. It receives the candidate task, evaluated outputs, prior
+Region snapshot, current read set, and cancellation signal. The current read
+set includes both prior and candidate results for transition validation. Set the
+new plan’s result preconditions to the results it actually depends on; copying
+the entire current result set deliberately retains those older dependencies. Return a failed
+`Outcome` to keep the previous authorized state. A successful preparation may
+return no value (headless use), or a `RuntimePreparedRender` containing:
+
+- `presentation`: the host-resolved plan, validated against registered contracts.
+- `interaction`: optional state that belongs to that plan.
+- `apply(next)`: a **synchronous** callback receiving the prospective committed
+  Region snapshot; return `Outcome<void>` after applying the host presentation.
+- `rollback()`: restore the previous presentation after failed application. This
+  must be idempotent and must never restore content after revocation or disposal.
+
+The runtime rechecks authority and cancellation around application, then
+publishes the task, results, presentation, and interaction together. A thrown
+error, failed outcome, asynchronous `apply`, or stale request rejects the
+candidate and releases its resources. Ordinary failures preserve the prior
+snapshot; denied or changed ownership clears inaccessible state.
+`commitPresentation` accepts the same optional projection for adapting an
+existing task without another data evaluation. Neither API executes agent code:
+these callbacks belong to trusted application wiring.
+
 ## Scoped surfaces (0.5)
 
 The 0.5.0 surface API adds live instances without changing the existing

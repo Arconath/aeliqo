@@ -60,8 +60,33 @@ describe('static page generation', () => {
     expect(summaryOrder(guideNav)).toEqual(summaryOrder(componentNav));
     expect(summaryOrder(startNav)).toEqual(summaryOrder(componentNav));
     for (const navigation of [componentNav, guideNav, startNav]) {
-      expect(navigation.match(/<details class="docs-nav-group"/gu)).toHaveLength(6);
+      expect(navigation.match(/<details class="docs-nav-group"/gu)).toHaveLength(3);
       expect(navigation.match(/<details class="docs-nav-group" open>/gu)).toHaveLength(1);
+    }
+    expect(
+      [...componentNav.matchAll(/<details class="docs-nav-group"(?: open)?><summary>([^<]+)/gu)].map(
+        (match) => match[1],
+      ),
+    ).toEqual(['Get started', 'Components', 'Advanced']);
+    for (const route of ['', 'start', 'components/data.table', 'contribute']) {
+      const html = await pageAt(route);
+      expect(html).toContain('<a class="brand" href="https://aeliqo.com/"');
+      expect(html).toContain('<a class="footer-brand" href="https://aeliqo.com/"');
+      expect(html).toContain('<a href="https://docs.aeliqo.com/" aria-current="page">Docs</a>');
+    }
+    const routeMap = JSON.parse(await readFile(join(generatedPublic, 'route-map.json'), 'utf8'));
+    expect(routeMap.legacyDocs['/docs/getting-started/']).toBe('/start/');
+    expect(routeMap.legacyDocs['/docs/integration/']).toBe('/start/frameworks/');
+    expect(routeMap.canonicalDocs).toContain('/contribute/');
+    const search = JSON.parse(await readFile(join(generatedPublic, 'search-index.json'), 'utf8'));
+    expect(
+      search.some(
+        (page: { path: string; content: string }) =>
+          page.path === '/contribute/' && page.content.includes('Report abuse'),
+      ),
+    ).toBe(true);
+    for (const page of search as { path: string }[]) {
+      expect(startNav, `Unreachable documentation page ${page.path}`).toContain(`href="${page.path}"`);
     }
     const componentDoc = await pageAt('components/data.table');
     expect(componentDoc).toContain('aria-label="Breadcrumb"');

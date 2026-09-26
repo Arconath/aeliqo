@@ -19,7 +19,9 @@ export type AeliqoTokenName =
   | '--aeliqo-visualization-series4'
   | '--aeliqo-visualization-reference'
   | '--aeliqo-space-4'
+  | '--aeliqo-space-6'
   | '--aeliqo-space-8'
+  | '--aeliqo-space-10'
   | '--aeliqo-space-12'
   | '--aeliqo-space-16'
   | '--aeliqo-space-24'
@@ -36,6 +38,7 @@ export type AeliqoTokenName =
   | '--aeliqo-typography-font-size-title'
   | '--aeliqo-typography-font-size-heading'
   | '--aeliqo-typography-font-size-display'
+  | '--aeliqo-typography-font-size-sm'
   | '--aeliqo-typography-line-height-tight'
   | '--aeliqo-typography-line-height-normal'
   | '--aeliqo-typography-font-weight-regular'
@@ -46,6 +49,7 @@ export type AeliqoTokenName =
   | '--aeliqo-control-compact-target'
   | '--aeliqo-control-inline-padding'
   | '--aeliqo-control-border-width'
+  | '--aeliqo-control-coarse-target'
   | '--aeliqo-focus-width'
   | '--aeliqo-focus-offset'
   | '--aeliqo-motion-duration-fast'
@@ -53,6 +57,8 @@ export type AeliqoTokenName =
   | '--aeliqo-motion-easing-standard'
   | '--aeliqo-elevation-none'
   | '--aeliqo-elevation-raised'
+  | '--aeliqo-elevation-xs'
+  | '--aeliqo-elevation-lg'
   | '--aeliqo-locale-default'
   | '--aeliqo-locale-direction';
 export type AeliqoTokenValues = Readonly<Partial<Record<AeliqoTokenName, string>>>;
@@ -97,7 +103,9 @@ export const AELIQO_DARK_TOKENS = {
 } as const as AeliqoTokenValues;
 export const AELIQO_SHARED_TOKENS = {
   '--aeliqo-space-4': '0.25rem',
+  '--aeliqo-space-6': '0.375rem',
   '--aeliqo-space-8': '0.5rem',
+  '--aeliqo-space-10': '0.625rem',
   '--aeliqo-space-12': '0.75rem',
   '--aeliqo-space-16': '1rem',
   '--aeliqo-space-24': '1.5rem',
@@ -116,6 +124,7 @@ export const AELIQO_SHARED_TOKENS = {
   '--aeliqo-typography-font-size-title': '1.25rem',
   '--aeliqo-typography-font-size-heading': '1.5rem',
   '--aeliqo-typography-font-size-display': '2rem',
+  '--aeliqo-typography-font-size-sm': '0.875rem',
   '--aeliqo-typography-line-height-tight': '1.25',
   '--aeliqo-typography-line-height-normal': '1.5',
   '--aeliqo-typography-font-weight-regular': '400',
@@ -126,6 +135,7 @@ export const AELIQO_SHARED_TOKENS = {
   '--aeliqo-control-compact-target': '2rem',
   '--aeliqo-control-inline-padding': '0.75rem',
   '--aeliqo-control-border-width': '0.0625rem',
+  '--aeliqo-control-coarse-target': '2.75rem',
   '--aeliqo-focus-width': '0.1875rem',
   '--aeliqo-focus-offset': '0.125rem',
   '--aeliqo-motion-duration-fast': '120ms',
@@ -133,6 +143,8 @@ export const AELIQO_SHARED_TOKENS = {
   '--aeliqo-motion-easing-standard': 'cubic-bezier(0.2, 0, 0, 1)',
   '--aeliqo-elevation-none': '0px 0px 0px 0px #00000000',
   '--aeliqo-elevation-raised': '0px 0.25rem 0.75rem -0.5rem #0F172A33',
+  '--aeliqo-elevation-xs': '0px 1px 2px 0px rgb(15 23 42 / 0.05)',
+  '--aeliqo-elevation-lg': '0px 8px 24px 0px rgb(15 23 42 / 0.12), 0px 0px 0px 1px rgb(15 23 42 / 0.04)',
   '--aeliqo-locale-default': 'en-US',
   '--aeliqo-locale-direction': 'logical',
 } as const as AeliqoTokenValues;
@@ -155,7 +167,9 @@ export const AELIQO_TOKEN_NAMES = [
   '--aeliqo-visualization-series4',
   '--aeliqo-visualization-reference',
   '--aeliqo-space-4',
+  '--aeliqo-space-6',
   '--aeliqo-space-8',
+  '--aeliqo-space-10',
   '--aeliqo-space-12',
   '--aeliqo-space-16',
   '--aeliqo-space-24',
@@ -172,6 +186,7 @@ export const AELIQO_TOKEN_NAMES = [
   '--aeliqo-typography-font-size-title',
   '--aeliqo-typography-font-size-heading',
   '--aeliqo-typography-font-size-display',
+  '--aeliqo-typography-font-size-sm',
   '--aeliqo-typography-line-height-tight',
   '--aeliqo-typography-line-height-normal',
   '--aeliqo-typography-font-weight-regular',
@@ -182,6 +197,7 @@ export const AELIQO_TOKEN_NAMES = [
   '--aeliqo-control-compact-target',
   '--aeliqo-control-inline-padding',
   '--aeliqo-control-border-width',
+  '--aeliqo-control-coarse-target',
   '--aeliqo-focus-width',
   '--aeliqo-focus-offset',
   '--aeliqo-motion-duration-fast',
@@ -189,6 +205,8 @@ export const AELIQO_TOKEN_NAMES = [
   '--aeliqo-motion-easing-standard',
   '--aeliqo-elevation-none',
   '--aeliqo-elevation-raised',
+  '--aeliqo-elevation-xs',
+  '--aeliqo-elevation-lg',
   '--aeliqo-locale-default',
   '--aeliqo-locale-direction',
 ] as const;

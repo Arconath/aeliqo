@@ -280,7 +280,12 @@ export class RegionCommitHandle extends RegionStageHandle {
     if (!prepared.ok) return prepared as RegionOutcome<RegionSnapshot>;
     const checked = this.runFinalCommitRecheck(recheck, prepared.value.snapshot, epoch, signal);
     if (!checked.ok) return checked as RegionOutcome<RegionSnapshot>;
-    return this.publishCommit(record, authority.value, prepared.value, epoch, markTransferred);
+    // The final projection is host code and can synchronously change authority or results.
+    const finalAuthority = this.validateCommitAuthority(record, epoch);
+    if (!finalAuthority.ok) return finalAuthority as RegionOutcome<RegionSnapshot>;
+    if (signal?.aborted)
+      return failure('runtime.region-cancelled', 'The region commit was cancelled before publication.');
+    return this.publishCommit(record, finalAuthority.value, prepared.value, epoch, markTransferred);
   }
 
   private async executeQueuedCommit(

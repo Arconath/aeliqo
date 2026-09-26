@@ -247,6 +247,7 @@ license to choose the first available field or presentation.
 | `@aeliqo/core/plot`          | Plot specifications and binding                                |
 | `@aeliqo/core/visualization` | Visualization specifications and binding                       |
 | `@aeliqo/core/agent`         | Agent proposal and authority wire types                        |
+| `@aeliqo/core/schemas/*`     | Generated JSON Schema artifacts for external validators        |
 
 Import a subpath when using its named capability:
 
@@ -261,3 +262,13 @@ The package is ESM and targets the supported Node.js and browser toolchains
 declared by the repository. It has no runtime dependency on the DOM. The package
 uses the contract wire version declared by `CONTRACT_VERSION`; this is separate
 from the npm package version.
+
+### Pattern transitions (0.6)
+
+Registered pattern callbacks receive `context.incumbent` when a current
+presentation exists. This is a parsed, deeply owned snapshot whose read set
+and result references must match current authority. Use its node IDs to author
+explicit `stateTransfer` entries. The normal transition validator still checks
+identity transfers and registered archival mappings; the incumbent grants no
+additional views, data, or permissions. An absent incumbent means there is no
+previous presentation to transfer.

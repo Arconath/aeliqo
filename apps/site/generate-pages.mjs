@@ -181,14 +181,14 @@ function pageHeader(baseHeader, page, isDocs) {
     return baseHeader
       .replace(
         '<a href="https://docs.aeliqo.com/">Docs</a>',
-        `<a href="/"${isDocs ? ' aria-current="page"' : ''}>Docs</a>`,
+        `<a href="https://docs.aeliqo.com/"${isDocs ? ' aria-current="page"' : ''}>Docs</a>`,
       )
       .replace(
         '<a href="https://docs.aeliqo.com/playground/">Playground</a>',
         `<a href="/playground/"${page.path === '/playground/' ? ' aria-current="page"' : ''}>Playground</a>`,
       );
   }
-  return baseHeader.replace('<a class="brand" href="/"', '<a class="brand" href="/" aria-current="page"');
+  return baseHeader;
 }
 
 function pageBody(page, isDocs) {

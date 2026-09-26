@@ -61,10 +61,11 @@ export class AeliqoButtonElement extends AeliqoActionElement {
         cursor: pointer;
         display: inline-flex;
         font: inherit;
+        font-size: var(--aeliqo-typography-font-size-sm, 0.875rem);
         gap: var(--aeliqo-space-8, 0.5rem);
         justify-content: center;
         max-inline-size: 100%;
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: max(var(--_aeliqo-coarse-target, 0px), var(--aeliqo-control-min-target, 2.75rem));
         padding-inline: var(--aeliqo-control-inline-padding, 0.75rem);
         white-space: normal;
       }
@@ -120,7 +121,7 @@ export class AeliqoButtonElement extends AeliqoActionElement {
       }
 
       button.size-small {
-        min-block-size: var(--aeliqo-control-compact-target, 2rem);
+        min-block-size: max(var(--_aeliqo-coarse-target, 0px), var(--aeliqo-control-compact-target, 2rem));
         padding-inline: var(--aeliqo-space-8, 0.5rem);
       }
 

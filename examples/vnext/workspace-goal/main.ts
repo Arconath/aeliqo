@@ -1,15 +1,9 @@
-import type { Intent, Result } from '@aeliqo/core';
+import type { Intent } from '@aeliqo/core';
 import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
-import { createPresentationRegistry, resolvePresentation, type PresentationRegistry } from '@aeliqo/core/presentation';
-import { createAeliqoRuntime, createLocalDataBinding, type RuntimeCommittedReceipt } from '@aeliqo/runtime';
+import { createLocalDataBinding } from '@aeliqo/runtime';
 import { registerAeliqoElements } from '@aeliqo/web';
-import {
-  createAeliqoPresentationRegistry,
-  type AeliqoPresentationRegistryOptions,
-  type AeliqoRegionElement,
-  type AeliqoRegionResult,
-} from '@aeliqo/web/region';
-import { REGION, GOAL, PATTERN, METRIC, REF, feature, goalRegistry, overviewPattern } from '../workspace/goal.js';
+import { createAeliqoApp } from '@aeliqo/web/app';
+import { REGION, GOAL, METRIC, feature, goalRegistry, overviewPattern } from '../workspace/goal.js';
 
 const functions = createQueryFunctionRegistry({ version: '2' });
 if (!functions.ok) throw new Error(functions.diagnostics[0]!.message);
@@ -61,7 +55,8 @@ binding.service.execute = (request, context) =>
         };
       })()
     : execute(request, context);
-const runtime = createAeliqoRuntime({
+const app = createAeliqoApp({
+  patterns: [overviewPattern()],
   runtimeId: 'attendance-runtime',
   resources: [{ resource: feature.resource, data: binding.service }],
   intents: goalRegistry(),
@@ -79,13 +74,11 @@ const runtime = createAeliqoRuntime({
     }),
   },
 });
-const mounted = runtime.mount({ regionId: REGION, resourceId: feature.id });
-if (!mounted.ok) throw new Error(mounted.diagnostics[0]!.message);
 registerAeliqoElements();
 const workspace = document.querySelector<HTMLElement>('#workspace')!;
 const status = document.querySelector<HTMLElement>('[data-testid="goal-status"]')!;
-const element = document.createElement('aeliqo-region') as AeliqoRegionElement;
-workspace.append(element);
+const mounted = app.mount({ target: workspace, regionId: REGION, resourceId: feature.id });
+if (!mounted.ok) throw new Error(mounted.diagnostics[0]!.message);
 
 const intent: Intent = {
   version: '1',
@@ -96,139 +89,25 @@ const intent: Intent = {
   input: { team: 'Engineering' },
 };
 
-function bindingsFor(receipt: RuntimeCommittedReceipt): {
-  readonly descriptors: Result[];
-  readonly results: AeliqoRegionResult[];
-} {
-  const descriptors = receipt.outputs.map((output) => output.handle.snapshot().descriptor);
-  if (descriptors.some((descriptor) => descriptor === undefined)) throw new Error('goal.result-missing');
-  const results: AeliqoRegionResult[] = receipt.outputs.map((output, index) => ({
-    ref: descriptors[index]!.ref,
-    rows: output.handle.snapshot().batches.flatMap((batch) => batch.rows),
-    columns: descriptors[index]!.fields.map((field) => ({ key: field.id, label: field.label })),
-  }));
-  return { descriptors: descriptors as Result[], results };
-}
-
-function registryForResults(
-  descriptors: readonly Result[],
-  results: readonly AeliqoRegionResult[],
-): PresentationRegistry {
-  const options: AeliqoPresentationRegistryOptions = {
-    data: results.map((result, index) => ({
-      result: descriptors[index]!,
-      rows: result.rows,
-      ...(result.columns === undefined ? {} : { columns: result.columns }),
-    })),
-    visualizations: results.map((result, index) => ({
-      result: descriptors[index]!,
-      context: { results: [descriptors[index]!] },
-      datasets: [{ result: result.ref, rows: result.rows }],
-    })),
-    resolveEntity: () => feature.id,
-  };
-  const registered = createAeliqoPresentationRegistry(options);
-  if (!registered.ok) throw new Error(registered.diagnostics[0]!.message);
-  const registry = createPresentationRegistry(registered.value.manifests, registered.value.mappings, [
-    overviewPattern(),
-  ]);
-  if (!registry.ok) throw new Error(registry.diagnostics[0]!.message);
-  return registry.value;
-}
-
-function resolveOverview(
-  receipt: RuntimeCommittedReceipt,
-  descriptors: readonly Result[],
-  registry: PresentationRegistry,
-) {
-  const current = receipt.region.readSet;
-  if (current === undefined) throw new Error('goal.read-set-missing');
-  const { dataRevision: _dataRevision, ...preconditions } = current;
-  const environment = {
-    inlineSize: { state: 'known' as const, value: workspace.clientWidth },
-    blockSize: { state: 'known' as const, value: 720 },
-    textScale: { state: 'unknown' as const },
-    pointer: 'fine' as const,
-    hover: 'available' as const,
-    keyboard: 'available' as const,
-    locale: 'en-US',
-    direction: 'ltr' as const,
-    reducedMotion: false,
-    forcedColors: false,
-  };
-  const decision = resolvePresentation({
-    id: 'attendance-resolve',
-    revision: '1',
-    preconditions,
-    context: {
-      task: receipt.task,
-      experience: {
-        version: '1',
-        id: 'attendance-experience',
-        revision: preconditions.experienceRevision,
-        mode: 'composable',
-        agentAllowed: false,
-        allowedRepresentations: Object.values(REF).map((ref) => ref.id),
-        allowedPatterns: [PATTERN.id],
-        composition: { allowWithoutPreset: false, maxNodes: 4, maxExpansions: 8 },
-        requiredOperations: [],
-        tokenProfile: { id: 'tokens.default', revision: '1' },
-        extensionAllowlist: [],
-        transitionPolicy: 'stable',
-      },
-      results: descriptors,
-      current: preconditions,
-      environment,
-      rendererCapabilities: Object.values(REF),
-    },
-    registry,
-    target: {
-      address: {
-        runtimeId: 'attendance-runtime',
-        scopeInstanceId: 'attendance-scope',
-        activationEpoch: 1,
-        surfaceId: REGION,
-        surfaceGeneration: 1,
-      },
-      state: 'active',
-    },
-    candidates: [],
-  });
-  if (decision.status !== 'ready') throw new Error(decision.diagnostic.code);
-  return { decision, preconditions };
-}
-
 async function showOverview(): Promise<void> {
-  const receipt = await runtime.render({ regionId: REGION, intent });
-  if (receipt.status !== 'committed') throw new Error(receipt.diagnostics[0]?.code ?? receipt.status);
-  const { descriptors, results } = bindingsFor(receipt);
-  const registry = registryForResults(descriptors, results);
-  const { decision, preconditions } = resolveOverview(receipt, descriptors, registry);
-  const committed = await runtime.commitPresentation({
-    regionId: REGION,
-    requestId: receipt.requestId,
-    task: receipt.task,
-    presentation: decision.plan.plan,
-  });
-  if (!committed.ok) throw new Error(committed.diagnostics[0]!.code);
-  element.results = results;
-  element.presentation = decision.plan;
-  await element.updateComplete;
-  workspace.dataset.taskId = receipt.task.id;
-  workspace.dataset.needs = receipt.task.needs.map((need) => need.id).join(',');
-  workspace.dataset.outputs = receipt.outputs.map((output) => output.outputId).join(',');
-  workspace.dataset.selectedCandidate = decision.receipt.selectedCandidate;
-  workspace.dataset.planNodes = decision.plan.plan.nodes.map((node) => node.id).join(',');
-  workspace.dataset.nodeResults = decision.plan.plan.nodes
+  const receipt = await app.render({ regionId: REGION, intent });
+  if (receipt.status !== 'renderer-ready') throw new Error(receipt.diagnostics[0]?.code ?? receipt.status);
+  const { runtime, presentation } = receipt;
+  workspace.dataset.taskId = runtime.task.id;
+  workspace.dataset.needs = runtime.task.needs.map((need) => need.id).join(',');
+  workspace.dataset.outputs = runtime.outputs.map((output) => output.outputId).join(',');
+  workspace.dataset.facade = 'app.render';
+  workspace.dataset.planNodes = presentation.plan.nodes.map((node) => node.id).join(',');
+  workspace.dataset.nodeResults = presentation.plan.nodes
     .filter((node) => node.result !== undefined)
     .map((node) => `${node.id}:${node.result!.outputId}`)
     .join(',');
-  workspace.dataset.scope = preconditions.scopeDigest;
-  status.textContent = 'renderer-ready';
+  workspace.dataset.scope = presentation.plan.preconditions.scopeDigest;
+  status.textContent = receipt.status;
 }
 
 document.querySelector('#request-anomaly')!.addEventListener('click', () => {
-  void runtime
+  void app
     .render({
       regionId: REGION,
       intent: { ...intent, id: 'attendance-anomaly', intent: { id: 'attendance.anomaly', revision: '1' } },
@@ -239,7 +118,7 @@ document.querySelector('#request-anomaly')!.addEventListener('click', () => {
 });
 document.querySelector('#fail-breakdown')!.addEventListener('click', () => {
   failBreakdown = true;
-  void runtime
+  void app
     .render({ regionId: REGION, intent: { ...intent, id: 'attendance-overview-failing-update' } })
     .then((receipt) => {
       status.textContent = `${receipt.status}:${receipt.diagnostics[0]?.code ?? 'unknown'}`;

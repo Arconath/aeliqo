@@ -3,10 +3,10 @@ id: 'quickstart'
 path: '/start/'
 section: 'Get started'
 title: 'Quickstart: run an adaptive React view'
-description: 'Run and test a local People surface in React without an account, model key, backend, or agent.'
+description: 'Build a React People view that filters local rows and adapts to its container.'
 ---
 
-<p class="lead">Render a real adaptive view in React with local data. No account, model key, backend, or agent needed.</p>
+<p class="lead">Turn five local records into a working People view. Add a filter button, then resize its container to see the presentation adapt.</p>
 
 <aside class="doc-callout" data-tone="note"><strong>Before you start</strong><p>You need Node.js 24 and about ten minutes. Already have app data? Skip to the <a href="/start/registered-app/">registered app tutorial</a>.</p></aside>
 
@@ -26,10 +26,10 @@ This creates a `people` project and moves you into it.
 Keep every Aeliqo package on the same exact version:
 
 ```bash
-npm install --save-exact @aeliqo/core@0.5.2 @aeliqo/runtime@0.5.2 @aeliqo/web@0.5.2 @aeliqo/react@0.5.2
+npm install --save-exact @aeliqo/core@0.6.0 @aeliqo/runtime@0.6.0 @aeliqo/web@0.6.0 @aeliqo/react@0.6.0
 ```
 
-You should see: all four packages at `0.5.2` in `package.json`.
+You should see: all four packages at `0.6.0` in `package.json`.
 
 ## 3. Add some data
 
@@ -49,48 +49,8 @@ export const people: Person[] = [
 
 ## 4. Render the surface
 
-Replace everything in `src/main.tsx` with:
-
-```tsx
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
-import { people } from './people';
-
-function App() {
-  const surface = useDataSurface({ data: people, getRowId: (row) => row.id });
-  return (
-    <main>
-      <h1>People</h1>
-      <AdaptiveSurface surface={surface} />
-    </main>
-  );
-}
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
-```
-
-`useDataSurface` wraps your array in a read-only surface. `AdaptiveSurface` picks a view that fits the container.
-
-You should see: no TypeScript errors in your editor.
-
-## 5. Run it
-
-```bash
-npm run dev
-```
-
-Open the URL Vite prints (usually `http://localhost:5173`).
-
-You should see: a table listing all five people.
-
-## 6. Filter the data
-
-Replace `src/main.tsx` again — the rows are now state, and two buttons change them:
+Replace `src/main.tsx` once with this complete entry file. It includes the
+filter controls used in the next step:
 
 ```tsx
 import { StrictMode, useState } from 'react';
@@ -122,22 +82,48 @@ createRoot(document.getElementById('root')!).render(
 );
 ```
 
-Click **Engineering only**.
+`useDataSurface` reads the rows owned by React. `getRowId` preserves each
+person's identity when the array changes. `AdaptiveSurface` renders those rows
+using a view that fits its container. The two buttons are ordinary React state
+updates; they do not contact a server.
 
-You should see: the table show two rows, then all five again on **Everyone**. React owns the rows; the surface follows your state.
+## 5. Run and try the view
 
-## 7. Shrink the window
+```bash
+npm run dev
+```
 
-Drag the browser window narrow, or open your browser's device toolbar.
+Open the URL printed by Vite. At a wide container size, you should see five
+people in a table. Click **Engineering only**: Sam and Jo remain. Click
+**Everyone**: all five return.
 
-You should see: the table become cards. Same data, same selection — that swap is what "adaptive" means.
+Narrow the browser window until the container is compact. The same rows render
+as cards. Widen it again to return to the table. Adaptation follows the space
+available to the surface, including when it sits inside a larger page.
 
-## What you just did
+## If the result differs
 
-- Rendered a validated view from a plain array. You wrote no table markup.
-- Filtered by replacing your own state. Aeliqo read the same array again.
-- Got table-to-cards adaptation free, driven by container size.
+- **A blank page:** inspect the browser console and Vite terminal. Confirm the
+  HTML contains `<div id="root"></div>` and the script loads `src/main.tsx`.
+- **An import fails:** check that the four Aeliqo packages use the exact same
+  version and that installation completed. The release note above identifies
+  whether the displayed version is published.
+- **The rows do not change:** copy the complete entry file once. Pass `rows`
+  into `useDataSurface`, not the original `people` array.
+- **The view stays a table:** reduce the surface's container width. Changing
+  data or calling a model is unnecessary.
 
-To start empty or mutate rows in place, declare a schema and identity. See [local data](/guides/local-data/).
+## What to add next
 
-<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/start/registered-app/"><span>Connect your own data</span><small>Register real resources and read permissions from your app.</small><b aria-hidden="true">→</b></a><a href="/agents/quickstart/"><span>Add an agent</span><small>Let an agent send the same kind of request safely.</small><b aria-hidden="true">→</b></a><a href="/components/"><span>Browse components</span><small>See every registered view you can request.</small><b aria-hidden="true">→</b></a></nav>
+This read-only surface is enough when React already owns a small local array.
+Start with an explicit schema if the initial array is empty; see
+[local data](/guides/local-data/). For server data, permissions, and named
+regions, continue with [Connect your data](/start/registered-app/).
+
+Then [compose a workspace or registered page](/guides/workspace/): combine
+multiple results and add application-owned header and sidebar views.
+
+The [framework guide](/start/frameworks/) covers Vanilla and Vue. For Next.js,
+follow [SSR and hydration](/ship/ssr/) before importing browser modules.
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/start/registered-app/"><span>Connect your data</span><small>Register resources and application authority.</small><b aria-hidden="true">→</b></a><a href="/agents/quickstart/"><span>Add an agent</span><small>Expose an already working surface to bounded requests.</small><b aria-hidden="true">→</b></a></nav>

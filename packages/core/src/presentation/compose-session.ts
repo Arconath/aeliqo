@@ -110,7 +110,15 @@ export function prepareComposition(
       prepared: prepared.value,
       manifests: manifests.value,
       validationCache: validationCache.value,
-      request,
+      request: {
+        ...request,
+        context: {
+          ...request.context,
+          ...(prepared.value.patternContext.incumbent === undefined
+            ? {}
+            : { incumbent: prepared.value.patternContext.incumbent }),
+        },
+      },
       registry,
       nodeMemo: new Map(),
       nodeIdentityMemo: new WeakMap(),

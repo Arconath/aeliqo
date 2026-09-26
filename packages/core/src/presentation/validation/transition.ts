@@ -1,5 +1,3 @@
-import { parsePresentationPlan } from '../../contracts/parse.js';
-import { validateCommitReadSet } from '../../contracts/commit.js';
 import type { Outcome } from '../../contracts/types.js';
 import type { PresentationContext, PresentationRegistry } from '../types.js';
 import { stateMappingFor } from '../state.js';
@@ -144,38 +142,26 @@ function validateTransfers(
   return { ok: true, value: undefined };
 }
 
-function validateIncumbentReadSet(
-  oldPlan: PresentationPlanLike,
-  prepared: PreparedPresentationContext,
-): Outcome<undefined> {
-  const references = oldPlan.nodes.flatMap((node) => (node.result === undefined ? [] : [node.result]));
-  const readSet = validateCommitReadSet(oldPlan.preconditions, prepared.current, references);
-  return readSet.ok ? { ok: true, value: undefined } : readSet;
-}
-
 export function validatePresentationTransition(
   plan: PresentationPlanLike,
   context: PresentationContext,
   prepared: PreparedPresentationContext,
   registry: PresentationRegistry,
 ): Outcome<undefined> {
-  if (context.incumbent === undefined) {
+  const incumbent = prepared.patternContext.incumbent;
+  if (incumbent === undefined) {
     if (plan.stateTransfer.length > 0)
       return fail('state-transfer', 'State transfer requires an existing presentation.');
     return { ok: true, value: undefined };
   }
 
-  const incumbent = parsePresentationPlan(context.incumbent);
-  if (!incumbent.ok) return incumbent;
-  const readSet = validateIncumbentReadSet(incumbent.value, prepared);
-  if (!readSet.ok) return readSet;
   const capabilities = parseRendererCapabilities(context.stateMappingCapabilities ?? []);
   if (!capabilities.ok) return capabilities;
 
-  const changes = transitionChanges(incumbent.value, plan);
+  const changes = transitionChanges(incumbent, plan);
   const policy = validateTransitionPolicy(changes, context, prepared);
   if (!policy.ok) return policy;
-  const owners = requireExistingOwners(incumbent.value, plan, changes);
+  const owners = requireExistingOwners(incumbent, plan, changes);
   if (!owners.ok) return owners;
-  return validateTransfers(plan, incumbent.value, registry, context);
+  return validateTransfers(plan, incumbent, registry, context);
 }

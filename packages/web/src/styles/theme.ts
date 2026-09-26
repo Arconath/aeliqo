@@ -63,6 +63,7 @@ export const aeliqoThemeStyles: CSSResult = css`
     ${unsafeCSS(sharedRules)}
     color-scheme: light;
     box-sizing: border-box;
+    --_aeliqo-coarse-target: 0px;
   }
 
   :host([data-aeliqo-theme='dark']) {
@@ -112,6 +113,12 @@ export const aeliqoThemeStyles: CSSResult = css`
 
   :host([data-aeliqo-density='compact']) {
     --aeliqo-control-min-target: var(--aeliqo-control-compact-target);
+  }
+
+  @media (pointer: coarse) {
+    :host {
+      --_aeliqo-coarse-target: max(44px, var(--aeliqo-control-coarse-target, 2.75rem));
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { readModelConfiguration } from '../../apps/site/runner/model-config.mjs';
+import { readModelConfiguration } from '../../examples/local-agent/runner/model-config.mjs';
 import { reserveLiveJourneyCase, validateLiveJourneyPlan } from './live-journeys.mjs';
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');

@@ -13,7 +13,8 @@ contract: 'Reversible context path; approved routes and current-location semanti
 
 ## Purpose
 
-Shows the path to the current page as an ordered list of links. You supply the approved destinations; the last item marks the current location.
+Shows a path as an ordered list. Approved ancestor destinations are links; the current item is text.
+Mark it with `current`; if none is marked, the final item is current.
 
 ## When to use it
 
@@ -73,6 +74,4 @@ Allow long path segments to wrap. Keep the current location clear when the host 
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

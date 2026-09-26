@@ -11,7 +11,10 @@ export interface RecipePresentationPolicy {
 export interface RecipeContext {
   readonly intent: Intent;
   readonly task: Task;
+  /** Primary result retained for recipes that render a single output. */
   readonly result?: Result;
+  /** Every authorized output descriptor. Always supplied by the app facade. */
+  readonly results?: readonly Result[];
   readonly inputBindings?: AeliqoInputBindings;
   readonly current: CommitPreconditions;
   readonly environment: PresentationEnvironment;

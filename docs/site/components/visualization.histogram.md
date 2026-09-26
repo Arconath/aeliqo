@@ -13,7 +13,8 @@ contract: 'Declared binning, count/density labeling and missing-population discl
 
 ## Purpose
 
-Show how one numeric measure distributes across declared bins. Scope text says what the bins do not cover.
+Show executor-produced bins for one numeric measure. Scope text reports bin-delivery coverage; it does
+not establish source-observation coverage or count missing or out-of-bin observations.
 
 ## When to use it
 
@@ -73,6 +74,4 @@ The plot and its data view stay in a scrollable viewport. Set dimensions from th
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

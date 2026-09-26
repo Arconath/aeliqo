@@ -2,6 +2,7 @@ export { createAeliqoApp } from './app.js';
 export type {
   AeliqoApp,
   AeliqoAppActionEvent,
+  AeliqoAppDraftExitRequest,
   AeliqoAppOptions,
   AeliqoFormState,
   AeliqoFormStateAdapter,

@@ -73,6 +73,4 @@ Cards adapt to available width. Let field values wrap and keep each selection co
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

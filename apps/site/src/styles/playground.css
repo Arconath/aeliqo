@@ -450,74 +450,8 @@
   color: var(--accent);
   font-weight: var(--weight-semibold);
 }
-.pg-webmcp-note code,
-.pg-connect-steps code,
-#pg-mcp-config code {
+.pg-webmcp-note code {
   font-size: 0.85em;
-}
-.pg-demo-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-.pg-demo-list button {
-  min-height: 1.9rem;
-  padding: 0.28rem 0.65rem;
-  border-radius: var(--radius-pill);
-  font-size: var(--type-compact);
-}
-#pg-mcp-config,
-#pg-relay-controls,
-#pg-relay-session {
-  display: grid;
-  gap: 0.6rem;
-}
-#pg-mcp-config[hidden],
-#pg-relay-controls[hidden],
-#pg-relay-session[hidden] {
-  display: none;
-}
-#pg-mcp-config h4 {
-  margin: 0;
-  font-size: var(--type-label);
-}
-#pg-relay-generate {
-  justify-self: start;
-}
-#pg-relay-expiry {
-  margin: 0;
-}
-.pg-config {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-}
-.pg-config-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  border-block-end: 1px solid var(--line);
-  background: var(--surface-raised);
-}
-.pg-config-head strong {
-  font-size: var(--type-caption);
-}
-.pg-config-head button {
-  min-height: 1.7rem;
-  padding: 0.15rem 0.55rem;
-  font-size: var(--type-caption);
-}
-.pg-config pre {
-  margin: 0;
-  max-height: 12rem;
-  overflow: auto;
-  padding: 0.55rem 0.6rem;
-  color: var(--text);
-  background: var(--surface);
-  font-size: 0.68rem;
-  line-height: 1.5;
 }
 .pg-steps {
   display: grid;
@@ -586,59 +520,7 @@
   font-weight: var(--weight-regular);
   line-height: var(--line-body);
 }
-.pg-connect-steps {
-  margin: 0;
-  padding-inline-start: 1.15rem;
-  color: var(--muted);
-  font-size: 0.76rem;
-  line-height: 1.6;
-}
 .pg-public-journeys {
   border-block-start: 1px solid var(--line);
   padding-block-start: var(--space-4);
-}
-.pg-fixture {
-  display: grid;
-  min-width: 0;
-  gap: 0.7rem;
-  padding: 1.1rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface-raised);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--text) 4%, transparent);
-}
-.pg-fixture[hidden] {
-  display: none;
-}
-.pg-fixture p {
-  margin: 0;
-  line-height: var(--line-body);
-}
-.pg-fixture button {
-  justify-self: start;
-}
-.pg-fixture-action {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.15rem 0.5rem;
-}
-.pg-fixture-action .pg-note {
-  flex: 1 1 14rem;
-}
-.pg-fixture #attendance-host,
-.pg-fixture #workspace {
-  min-width: 0;
-  min-height: 16rem;
-}
-.pg-fixture [data-testid='coverage'] {
-  color: var(--muted);
-}
-.pg-fixture [data-testid='period'] {
-  color: var(--accent);
-  font-size: var(--type-compact-readable);
-  font-weight: var(--weight-strong);
-}
-.pg-composer textarea {
-  resize: vertical;
 }

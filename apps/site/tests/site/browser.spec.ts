@@ -1,152 +1,21 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { componentCatalog } from '../shared/catalog.js';
 import { RELEASE_VERSION } from '../../../../scripts/release/metadata.mjs';
-
-interface RelayStubState {
-  pairCalls: number;
-  acks: { id: string; ok: boolean; result?: unknown; error?: unknown }[];
-  urls: string[];
-}
-
-/**
- * Stubs the hosted relay without touching the real domain: fetches to
- * mcp.aeliqo.com are answered in-page and SSE attach URLs land on a fake
- * EventSource. WebSocket attach URLs go through Playwright's routeWebSocket.
- */
-async function stubHostedRelay(
-  page: Page,
-  options: { attach?: 'sse' | 'ws'; pairStatus?: number; networkError?: boolean; expiresInSeconds?: number } = {},
-): Promise<void> {
-  await page.addInitScript(
-    ({ attach, pairStatus, networkError, expiresInSeconds }) => {
-      const stub = {
-        pairCalls: 0,
-        acks: [] as unknown[],
-        streams: [] as {
-          url: string;
-          emit(name: string, value: unknown): void;
-          fail(): void;
-        }[],
-      };
-      Object.defineProperty(window, '__aeliqoRelayStub', { value: stub, configurable: true });
-      const realFetch = window.fetch.bind(window);
-      window.fetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-        if (!url.startsWith('https://mcp.aeliqo.com/')) return realFetch(input, init);
-        if (networkError) return Promise.reject(new TypeError('Failed to fetch'));
-        if (url === 'https://mcp.aeliqo.com/pair') {
-          stub.pairCalls += 1;
-          if (pairStatus !== 200) return Promise.resolve(new Response('unavailable', { status: pairStatus }));
-          return Promise.resolve(
-            new Response(
-              JSON.stringify({
-                token: 'relay-test-token',
-                attachUrl:
-                  attach === 'ws'
-                    ? 'wss://mcp.aeliqo.com/attach?token=relay-test-token'
-                    : 'https://mcp.aeliqo.com/attach?token=relay-test-token',
-                mcpUrl: 'https://mcp.aeliqo.com/mcp',
-                expiresAt: Math.floor(Date.now() / 1000) + expiresInSeconds,
-              }),
-              { status: 200, headers: { 'content-type': 'application/json' } },
-            ),
-          );
-        }
-        if (url === 'https://mcp.aeliqo.com/ack') {
-          stub.acks.push(JSON.parse(typeof init?.body === 'string' ? init.body : '{}'));
-          return Promise.resolve(new Response(null, { status: 204 }));
-        }
-        return Promise.resolve(new Response('{}', { status: 404 }));
-      };
-      if (attach !== 'sse') return;
-      class FakeEventSource extends EventTarget {
-        static readonly CONNECTING = 0;
-        static readonly OPEN = 1;
-        static readonly CLOSED = 2;
-        readonly CONNECTING = 0;
-        readonly OPEN = 1;
-        readonly CLOSED = 2;
-        readonly url: string;
-        readonly withCredentials = false;
-        readyState = 0;
-        onopen: ((event: Event) => void) | null = null;
-        onerror: ((event: Event) => void) | null = null;
-        onmessage: ((event: MessageEvent) => void) | null = null;
-        private gone = false;
-        constructor(url: string | URL) {
-          super();
-          this.url = String(url);
-          stub.streams.push(this);
-          setTimeout(() => {
-            if (this.gone) return;
-            this.readyState = 1;
-            this.dispatchEvent(new Event('open'));
-          }, 0);
-        }
-        emit(name: string, value: unknown): void {
-          if (this.gone) return;
-          this.dispatchEvent(new MessageEvent(name, { data: JSON.stringify(value) }));
-        }
-        fail(): void {
-          this.readyState = 2;
-          this.dispatchEvent(new Event('error'));
-        }
-        close(): void {
-          this.gone = true;
-          this.readyState = 2;
-        }
-      }
-      window.EventSource = FakeEventSource as unknown as typeof EventSource;
-    },
-    {
-      attach: options.attach ?? 'sse',
-      pairStatus: options.pairStatus ?? 200,
-      networkError: options.networkError ?? false,
-      expiresInSeconds: options.expiresInSeconds ?? 900,
-    },
-  );
-}
-
-function relayStubState(page: Page): Promise<RelayStubState> {
-  return page.evaluate(() => {
-    const stub = (
-      window as unknown as {
-        __aeliqoRelayStub: { pairCalls: number; acks: RelayStubState['acks']; streams: { url: string }[] };
-      }
-    ).__aeliqoRelayStub;
-    return { pairCalls: stub.pairCalls, acks: stub.acks, urls: stub.streams.map((stream) => stream.url) };
-  });
-}
-
-/** Emits one named event on the latest fake SSE attach stream. */
-function emitRelayEvent(page: Page, name: string, value: unknown): Promise<boolean> {
-  return page.evaluate(
-    ({ eventName, payload }: { eventName: string; payload: unknown }) => {
-      const stub = (
-        window as unknown as {
-          __aeliqoRelayStub?: { streams: { emit(n: string, v: unknown): void; fail(): void }[] };
-        }
-      ).__aeliqoRelayStub;
-      const stream = stub?.streams.at(-1);
-      if (stream === undefined) return false;
-      if (eventName === 'error') stream.fail();
-      else stream.emit(eventName, payload);
-      return true;
-    },
-    { eventName: name, payload: value },
-  );
-}
-
-async function openRelayPanel(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Connect AI' }).click();
-  await page.locator('#pg-connection-kind').selectOption('relay');
-}
 
 test('the public playground uses the app facade without AI and through scenario steps', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/playground/');
+  const bootError = await page.evaluate(async (path) => {
+    try {
+      await import(path);
+      return null;
+    } catch (error) {
+      return error instanceof Error ? error.stack : String(error);
+    }
+  }, '/playground-src/playground.js');
+  expect(bootError).toBeNull();
   await expect(page.locator('#pg-boot')).toBeHidden();
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('#pg-journey-intent')).toHaveText('Browse people');
@@ -174,41 +43,25 @@ test('the scenario query parameter deep-links a documented playground example', 
   await expect(page.locator('#pg-scenario')).toHaveValue('people');
 });
 
-test('guided demos show Jakarta people, daily attendance, and a composed workspace without AI', async ({ page }) => {
+test('guided demos share the public component, workspace and page session', async ({ page }) => {
   await page.goto('/playground/');
   await page.getByRole('button', { name: 'People in Jakarta' }).click();
-  await expect(page.locator('#pg-committed-filter')).toContainText('Jakarta');
-  await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
-  await expect(page.locator('aeliqo-table')).not.toContainText('Sam Rivera');
-  await page.getByRole('button', { name: 'Daily attendance' }).click();
-  await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
-  await expect(page.locator('[data-testid="attendance-status"]')).toBeHidden();
-  await expect(page.locator('#pg-status')).toContainText('Daily attendance is ready.');
-  await expect(page.locator('[data-testid="period"]')).toContainText('Asia/Jakarta');
-  await expect(page.locator('[data-testid="daily-values"]')).toContainText('2026-09-02: 0.5');
-  await page.getByRole('button', { name: 'Compare attendance metrics' }).click();
-  await expect(page.locator('#metric-choice')).toBeVisible();
-  await expect(page.locator('#pg-journey-result')).toHaveText('Needs a choice');
-  await expect(page.locator('#pg-journey-view')).toHaveText('Choose a metric');
-  await page.getByRole('button', { name: 'Inspect', exact: true }).click();
-  await page.locator('[data-inspector="intent"]').click();
-  await expect(page.locator('#pg-inspector-content')).toContainText('Analyze daily attendance');
-  await page.locator('[data-inspector="diagnostics"]').click();
-  await expect(page.locator('#pg-inspector-content')).toContainText('needs-input:web.recipe.needs-input.measure');
-  await expect(page.locator('#pg-inspector-content')).not.toContainText('Analyze daily attendance');
-  await page.getByRole('button', { name: 'Close inspector' }).click();
+  await expect(page.locator('#pg-committed-filter')).toContainText('Location: Jakarta');
+  await expect(page.locator('#pg-region')).toContainText('Ada Chen');
+  await expect(page.locator('#pg-region')).not.toContainText('Sam Rivera');
+  await page.getByRole('button', { name: 'Daily attendance', exact: false }).click();
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-region aeliqo-chart')).toBeVisible();
   await page.getByRole('button', { name: 'Analytical workspace' }).click();
-  await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
-  await expect(page.locator('[data-testid="goal-status"]')).toBeHidden();
-  await expect(page.locator('#pg-status')).toContainText('Analytical workspace is ready.');
-  await expect(page.locator('[data-testid="goal-workspace"]')).toHaveAttribute('data-needs', 'summary,trend,breakdown');
-  await page.getByRole('button', { name: 'Request anomaly' }).click();
-  await expect(page.locator('[data-testid="goal-status"]')).toContainText('unsupported:intent.unknown-custom');
-  await expect(page.locator('[data-testid="goal-workspace"]')).toContainText('Ada');
+  await expect(page.locator('#pg-region [data-aeliqo-node-id="summary"]')).toContainText('2');
+  await expect(page.locator('#pg-region [data-aeliqo-node-id="breakdown"]')).toContainText('Ada');
+  await page.getByRole('button', { name: 'Entire page' }).click();
+  await expect(page.getByRole('navigation', { name: 'Registered page navigation' })).toBeVisible();
+  await expect(page.locator('#pg-region [data-aeliqo-node-id="summary"]')).toContainText('2');
   await page.locator('#pg-menu > summary').click();
   await page.getByRole('button', { name: 'Reset playground' }).click();
   await page.getByRole('button', { name: 'Analytical workspace' }).click();
-  await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
 });
 
@@ -235,44 +88,18 @@ test('theme selection follows the system, updates mounted components, and persis
   await expect(page.locator('aeliqo-region[data-aeliqo-theme]')).toHaveAttribute('data-aeliqo-theme', 'dark');
 });
 
-test('connected-agent mode never fabricates MCP, WebMCP, or BYOK evidence', async ({ page }) => {
+test('public agent setup offers WebMCP and local example guidance without a model composer', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', (request) => requests.push(request.url()));
   await page.goto('/playground/');
-  await page.getByRole('button', { name: 'Connect AI' }).click();
+  await page.getByRole('button', { name: 'Browser agent', exact: true }).click();
   await expect(page.locator('#pg-webmcp-note')).toBeVisible();
-  await expect(page.locator('#pg-webmcp-note')).toContainText('early-preview Chrome');
-  await expect(page.locator('#pg-webmcp-note a[href="/agents/webmcp/"]')).toBeAttached();
-  await expect(page.locator('#pg-webmcp-note a[href="/agents/mcp/"]')).toBeAttached();
-  await page.locator('#pg-connection-kind').selectOption('detect');
-  await page.getByRole('button', { name: 'Check connection' }).click();
-  await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
-  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
-  await expect(page.locator('#pg-model-calls')).toHaveText('0');
-  await page.locator('#pg-connection-kind').selectOption('webmcp');
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await expect(page.locator('#pg-webmcp-note')).toContainText('experimental');
+  await expect(page.getByRole('link', { name: 'Run MCP or BYOK locally' })).toBeVisible();
+  await page.getByRole('button', { name: 'Enable WebMCP' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText(/WebMCP|browser/i);
-  expect(requests.some((url) => url.includes('/api/aeliqo/session'))).toBe(true);
-  expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
-});
-
-test('the scripted demo agent runs listed requests and declines unknown phrasing honestly', async ({ page }) => {
-  const requests: string[] = [];
-  page.on('request', (request) => requests.push(request.url()));
-  await page.goto('/playground/');
-  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
-  await page.getByRole('button', { name: 'Connect AI' }).click();
-  await page.locator('#pg-connection-kind').selectOption('demo');
-  await page.getByRole('button', { name: 'Check connection' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('Scripted demo');
-  await expect(page.locator('#pg-connection-label')).toContainText('no model calls');
-  await page.getByRole('button', { name: 'Engineering only' }).last().click();
-  await expect(page.locator('aeliqo-table')).toContainText('Sam Rivera');
-  await expect(page.locator('aeliqo-table')).not.toContainText('Ada Chen');
-  await expect(page.locator('#pg-model-calls')).toHaveText('0');
-  await page.getByRole('textbox', { name: 'Prompt' }).fill('summarize the quarterly revenue');
-  await page.getByRole('button', { name: 'Send to demo agent' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('only understands the listed');
+  await expect(page.locator('#pg-connection-kind, #pg-prompt, #pg-relay-controls')).toHaveCount(0);
+  expect(requests.some((url) => url.includes('/api/aeliqo/'))).toBe(false);
   expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
 });
 
@@ -281,8 +108,9 @@ test('simulated WebMCP host registers the standard tools and renders through the
     const tools = new Map<string, unknown>();
     Object.defineProperty(document, 'modelContext', {
       value: {
-        registerTool(tool: { name: string }) {
+        registerTool(tool: { name: string }, options?: { signal?: AbortSignal }) {
           tools.set(tool.name, tool);
+          options?.signal?.addEventListener('abort', () => tools.delete(tool.name), { once: true });
         },
         async getTools() {
           return [...tools.values()];
@@ -293,9 +121,8 @@ test('simulated WebMCP host registers the standard tools and renders through the
   });
   await page.goto('/playground/');
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
-  await page.getByRole('button', { name: 'Connect AI' }).click();
-  await page.locator('#pg-connection-kind').selectOption('webmcp');
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await page.getByRole('button', { name: 'Browser agent', exact: true }).click();
+  await page.getByRole('button', { name: 'Enable WebMCP' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText('registered 3 tools');
   const result = await page.evaluate(async () => {
     const tools = (
@@ -348,108 +175,38 @@ test('simulated WebMCP host registers the standard tools and renders through the
   await expect(page.locator('aeliqo-chart')).toBeVisible();
   await expect(page.locator('#pg-result-title')).toHaveText('Monthly headcount');
   await expect(page.locator('#pg-result-definition')).toContainText('never summed across months');
-  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
-});
-
-test('the hosted relay pairs a session, proxies calls through the Region, and reports detachment', async ({ page }) => {
-  const requests: string[] = [];
-  page.on('request', (request) => requests.push(request.url()));
-  await stubHostedRelay(page);
-  await page.goto('/playground/');
-  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
-  await openRelayPanel(page);
-  await expect(page.getByRole('button', { name: 'Check connection' })).toBeHidden();
-  await page.getByRole('button', { name: 'Generate connection' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('Relay connected');
-  await expect(page.locator('#pg-mcp-relay-json')).toContainText('"type": "streamable-http"');
-  await expect(page.locator('#pg-mcp-relay-json')).toContainText('https://mcp.aeliqo.com/mcp');
-  await expect(page.locator('#pg-mcp-relay-json')).toContainText('Bearer relay-test-token');
-  await expect(page.locator('#pg-mcp-relay-cli')).toContainText(
-    'claude mcp add --transport http aeliqo-playground https://mcp.aeliqo.com/mcp',
-  );
-  await expect(page.locator('#pg-mcp-relay-cli')).toContainText('"Authorization: Bearer relay-test-token"');
-  await expect(page.locator('#pg-relay-expiry')).toContainText('expires at');
-  await expect(page.locator('#pg-relay-expiry')).toContainText('Regenerate');
-  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
-  const stub = await relayStubState(page);
-  expect(stub.pairCalls).toBe(1);
-  expect(stub.urls.at(-1)).toBe('https://mcp.aeliqo.com/attach?token=relay-test-token');
-
-  expect(await emitRelayEvent(page, 'cancel', { kind: 'cancel', id: 'relay-none' })).toBe(true);
-  expect(
-    await emitRelayEvent(page, 'call', {
-      kind: 'call',
-      id: 'relay-call-1',
-      method: 'invoke',
-      params: {
-        name: 'aeliqo_render',
-        input: {
-          version: '1',
-          id: 'relay-engineering',
-          kind: 'browse',
-          resource: 'people',
-          fields: ['name', 'team', 'location'],
-          filter: { op: 'compare', field: 'team', comparison: 'eq', value: 'Engineering' },
-        },
-        requestId: 'relay-render-1',
-      },
-    }),
-  ).toBe(true);
-  await expect(page.locator('aeliqo-table')).toContainText('Sam Rivera');
-  await expect(page.locator('aeliqo-table')).not.toContainText('Ada Chen');
-  await expect(page.locator('#pg-journey-view')).toHaveText('Table');
-  const acks = (await relayStubState(page)).acks;
-  expect(acks).toHaveLength(1);
-  expect(acks[0]).toMatchObject({ id: 'relay-call-1', ok: true });
-
-  expect(await emitRelayEvent(page, 'error', undefined)).toBe(true);
-  await expect(page.locator('#pg-connect-status')).toContainText(/detached|disconnected/i);
-  expect(requests.every((url) => !new URL(url).hostname.endsWith('aeliqo.com'))).toBe(true);
-});
-
-test('the hosted relay shows unreachable, HTTP failure, and expired states without hiding them', async ({ page }) => {
-  await stubHostedRelay(page, { networkError: true });
-  await page.goto('/playground/');
-  await openRelayPanel(page);
-  await page.getByRole('button', { name: 'Generate connection' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('unreachable');
-
-  await stubHostedRelay(page, { pairStatus: 503 });
-  await page.reload();
-  await openRelayPanel(page);
-  await page.getByRole('button', { name: 'Generate connection' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('could not create a session');
-
-  await stubHostedRelay(page, { expiresInSeconds: 2 });
-  await page.reload();
-  await openRelayPanel(page);
-  await page.getByRole('button', { name: 'Generate connection' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('expired', { timeout: 10_000 });
-  await page.getByRole('button', { name: 'Regenerate connection' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('Relay connected');
-  expect((await relayStubState(page)).pairCalls).toBe(2);
-});
-
-test('the hosted relay attaches over WebSocket and acknowledges discovery on /ack', async ({ page }) => {
-  let socket: WebSocketRoute | undefined;
-  await page.routeWebSocket(/mcp\.aeliqo\.com\/attach/, (ws) => {
-    socket = ws;
+  await expect(page.locator('#pg-prompt')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Analytical workspace' }).click();
+  await expect(page.locator('#pg-region [data-aeliqo-node-id="summary"]')).toContainText('2');
+  await expect(page.getByRole('button', { name: 'Disconnect WebMCP' })).toBeVisible();
+  const pageReceipt = await page.evaluate(async () => {
+    const tools = (
+      globalThis as typeof globalThis & {
+        __aeliqoWebMcpTools: Map<string, { execute(input: unknown): Promise<unknown> }>;
+      }
+    ).__aeliqoWebMcpTools;
+    return tools.get('aeliqo_render')?.execute({
+      version: '1',
+      id: 'agent-page',
+      kind: 'custom',
+      resource: 'attendance',
+      intent: { id: 'attendance.page', revision: '1' },
+      input: { team: 'Engineering' },
+    });
   });
-  await stubHostedRelay(page, { attach: 'ws' });
-  await page.goto('/playground/');
-  await openRelayPanel(page);
-  await page.getByRole('button', { name: 'Generate connection' }).click();
-  await expect(page.locator('#pg-connect-status')).toContainText('Relay connected');
-  const ws = socket;
-  expect(ws).toBeDefined();
-  if (ws === undefined) return;
-  ws.send(JSON.stringify({ kind: 'call', id: 'ws-call-1', method: 'tools/list', params: {} }));
-  await expect.poll(async () => (await relayStubState(page)).acks.length).toBe(1);
-  const acks = (await relayStubState(page)).acks;
-  expect(acks[0]).toMatchObject({ id: 'ws-call-1', ok: true });
-  expect(JSON.stringify(acks[0]?.result)).toContain('aeliqo_render');
-  ws.close();
-  await expect(page.locator('#pg-connect-status')).toContainText(/detached|disconnected/i);
+  expect(pageReceipt).toMatchObject({ ok: true, value: { state: 'renderer-ready' } });
+  await expect(page.getByRole('navigation', { name: 'Registered page navigation' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Attendance overview', exact: true })).toBeVisible();
+  await expect(page.locator('#pg-connect-status')).toContainText('result applied');
+  for (const width of [360, 768, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await expect(page.locator('#pg-region [data-aeliqo-node-id="breakdown"]')).toContainText('Ada');
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+    ).toBe(true);
+  }
+  await page.getByRole('button', { name: 'Disconnect WebMCP' }).click();
+  await expect(page.getByRole('button', { name: 'Enable WebMCP' })).toBeVisible();
 });
 
 test('candidate playground does not offer a ZIP pinned to an unpublished release', async ({ page }) => {
@@ -463,7 +220,7 @@ test('candidate playground does not offer a ZIP pinned to an unpublished release
   await page.locator('#pg-export-note a').click();
   await expect(page.getByRole('heading', { name: 'Run the playground from source' })).toBeVisible();
   await expect(page.locator('main')).toContainText('pnpm install --frozen-lockfile');
-  await expect(page.locator('main')).toContainText('pnpm playground:local');
+  await expect(page.locator('main')).toContainText('pnpm --dir apps/site dev');
 });
 
 test('stable export follows the four base scenarios and never substitutes them for public journeys', async ({
@@ -631,4 +388,21 @@ test('legal and support pages state the offline, reporting and commercial bounda
     ),
   ).toBe(false);
   expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
+});
+
+test('quickstart and component reference reflow at 320 CSS pixels', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 850 });
+  for (const route of ['/start/', '/components/data.table/']) {
+    await page.goto(route);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const brand = page.getByRole('link', { name: 'Aeliqo home', exact: true });
+    await expect(brand).toHaveAttribute('href', 'https://aeliqo.com/');
+    const example = page.locator('details.component-example > summary');
+    if (await example.count()) await example.click();
+    await expect(page.locator('main pre').first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    await expect(page.getByRole('link', { name: 'Docs', exact: true })).toBeVisible();
+  }
 });

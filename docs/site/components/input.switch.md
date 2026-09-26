@@ -13,7 +13,9 @@ contract: 'Binary setting with visible label; changing setting is not implicit b
 
 ## Purpose
 
-A labelled on/off setting built on a native checkbox with switch semantics. Toggling emits a typed proposal; it is not an implicit submission.
+A labelled on/off setting built on a native checkbox with switch semantics. The host can set
+`checked`; toggling updates that local property and emits a typed change. It is not an implicit
+submission, and the host decides whether to persist the setting.
 
 ## When to use it
 
@@ -73,6 +75,4 @@ Keep explanatory copy outside the short switch label. Preserve the control targe
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

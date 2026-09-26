@@ -13,7 +13,9 @@ contract: 'Locale-aware editing separates display text from exact numeric value;
 
 ## Purpose
 
-A locale-aware number input that keeps display text separate from the exact value. Validation checks declared minimum, maximum, and step without rounding to a JavaScript number.
+The host can set the exact `value` as a decimal string. Typing updates the local `text` draft and
+emits it with a canonical `value` only when valid within the declared minimum, maximum, and step; the
+host decides what to persist.
 
 ## When to use it
 
@@ -73,6 +75,4 @@ Leave room for the localized value and unit. Check the editable draft at 200% te
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

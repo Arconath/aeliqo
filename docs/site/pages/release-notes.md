@@ -3,10 +3,56 @@ id: 'release-notes'
 path: '/ship/release-notes/'
 section: 'Releases'
 title: 'Release notes'
-description: 'Aeliqo 0.5 changes, migration boundaries, and the prior 0.4.2 release.'
+description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 ---
 
-<p class="lead">Read what changed in each release and what evidence backs it. The latest version is 0.5.2.</p>
+<p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
+<aeliqo-release-status></aeliqo-release-status>
+
+## Aeliqo 0.6.0
+
+This source candidate adds registered workspace and page layouts to the same
+`createAeliqoApp` facade used for components. The host owns the data, permitted
+views, header/sidebar structure, and business actions.
+
+- Register `patterns` and `stateMappings` in `AeliqoAppOptions`. Recipes receive
+  every result through `RecipeContext.results`; `result` remains the primary
+  result for existing recipes.
+- Container width and height changes re-resolve the presentation using existing
+  results. Compatible state mappings project selection and filters. Layout
+  changes remain subject to current authority and registered capabilities.
+- `onDraftExit` lets the host choose Save/Discard/Stay before replacing a dirty
+  form. Without a decision, replacement returns `needs-input`. Successful form
+  actions clear only the unchanged drafts captured for that exact action.
+- `onPresentation` observes successful renderer updates, including responsive
+  adaptations. Runtime subscriptions keep their existing runtime-state role.
+- The public Playground offers manual tasks and experimental native WebMCP.
+  Component, workspace, and page demos share the connection. Hosted MCP relay
+  and in-page model setup are removed from this public surface.
+- MCP HTTP/stdio and optional BYOK move to `examples/local-agent/`, a standalone
+  app using public package exports. The model port remains provider independent;
+  supplied protocol adapters document their wire-format requirements.
+- Documentation starts with Get started, Components, and Advanced. Existing
+  routes remain available. Component prose and copyable examples are maintained
+  against the implementation.
+- Select chevrons, logical padding, focus, touch targets, form alignment, and
+  token consistency are corrected while preserving public token names.
+
+### Transactional rendering and narrow visualizations
+
+The 0.6 candidate prepares and applies a presentation before publishing its task. Unsupported targets and synchronous renderer failures retain the previous authorized UI and state. Revocation clears private content. Hierarchy and temporal exact-data tables adapt to their container width; their scrollable graphics retain readable label sizes.
+
+Follow the [0.5 to 0.6 migration guide](/ship/migration-0.5/) when upgrading.
+Use all packages at the same exact version. The new registrations and callbacks
+are additive. A dirty form now blocks replacement until the host supplies an
+exit decision; integrate `onDraftExit` if your application previously replaced
+forms while edits were pending. Browser WebMCP remains experimental and requires
+a supported, enabled configuration; it is not a requirement for manual use.
+
+Final source-SHA quality, registry, image, and live deployment evidence will be
+recorded with the release. Local or simulated checks alone are not publication
+or provider-quality evidence.
+
 
 ## Aeliqo 0.5.2
 

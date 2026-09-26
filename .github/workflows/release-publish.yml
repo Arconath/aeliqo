@@ -90,7 +90,7 @@ jobs:
           jq -es \
             'if [.[] | select(.name == "Run required functional, security, browser, and package checks" and .conclusion == "success")] | length > 0
              then true
-             else error("same-SHA quality ran the site lane only; dispatch quality.yml on main to fully qualify this revision for publication")
+             else error("same-SHA push quality ran the site lane only; publish from a main push that runs the full matrix (manual dispatch is diagnostic evidence only)")
              end' \
             artifacts/package-release-policy/quality-jobs.json >/dev/null
           echo "quality_run_id=$quality_run_id" >> "$GITHUB_OUTPUT"

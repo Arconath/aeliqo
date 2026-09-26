@@ -75,10 +75,34 @@ await writeFile(
   join(consumer, 'recipes.ts'),
   `import type {RecipeContext, RecipePresentationPolicy} from '@aeliqo/web';
 import type {RecipePresentationPolicy as SubpathPolicy} from '@aeliqo/web/recipes';
+import type {AeliqoAppOptions, AeliqoAppDraftExitRequest, RendererReadyReceipt} from '@aeliqo/web/app';
+import type {RuntimeRenderOptions, RuntimePreparedRender, RuntimePresentationProjection} from '@aeliqo/runtime/app';
+import type {RuntimeRenderPreparation as RootPreparation} from '@aeliqo/runtime';
+const transaction = { prepare(candidate: RootPreparation) {
+  void candidate.current; void candidate.outputs; void candidate.signal;
+  return {ok: true as const, value: undefined};
+}} satisfies RuntimeRenderOptions;
+declare const prepared: RuntimePreparedRender;
+const projection: RuntimePresentationProjection = prepared;
+void transaction; void projection;
+import type {PresentationPatternManifest, PresentationStateMappingManifest} from '@aeliqo/core/presentation';
+declare const options: AeliqoAppOptions;
+const patterns: readonly PresentationPatternManifest[] = options.patterns ?? [];
+const stateMappings: readonly PresentationStateMappingManifest[] = options.stateMappings ?? [];
+void patterns; void stateMappings;
+type PatternContext = Parameters<PresentationPatternManifest['expand']>[0]['context'];
+declare const patternContext: PatternContext;
+void patternContext.incumbent?.nodes;
+const hooks = {
+  onDraftExit(request: AeliqoAppDraftExitRequest) { void request.signal; return {status: 'stay' as const}; },
+  onPresentation(receipt: RendererReadyReceipt) { void receipt.environment; },
+} satisfies Pick<AeliqoAppOptions, 'onDraftExit' | 'onPresentation'>;
+void hooks;
 export const policy = {allowedRepresentations: ['data.table']} satisfies RecipePresentationPolicy;
 const subpathPolicy: SubpathPolicy = policy;
 declare const context: RecipeContext;
 void context.presentationPolicy;
+void context.results;
 void subpathPolicy;
 `,
 );
@@ -101,9 +125,20 @@ await writeFile(
       skipLibCheck: false,
       noEmit: true,
     },
-    include: ['browser.ts', 'fixtures.ts', 'recipes.ts'],
+    include: ['browser.ts', 'fixtures.ts', 'recipes.ts', 'workspace/*.ts', 'page/*.ts'],
   }),
 );
+await mkdir(join(consumer, 'workspace'));
+for (const name of ['index.html', 'main.ts']) {
+  const content = await readFile(join(root, 'examples/vnext/workspace-goal', name), 'utf8');
+  await writeFile(join(consumer, 'workspace', name), content.replace('../workspace/goal.js', './goal.js'));
+}
+await writeFile(join(consumer, 'workspace/goal.ts'), await readFile(join(root, 'examples/vnext/workspace/goal.ts')));
+await writeFile(join(consumer, 'workspace/page.ts'), await readFile(join(root, 'examples/vnext/workspace/page.ts')));
+await mkdir(join(consumer, 'page'));
+for (const name of ['index.html', 'main.ts'])
+  await writeFile(join(consumer, 'page', name), await readFile(join(root, 'examples/vnext/page-goal', name)));
+
 run(['node', 'node_modules/typescript/bin/tsc', '-p', 'tsconfig.json'], consumer);
 run(
   [
@@ -116,7 +151,10 @@ run(
   consumer,
 );
 run(['node', '--disallow-code-generation-from-strings', 'registered-bar.mjs'], consumer);
-await writeFile(join(consumer, 'vite.config.mjs'), `export default {build:{target:'es2022'}};`);
+await writeFile(
+  join(consumer, 'vite.config.mjs'),
+  `export default {build:{target:'es2022',rolldownOptions:{input:['index.html','workspace/index.html','page/index.html']}}};`,
+);
 run(['node', 'node_modules/vite/bin/vite.js', 'build'], consumer);
 const server = createServer(async (req, res) => {
   try {
@@ -185,6 +223,30 @@ try {
   await page.evaluate(() => window.proof.region.revoke('revoked'));
   await expect(input).toHaveCount(0);
   await expect(page.getByRole('cell', { name: 'e-1', exact: true })).toHaveCount(0);
+  await page.goto('http://127.0.0.1:' + server.address().port + '/workspace/index.html');
+  const workspace = page.getByTestId('goal-workspace');
+  await expect(workspace).toHaveAttribute('data-facade', 'app.render');
+  await expect(workspace).toHaveAttribute('data-node-results', 'summary:summary,trend:trend,breakdown:breakdown');
+  for (const width of [360, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.locator('[data-aeliqo-node-id="summary"]')).toContainText('2');
+    await expect(page.locator('[data-aeliqo-node-id="breakdown"]')).toContainText('Ada');
+  }
+  await page.getByRole('button', { name: 'Fail breakdown update' }).click();
+  await expect(page.getByTestId('goal-status')).toHaveText('failed:attendance.breakdown-failed');
+  await expect(page.locator('[data-aeliqo-node-id="summary"]')).toContainText('2');
+  await page.goto('http://127.0.0.1:' + server.address().port + '/page/index.html');
+  await expect(page.locator('#status')).toContainText('renderer-ready');
+  await page.getByRole('button', { name: 'Workspace', exact: true }).click();
+  await expect(page.locator('#status')).toHaveText('renderer-ready: workspace');
+  await page.getByRole('button', { name: 'Entire page', exact: true }).click();
+  await expect(page.locator('#status')).toHaveText('renderer-ready: page');
+  await expect(page.getByRole('navigation', { name: 'Registered page navigation' })).toBeVisible();
+  for (const width of [360, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.getByRole('heading', { name: 'Attendance overview', exact: true })).toBeVisible();
+    await expect(page.locator('[data-aeliqo-node-id="breakdown"]')).toContainText('Ada');
+  }
   assert.deepEqual(errors, []);
 } finally {
   await browser?.close();

@@ -3,110 +3,142 @@
   "schemaVersion": 1,
   "product": "aeliqo",
   "candidate": {
-    "version": "0.5.2",
-    "status": "unreleased",
-    "baseVersion": "0.4.2",
-    "compatibility": "breaking"
+    "version": "0.6.0",
+    "status": "candidate",
+    "baseVersion": "0.5.2",
+    "compatibility": "additive"
   },
   "testedToolchain": {
-    "node": { "version": "24.20.0", "status": "qualified" },
-    "pnpm": { "version": "11.24.0", "status": "qualified" },
-    "typescript": { "version": "7.0.2", "status": "qualified" },
-    "vite": { "version": "8.2.2", "status": "qualified" },
-    "playwright": { "version": "1.63.0", "status": "qualified" }
+    "node": {
+      "version": "24.20.0",
+      "status": "pending-final-acceptance"
+    },
+    "pnpm": {
+      "version": "11.24.0",
+      "status": "pending-final-acceptance"
+    },
+    "typescript": {
+      "version": "7.0.2",
+      "status": "pending-final-acceptance"
+    },
+    "vite": {
+      "version": "8.2.2",
+      "status": "pending-final-acceptance"
+    },
+    "playwright": {
+      "version": "1.63.0",
+      "status": "pending-final-acceptance"
+    }
   },
   "frameworks": [
     {
       "id": "vanilla",
       "version": "native-dom",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/framework-consumers/framework-tarballs.mjs", "tests/vnext/browser"]
     },
     {
       "id": "lit",
       "version": "3.3.3",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/framework-consumers/framework-tarballs.mjs", "tests/platform"]
     },
     {
       "id": "react",
       "version": "19.2.8",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/framework-consumers/framework-tarballs.mjs", "tests/vnext/browser/react.spec.ts"]
     },
     {
       "id": "vue",
       "version": "3.5.42",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/framework-consumers/framework-tarballs.mjs"]
     },
     {
       "id": "next",
       "version": "16.3.4",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/next-platform", "tests/vnext/browser/ssr.spec.ts"]
     },
     {
       "id": "svelte",
       "version": null,
       "status": "unverified",
-      "reason": "No maintained Svelte adapter or installed consumer is in the vNext scope."
+      "reason": "No maintained Svelte adapter or installed consumer is in the maintained test scope."
     },
     {
       "id": "angular",
       "version": null,
       "status": "unverified",
-      "reason": "No maintained Angular adapter or installed consumer is in the vNext scope."
+      "reason": "No maintained Angular adapter or installed consumer is in the maintained test scope."
     }
   ],
   "browsers": [
     {
       "id": "chromium",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/vnext/playwright.config.mjs", "tests/framework-consumers/framework-tarballs.mjs"]
     },
     {
       "id": "firefox",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/vnext/playwright.config.mjs"]
     },
     {
       "id": "webkit",
-      "status": "qualified",
+      "status": "pending-final-acceptance",
       "evidence": ["tests/vnext/playwright.config.mjs"]
     },
     {
       "id": "native-webmcp",
-      "status": "unverified",
-      "reason": "Native WebMCP requires a separate headed browser probe and explicit capability availability."
+      "status": "pending-final-acceptance",
+      "scope": "Experimental native discovery, invocation, component/workspace/page rendering and reset cleanup. Requires the browser capability to be enabled; it is not baseline browser availability.",
+      "focusedEvidence": {
+        "status": "passed",
+        "browser": "Chromium",
+        "version": "153.0.8010.12",
+        "flag": "WebMCPTesting",
+        "exactSourceAcceptance": "pending"
+      },
+      "evidence": [
+        "apps/site/tests/site/webmcp-native.spec.ts",
+        "apps/site/tests/site/webmcp-native.playwright.config.mjs",
+        "tests/protocol-webmcp/native-probe.mjs"
+      ]
     }
   ],
   "providers": [
     {
       "id": "none",
-      "status": "qualified",
-      "scope": "All core, runtime, web, React, SSR, local-data, remote-data, and reference-journey paths operate without a model."
+      "status": "pending-final-acceptance",
+      "scope": "All core, runtime, web, React, SSR, local-data, remote-data, and reference-journey paths operate without a model.",
+      "evidence": [
+        "tests/framework-consumers/framework-tarballs.mjs",
+        "tests/consumers/adaptation-tarballs.mjs",
+        "tests/vnext"
+      ]
     },
     {
       "id": "local-protocol-fixture",
-      "status": "protocol-only",
+      "status": "pending-final-acceptance",
       "scope": "Synthetic localhost conformance for the provider-neutral protocol.",
       "evidence": ["tests/vnext/model-profile.test.ts", "tests/protocol-model"]
     },
     {
-      "id": "deepseek-flash-live-j1-j3",
-      "status": "qualified-bounded",
-      "scope": "DeepSeek deepseek-flash passed all 12 synthetic J1–J3 browser/provider/renderer cases on a tree-equivalent PR head. This qualifies only that model and corpus, not other models, providers, production workloads, or human use.",
+      "id": "standalone-mcp",
+      "status": "pending-final-acceptance",
+      "scope": "Provider-neutral local HTTP and stdio tool transport, with optional server-owned ToolModelPort adapters. Deterministic model fixtures do not qualify a hosted model.",
       "evidence": [
-        "tests/agent-evaluation/j1-j3-corpus.json",
-        "tests/agent-evaluation/live-journey-runner.mjs",
-        "docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json"
+        "tests/local-agent/consumer.mjs",
+        "tests/local-agent/standalone.test.mjs",
+        "tests/protocol-mcp/mcp.test.ts"
       ]
     },
     {
       "id": "openai-compatible-live",
       "status": "unverified",
-      "reason": "No general OpenAI-compatible provider or model profile is qualified by the bounded DeepSeek result."
+      "reason": "No current-source live provider/model profile is qualified. Protocol compatibility does not establish model quality."
     },
     {
       "id": "other-hosted-providers",
@@ -116,8 +148,20 @@
   ],
   "workloads": [
     {
+      "id": "component-workspace-page",
+      "status": "pending-final-acceptance",
+      "scope": "One mounted Region adapts between registered components, multi-result workspaces and page layouts with application-owned header/sidebar views. State continuity, guarded draft exits and forced revocation require final source-bound acceptance.",
+      "evidence": [
+        "tests/consumers/adaptation-tarballs.mjs",
+        "tests/runtime-presentation/browser/app-continuity.spec.ts",
+        "tests/runtime-presentation/browser/app-draft-exit.spec.ts",
+        "tests/runtime-presentation/runtime-render-transaction.test.ts",
+        "tests/vnext/page-pattern.test.ts"
+      ]
+    },
+    {
       "id": "playground-j1-j3",
-      "status": "qualified-bounded",
+      "status": "pending-final-acceptance",
       "scope": "The People Jakarta, Daily attendance, and Analytical workspace playground journeys exercise approved synthetic data through the real runtime and renderer without requiring a model.",
       "evidence": [
         "apps/site/tests/site/browser.spec.ts",
@@ -128,19 +172,19 @@
     },
     {
       "id": "reference-journeys",
-      "status": "qualified-bounded",
+      "status": "pending-final-acceptance",
       "scope": "Four synthetic application journeys with real package/browser consumers.",
       "evidence": ["tests/vnext/browser/journeys.spec.ts", "tests/vnext/journey-remote.test.ts"]
     },
     {
       "id": "synthetic-paged-million-rows",
-      "status": "qualified-bounded",
+      "status": "pending-final-acceptance",
       "scope": "Bounds page/window behavior only; this is not a production database throughput claim.",
       "evidence": ["tests/vnext/remote-data.test.ts"]
     },
     {
       "id": "declared-module-scale-1000",
-      "status": "qualified-bounded",
+      "status": "pending-final-acceptance",
       "scope": "1,000 declarations with five active surfaces; measured module and update isolation.",
       "evidence": ["tests/vnext/module-scale.test.ts", "tests/performance/vnext-workload.mjs"]
     },
@@ -163,5 +207,11 @@
     "nativeWebMcp": false,
     "stablePublished": false,
     "deployed": false
+  },
+  "acceptance": {
+    "status": "pending-final-acceptance",
+    "sourceRevision": null,
+    "scope": "Evidence paths identify maintained checks, not completed acceptance on the final source. All capability and publication claims remain false until final source-bound release records are attached.",
+    "historicalMatrix": "docs/releases/0.5.2/support-matrix.json"
   }
 }

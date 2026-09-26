@@ -1,0 +1,10 @@
+{
+  "status": "unapproved",
+  "baselineSHA": null,
+  "workloadSHA": null,
+  "runner": null,
+  "review": null,
+  "pairs": 3,
+  "relative": { "fraction": 0.2, "milliseconds": 2 },
+  "absolute": { "plannerP95Ms": 16, "reducerP95Ms": 4, "mountedRows": 100 }
+}

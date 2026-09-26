@@ -13,13 +13,14 @@ contract: 'Calendar-aligned values/events with an explicit week start and exact 
 
 ## Purpose
 
-Place values on calendar days using the declared week start. Exact values stay in the data table, not in color alone.
+Place loaded rows on Gregorian calendar days. Tiles show row counts and up to three row labels; the
+data table carries exact values and remaining rows. `weekStartsOn` defaults to Monday.
 
 ## When to use it
 
 - Spot daily patterns like activity by weekday or week.
-- Show values on real calendar days with a chosen week start.
-- Keep exact values readable beyond color intensity.
+- Show loaded rows on real calendar days with an optional week-start override.
+- Keep exact values and rows available in the data table.
 
 ## When to use a different component
 
@@ -54,7 +55,7 @@ Exposed semantics:
 
 ## Responsive behavior
 
-The calendar grid has a narrow-width data layout. Check dates and values at 360px and 200% text.
+At container widths of 30rem or less, exact-data rows become stacked records so labels remain readable inside narrow desktop panels as well as mobile pages.
 
 ## Style hooks
 
@@ -73,6 +74,4 @@ The calendar grid has a narrow-width data layout. Check dates and values at 360p
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

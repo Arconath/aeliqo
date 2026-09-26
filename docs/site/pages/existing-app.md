@@ -3,29 +3,97 @@ id: 'existing-app'
 path: '/start/existing-app/'
 section: 'Get started'
 title: 'Add Aeliqo to an existing application'
-description: 'Adopt one Region at a time while keeping the existing backend, router, state, components, and authorization system.'
+description: 'Adopt one read-only screen using your existing data and host lifecycle, then connect authorization and actions.'
 ---
 
-<p class="lead">Start where your app already knows the signed-in user and can return bounded data. Keep your backend, router, and design system. Do not migrate the whole UI at once.</p>
-<h2>Adopt it in five steps</h2><ol class="doc-steps"><li><span>1</span><div><h3>Pick one resource</h3><p>Choose a read-only list or detail screen with stable IDs and a clear owner.</p></div></li><li><span>2</span><div><h3>Map the data</h3><p>Shape your existing API response into a typed resource. Credentials and server policy stay in your backend.</p></div></li><li><span>3</span><div><h3>Bridge permissions</h3><p>Read the signed-in user and their grants from trusted app state on every evaluation.</p></div></li><li><span>4</span><div><h3>Mount one region</h3><p>Give the adaptive region (a mounted view slot) its own container. Dispose of it with the host screen.</p></div></li><li><span>5</span><div><h3>Add actions last</h3><p>Reuse your existing command path with preview, confirmation, and revision checks.</p></div></li></ol>
-<p>A minimal mount needs four things: a resource binding, a permission adapter, a container, and one typed request:</p>
+## Choose a small first screen
 
-**surface.ts**
+Start with a list whose records have stable IDs and a clear permission boundary.
+For example, add a People panel inside an existing route. Your router owns the
+URL, your backend owns real data access, and the route owns the panel's lifetime.
+Keep those responsibilities while introducing one adaptive region.
 
-```ts
-import { createAeliqoApp } from '@aeliqo/web/app';
+First complete [Connect your data](/start/registered-app/). It supplies a
+working `src/app.ts`, including `mountPeople`, using synthetic records. Reuse
+that file for the integration below before replacing its data source.
 
-const app = createAeliqoApp({ resources, authority });
-const mounted = app.mount({ target: container, regionId: 'people-main', resourceId: 'people' });
-if (!mounted.ok) throw new Error(mounted.diagnostics[0].message);
+## 1. Give the route a container
 
-await app.render({ regionId: 'people-main', intent });
+Place this in the route's HTML or host template:
 
-// When the host screen tears down:
-app.unmount('people-main');
-app.dispose();
+```html
+<section aria-labelledby="people-title">
+  <h2 id="people-title">People</h2>
+  <p id="people-status" role="status">Loading people…</p>
+  <div id="people-region"></div>
+</section>
 ```
 
-<aside class="doc-callout" data-tone="warning"><strong>Keep one owner per concern</strong><p>Your router owns the URL? Register a navigation adapter. Your form library owns a draft? Keep it, or move that whole form into a registered view. Two owners for one thing loses state.</p></aside>
-<h2>Know it worked</h2><div class="doc-checklist"><ul><li>The old non-Aeliqo path still works.</li><li>Back/forward navigation and unmount leak no listeners or stale data.</li><li>Your server remains the final permission check.</li><li>You can remove Aeliqo from this screen without changing your domain API.</li></ul></div>
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/guides/data/"><span>Data adapters</span><small>Map local and HTTP sources into bounded services.</small><b aria-hidden="true">→</b></a><a href="/start/frameworks/"><span>Framework setup</span><small>Choose Vanilla, React, Vue, or SSR integration.</small><b aria-hidden="true">→</b></a></nav>
+## 2. Mount and render from the route lifecycle
+
+Create `src/people-screen.ts`. Call `openPeopleScreen()` after the container is
+in the DOM. Keep its returned cleanup function and call it when the route leaves.
+
+```ts
+import { mountPeople } from './app.js';
+
+export function openPeopleScreen() {
+  const target = document.querySelector<HTMLElement>('#people-region');
+  const status = document.querySelector<HTMLElement>('#people-status');
+  if (!target || !status) throw new Error('People route containers are missing.');
+
+  const screen = mountPeople(target, [
+    { id: 'ada', name: 'Ada Chen', team: 'Design' },
+    { id: 'sam', name: 'Sam Rivera', team: 'Engineering' },
+  ]);
+  let active = true;
+  void screen.render().then((receipt) => {
+    if (!active) return;
+    status.textContent = receipt.status === 'renderer-ready'
+      ? 'People loaded.'
+      : `People could not render: ${receipt.status}`;
+  });
+  return () => {
+    active = false;
+    screen.dispose();
+  };
+}
+```
+
+You should see Ada and Sam, followed by **People loaded.** in the status.
+Resize the container to exercise its allowed compact presentation. This app
+instance belongs to this screen; a shared app shell should instead unmount only
+the leaving region and dispose the app when the whole shell ends.
+
+## 3. Replace the demonstration data boundary
+
+The tutorial authority is a synthetic user, not an authentication integration.
+Read your current principal and policy from trusted host state. Replace the
+local fixture service with an [HTTP adapter](/guides/http-data/) whose server
+reauthorizes each request. Keep scope and policy evidence consistent between
+authority and data. Do not copy a user's grants from a URL or model request.
+
+Pass an abort signal through remote work, cancel when the route leaves, and
+handle authorization changes explicitly. A workspace selector does not grant
+access. Follow [scopes](/guides/scopes/) before introducing tenant switching.
+
+## 4. Add interaction in stages
+
+Use your existing router through a [navigation adapter](/guides/navigation/).
+Keep each form draft under one owner. Add [registered actions](/guides/actions/)
+only after reads and lifecycle behavior are correct; route the effect through
+your existing command path with fresh authorization and revision checks.
+
+## Check transitions and recover
+
+- Navigate away while a request is pending. Its work must be cancelled and the
+  old region must not update a newly mounted screen.
+- If rendering reports `denied`, inspect host authority and server policy.
+  Adding a grant to an intent cannot fix access.
+- If an update fails, show its diagnostic and retain the last authorized
+  result. Forced revocation must fence the old scope instead.
+- Navigate back and use keyboard focus. There should be one active screen and
+  one event handler for each interaction.
+
+Continue with [framework setup](/start/frameworks/) for lifecycle wiring in
+React or Vue and the explicit Next.js server rendering path.

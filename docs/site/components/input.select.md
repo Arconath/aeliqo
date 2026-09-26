@@ -13,7 +13,10 @@ contract: 'Bounded enumerated choice with native-first semantics; empty and unkn
 
 ## Purpose
 
-A bounded choice with a styled trigger and chevron; the option popup and keyboard stay native. An empty value is no selection, and an unknown value stays visible instead of picking another option.
+A bounded choice with a styled trigger and chevron; the option popup and keyboard stay native. The
+host can set `value`; choosing an option updates that local property and emits a typed change. An
+empty value is no selection, and an unknown value stays visible instead of picking another option;
+the host decides what to persist.
 
 ## When to use it
 
@@ -74,6 +77,4 @@ Give the field enough width to show its selected label. Keep options bounded so 
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

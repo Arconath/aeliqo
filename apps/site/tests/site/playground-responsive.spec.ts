@@ -47,11 +47,16 @@ test('guided demos remain legible at mobile, tablet, and desktop widths', async 
     await page.setViewportSize({ width, height: 900 });
     await openTaskRail(page);
     await page.locator('[data-journey="attendance"]').click();
-    await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    await expect(page.locator('#pg-region aeliqo-chart')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await openTaskRail(page);
     await page.locator('[data-journey="workspace"]').click();
-    await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    await expect(page.locator('#pg-region [data-aeliqo-node-id="breakdown"]')).toContainText('Ada');
+    await openTaskRail(page);
+    await page.locator('[data-journey="page"]').click();
+    await expect(page.getByRole('navigation', { name: 'Registered page navigation' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).include('.pg-app').analyze()).violations).toEqual([]);
   }
@@ -233,12 +238,11 @@ test('mobile controls, disconnected agent state, and accessibility remain honest
   page.on('request', (request) => requests.push(request.url()));
   await page.setViewportSize({ width: 320, height: 850 });
   await page.goto('/playground/');
-  await page.getByRole('button', { name: 'Connect AI' }).click();
-  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
-  await page.locator('#pg-connection-kind').selectOption('detect');
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await page.getByRole('button', { name: 'Browser agent', exact: true }).click();
+  await expect(page.locator('#pg-prompt')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Enable WebMCP' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
-  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
+  await expect(page.locator('#pg-prompt')).toHaveCount(0);
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.getByRole('button', { name: 'Inspect', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Inspector' })).toBeVisible();
@@ -248,6 +252,6 @@ test('mobile controls, disconnected agent state, and accessibility remain honest
   await expect(page.getByRole('dialog', { name: 'Inspector' })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Inspect', exact: true })).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  expect(requests.some((url) => url.includes('/api/aeliqo/session'))).toBe(true);
+  expect(requests.some((url) => url.includes('/api/aeliqo/'))).toBe(false);
   expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
 });
