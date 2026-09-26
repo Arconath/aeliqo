@@ -10,7 +10,7 @@ The release keeps the six public packages. It adds high-level subpath APIs, four
 
 ## Current state and constraints
 
-- Started from clean `main` revision `9d20eca` on branch `codex/aeliqo-0.2`; the implementation release line was subsequently raised together to `0.3.0` after npm registry preflight found unreusable `0.2.0` identities.
+- Started from clean `main` revision `9d20eca` on the `0.2` development line; the implementation release line was subsequently raised together to `0.3.0` (release source at tag `v0.3.0`) after npm registry preflight found unreusable `0.2.0` identities.
 - Published `0.1.0` packages remain available; 0.3 may intentionally break source APIs with a verified migration guide.
 - Existing Catalog, Task, Result, Experience, presentation manifest/pattern/state mapping, runtime Region/action/data boundaries, and MCP/WebMCP/BYOK adapters remain the foundation.
 - No new public package, hosted inference, account system, database, or public agent relay.

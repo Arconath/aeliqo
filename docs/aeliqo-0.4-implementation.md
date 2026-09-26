@@ -7,7 +7,7 @@ two-factor authentication; no package deprecation has been applied.
 
 ## Release boundary
 
-- Source branch: `codex/aeliqo-0.4`.
+- Source revision: the `0.4` development line; the `0.4.1` release is recorded at tag `v0.4.1`.
 - Release: breaking `0.4.0` with five public packages: `core`, `runtime`,
   `web`, `react`, and `agent`.
 - Public product: one site application for the landing page, docs, component
@@ -230,9 +230,9 @@ specified that online users supply their own keys.
 
 ## 0.4.2 Global launch readiness
 
-Status: implementation and local acceptance checks are complete on
-`codex/aeliqo-0.4` from `d4c68a3`. The clean, accepted candidate commit and
-source-bound release remain pending.
+Status: implementation and local acceptance checks were complete on the
+`0.4` development line from `d4c68a3`. The clean, accepted candidate commit and
+source-bound release remained pending at that point.
 
 The goal is a source-compatible patch that makes adaptive presentation obey
 resource view policy, binds trends to requested semantic measures, turns the
