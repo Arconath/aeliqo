@@ -235,6 +235,7 @@ test('mobile controls, disconnected agent state, and accessibility remain honest
   await page.goto('/playground/');
   await page.getByRole('button', { name: 'Connect AI' }).click();
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
+  await page.locator('#pg-connection-kind').selectOption('detect');
   await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();

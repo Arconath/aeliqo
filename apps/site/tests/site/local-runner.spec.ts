@@ -11,6 +11,7 @@ test('the local runner pairs one browser Region with the three real MCP tools', 
   await page.goto('/playground/');
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await page.getByRole('button', { name: 'Connect AI' }).click();
+  await page.locator('#pg-connection-kind').selectOption('detect');
   await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText('Local runner connected');
   await expect(page.locator('#pg-mcp-config')).toBeVisible();

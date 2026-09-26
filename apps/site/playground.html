@@ -91,8 +91,9 @@
         <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
           <h3 id="pg-connected-title">Connect an agent</h3>
           <p>
-            MCP, WebMCP, and a locally configured model all use the same validated playground tools — or try the
-            scripted demo agent in this page. Actions still require your confirmation.
+            The scripted demo agent runs in this page, the hosted relay links a remote agent through mcp.aeliqo.com, and
+            the local runner or WebMCP attach agents on this machine — all through the same validated tools. Actions
+            still require your confirmation.
           </p>
           <p id="pg-webmcp-note" class="pg-webmcp-note" hidden>
             Native WebMCP is an early-preview Chrome feature — enable
@@ -102,11 +103,45 @@
           </p>
           <label
             >Connection<select id="pg-connection-kind" data-playground-boot-control disabled>
+              <option value="demo">Demo agent (scripted)</option>
+              <option value="relay">Hosted MCP relay</option>
               <option value="detect">Local Playground host</option>
               <option value="webmcp">WebMCP (experimental)</option>
-              <option value="demo">Demo agent (scripted)</option>
             </select></label
           >
+          <div id="pg-relay-controls" hidden>
+            <ol class="pg-connect-steps">
+              <li>Choose <b>Generate connection</b> — this page pairs with the hosted relay at mcp.aeliqo.com.</li>
+              <li>
+                Keep this tab open. Paste the config into Cursor (Settings → MCP), or run the command for Claude Code.
+              </li>
+              <li>
+                Then ask your agent: “show the people in Engineering” — the change appears here after you confirm.
+              </li>
+            </ol>
+            <button type="button" id="pg-relay-generate" data-playground-boot-control disabled>
+              Generate connection
+            </button>
+            <div id="pg-relay-session" hidden>
+              <div class="pg-config">
+                <div class="pg-config-head">
+                  <strong>MCP client config</strong>
+                  <button type="button" data-copy-config="relay-json">Copy</button>
+                </div>
+                <pre id="pg-mcp-relay-json" tabindex="0"></pre>
+              </div>
+              <div class="pg-config">
+                <div class="pg-config-head">
+                  <strong>Claude Code</strong>
+                  <button type="button" data-copy-config="relay-cli">Copy</button>
+                </div>
+                <pre id="pg-mcp-relay-cli" tabindex="0"></pre>
+              </div>
+              <p id="pg-relay-expiry" class="pg-note"></p>
+              <p class="pg-note">Keep this tab open — closing it disconnects your agent.</p>
+              <p id="pg-relay-copy-status" class="pg-note" role="status"></p>
+            </div>
+          </div>
           <div id="pg-local-connection-controls">
             <ol class="pg-connect-steps">
               <li>In the repo, run <code>pnpm playground:local</code> and open the printed local address.</li>

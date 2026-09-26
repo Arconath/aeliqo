@@ -74,7 +74,7 @@
 }
 .pg-app {
   max-width: 96rem;
-  min-height: calc(100vh - 12rem);
+  min-height: min(38rem, calc(100vh - 12rem));
   margin-inline: auto;
   overflow: clip;
   border: 1px solid color-mix(in srgb, var(--line-strong) 85%, transparent);
@@ -346,7 +346,7 @@
 .pg-workspace {
   display: grid;
   grid-template-columns: minmax(18.5rem, 0.3fr) minmax(0, 1fr);
-  min-height: calc(100vh - 16rem);
+  min-height: clamp(28rem, 58vh, 42rem);
 }
 .pg-request {
   min-width: 0;
@@ -464,13 +464,26 @@
   border-radius: var(--radius-pill);
   font-size: var(--type-compact);
 }
-#pg-mcp-config {
+#pg-mcp-config,
+#pg-relay-controls,
+#pg-relay-session {
   display: grid;
   gap: 0.6rem;
+}
+#pg-mcp-config[hidden],
+#pg-relay-controls[hidden],
+#pg-relay-session[hidden] {
+  display: none;
 }
 #pg-mcp-config h4 {
   margin: 0;
   font-size: var(--type-label);
+}
+#pg-relay-generate {
+  justify-self: start;
+}
+#pg-relay-expiry {
+  margin: 0;
 }
 .pg-config {
   overflow: hidden;
@@ -499,6 +512,7 @@
   max-height: 12rem;
   overflow: auto;
   padding: 0.55rem 0.6rem;
+  color: var(--text);
   background: var(--surface);
   font-size: 0.68rem;
   line-height: 1.5;

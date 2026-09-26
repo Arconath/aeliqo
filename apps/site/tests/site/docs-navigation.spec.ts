@@ -277,12 +277,12 @@ test('scrollable code remains focusable and named across static, hydrated, and o
 }) => {
   await page.goto('/start/');
   const packageManifest = page.locator('.reading .doc-code pre').first();
-  await expect(packageManifest).toContainText(`"@aeliqo/react": "${RELEASE_VERSION}"`);
+  await expect(packageManifest).toContainText('npm create vite@latest people');
   await expect(packageManifest).toHaveAttribute('tabindex', '0');
   await packageManifest.focus();
   await expect(packageManifest).toBeFocused();
   const typescriptConfig = page.locator('.reading .doc-code pre').nth(1);
-  await expect(typescriptConfig).toContainText('"moduleResolution": "Bundler"');
+  await expect(typescriptConfig).toContainText(`@aeliqo/react@${RELEASE_VERSION}`);
   await expect(typescriptConfig).toHaveAttribute('tabindex', '0');
   await typescriptConfig.focus();
   await expect(typescriptConfig).toBeFocused();
@@ -293,7 +293,7 @@ test('scrollable code remains focusable and named across static, hydrated, and o
   try {
     await noScriptPage.goto('/start/');
     const staticPackageManifest = noScriptPage.locator('.reading .doc-code pre').first();
-    await expect(staticPackageManifest).toContainText(`"@aeliqo/react": "${RELEASE_VERSION}"`);
+    await expect(staticPackageManifest).toContainText('npm create vite@latest people');
     await expect(staticPackageManifest).toHaveAttribute('tabindex', '0');
     await staticPackageManifest.focus();
     await expect(staticPackageManifest).toBeFocused();

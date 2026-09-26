@@ -1,20 +1,25 @@
 import type { Outcome } from '@aeliqo/core';
-import type { AgentModelToolEndpoint, AgentToolEndpoint } from '@aeliqo/agent/protocol';
 import { isRecord } from './guards.js';
+import {
+  abortBridgeCalls,
+  cancelBridgeCall,
+  dispatchBridgeCall,
+  parseChannelEvent,
+  type BridgeCall,
+  type BridgeEndpoints,
+  type BridgeOperation,
+  type BridgeTransport,
+} from './bridge-calls.js';
 import type { PlaygroundSession } from './session.js';
 
-type BridgeOperation = 'authorize' | 'discover' | 'invoke';
-
-interface BridgeCall {
-  readonly id: string;
-  readonly transport: 'byok' | 'mcp';
-  readonly operation: BridgeOperation;
-  readonly name?: string;
-  readonly input?: unknown;
-  readonly requestId?: string;
-}
-
 const BRIDGE_CALL_KEYS = new Set(['id', 'transport', 'operation', 'name', 'input', 'requestId']);
+
+const LOCAL_REJECTION: Outcome<unknown> = {
+  ok: false,
+  diagnostics: [
+    { code: 'playground.local-call', message: 'The browser rejected the local host call.', retryable: false },
+  ],
+};
 
 export interface LocalHostConnection {
   close(): void;
@@ -24,7 +29,7 @@ function hasUnknownBridgeFields(value: Readonly<Record<string, unknown>>): boole
   return Object.keys(value).some((key) => !BRIDGE_CALL_KEYS.has(key));
 }
 
-function isBridgeTransport(value: unknown): value is BridgeCall['transport'] {
+function isBridgeTransport(value: unknown): value is BridgeTransport {
   return value === 'byok' || value === 'mcp';
 }
 
@@ -53,15 +58,6 @@ function bridgeCall(value: unknown): BridgeCall | undefined {
   };
 }
 
-function parseEvent(event: Event): unknown {
-  if (!(event instanceof MessageEvent) || typeof event.data !== 'string') return undefined;
-  try {
-    return JSON.parse(event.data) as unknown;
-  } catch {
-    return undefined;
-  }
-}
-
 async function acknowledge(id: string, outcome: Outcome<unknown>): Promise<void> {
   const response = await fetch('/api/aeliqo/ack', {
     method: 'POST',
@@ -71,30 +67,7 @@ async function acknowledge(id: string, outcome: Outcome<unknown>): Promise<void>
   if (!response.ok) throw new Error(`Local host acknowledgment failed (${response.status}).`);
 }
 
-async function invoke(
-  call: BridgeCall,
-  endpoints: Readonly<Record<'byok' | 'mcp', AgentModelToolEndpoint>>,
-  signal: AbortSignal,
-): Promise<Outcome<unknown>> {
-  const endpoint: AgentToolEndpoint = endpoints[call.transport];
-  if (call.operation === 'authorize') {
-    if (call.transport !== 'byok') {
-      return {
-        ok: false,
-        diagnostics: [
-          { code: 'playground.local-operation', message: 'MCP does not expose model authorization.', retryable: false },
-        ],
-      };
-    }
-    return endpoints.byok.authorizeModel({ signal });
-  }
-  if (call.operation === 'discover') return endpoint.discover({ signal });
-  return endpoint.invoke(call.name ?? '', call.input, { requestId: call.requestId ?? call.id, signal });
-}
-
-async function connectEndpoints(
-  session: PlaygroundSession,
-): Promise<Readonly<Record<'byok' | 'mcp', AgentModelToolEndpoint>>> {
+async function connectEndpoints(session: PlaygroundSession): Promise<BridgeEndpoints> {
   const [byok, mcp] = await Promise.all([
     session.connectAgent('byok', 'local-playground'),
     session.connectAgent('mcp', 'local-playground'),
@@ -142,29 +115,10 @@ export async function connectLocalHost(session: PlaygroundSession): Promise<Loca
   });
 
   events.addEventListener('call', (event) => {
-    const call = bridgeCall(parseEvent(event));
-    if (call === undefined) return;
-    const controller = new AbortController();
-    pending.set(call.id, controller);
-    void invoke(call, endpoints, controller.signal)
-      .then((outcome) => acknowledge(call.id, outcome))
-      .catch(() =>
-        acknowledge(call.id, {
-          ok: false,
-          diagnostics: [
-            { code: 'playground.local-call', message: 'The browser rejected the local host call.', retryable: false },
-          ],
-        }),
-      )
-      .finally(() => pending.delete(call.id));
+    const call = bridgeCall(parseChannelEvent(event));
+    if (call !== undefined) dispatchBridgeCall(call, endpoints, pending, acknowledge, LOCAL_REJECTION);
   });
-  events.addEventListener('cancel', (event) => {
-    const value = parseEvent(event);
-    if (isRecord(value)) {
-      const id = Object.hasOwn(value, 'id') ? value.id : undefined;
-      if (typeof id === 'string') pending.get(id)?.abort();
-    }
-  });
+  events.addEventListener('cancel', (event) => cancelBridgeCall(pending, parseChannelEvent(event)));
 
   let closed = false;
   return Object.freeze({
@@ -172,8 +126,7 @@ export async function connectLocalHost(session: PlaygroundSession): Promise<Loca
       if (closed) return;
       closed = true;
       events.close();
-      for (const controller of pending.values()) controller.abort();
-      pending.clear();
+      abortBridgeCalls(pending);
       endpoints.byok.close();
       endpoints.mcp.close();
       void fetch('/api/aeliqo/disconnect', { method: 'POST', keepalive: true }).catch(() => undefined);

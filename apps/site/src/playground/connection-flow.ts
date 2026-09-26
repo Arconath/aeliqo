@@ -7,13 +7,15 @@ import {
   type PlaygroundConnection,
 } from './connection-controller.js';
 import { matchDemoTask, runDemoTask } from './demo-agent.js';
+import { connectHostedRelay, pairHostedRelay, type HostedRelayConnection, type RelayState } from './hosted-relay.js';
 import { connectLocalHost, type LocalHostConnection } from './local-host.js';
+import { renderHostedMcpConfig } from './mcp-configs.js';
 import type { ScenarioId } from './scenarios.js';
 import type { PlaygroundSession } from './session.js';
 
-type ConnectionKind = 'detect' | 'webmcp' | 'demo';
-type ActiveConnection = 'none' | 'local' | 'webmcp' | 'demo';
-type DotState = 'connected' | 'disconnected' | 'unavailable';
+type ConnectionKind = 'detect' | 'webmcp' | 'demo' | 'relay';
+type ActiveConnection = 'none' | 'local' | 'webmcp' | 'demo' | 'relay';
+type DotState = 'connected' | 'connecting' | 'disconnected' | 'unavailable';
 type WebMcpProbe = 'supported' | 'unsupported' | 'failed';
 
 export interface ConnectionElements {
@@ -24,8 +26,15 @@ export interface ConnectionElements {
   prompt: HTMLTextAreaElement;
   send: HTMLButtonElement;
   modelCalls: HTMLElement;
+  connectButton: HTMLButtonElement;
   localControls: HTMLElement;
   demoPanel: HTMLElement;
+  relayControls: HTMLElement;
+  relayGenerate: HTMLButtonElement;
+  relaySession: HTMLElement;
+  relayConfig: HTMLElement;
+  relayCli: HTMLElement;
+  relayExpiry: HTMLElement;
   mcpConfig: HTMLElement;
   webmcpNote: HTMLElement;
 }
@@ -40,6 +49,7 @@ interface ConnectionFlowState {
   readonly session: () => PlaygroundSession;
   connection: ActiveConnection;
   localHost: LocalHostConnection | undefined;
+  relay: HostedRelayConnection | undefined;
   demoEndpoint: AgentModelToolEndpoint | undefined;
   localModelReady: boolean;
   modelCallCount: number;
@@ -50,9 +60,18 @@ interface ConnectionFlowState {
 const DEFAULT_LABEL = 'No agent · manual runtime';
 const DEFAULT_STATUS = 'Pick a connection and choose Check connection. The scripted demo works in any browser.';
 const MODULE_FAILURE = 'The agent module could not load. Reload the page to try again.';
+const RELAY_PROMPT_HINT = 'Ask your connected agent — its proposals arrive through the relay for confirmation.';
+
+const SEND_LABELS: Readonly<Record<ActiveConnection, string>> = {
+  none: 'Send prompt',
+  local: 'Send to local agent',
+  webmcp: 'Send prompt',
+  demo: 'Send to demo agent',
+  relay: 'Send prompt',
+};
 
 function selectedKind(value: string): ConnectionKind {
-  return value === 'webmcp' || value === 'demo' ? value : 'detect';
+  return value === 'webmcp' || value === 'demo' || value === 'relay' ? value : 'detect';
 }
 
 function describeLocalReceipt(receipt: LocalPromptReceipt): string {
@@ -65,19 +84,18 @@ function describeLocalReceipt(receipt: LocalPromptReceipt): string {
   return `The local agent stopped as ${receipt.stop}; no unsupported claim is shown as success.`;
 }
 
+function composerPlaceholder(state: ConnectionFlowState, ready: boolean): string {
+  if (state.connection === 'demo') return 'Type one of the listed requests';
+  if (state.connection === 'relay') return RELAY_PROMPT_HINT;
+  return ready ? 'Describe the interface you want' : 'Available after a connection is ready';
+}
+
 function updateComposer(state: ConnectionFlowState): void {
-  const demo = state.connection === 'demo';
-  const ready = demo || (state.connection === 'local' && state.localModelReady);
+  const ready = state.connection === 'demo' || (state.connection === 'local' && state.localModelReady);
   state.elements.prompt.disabled = !ready;
   state.elements.send.disabled = !ready;
-  state.elements.send.textContent = demo ? 'Send to demo agent' : 'Send to local agent';
-  if (demo) {
-    state.elements.prompt.placeholder = 'Type one of the listed requests';
-    return;
-  }
-  state.elements.prompt.placeholder = ready
-    ? 'Describe the interface you want'
-    : 'Available after a connection is ready';
+  state.elements.send.textContent = SEND_LABELS[state.connection];
+  state.elements.prompt.placeholder = composerPlaceholder(state, ready);
 }
 
 function show(state: ConnectionFlowState, text: string, dot: DotState): void {
@@ -90,16 +108,23 @@ function renderKindPanels(state: ConnectionFlowState): void {
   const kind = selectedKind(state.elements.kind.value);
   state.elements.localControls.hidden = kind !== 'detect';
   state.elements.demoPanel.hidden = kind !== 'demo';
+  state.elements.relayControls.hidden = kind !== 'relay';
+  state.elements.connectButton.hidden = kind === 'relay';
 }
 
 function teardown(state: ConnectionFlowState): void {
   state.localHost?.close();
   state.localHost = undefined;
+  state.relay?.close();
+  state.relay = undefined;
   state.demoEndpoint?.close();
   state.demoEndpoint = undefined;
   state.connection = 'none';
   state.localModelReady = false;
   state.elements.mcpConfig.hidden = true;
+  state.elements.relaySession.hidden = true;
+  state.elements.relayGenerate.disabled = false;
+  state.elements.relayGenerate.textContent = 'Generate connection';
   updateComposer(state);
 }
 
@@ -152,6 +177,60 @@ async function connectDemo(state: ConnectionFlowState): Promise<void> {
     'Scripted demo ready — it only understands the requests listed above. No model is called.';
 }
 
+function relayExpiryText(expiresAt: number): string {
+  const at = new Date(expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const minutes = Math.max(0, Math.round((expiresAt - Date.now()) / 60_000));
+  return `Session expires at ${at} (about ${minutes} min). Regenerate when it lapses.`;
+}
+
+function onRelayState(state: ConnectionFlowState, next: RelayState): void {
+  switch (next) {
+    case 'live':
+      state.elements.relayGenerate.textContent = 'Regenerate connection';
+      show(state, 'Relay connected — your agent reaches this page through mcp.aeliqo.com.', 'connected');
+      return;
+    case 'interrupted':
+      show(state, 'The relay channel dropped — reconnecting automatically.', 'connecting');
+      return;
+    case 'disconnected':
+      show(state, 'The relay detached this tab. Generate a new connection to continue.', 'disconnected');
+      return;
+    case 'expired':
+      state.elements.relayExpiry.textContent = 'Session expired — generate a new connection.';
+      show(state, 'The relay session expired. Choose Regenerate connection to continue.', 'unavailable');
+      return;
+  }
+}
+
+async function connectRelay(state: ConnectionFlowState): Promise<void> {
+  state.elements.relayGenerate.disabled = true;
+  show(state, 'Requesting a hosted relay session…', 'connecting');
+  try {
+    const pair = await pairHostedRelay();
+    if (selectedKind(state.elements.kind.value) !== 'relay') return;
+    renderHostedMcpConfig(state.elements.relayConfig, state.elements.relayCli, pair);
+    state.elements.relayExpiry.textContent = relayExpiryText(pair.expiresAt);
+    state.elements.relaySession.hidden = false;
+    show(state, 'Relay session created — opening the attach channel…', 'connecting');
+    const relay = await connectHostedRelay(state.session(), pair, (next) => onRelayState(state, next));
+    if (selectedKind(state.elements.kind.value) !== 'relay') {
+      relay.close();
+      state.elements.relaySession.hidden = true;
+      return;
+    }
+    state.relay = relay;
+    state.connection = 'relay';
+    state.elements.relayGenerate.textContent = 'Regenerate connection';
+    updateComposer(state);
+    show(state, 'Relay connected — your agent reaches this page through mcp.aeliqo.com.', 'connected');
+  } catch (cause) {
+    if (selectedKind(state.elements.kind.value) !== 'relay') return;
+    show(state, cause instanceof Error ? cause.message : 'The hosted relay pairing failed safely.', 'unavailable');
+  } finally {
+    state.elements.relayGenerate.disabled = false;
+  }
+}
+
 async function applyCheck(
   state: ConnectionFlowState,
   kind: ConnectionKind,
@@ -194,9 +273,18 @@ function onKindChange(state: ConnectionFlowState): void {
         show(state, 'The demo agent was stopped.', 'disconnected');
       }
       break;
+    case 'relay':
+      if (kind !== 'relay') {
+        teardown(state);
+        show(state, 'The hosted relay connection was closed.', 'disconnected');
+      }
+      break;
     default:
       break;
   }
+  if (state.connection === 'none' && kind === 'relay')
+    state.elements.status.textContent =
+      'Choose Generate connection — the hosted relay pairs your agent with this page.';
   updateComposer(state);
 }
 
@@ -243,6 +331,10 @@ function submitPrompt(state: ConnectionFlowState): Promise<void> | undefined {
       return sendDemo(state, text);
     case 'local':
       return sendLocal(state, text);
+    case 'relay':
+      state.elements.status.textContent =
+        'The connected agent sends proposals through the relay — nothing is sent from this page.';
+      return undefined;
     default:
       state.elements.status.textContent = 'Choose Check connection first — no agent is connected yet.';
       return undefined;
@@ -274,7 +366,7 @@ function applyProbe(state: ConnectionFlowState, probe: WebMcpProbe): void {
 
 function reset(state: ConnectionFlowState): void {
   teardown(state);
-  state.elements.kind.value = 'detect';
+  state.elements.kind.value = 'demo';
   state.modelCallCount = 0;
   state.demoRuns = 0;
   state.elements.modelCalls.textContent = '0';
@@ -294,6 +386,7 @@ export function createConnectionFlow(
     session,
     connection: 'none',
     localHost: undefined,
+    relay: undefined,
     demoEndpoint: undefined,
     localModelReady: false,
     modelCallCount: 0,
@@ -310,6 +403,10 @@ export function createConnectionFlow(
       const kind = selectedKind(elements.kind.value);
       if (kind === 'demo') {
         await connectDemo(state);
+        return;
+      }
+      if (kind === 'relay') {
+        await connectRelay(state);
         return;
       }
       elements.status.textContent = 'Checking capability…';

@@ -7,7 +7,7 @@ import { evidenceFor, selectedView, viewLabel, type InspectorSection, type Playg
 import { fixtureEvidence } from './fixture-inspector.js';
 import { createFixtureJourneys, FIXTURE_JOURNEYS, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
 import { createJourneyTracker, journeyStagesFor } from './journey.js';
-import { bindConfigCopy, renderMcpClientConfigs } from './mcp-configs.js';
+import { bindConfigCopy, COPY_HINTS, renderMcpClientConfigs } from './mcp-configs.js';
 import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario } from './scenarios.js';
 import { findScenario, labelIntent, renderScenarioControls } from './scenario-controls.js';
 import { createPlaygroundSession, type PlaygroundSession } from './session.js';
@@ -51,6 +51,7 @@ const actionStatus = required<HTMLElement>('#pg-action-status');
 const actionCancel = required<HTMLButtonElement>('#pg-action-cancel');
 const actionConfirm = required<HTMLButtonElement>('#pg-action-confirm');
 const connectionKind = required<HTMLSelectElement>('#pg-connection-kind');
+const connectButton = required<HTMLButtonElement>('#pg-connect');
 const connectionStatus = required<HTMLElement>('#pg-connect-status');
 const connectionLabel = required<HTMLElement>('#pg-connection-label');
 const connectionDot = required<HTMLElement>('#pg-connection-dot');
@@ -88,8 +89,15 @@ const connectionFlow = createConnectionFlow(
     prompt,
     send,
     modelCalls,
+    connectButton,
     localControls: required<HTMLElement>('#pg-local-connection-controls'),
     demoPanel: required<HTMLElement>('#pg-demo-controls'),
+    relayControls: required<HTMLElement>('#pg-relay-controls'),
+    relayGenerate: required<HTMLButtonElement>('#pg-relay-generate'),
+    relaySession: required<HTMLElement>('#pg-relay-session'),
+    relayConfig: required<HTMLElement>('#pg-mcp-relay-json'),
+    relayCli: required<HTMLElement>('#pg-mcp-relay-cli'),
+    relayExpiry: required<HTMLElement>('#pg-relay-expiry'),
     mcpConfig: required<HTMLElement>('#pg-mcp-config'),
     webmcpNote: required<HTMLElement>('#pg-webmcp-note'),
   },
@@ -424,12 +432,18 @@ for (const button of inspectorButtons)
     for (const candidate of inspectorButtons) candidate.setAttribute('aria-pressed', String(candidate === button));
     renderInspector();
   });
-required<HTMLButtonElement>('#pg-connect').addEventListener('click', () => void connectionFlow.connect());
+connectButton.addEventListener('click', () => void connectionFlow.connect());
+required<HTMLButtonElement>('#pg-relay-generate').addEventListener('click', () => void connectionFlow.connect());
 connectionKind.addEventListener('change', () => connectionFlow.changeKind());
 send.addEventListener('click', () => void connectionFlow.submitPrompt());
 
 renderMcpClientConfigs(required<HTMLElement>('#pg-mcp-http'), required<HTMLElement>('#pg-mcp-stdio'));
 bindConfigCopy(required<HTMLElement>('#pg-mcp-config'), copyStatus);
+bindConfigCopy(
+  required<HTMLElement>('#pg-relay-controls'),
+  required<HTMLElement>('#pg-relay-copy-status'),
+  COPY_HINTS.hosted,
+);
 const narrowRail = window.matchMedia('(max-width: 800px)');
 const syncRequestRail = () => {
   requestRail.open = !narrowRail.matches;
