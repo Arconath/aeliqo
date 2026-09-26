@@ -95,14 +95,51 @@ jobs:
           corepack prepare pnpm@11.24.0 --activate
           pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium firefox webkit
+      # Pull requests take the lane matching their changed paths; pushes to main
+      # and owner dispatches always run the full matrix because release and site
+      # publication require a same-SHA full-quality success.
+      - name: Select the check scope for this change
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -Eeuo pipefail
+          mode=full
+          if [ "$EVENT_NAME" = "pull_request" ] && [ -n "$BASE_SHA" ]; then
+            [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            git fetch --quiet --depth=1 origin "$BASE_SHA"
+            site_only=true
+            changed=0
+            while IFS= read -r path; do
+              changed=$((changed + 1))
+              case "$path" in
+                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*) ;;
+                *) site_only=false; break ;;
+              esac
+            done < <(git diff --name-only "$BASE_SHA" HEAD)
+            if [ "$site_only" = true ] && [ "$changed" -gt 0 ]; then mode=site; fi
+          fi
+          echo "mode=$mode"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
       - name: Run required functional, security, browser, and package checks
+        if: steps.scope.outputs.mode == 'full'
         run: pnpm check
+      - name: Run the site-surface checks
+        if: steps.scope.outputs.mode == 'site'
+        run: |
+          pnpm format:check
+          pnpm lint
+          pnpm site:test
       - name: Build and consume the five exact package candidates
+        if: steps.scope.outputs.mode == 'full'
         run: |
           pnpm test:release-tooling
           node scripts/release/candidate.mjs
-          pnpm test:docs-artifact
+      - name: Verify the public documentation artifact
+        run: pnpm test:docs-artifact
       - name: Verify the web, docs, playground, and static server contract
+        if: steps.scope.outputs.mode == 'full'
         run: pnpm site:test
       - name: Require unchanged exact source
         run: |
