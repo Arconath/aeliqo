@@ -56,8 +56,10 @@ function publishTarball(path) {
 async function waitForRegistryPublication(item, expectedVersion) {
   let after;
   let afterPackage;
-  for (let attempt = 0; attempt < 24; attempt += 1) {
-    if (attempt) await new Promise((resolvePromise) => setTimeout(resolvePromise, 5_000));
+  // The versioned registry document can take several minutes to propagate
+  // after publish; allow up to ten minutes before declaring failure.
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    if (attempt) await new Promise((resolvePromise) => setTimeout(resolvePromise, 10_000));
     try {
       after = await registryState(item);
       afterPackage = await registryPackage(item);
