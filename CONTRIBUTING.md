@@ -21,7 +21,13 @@ and pnpm `11.24.0` (the `packageManager` field in [package.json](package.json)).
 corepack enable
 corepack prepare pnpm@11.24.0 --activate
 pnpm install --frozen-lockfile
+pnpm exec playwright install --with-deps chromium firefox webkit
 ```
+
+Browser suites need the Playwright browsers installed once (`--with-deps`
+installs the system libraries on Linux; on macOS plain `playwright install`
+is enough). `pnpm site:test` and `pnpm check` also run the production server
+contract in Go, so install Go `1.27.0` before those commands.
 
 For the optional local Playground model connection, copy
 `apps/site/.env.example` to `apps/site/.env.local` and edit only the local

@@ -59,7 +59,7 @@ export interface EvaluationContextRequest {
 }
 
 /**
- * Host-owned authority and ADC wiring returned by readContext. The evaluator
+ * Host-owned authority and data-service wiring returned by readContext. The evaluator
  * does not accept principal, scope or policy values from Task input.
  */
 export interface TrustedEvaluationContext {

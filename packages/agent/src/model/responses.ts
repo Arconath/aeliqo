@@ -183,7 +183,7 @@ function project(request: ToolModelRequest, model: string): Record<string, unkno
 function serialized(value: unknown): string {
   try {
     const result = JSON.stringify(value);
-    if (typeof result !== 'string') throw new Error('not serializable');
+    if (typeof result !== 'string') throw new Error('value is not JSON-serializable');
     return result;
   } catch {
     throw new ResponsesTransportError('protocol');
