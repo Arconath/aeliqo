@@ -9,12 +9,10 @@ export function renderScenarioControls(
   scenario: PlaygroundScenario,
   description: HTMLElement,
   stepsHost: HTMLElement,
-  manualStep: HTMLSelectElement,
   runIntent: (intent: Intent, trigger?: HTMLButtonElement) => Promise<void>,
 ): void {
   description.textContent = scenario.description;
   stepsHost.replaceChildren();
-  manualStep.replaceChildren();
   for (const step of scenario.steps) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -26,10 +24,6 @@ export function renderScenarioControls(
     button.append(strong, detail);
     button.addEventListener('click', () => void runIntent(step.intent(), button));
     stepsHost.append(button);
-    const option = document.createElement('option');
-    option.value = step.id;
-    option.textContent = step.label;
-    manualStep.append(option);
   }
 }
 

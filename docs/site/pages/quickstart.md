@@ -1,122 +1,114 @@
 ---
 id: 'quickstart'
 path: '/start/'
-section: 'Start'
+section: 'Get started'
 title: 'Quickstart: run an adaptive React view'
 description: 'Run and test a local People surface in React without an account, model key, backend, or agent.'
 ---
 
-<p class="lead">Render and filter a small People list in React. This first path uses local sample data and no model, account, backend, or agent.</p>
+<p class="lead">Render a real adaptive view in React with local data. No account, model key, backend, or agent needed.</p>
 
-<div class="docs-inline-cta"><p><strong>Test now, without setup.</strong> In the playground, try <em>People in Jakarta</em>, <em>Daily attendance</em>, then <em>Analytical workspace</em>. Check the committed filter and period, inspect the rendered result, and open <em>Inspect</em> to see the validated intent and diagnostics. These journeys use synthetic data and make zero model calls.</p><a href="/playground/">Try the playground →</a></div>
-
-<h2>Choose the path you need</h2>
-<div class="decision-grid"><article><h3>Start here · local React</h3><p>Use the short tutorial below to render and filter a local array. No provider key or authority setup.</p><a href="#create-the-project">Build the first view →</a></article><article><h3>Already have app data?</h3><p>Use the separate integration tutorial for registered resources, server-owned authority, semantic analysis, forms, and optional MCP.</p><a href="/start/registered-app/">Build a registered app →</a></article></div>
-
-<aside class="doc-callout" data-tone="note"><strong>Prerequisites</strong><p>Use Node.js 24, React 19.2, and TypeScript. Keep every Aeliqo package on the same exact version. The example source is compiled and exercised by the repository checks.</p></aside>
+<aside class="doc-callout" data-tone="note"><strong>Before you start</strong><p>You need Node.js 24 and about ten minutes. Already have app data? Skip to the <a href="/start/registered-app/">registered app tutorial</a>.</p></aside>
 
 <aeliqo-release-status></aeliqo-release-status>
 
-This tutorial targets the stable `0.5.2` release. Keep installed Aeliqo
-packages on exactly the same version.
+## 1. Create a React app
 
-<span id="create-the-project"></span>
+```bash
+npm create vite@latest people -- --template react-ts
+cd people
+```
 
-## 1. Create the project files
+This creates a `people` project and moves you into it.
 
-Create an empty directory and add these four files. This example uses your
-application-owned rows and makes no model or remote data request.
+## 2. Install Aeliqo
 
-**package.json**
+Keep every Aeliqo package on the same exact version:
 
-```json
-{
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@aeliqo/core": "0.5.2",
-    "@aeliqo/runtime": "0.5.2",
-    "@aeliqo/web": "0.5.2",
-    "@aeliqo/react": "0.5.2",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
-  },
-  "devDependencies": {
-    "@types/react": "19.2.18",
-    "@types/react-dom": "19.2.7",
-    "typescript": "7.0.2",
-    "vite": "8.2.2"
-  }
+```bash
+npm install --save-exact @aeliqo/core@0.5.2 @aeliqo/runtime@0.5.2 @aeliqo/web@0.5.2 @aeliqo/react@0.5.2
+```
+
+You should see: all four packages at `0.5.2` in `package.json`.
+
+## 3. Add some data
+
+Create `src/people.ts`. Each row needs a unique `id`.
+
+```ts
+export type Person = { id: string; name: string; team: string };
+
+export const people: Person[] = [
+  { id: 'ada', name: 'Ada Chen', team: 'Design' },
+  { id: 'sam', name: 'Sam Rivera', team: 'Engineering' },
+  { id: 'jo', name: 'Jo Patel', team: 'Engineering' },
+  { id: 'kim', name: 'Kim Osei', team: 'Product' },
+  { id: 'max', name: 'Max Weber', team: 'Design' },
+];
+```
+
+## 4. Render the surface
+
+Replace everything in `src/main.tsx` with:
+
+```tsx
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
+import { people } from './people';
+
+function App() {
+  const surface = useDataSurface({ data: people, getRowId: (row) => row.id });
+  return (
+    <main>
+      <h1>People</h1>
+      <AdaptiveSurface surface={surface} />
+    </main>
+  );
 }
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
 ```
 
-**tsconfig.json**
+`useDataSurface` wraps your array in a read-only surface. `AdaptiveSurface` picks a view that fits the container.
 
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "lib": ["ES2022", "DOM"]
-  },
-  "include": ["src"]
-}
+You should see: no TypeScript errors in your editor.
+
+## 5. Run it
+
+```bash
+npm run dev
 ```
 
-**index.html**
+Open the URL Vite prints (usually `http://localhost:5173`).
 
-```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>People</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
-```
+You should see: a table listing all five people.
 
-**src/main.tsx**
+## 6. Filter the data
+
+Replace `src/main.tsx` again — the rows are now state, and two buttons change them:
 
 ```tsx
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
+import { people } from './people';
 
-type Person = { id: string; name: string; team: string };
-const initial: Person[] = [
-  { id: 'ada', name: 'Ada Chen', team: 'Design' },
-  { id: 'sam', name: 'Sam Rivera', team: 'Engineering' },
-];
-
-function People() {
-  const [rows, setRows] = useState(initial);
+function App() {
+  const [rows, setRows] = useState(people);
   const surface = useDataSurface({ data: rows, getRowId: (row) => row.id });
-
   return (
     <main>
       <h1>People</h1>
-      <button
-        type="button"
-        onClick={() => setRows((current) => current.filter((person) => person.team === 'Engineering'))}
-      >
-        Show Engineering
+      <button type="button" onClick={() => setRows(people.filter((p) => p.team === 'Engineering'))}>
+        Engineering only
       </button>
-      <button type="button" onClick={() => setRows(initial)}>
-        Show everyone
+      <button type="button" onClick={() => setRows(people)}>
+        Everyone
       </button>
       <AdaptiveSurface surface={surface} />
     </main>
@@ -125,35 +117,27 @@ function People() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <People />
+    <App />
   </StrictMode>,
 );
 ```
 
-## 2. Install and run
+Click **Engineering only**.
 
-```sh
-npm install
-npm run typecheck
-npm run dev
-```
+You should see: the table show two rows, then all five again on **Everyone**. React owns the rows; the surface follows your state.
 
-Open the local URL printed by Vite. Click **Show Engineering** to filter the
-People list, then **Show everyone** to restore it. Resize the page to see the
-view adapt to its container.
+## 7. Shrink the window
 
-## What this example demonstrates
+Drag the browser window narrow, or open your browser's device toolbar.
 
-`useDataSurface` creates a local, read-only surface from rows with stable IDs.
-React owns the rows; changing the array updates the same surface. `AdaptiveSurface`
-chooses an eligible registered view for the available space. No server data,
-model, or remote permission is involved. For an initially empty array, declare
-a schema and `identity`; for in-place mutation, supply a changed `version`. See
-[local data](/guides/local-data/) for those rules.
+You should see: the table become cards. Same data, same selection — that swap is what "adaptive" means.
 
-## Continue when you need app-owned data
+## What you just did
 
-For authenticated data, resource meanings, a host-owned form, or an optional
-MCP endpoint, follow the [registered app tutorial](/start/registered-app/).
+- Rendered a validated view from a plain array. You wrote no table markup.
+- Filtered by replacing your own state. Aeliqo read the same array again.
+- Got table-to-cards adaptation free, driven by container size.
 
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/playground/"><span>Try the playground</span><small>Test guided no-AI scenarios in your browser.</small><b aria-hidden="true">→</b></a><a href="/start/registered-app/"><span>Registered app tutorial</span><small>Connect your own data and authority.</small><b aria-hidden="true">→</b></a></nav>
+To start empty or mutate rows in place, declare a schema and identity. See [local data](/guides/local-data/).
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/start/registered-app/"><span>Connect your own data</span><small>Register real resources and read permissions from your app.</small><b aria-hidden="true">→</b></a><a href="/agents/quickstart/"><span>Add an agent</span><small>Let an agent send the same kind of request safely.</small><b aria-hidden="true">→</b></a><a href="/components/"><span>Browse components</span><small>See every registered view you can request.</small><b aria-hidden="true">→</b></a></nav>

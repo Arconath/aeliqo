@@ -7,19 +7,24 @@ contract: 'Arrange responsive regions without changing semantic/focus order.'
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Place slotted children in the declared CSS grid without changing their DOM or focus order. `columns` and `minItem` control when the layout can fit another column; the children keep their own semantics.
+Places children in the CSS grid you declare, without changing DOM or focus order. `columns` and `minItem` control how many columns fit.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Cards, fields, or tiles that repeat in columns.
+- Layouts that add or drop columns as the width changes.
+- Grids where focus order must follow the DOM order.
 
 ## When to use a different component
 
-Use Stack for a single row or column. Grid is for items that need repeatable columns.
+- Use Stack for a single row or column.
+- Use SplitPane when users must resize the two regions.
 
 ## Properties and defaults
 

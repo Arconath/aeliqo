@@ -2,11 +2,11 @@ import type { FixtureJourney } from './fixture-journeys.js';
 import type { InspectorSection } from './inspect.js';
 
 const summaries: Record<InspectorSection, string> = {
-  intent: 'The registered synthetic journey selected by the host.',
+  intent: 'The registered guided demo selected above.',
   task: 'The visible period or compiled workspace task, when available.',
   result: 'Visible synthetic result coverage and output identifiers.',
   presentation: 'The view or registered workspace pattern selected for the result.',
-  diagnostics: 'Diagnostics from the current synthetic journey.',
+  diagnostics: 'Diagnostics from the current guided demo.',
 };
 
 function content(panel: HTMLElement, selector: string): string | undefined {

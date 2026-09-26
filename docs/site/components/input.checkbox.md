@@ -7,19 +7,24 @@ contract: 'Native checked/indeterminate state; group ownership and submitted val
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Collect one checked value with a native checkbox and an explicit indeterminate display state. A user change clears indeterminate and emits a typed proposal; the form value and accepted application state remain under host control.
+A native checkbox for one checked value, with an explicit indeterminate display. A user change clears indeterminate and emits a proposal the host accepts or rejects.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- You need a yes/no answer inside a submitted form.
+- One item can be included or excluded on its own.
+- The group needs an indeterminate state, such as a partial selection.
 
 ## When to use a different component
 
-Use Switch for an on/off preference. Use RadioGroup when a person must choose exactly one of several named options.
+- Use [Switch](/components/input.switch/) for a preference that takes effect outside form submission.
+- Use [RadioGroup](/components/input.radio-group/) when the person must pick exactly one named option.
 
 ## Properties and defaults
 

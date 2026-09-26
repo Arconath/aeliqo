@@ -7,21 +7,26 @@ contract: 'Query state, collection, scoped result count and details with stale-r
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-SearchResults ties a supplied card collection to the visible query and its revision. When the query
-revision differs from the result revision, it hides the outdated collection and shows refresh guidance;
-the application owns searching, counts, and selected detail.
+SearchResults binds a query, its result collection, a scoped count, and selected detail. Use it when results can go stale and that must stay visible.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A query drives a result list, a scoped count, and an optional detail pane.
+- Query and result revisions can diverge, so stale results need labeling.
+- Selection must stay an identity request for a supplied row.
+- The host owns running the search; the component reflects query state.
 
 ## When to use a different component
 
-Use RecordList when query revision and stale-result context are unnecessary. SearchResults keeps both revisions visible.
+- Use RecordList when query revisions and stale handling are unnecessary.
+- Use Explorer when filtering and browsing matter more than a query string.
+- Use SearchField alone for query entry without a managed result view.
 
 ## Properties and defaults
 

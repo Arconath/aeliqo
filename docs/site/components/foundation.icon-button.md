@@ -7,19 +7,24 @@ contract: 'Named compact action with minimum target area; icon alone is never it
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Give a compact icon action a native button target and a text-based accessible name from `label`. The icon slot is visual content; the host handles the emitted action and owns any pending state.
+A compact icon button with a native target and a text name from `label`. Your app owns the emitted action and its pending state.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Toolbar or row actions where space is tight.
+- Icon actions that still need an accessible name via `label`.
+- Repeated compact actions, like row-level edit or delete.
 
 ## When to use a different component
 
-Use Button when the action needs visible wording. Tooltip content may supplement the name, but cannot replace it.
+- Use Button when the action needs a visible text label.
+- Use Tooltip to add a hint; it cannot replace the `label` name.
 
 ## Properties and defaults
 

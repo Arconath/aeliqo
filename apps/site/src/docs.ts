@@ -1,7 +1,12 @@
 import type { AeliqoDialogElement as AeliqoDialog } from '@aeliqo/web/dialog';
 import type { CatalogExampleDefinition, CatalogExampleFamily } from '../../../examples/catalog/types.js';
 
-type SearchEntry = { readonly path: string; readonly title: string; readonly description: string };
+type SearchEntry = {
+  readonly path: string;
+  readonly title: string;
+  readonly description: string;
+  readonly content: string;
+};
 type SearchDialog = {
   readonly element: AeliqoDialog;
   readonly field: HTMLInputElement;
@@ -20,13 +25,10 @@ const previewLoaders: Record<CatalogExampleFamily, () => Promise<readonly Catalo
   compound: async () => (await import('../../../examples/catalog/compound.js')).compoundExamples,
 };
 
-window.scrollTo(0, 0);
+if (!location.hash) window.scrollTo(0, 0);
 
-const trigger = document.querySelector<HTMLButtonElement>('.search-trigger');
-if (trigger) {
-  trigger.disabled = false;
-  trigger.closest<HTMLElement>('.docs-search-tools')?.setAttribute('data-enhanced', 'true');
-}
+const trigger = document.querySelector<HTMLAnchorElement>('.search-trigger');
+trigger?.setAttribute('aria-haspopup', 'dialog');
 
 let searchDialog: Promise<SearchDialog> | undefined;
 let searchEntries: readonly SearchEntry[] | undefined;
@@ -49,7 +51,8 @@ function validSearchIndex(data: unknown): data is SearchEntry[] {
         (entry as { path: string }).path.startsWith('/') &&
         !(entry as { path: string }).path.startsWith('//') &&
         typeof (entry as { title?: unknown }).title === 'string' &&
-        typeof (entry as { description?: unknown }).description === 'string',
+        typeof (entry as { description?: unknown }).description === 'string' &&
+        typeof (entry as { content?: unknown }).content === 'string',
     )
   );
 }
@@ -68,7 +71,7 @@ const words = (value: string): readonly string[] => value.toLocaleLowerCase().ma
 
 function searchScore(entry: SearchEntry, query: string): number | undefined {
   const queryWords = words(query);
-  if (queryWords.length === 0) return 5;
+  if (queryWords.length === 0) return 7;
   const titleWords = words(entry.title);
   const descriptionWords = words(entry.description);
   if (titleWords.join(' ') === queryWords.join(' ')) return 0;
@@ -77,6 +80,9 @@ function searchScore(entry: SearchEntry, query: string): number | undefined {
   const allWords = [...titleWords, ...descriptionWords];
   if (queryWords.every((word) => allWords.includes(word))) return 3;
   if (queryWords.every((word) => allWords.some((candidate) => candidate.startsWith(word)))) return 4;
+  const contentWords = words(entry.content);
+  if (queryWords.every((word) => contentWords.includes(word))) return 5;
+  if (queryWords.every((word) => contentWords.some((candidate) => candidate.startsWith(word)))) return 6;
   return undefined;
 }
 
@@ -175,7 +181,10 @@ async function openSearch(): Promise<void> {
   }
 }
 
-trigger?.addEventListener('click', () => void openSearch());
+trigger?.addEventListener('click', (event) => {
+  event.preventDefault();
+  void openSearch();
+});
 document.addEventListener('keydown', (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
     event.preventDefault();
@@ -259,7 +268,7 @@ async function mountComponentPreview(componentMount: HTMLElement): Promise<void>
   window.addEventListener('pagehide', cleanup, { once: true });
   const previewStatus = preview.querySelector<HTMLElement>('[data-preview-status]');
   if (previewStatus) previewStatus.textContent = 'Interactive preview loaded.';
-  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
+  if (!location.hash) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
   installExampleCopy(componentMount, requested.id);
 }
 
@@ -272,4 +281,25 @@ if (componentMount) {
       status.textContent = 'The interactive example could not load. Use the public API below.';
     }
   });
+}
+
+async function copyDocCode(button: HTMLButtonElement): Promise<void> {
+  const code = button.closest('.doc-code')?.querySelector('pre')?.textContent ?? '';
+  try {
+    await navigator.clipboard.writeText(code);
+    button.textContent = 'Copied';
+    window.setTimeout(() => {
+      button.textContent = 'Copy';
+    }, 1600);
+  } catch {
+    button.textContent = 'Copy unavailable';
+    window.setTimeout(() => {
+      button.textContent = 'Copy';
+    }, 2400);
+  }
+}
+
+for (const button of document.querySelectorAll<HTMLButtonElement>('.doc-code-copy')) {
+  button.disabled = false;
+  button.addEventListener('click', () => void copyDocCode(button));
 }

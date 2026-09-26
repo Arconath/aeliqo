@@ -7,19 +7,24 @@ contract: 'Locale-aware editing separates display text from exact numeric value;
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Let a person edit a localized decimal while preserving the canonical exact value as a string. Validation checks declared minimum, maximum, and step without converting the value to a rounded JavaScript number.
+A locale-aware number input that keeps display text separate from the exact value. Validation checks declared minimum, maximum, and step without rounding to a JavaScript number.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- You need an exact numeric value, such as money or a measured quantity.
+- People type digits that should display in their own locale.
+- The value must respect declared minimum, maximum, or step bounds.
 
 ## When to use a different component
 
-Use Slider for an approximate choice within a range. NumberField suits exact entry with an editable draft.
+- Use [Slider](/components/input.slider/) when an approximate position in a range is enough.
+- Use [DateField](/components/input.date-field/) when the value is a calendar date.
 
 ## Properties and defaults
 

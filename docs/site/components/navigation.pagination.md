@@ -7,19 +7,24 @@ contract: 'Stable cursor/page scope; loaded rows are not misrepresented as globa
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Show the current page and available previous or next directions from host-supplied page information. Activating a control requests a page change; it does not fetch rows or claim that an unknown total is complete.
+Shows the current page with previous and next controls from host-supplied data. Activation requests a page change; the component never fetches rows itself.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Lists or tables split into discrete pages.
+- Moving forward and back through paged results.
+- Keeping loaded rows scoped to the requested page.
 
 ## When to use a different component
 
-Use Table when the task is comparing records in columns. Pagination requests another bounded page from the host.
+- Use Table when the task is comparing records in columns.
+- Use SearchResults for a full query-results view with count and details.
 
 ## Properties and defaults
 
@@ -49,7 +54,7 @@ Exposed semantics:
 
 ## Responsive behavior
 
-Keep page controls large enough to operate. Use the host to reduce the number of visible page links on narrow screens without hiding the current page.
+Keep page controls large enough to operate. Let the host trim visible page links on narrow screens without hiding the current page.
 
 ## Style hooks
 

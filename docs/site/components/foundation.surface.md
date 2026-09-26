@@ -7,19 +7,24 @@ contract: 'Provide consistent bounded chrome; never impose dashboard cards on ev
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Group slotted content in a labelled section with a chosen surface tone. The wrapper adds visual containment and optional section labelling; it does not turn child content into an action or a data card.
+Groups slotted content in a labelled section with a chosen surface tone. It adds visual containment, not card behavior or data meaning.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Giving a section consistent chrome and an optional label.
+- Applying a surface tone to a region of the page.
+- Containing content without turning it into an action or card.
 
 ## When to use a different component
 
-Use Stack or Grid to arrange children. Surface groups content and applies a tone without choosing its layout.
+- Use Stack or Grid when the task is arranging children.
+- Use CardCollection when each item is a data card, not a grouped section.
 
 ## Properties and defaults
 

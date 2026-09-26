@@ -1,51 +1,49 @@
 ---
 id: 'workspace'
 path: '/guides/workspace/'
-section: 'Build'
+section: 'Guides'
 title: 'Workspace composition'
 description: 'Compose registered needs into one bounded presentation without changing scope or duplicating child owners.'
 ---
 
-<p class="lead">A workspace joins several authorized Results under one presentation plan. The application registers the goal, child representations, pattern, and state mappings; an agent cannot invent a component tree or a new capability.</p>
+<p class="lead">A workspace joins several authorized results under one presentation plan. Your app registers the goal, the child views, the pattern, and the state mappings. An agent cannot invent a component tree.</p>
 
-## Start with a registered goal
+## When you need this
 
-A registered custom intent may compile to one Task with multiple required needs. Each need names an allowed operation and a Result output. The synthetic attendance overview has three needs: a summary, a daily trend, and an employee breakdown. It uses only registered data and meanings. It does not claim anomaly detection or explain why attendance changed. See [intent contracts](/concepts/intent/) and [analytics](/guides/analytics/).
+- One registered goal genuinely needs several simultaneous outputs — a summary, a trend, and a breakdown.
+- You want one committed layout instead of coordinating separate surfaces yourself.
+- You must keep each child's state and owner stable while the layout adapts.
 
-The runtime evaluates the needs through the usual authority and Result path. A trusted presentation pattern can expand the matching Task and exact Results into a bounded plan with a workspace root and three child nodes. The plan must cover the required needs and pass the same validation as a single view before a Region commits it. Unknown outputs, incompatible child representations, and missing mandatory Results fail explicitly.
+If a request only browses one result, keep one ordinary surface.
 
-Use this pattern when one registered goal genuinely needs several simultaneous
-outputs. If a person is only browsing one result, keep one ordinary surface.
-Register each child representation and its result binding in application code;
-the goal names required outputs, not arbitrary components supplied by a model.
-The host registers allowed patterns. When an experience requires a registered
-pattern, the resolver can discover a matching one from that registry even if
-the candidate list is empty; a supplied candidate still passes the same
-validation.
+## 1. Register a goal with several needs
 
-## Keep child identity and state
+A registered custom request may compile to one task with multiple required needs. Each need names an allowed operation and a result output. An attendance overview, for example, can require a summary, a daily trend, and a per-person breakdown. All come from registered data and meanings. It does not claim anomaly detection or explain why attendance changed. See [request contracts](/concepts/intent/) and [analytics](/guides/analytics/).
 
-Single, split, and compare layouts remain inside the active application scope. A layout change must not create a second data or action owner for a child. Stable child addresses and registered state mappings preserve eligible selection, filter, focus, and draft state across transitions. A dirty interaction can defer an adaptive layout change. Resize alone does not authorize new data or a model call. See [application scopes](/guides/scopes/) and [state ownership](/concepts/state-ownership/).
+## 2. Let the runtime evaluate the needs
 
-## Commit and recover
+The runtime evaluates each need through the usual authority and result path. A trusted presentation pattern then expands the matching task and its exact results into a limited plan. The plan has a workspace root and one child node per need.
 
-The host supplies candidate plans and the runtime validates their captured task, Result, permission, policy, scope, and child revisions before commit. A mandatory child failure or cancellation keeps the previous authorized layout; showing a partial layout requires an explicit policy. Forced revocation clears the old subtree immediately. Cross-scope children, cyclic links, duplicate owners, excessive depth or fan-out, and stale acknowledgements are rejected.
+The plan must cover the required needs and pass the same validation as a single view before a region commits it. Unknown outputs, incompatible child views, and missing mandatory results fail explicitly.
 
-`renderer-ready` means the validated plan and renderer handoff completed; it is not proof of simultaneous browser paint or user attention. An app owns any database undo or business compensation separately.
+## 3. Resolve a registered pattern
 
-## Current evidence
+The host registers the allowed patterns. When a composition requires a registered pattern, the resolver can discover a matching one from that registry. That holds even if the candidate list is empty. A supplied candidate still passes the same validation.
 
-From the repository root, run `pnpm test:vnext:browser` after installing the
-workspace dependencies. The 0.5 source's
-`examples/vnext/workspace-goal` fixture compiles one registered attendance goal
-to a Task with three required needs, evaluates three Results, offers a
-empty candidate list to the resolver, which discovers its registered bounded
-pattern, commits the selected plan, and
-renders summary, trend, and breakdown in one Region. Its browser test checks
-exact need/output/Result identities and retains the authorized old layout
-after an unknown goal or mandatory breakdown failure.
+## 4. Keep child identity and state
 
-Run **Analytical workspace** in the [public Playground](/playground/) to inspect the registered pattern and three committed outputs. The separate `examples/vnext/workspace` fixture checks child focus and reflow
-at 360, 768, and 1440 pixels. These fixtures use synthetic data and are not a
-live model or customer rollout. See [runnable examples](/examples/) for their
-boundaries.
+Single, split, and compare layouts stay inside the active scope. A layout change must not create a second data or action owner for a child. Stable child addresses and registered state mappings preserve eligible selection, filter, focus, and draft state across transitions. A dirty interaction can defer an adaptive layout change. Resize alone never authorizes new data or a model call. See [application scopes](/guides/scopes/) and [state ownership](/concepts/state-ownership/).
+
+## 5. Commit and recover
+
+The host supplies candidate plans; the runtime validates their captured task, result, permission, policy, scope, and child revisions before commit. A mandatory child failure or cancellation keeps the previous authorized layout — showing a partial layout takes an explicit policy. Forced revocation clears the old subtree at once.
+
+`renderer-ready` means the validated plan and renderer handoff completed. It is not proof of simultaneous browser paint or user attention. Your app still owns any database undo or business compensation.
+
+## What can go wrong
+
+- A cross-scope child, a cycle, a duplicate owner, or depth and fan-out beyond the limits is rejected. So is a stale acknowledgement.
+- An unknown goal or a failed mandatory child keeps the authorized old layout — no blank hybrid appears.
+- A workspace selector is a candidate, not permission. Scope rules still apply.
+
+<nav class="doc-next" aria-label="Continue reading"><p>Next</p><a href="/examples/"><span>Runnable examples</span><small>See registered compositions in working apps.</small><b aria-hidden="true">→</b></a><a href="/guides/scopes/"><span>Application scopes</span><small>Understand the tenancy boundary layouts must respect.</small><b aria-hidden="true">→</b></a></nav>

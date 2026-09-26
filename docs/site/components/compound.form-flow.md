@@ -7,21 +7,26 @@ contract: 'Task-based steps, draft persistence, validation and reversible naviga
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-FormFlow shows one named step at a time while collecting draft values from slotted controls. It checks
-the current step before forward navigation, emits step and commit proposals, and waits for
-application-owned active-step and validation updates.
+FormFlow walks users through named steps with a persisted draft and per-step validation. Use it when a task splits into ordered, reversible screens before commit.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- A task splits into named steps users move through forward and back.
+- Each step must validate before the next step or the commit runs.
+- Draft values must persist across steps and keep focus stable.
+- Commit is a host proposal; the flow never applies the effect itself.
 
 ## When to use a different component
 
-Use Form for one-step submission. FormFlow is for a sequence with preserved drafts, validation, review, and a host-owned commit.
+- Use Form when every field fits on one screen.
+- Use RecordEditor when save must carry an existing record's key and revision.
+- Use Dialog for a short confirmation, not a stepped task.
 
 ## Properties and defaults
 

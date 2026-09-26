@@ -1,9 +1,149 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page, type WebSocketRoute } from '@playwright/test';
 import { componentCatalog } from '../shared/catalog.js';
 import { RELEASE_VERSION } from '../../../../scripts/release/metadata.mjs';
 
-test('the public playground uses the app facade without AI and through structured intents', async ({ page }) => {
+interface RelayStubState {
+  pairCalls: number;
+  acks: { id: string; ok: boolean; result?: unknown; error?: unknown }[];
+  urls: string[];
+}
+
+/**
+ * Stubs the hosted relay without touching the real domain: fetches to
+ * mcp.aeliqo.com are answered in-page and SSE attach URLs land on a fake
+ * EventSource. WebSocket attach URLs go through Playwright's routeWebSocket.
+ */
+async function stubHostedRelay(
+  page: Page,
+  options: { attach?: 'sse' | 'ws'; pairStatus?: number; networkError?: boolean; expiresInSeconds?: number } = {},
+): Promise<void> {
+  await page.addInitScript(
+    ({ attach, pairStatus, networkError, expiresInSeconds }) => {
+      const stub = {
+        pairCalls: 0,
+        acks: [] as unknown[],
+        streams: [] as {
+          url: string;
+          emit(name: string, value: unknown): void;
+          fail(): void;
+        }[],
+      };
+      Object.defineProperty(window, '__aeliqoRelayStub', { value: stub, configurable: true });
+      const realFetch = window.fetch.bind(window);
+      window.fetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        if (!url.startsWith('https://mcp.aeliqo.com/')) return realFetch(input, init);
+        if (networkError) return Promise.reject(new TypeError('Failed to fetch'));
+        if (url === 'https://mcp.aeliqo.com/pair') {
+          stub.pairCalls += 1;
+          if (pairStatus !== 200) return Promise.resolve(new Response('unavailable', { status: pairStatus }));
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                token: 'relay-test-token',
+                attachUrl:
+                  attach === 'ws'
+                    ? 'wss://mcp.aeliqo.com/attach?token=relay-test-token'
+                    : 'https://mcp.aeliqo.com/attach?token=relay-test-token',
+                mcpUrl: 'https://mcp.aeliqo.com/mcp',
+                expiresAt: Math.floor(Date.now() / 1000) + expiresInSeconds,
+              }),
+              { status: 200, headers: { 'content-type': 'application/json' } },
+            ),
+          );
+        }
+        if (url === 'https://mcp.aeliqo.com/ack') {
+          stub.acks.push(JSON.parse(typeof init?.body === 'string' ? init.body : '{}'));
+          return Promise.resolve(new Response(null, { status: 204 }));
+        }
+        return Promise.resolve(new Response('{}', { status: 404 }));
+      };
+      if (attach !== 'sse') return;
+      class FakeEventSource extends EventTarget {
+        static readonly CONNECTING = 0;
+        static readonly OPEN = 1;
+        static readonly CLOSED = 2;
+        readonly CONNECTING = 0;
+        readonly OPEN = 1;
+        readonly CLOSED = 2;
+        readonly url: string;
+        readonly withCredentials = false;
+        readyState = 0;
+        onopen: ((event: Event) => void) | null = null;
+        onerror: ((event: Event) => void) | null = null;
+        onmessage: ((event: MessageEvent) => void) | null = null;
+        private gone = false;
+        constructor(url: string | URL) {
+          super();
+          this.url = String(url);
+          stub.streams.push(this);
+          setTimeout(() => {
+            if (this.gone) return;
+            this.readyState = 1;
+            this.dispatchEvent(new Event('open'));
+          }, 0);
+        }
+        emit(name: string, value: unknown): void {
+          if (this.gone) return;
+          this.dispatchEvent(new MessageEvent(name, { data: JSON.stringify(value) }));
+        }
+        fail(): void {
+          this.readyState = 2;
+          this.dispatchEvent(new Event('error'));
+        }
+        close(): void {
+          this.gone = true;
+          this.readyState = 2;
+        }
+      }
+      window.EventSource = FakeEventSource as unknown as typeof EventSource;
+    },
+    {
+      attach: options.attach ?? 'sse',
+      pairStatus: options.pairStatus ?? 200,
+      networkError: options.networkError ?? false,
+      expiresInSeconds: options.expiresInSeconds ?? 900,
+    },
+  );
+}
+
+function relayStubState(page: Page): Promise<RelayStubState> {
+  return page.evaluate(() => {
+    const stub = (
+      window as unknown as {
+        __aeliqoRelayStub: { pairCalls: number; acks: RelayStubState['acks']; streams: { url: string }[] };
+      }
+    ).__aeliqoRelayStub;
+    return { pairCalls: stub.pairCalls, acks: stub.acks, urls: stub.streams.map((stream) => stream.url) };
+  });
+}
+
+/** Emits one named event on the latest fake SSE attach stream. */
+function emitRelayEvent(page: Page, name: string, value: unknown): Promise<boolean> {
+  return page.evaluate(
+    ({ eventName, payload }: { eventName: string; payload: unknown }) => {
+      const stub = (
+        window as unknown as {
+          __aeliqoRelayStub?: { streams: { emit(n: string, v: unknown): void; fail(): void }[] };
+        }
+      ).__aeliqoRelayStub;
+      const stream = stub?.streams.at(-1);
+      if (stream === undefined) return false;
+      if (eventName === 'error') stream.fail();
+      else stream.emit(eventName, payload);
+      return true;
+    },
+    { eventName: name, payload: value },
+  );
+}
+
+async function openRelayPanel(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Connect AI' }).click();
+  await page.locator('#pg-connection-kind').selectOption('relay');
+}
+
+test('the public playground uses the app facade without AI and through scenario steps', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/playground/');
@@ -14,9 +154,7 @@ test('the public playground uses the app facade without AI and through structure
   await expect(page.locator('#pg-journey-view')).toHaveText('Table');
   await expect(page.locator('#pg-receipt-state')).toBeHidden();
   await expect(page.locator('aeliqo-table')).toContainText('Ada Chen');
-  await page.getByText('Run a structured intent', { exact: true }).click();
-  await page.locator('#pg-manual-step').selectOption('people-detail');
-  await page.getByRole('button', { name: 'Apply intent' }).click();
+  await page.getByRole('button', { name: 'Open Ada' }).click();
   await expect(page.locator('aeliqo-detail')).toContainText('Ada Chen');
   await expect(page.locator('#pg-journey-view')).toHaveText('Detail');
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
@@ -36,7 +174,7 @@ test('the scenario query parameter deep-links a documented playground example', 
   await expect(page.locator('#pg-scenario')).toHaveValue('people');
 });
 
-test('public journeys show Jakarta people, daily attendance, and a composed workspace without AI', async ({ page }) => {
+test('guided demos show Jakarta people, daily attendance, and a composed workspace without AI', async ({ page }) => {
   await page.goto('/playground/');
   await page.getByRole('button', { name: 'People in Jakarta' }).click();
   await expect(page.locator('#pg-committed-filter')).toContainText('Jakarta');
@@ -67,6 +205,7 @@ test('public journeys show Jakarta people, daily attendance, and a composed work
   await page.getByRole('button', { name: 'Request anomaly' }).click();
   await expect(page.locator('[data-testid="goal-status"]')).toContainText('unsupported:intent.unknown-custom');
   await expect(page.locator('[data-testid="goal-workspace"]')).toContainText('Ada');
+  await page.locator('#pg-menu > summary').click();
   await page.getByRole('button', { name: 'Reset playground' }).click();
   await page.getByRole('button', { name: 'Analytical workspace' }).click();
   await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
@@ -101,14 +240,39 @@ test('connected-agent mode never fabricates MCP, WebMCP, or BYOK evidence', asyn
   page.on('request', (request) => requests.push(request.url()));
   await page.goto('/playground/');
   await page.getByRole('button', { name: 'Connect AI' }).click();
-  await page.getByRole('button', { name: 'Check local connection' }).click();
+  await expect(page.locator('#pg-webmcp-note')).toBeVisible();
+  await expect(page.locator('#pg-webmcp-note')).toContainText('early-preview Chrome');
+  await expect(page.locator('#pg-webmcp-note a[href="/agents/webmcp/"]')).toBeAttached();
+  await expect(page.locator('#pg-webmcp-note a[href="/agents/mcp/"]')).toBeAttached();
+  await page.locator('#pg-connection-kind').selectOption('detect');
+  await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.locator('#pg-connection-kind').selectOption('webmcp');
-  await page.getByRole('button', { name: 'Check local connection' }).click();
+  await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText(/WebMCP|browser/i);
   expect(requests.some((url) => url.includes('/api/aeliqo/session'))).toBe(true);
+  expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
+});
+
+test('the scripted demo agent runs listed requests and declines unknown phrasing honestly', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', (request) => requests.push(request.url()));
+  await page.goto('/playground/');
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await page.getByRole('button', { name: 'Connect AI' }).click();
+  await page.locator('#pg-connection-kind').selectOption('demo');
+  await page.getByRole('button', { name: 'Check connection' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('Scripted demo');
+  await expect(page.locator('#pg-connection-label')).toContainText('no model calls');
+  await page.getByRole('button', { name: 'Engineering only' }).last().click();
+  await expect(page.locator('aeliqo-table')).toContainText('Sam Rivera');
+  await expect(page.locator('aeliqo-table')).not.toContainText('Ada Chen');
+  await expect(page.locator('#pg-model-calls')).toHaveText('0');
+  await page.getByRole('textbox', { name: 'Prompt' }).fill('summarize the quarterly revenue');
+  await page.getByRole('button', { name: 'Send to demo agent' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('only understands the listed');
   expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
 });
 
@@ -131,7 +295,7 @@ test('simulated WebMCP host registers the standard tools and renders through the
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
   await page.getByRole('button', { name: 'Connect AI' }).click();
   await page.locator('#pg-connection-kind').selectOption('webmcp');
-  await page.getByRole('button', { name: 'Check local connection' }).click();
+  await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.locator('#pg-connect-status')).toContainText('registered 3 tools');
   const result = await page.evaluate(async () => {
     const tools = (
@@ -187,17 +351,119 @@ test('simulated WebMCP host registers the standard tools and renders through the
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
 });
 
+test('the hosted relay pairs a session, proxies calls through the Region, and reports detachment', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', (request) => requests.push(request.url()));
+  await stubHostedRelay(page);
+  await page.goto('/playground/');
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await openRelayPanel(page);
+  await expect(page.getByRole('button', { name: 'Check connection' })).toBeHidden();
+  await page.getByRole('button', { name: 'Generate connection' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('Relay connected');
+  await expect(page.locator('#pg-mcp-relay-json')).toContainText('"type": "streamable-http"');
+  await expect(page.locator('#pg-mcp-relay-json')).toContainText('https://mcp.aeliqo.com/mcp');
+  await expect(page.locator('#pg-mcp-relay-json')).toContainText('Bearer relay-test-token');
+  await expect(page.locator('#pg-mcp-relay-cli')).toContainText(
+    'claude mcp add --transport http aeliqo-playground https://mcp.aeliqo.com/mcp',
+  );
+  await expect(page.locator('#pg-mcp-relay-cli')).toContainText('"Authorization: Bearer relay-test-token"');
+  await expect(page.locator('#pg-relay-expiry')).toContainText('expires at');
+  await expect(page.locator('#pg-relay-expiry')).toContainText('Regenerate');
+  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
+  const stub = await relayStubState(page);
+  expect(stub.pairCalls).toBe(1);
+  expect(stub.urls.at(-1)).toBe('https://mcp.aeliqo.com/attach?token=relay-test-token');
+
+  expect(await emitRelayEvent(page, 'cancel', { kind: 'cancel', id: 'relay-none' })).toBe(true);
+  expect(
+    await emitRelayEvent(page, 'call', {
+      kind: 'call',
+      id: 'relay-call-1',
+      method: 'invoke',
+      params: {
+        name: 'aeliqo_render',
+        input: {
+          version: '1',
+          id: 'relay-engineering',
+          kind: 'browse',
+          resource: 'people',
+          fields: ['name', 'team', 'location'],
+          filter: { op: 'compare', field: 'team', comparison: 'eq', value: 'Engineering' },
+        },
+        requestId: 'relay-render-1',
+      },
+    }),
+  ).toBe(true);
+  await expect(page.locator('aeliqo-table')).toContainText('Sam Rivera');
+  await expect(page.locator('aeliqo-table')).not.toContainText('Ada Chen');
+  await expect(page.locator('#pg-journey-view')).toHaveText('Table');
+  const acks = (await relayStubState(page)).acks;
+  expect(acks).toHaveLength(1);
+  expect(acks[0]).toMatchObject({ id: 'relay-call-1', ok: true });
+
+  expect(await emitRelayEvent(page, 'error', undefined)).toBe(true);
+  await expect(page.locator('#pg-connect-status')).toContainText(/detached|disconnected/i);
+  expect(requests.every((url) => !new URL(url).hostname.endsWith('aeliqo.com'))).toBe(true);
+});
+
+test('the hosted relay shows unreachable, HTTP failure, and expired states without hiding them', async ({ page }) => {
+  await stubHostedRelay(page, { networkError: true });
+  await page.goto('/playground/');
+  await openRelayPanel(page);
+  await page.getByRole('button', { name: 'Generate connection' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('unreachable');
+
+  await stubHostedRelay(page, { pairStatus: 503 });
+  await page.reload();
+  await openRelayPanel(page);
+  await page.getByRole('button', { name: 'Generate connection' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('could not create a session');
+
+  await stubHostedRelay(page, { expiresInSeconds: 2 });
+  await page.reload();
+  await openRelayPanel(page);
+  await page.getByRole('button', { name: 'Generate connection' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('expired', { timeout: 10_000 });
+  await page.getByRole('button', { name: 'Regenerate connection' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('Relay connected');
+  expect((await relayStubState(page)).pairCalls).toBe(2);
+});
+
+test('the hosted relay attaches over WebSocket and acknowledges discovery on /ack', async ({ page }) => {
+  let socket: WebSocketRoute | undefined;
+  await page.routeWebSocket(/mcp\.aeliqo\.com\/attach/, (ws) => {
+    socket = ws;
+  });
+  await stubHostedRelay(page, { attach: 'ws' });
+  await page.goto('/playground/');
+  await openRelayPanel(page);
+  await page.getByRole('button', { name: 'Generate connection' }).click();
+  await expect(page.locator('#pg-connect-status')).toContainText('Relay connected');
+  const ws = socket;
+  expect(ws).toBeDefined();
+  if (ws === undefined) return;
+  ws.send(JSON.stringify({ kind: 'call', id: 'ws-call-1', method: 'tools/list', params: {} }));
+  await expect.poll(async () => (await relayStubState(page)).acks.length).toBe(1);
+  const acks = (await relayStubState(page)).acks;
+  expect(acks[0]).toMatchObject({ id: 'ws-call-1', ok: true });
+  expect(JSON.stringify(acks[0]?.result)).toContain('aeliqo_render');
+  ws.close();
+  await expect(page.locator('#pg-connect-status')).toContainText(/detached|disconnected/i);
+});
+
 test('candidate playground does not offer a ZIP pinned to an unpublished release', async ({ page }) => {
   test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION === RELEASE_VERSION, 'Stable export is enabled.');
   await page.goto('/playground/');
   await page.locator('#pg-scenario').selectOption('knowledge');
+  await page.locator('#pg-menu > summary').click();
   await expect(page.getByRole('button', { name: 'Export project' })).toBeDisabled();
   await expect(page.locator('#pg-export-note')).toContainText('matching Aeliqo packages');
   await expect(page.locator('#pg-export-note a')).toHaveAttribute('href', '/examples/');
   await page.locator('#pg-export-note a').click();
-  await expect(page.getByRole('heading', { name: 'Run the 0.5 source' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Run the playground from source' })).toBeVisible();
   await expect(page.locator('main')).toContainText('pnpm install --frozen-lockfile');
-  await expect(page.locator('main')).toContainText('pnpm test:vnext:browser');
+  await expect(page.locator('main')).toContainText('pnpm playground:local');
 });
 
 test('stable export follows the four base scenarios and never substitutes them for public journeys', async ({
@@ -206,6 +472,7 @@ test('stable export follows the four base scenarios and never substitutes them f
   test.skip(process.env.AELIQO_EXPORT_VERIFIED_VERSION !== RELEASE_VERSION, 'Requires verified stable export.');
   await page.goto('/playground/');
   const exportButton = page.getByRole('button', { name: 'Export project' });
+  await page.locator('#pg-menu > summary').click();
   await expect(exportButton).toBeEnabled();
   for (const journey of ['jakarta', 'attendance', 'workspace']) {
     await page.locator(`[data-journey="${journey}"]`).click();
@@ -218,6 +485,7 @@ test('stable export follows the four base scenarios and never substitutes them f
   }
   for (const scenario of ['people', 'products', 'support', 'knowledge']) {
     await page.locator('#pg-scenario').selectOption(scenario);
+    await page.locator('#pg-menu > summary').click();
     const download = page.waitForEvent('download');
     await exportButton.click();
     expect((await download).suggestedFilename()).toBe(`aeliqo-${scenario}-example.zip`);
@@ -256,7 +524,7 @@ test('home, deep docs, search, and narrow playground remain navigable', async ({
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/concepts/');
   await expect(page.getByRole('heading', { name: 'Watch the contract become a view.', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Search docs' }).click();
+  await page.getByRole('link', { name: 'Search docs' }).click();
   await page.getByRole('searchbox').fill('nonsensezzzzz');
   await expect(page.locator('aeliqo-dialog')).toContainText('No pages found');
   await page.getByRole('searchbox').fill('meaning');
@@ -287,13 +555,13 @@ test('home proof uses the public adaptive facade and remains legible on narrow f
   await expect(records.locator('aeliqo-card-collection')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect((await new AxeBuilder({ page }).include('main').analyze()).violations).toEqual([]);
+  await expect(page.locator('#demo-status')).toContainText('4 of 4 synthetic people matched');
   await page.locator('#team').selectOption('Engineering');
-  await page.getByRole('button', { name: 'Apply filter', exact: true }).click();
   await expect(page.locator('#demo-status')).toContainText('2 of 4 synthetic people matched');
   await expect(records).toContainText('Sam Rivera');
   await expect(records).not.toContainText('Ada Chen');
   await page.emulateMedia({ forcedColors: 'active' });
-  const forced = await page.locator('[data-flow-step="view"]').evaluate((element) => {
+  const forced = await page.locator('#demo-status').evaluate((element) => {
     const style = getComputedStyle(element);
     return { color: style.color, background: style.backgroundColor };
   });
@@ -302,7 +570,7 @@ test('home proof uses the public adaptive facade and remains legible on narrow f
   expect(
     (await new AxeBuilder({ page }).include('main').analyze()).violations.filter(({ id }) => id === 'color-contrast'),
   ).toEqual([]);
-  await page.locator('details').filter({ hasText: 'View the runtime call' }).locator('summary').click();
+  await page.locator('#demo-tab-code').click();
   await expect(page.locator('#demo-source')).toContainText('createAeliqoApp');
   await expect(page.locator('#demo-source')).toContainText("kind: 'browse'");
   await expect(page.locator('#demo-source')).not.toContainText('createTaskEvaluator');

@@ -1,12 +1,15 @@
 import { prepareDeploymentAnalytics } from './analytics.js';
 import { startDeploymentTelemetry } from './telemetry.js';
+import type { HomeDemoView } from './home-example.js';
 
 const navToggle = document.querySelector<HTMLButtonElement>('#nav-toggle');
 const primaryNav = document.querySelector<HTMLElement>('#site-nav');
 const narrowNav = matchMedia('(max-width: 760px)');
 const themeSelect = document.querySelector<HTMLSelectElement>('#theme-select');
+const themeToggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
 const darkTheme = matchMedia('(prefers-color-scheme: dark)');
 type ThemeMode = 'system' | 'light' | 'dark';
+const THEME_MODES: readonly ThemeMode[] = ['system', 'light', 'dark'];
 
 function isThemeMode(value: string | null): value is ThemeMode {
   return value === 'system' || value === 'light' || value === 'dark';
@@ -40,10 +43,18 @@ function themeComponent(root: ParentNode): void {
   }
 }
 
+function syncThemeControls(): void {
+  if (themeSelect) themeSelect.value = themeMode;
+  if (!themeToggle) return;
+  themeToggle.dataset.themeMode = themeMode;
+  themeToggle.setAttribute('aria-label', `Theme: ${themeMode}`);
+  themeToggle.title = `Theme: ${themeMode}`;
+}
+
 function applyTheme(persist: boolean): void {
   if (themeMode === 'system') delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = themeMode;
-  if (themeSelect) themeSelect.value = themeMode;
+  syncThemeControls();
   themeComponent(document);
   if (!persist) return;
   try {
@@ -53,6 +64,11 @@ function applyTheme(persist: boolean): void {
   }
 }
 
+themeToggle?.addEventListener('click', () => {
+  const current = THEME_MODES.indexOf(themeMode);
+  themeMode = THEME_MODES[(current + 1) % THEME_MODES.length] ?? 'system';
+  applyTheme(true);
+});
 themeSelect?.addEventListener('change', () => {
   if (!isThemeMode(themeSelect.value)) return;
   themeMode = themeSelect.value;
@@ -134,90 +150,155 @@ await app.render({
     resource: 'people', fields: ['name', 'team', 'location'],
   },
 });`;
-const demo = document.querySelector<HTMLElement>('#home-demo');
-const intentLabel = (team: string): string =>
+
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const installChip = document.querySelector<HTMLButtonElement>('#install-chip');
+const installStatus = document.querySelector<HTMLElement>('#install-status');
+installChip?.addEventListener('click', async () => {
+  const copied = await copyText('npm i @aeliqo/react');
+  if (installStatus) installStatus.textContent = copied ? 'Copied.' : 'Copy unavailable — copy the command text.';
+  if (!copied) return;
+  installChip.dataset.copied = 'true';
+  window.setTimeout(() => {
+    installChip.dataset.copied = 'false';
+  }, 1600);
+});
+
+function setupDemoTabs(): void {
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('.demo-tab[role="tab"]')];
+  if (tabs.length === 0) return;
+  const selectTab = (tab: HTMLButtonElement, focus: boolean): void => {
+    for (const item of tabs) {
+      const selected = item === tab;
+      item.setAttribute('aria-selected', String(selected));
+      item.tabIndex = selected ? 0 : -1;
+      const panelId = item.getAttribute('aria-controls');
+      const panel = panelId === null ? null : document.getElementById(panelId);
+      if (panel) panel.hidden = !selected;
+    }
+    if (focus) tab.focus();
+  };
+  for (const [index, tab] of tabs.entries()) {
+    tab.addEventListener('click', () => selectTab(tab, false));
+    tab.addEventListener('keydown', (event) => {
+      let next = -1;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = tabs.length - 1;
+      if (next < 0) return;
+      event.preventDefault();
+      const target = tabs[next];
+      if (target) selectTab(target, true);
+    });
+  }
+}
+setupDemoTabs();
+
+function isDemoView(value: string | undefined): value is HomeDemoView {
+  return value === 'table' || value === 'cards' || value === 'chart';
+}
+
+const browseIntentLabel = (team: string): string =>
   team === 'all'
     ? `{ kind: 'browse', resource: 'people', fields: ['name', 'team', 'location'] }`
     : `{ kind: 'browse', resource: 'people', fields: ['name', 'team', 'location'], filter: team = '${team}' }`;
-async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
-  const { mountPeopleExample, mountProofExample } = await import('./home-example.js');
-  const example = mountPeopleExample(demoRoot);
+const chartIntentLabel = `{ kind: 'analyze', resource: 'workforce-headcount', preferredView: 'trend' }`;
+
+const demo = document.querySelector<HTMLElement>('#home-demo');
+const demoTrend = document.querySelector<HTMLElement>('#home-trend');
+
+async function setupHomeDemo(peopleRoot: HTMLElement, trendRoot: HTMLElement): Promise<void> {
+  const { mountHomeDemo } = await import('./home-example.js');
+  const example = mountHomeDemo({ people: peopleRoot, trend: trendRoot });
   const teamControl = document.querySelector<HTMLSelectElement>('#team');
   const status = document.querySelector<HTMLElement>('#demo-status');
-  const evaluateButton = document.querySelector<HTMLButtonElement>('#demo-evaluate');
-  const manualButton = document.querySelector<HTMLButtonElement>('#demo-manual');
   const intentLine = document.querySelector<HTMLElement>('#demo-intent');
-  const widthButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-demo-width]')];
-  const flowSteps = [...document.querySelectorAll<HTMLElement>('[data-flow-step]')];
-  const setFlow = (current: string): void => {
-    for (const step of flowSteps) {
-      if (step.dataset.flowStep === current) step.setAttribute('aria-current', 'step');
-      else step.removeAttribute('aria-current');
-    }
-  };
+  const viewButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-demo-view]')];
+  let view: HomeDemoView = 'table';
+  let totalPeople: number | undefined;
   const setDemoStatus = (message: string): void => {
     if (status) status.textContent = message;
   };
-  const showDemoResult = (
-    selectedTeam: string,
+  const showResult = (
     receipt: Extract<Awaited<ReturnType<typeof example.render>>, { readonly status: 'renderer-ready' }>,
+    team: string,
   ): void => {
-    setFlow('view');
-    const count = selectedTeam === 'all' ? '4' : '2';
+    if (view === 'chart') {
+      setDemoStatus('Aeliqo rendered the headcount analysis as a trend chart.');
+      return;
+    }
+    const rows = receipt.runtime.outputs[0]?.handle.snapshot().batches.flatMap((batch) => batch.rows) ?? [];
+    if (team === 'all') totalPeople = rows.length;
+    const total = totalPeople ?? rows.length;
     const viewId = receipt.presentation.plan.nodes[0]?.representation.id.split('.').at(-1) ?? 'registered';
-    const view = viewId === 'card-collection' ? 'cards' : viewId;
-    setDemoStatus(`${count} of 4 synthetic people matched. Aeliqo chose the ${view} view. Zero model calls.`);
+    const viewName = viewId === 'card-collection' ? 'cards' : viewId;
+    setDemoStatus(`${rows.length} of ${total} synthetic people matched — Aeliqo chose the ${viewName} view.`);
   };
   async function renderIntent(): Promise<void> {
-    const selectedTeam = teamControl?.value ?? 'all';
-    setFlow('request');
-    if (intentLine) intentLine.textContent = intentLabel(selectedTeam);
+    const team = teamControl?.value ?? 'all';
+    if (intentLine) intentLine.textContent = view === 'chart' ? chartIntentLabel : browseIntentLabel(team);
     setDemoStatus('Checking the request against registered data and views…');
-    if (evaluateButton) evaluateButton.disabled = true;
     try {
-      const receipt = await example.render(selectedTeam);
+      const receipt = await example.render(team, view);
       if (receipt.status !== 'renderer-ready') throw new Error(receipt.diagnostics[0]?.message ?? receipt.status);
-      showDemoResult(selectedTeam, receipt);
+      showResult(receipt, team);
     } catch {
       setDemoStatus('This request could not be shown. The previous valid view remains available.');
-    } finally {
-      if (evaluateButton) evaluateButton.disabled = false;
     }
   }
-  evaluateButton?.addEventListener('click', () => void renderIntent());
   teamControl?.addEventListener('change', () => void renderIntent());
-  manualButton?.addEventListener('click', () => {
-    if (teamControl) teamControl.value = 'all';
-    void renderIntent();
-  });
-  for (const button of widthButtons) {
+  for (const button of viewButtons) {
     button.addEventListener('click', () => {
-      demoRoot.dataset.width = button.dataset.demoWidth === 'narrow' ? 'narrow' : 'wide';
-      for (const item of widthButtons) item.setAttribute('aria-pressed', String(item === button));
+      if (!isDemoView(button.dataset.demoView)) return;
+      view = button.dataset.demoView;
+      for (const item of viewButtons) item.setAttribute('aria-pressed', String(item === button));
+      peopleRoot.dataset.width = view === 'cards' ? 'narrow' : 'wide';
+      peopleRoot.hidden = view === 'chart';
+      trendRoot.hidden = view !== 'chart';
+      if (teamControl) teamControl.disabled = view === 'chart';
       void renderIntent();
     });
   }
   void renderIntent();
-  const proofWide = document.querySelector<HTMLElement>('#home-proof-wide');
-  const proofNarrow = document.querySelector<HTMLElement>('#home-proof-narrow');
-  const proofTrend = document.querySelector<HTMLElement>('#home-proof-trend');
-  if (proofWide !== null && proofNarrow !== null && proofTrend !== null) {
-    const proof = mountProofExample({ wide: proofWide, narrow: proofNarrow, trend: proofTrend });
-    void proof.render();
-    window.addEventListener('pagehide', () => proof.dispose(), { once: true });
-  }
-  document.querySelector('#demo-source')!.textContent = source;
+  const sourceElement = document.querySelector<HTMLElement>('#demo-source');
+  if (sourceElement) sourceElement.textContent = source;
   document.querySelector('#copy-demo')?.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(source);
-      document.querySelector('#copy-status')!.textContent = 'Source copied.';
-    } catch {
-      document.querySelector('#copy-status')!.textContent =
-        'Copy unavailable. Select the source above to copy it manually.';
-    }
+    const copyStatus = document.querySelector<HTMLElement>('#copy-status');
+    const copied = await copyText(source);
+    if (copyStatus)
+      copyStatus.textContent = copied
+        ? 'Source copied.'
+        : 'Copy unavailable. Select the source above to copy it manually.';
   });
   window.addEventListener('pagehide', () => example.dispose(), { once: true });
 }
-if (demo) void setupHomeDemo(demo);
-if (document.body.dataset.docs === 'true') void import('/docs-src/docs.js');
-if (location.pathname.startsWith('/playground/')) void import('/playground-src/playground.js');
+
+const bootFailure = (selector: string, message: string): void => {
+  const target = document.querySelector<HTMLElement>(selector);
+  if (target) {
+    target.setAttribute('role', 'alert');
+    target.textContent = message;
+  }
+};
+if (demo && demoTrend)
+  void setupHomeDemo(demo, demoTrend).catch(() =>
+    bootFailure('#demo-status', 'The live demo could not load. Reload the page to try again.'),
+  );
+if (document.body.dataset.docs === 'true')
+  void import('/docs-src/docs.js').catch(() => {
+    // Enhanced docs tooling stays unavailable; the authored content is static.
+  });
+if (location.pathname.startsWith('/playground/'))
+  void import('/playground-src/playground.js').catch(() => {
+    document.querySelector<HTMLElement>('.pg-app')?.setAttribute('aria-busy', 'false');
+    bootFailure('#pg-boot', 'The playground could not load. Check your connection and reload the page.');
+  });

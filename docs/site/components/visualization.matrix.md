@@ -7,21 +7,24 @@ contract: 'Entity-feature comparison preserving row/column association and usefu
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Matrix preserves row-to-column associations in a tabular view of supplied Result fields. Exact values and
-selection remain available in the data table, including when the layout narrows; it does not infer a time
-axis or aggregate the cells.
+Compare records across features in a table grid. Exact values and row identity stay readable at narrow widths.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Compare entities across several fields side by side.
+- Keep each cell tied to its row and column.
+- Show exact values rather than color-encoded cells.
 
 ## When to use a different component
 
-Use Heatmap when color encodes a value across two categories. Matrix keeps supplied rows, columns, and exact values in table form.
+- Use Heatmap when color should summarize cell values.
+- Use Relationship for declared edges between entities.
 
 ## Properties and defaults
 

@@ -7,21 +7,24 @@ contract: 'Repeated compact records; preserve reading order, headings and bounde
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-CardCollection presents supplied records as cards with a heading and optional fields in reading order.
-Selection buttons emit stable identity proposals, and Load more requests another window; the application
-remains responsible for fetching rows and updating selected keys.
+Show records as cards with a heading and optional fields in reading order. Selection and Load more are requests the application answers.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Give each record a visual card with its own heading.
+- Let people select cards by stable identity.
+- Grow long collections through a bounded Load more action.
 
 ## When to use a different component
 
-Use RecordList for a compact selection list or Table for column comparison. Cards suit a visual summary of each record.
+- Use RecordList for a denser text-first selection list.
+- Use Table when comparing values across columns is the task.
 
 ## Properties and defaults
 

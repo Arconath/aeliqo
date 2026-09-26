@@ -7,19 +7,24 @@ contract: 'One selected option; native semantics or APG-equivalent keyboard beha
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Present a bounded set of native radio options under one legend and submit one chosen value. Disabled options stay visible; the selected value is reflected from host state and change events are proposals.
+A bounded set of native radio options under one legend that submits one chosen value. Disabled options stay visible, and change events are proposals the host accepts.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- People must pick exactly one of a few named options.
+- Every option should stay visible without opening a list.
+- Some options can appear disabled without being removed.
 
 ## When to use a different component
 
-Use Select for a compact list that need not stay visible. Use checkboxes when options can be selected independently.
+- Use [Select](/components/input.select/) when the list should stay collapsed to save space.
+- Use [Checkbox](/components/input.checkbox/) controls when several options can be selected independently.
 
 ## Properties and defaults
 

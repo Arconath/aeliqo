@@ -7,21 +7,24 @@ contract: 'Calendar-aligned values/events with an explicit week start and exact 
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-CalendarGrid places supplied dates into civil-day cells using the declared week start. Exact
-values remain in the data table, and unsupported calendar systems retain that data view instead of being
-drawn as a misleading Gregorian grid.
+Place values on calendar days using the declared week start. Exact values stay in the data table, not in color alone.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Spot daily patterns like activity by weekday or week.
+- Show values on real calendar days with a chosen week start.
+- Keep exact values readable beyond color intensity.
 
 ## When to use a different component
 
-Use Timeline when sequence or elapsed time is the main reading. CalendarGrid groups supplied values by calendar date.
+- Use Timeline for sequence or elapsed time instead of calendar cells.
+- Use Heatmap for two chosen dimensions rather than calendar days.
 
 ## Properties and defaults
 

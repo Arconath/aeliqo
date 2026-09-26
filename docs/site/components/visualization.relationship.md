@@ -7,21 +7,24 @@ contract: 'Declared edges/cardinality only; deterministic bounded layout with ac
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Relationship draws the directed edges explicitly declared in a bound visualization. The application
-supplies source, target, and cardinality meaning; an adjacency-style data view preserves edge labels and
-keyboard selection when the graphic is crowded or unavailable.
+Draw declared edges between entities as a graph. An adjacency-style data view keeps labels and selection reachable.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Show declared connections such as reports-to or depends-on.
+- Preserve edge direction and count from the supplied data.
+- Reach the same edges through an adjacency view when the graph is crowded.
 
 ## When to use a different component
 
-Use Tree for a parent and child hierarchy. Relationship displays explicit directed edges without asserting causation.
+- Use Tree for a strict parent-child hierarchy.
+- Use Scatter for two numeric axes; point position implies no link.
 
 ## Properties and defaults
 

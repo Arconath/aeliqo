@@ -7,19 +7,25 @@ contract: 'Native submission semantics, draft validation, error summary and expl
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Provide a native form boundary around slotted controls and emit a typed submit proposal only after applicable constraint validation. Invalid submission focuses an error summary; the host performs every action and decides whether a reset is accepted.
+A native form boundary around slotted controls that emits a submit proposal after constraint validation. Invalid submits focus an error summary; a rerender never submits.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Several controls submit together under one action.
+- Native constraint validation should run before the submit proposal.
+- Invalid submission should move focus to an error summary.
+- The host performs the action and decides whether a reset is accepted.
 
 ## When to use a different component
 
-Use FieldGroup to group controls without submission. Form emits a submit proposal; the host validates and persists.
+- Use [FieldGroup](/components/input.field-group/) when controls need grouping but no submission.
+- Use [FormFlow](/components/compound.form-flow/) when the task spans multiple steps before commit.
 
 ## Properties and defaults
 

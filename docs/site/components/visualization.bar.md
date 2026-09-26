@@ -7,21 +7,24 @@ contract: 'Comparable quantitative categories; baseline and negative values corr
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Bar compares a declared quantitative measure across categories from an authorized Result. The view keeps
-negative values and its baseline visible; the data table supplies exact values when visual marks are
-insufficient. A standard data recipe can choose this view for eligible analysis tasks.
+Compare a measure across categories with bars. Negative values and the baseline stay visible; exact values sit in the data table.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- Compare one measure across named categories.
+- Show values that cross zero, like profit or variance.
+- Rank categories by an exact number.
 
 ## When to use a different component
 
-Use Histogram for a declared binned measure. Use Area for continuous magnitude over time.
+- Use Histogram for a numeric measure split into declared bins.
+- Use Area for magnitude change over time.
 
 ## Properties and defaults
 

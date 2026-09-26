@@ -7,19 +7,25 @@ contract: 'Searchable choice with APG behavior; stale remote options cannot over
 
 ## Import and live example
 
+{{aeliqo:fixture}}
+
 {{aeliqo:example}}
 
 ## Purpose
 
-Keep a typed query separate from a committed option value. The component filters a supplied bounded option list locally or calls an optional `optionsLoader`, cancels superseded loads, and ignores late responses before they can replace the current suggestions.
+A searchable choice field that keeps the typed query separate from the committed option. Late remote responses are ignored, so stale options never overwrite current input.
 
 ## When to use it
 
-{{aeliqo:fixture}}
+- People pick one option from a list too long to read at once.
+- Typing a query should filter the option list.
+- Options may load remotely and responses can arrive late.
+- The query draft and the committed value must stay separate.
 
 ## When to use a different component
 
-Use Select for a short list that needs no query. Use SearchField when the query itself is the value and no option is selected.
+- Use [Select](/components/input.select/) for a short list that needs no query.
+- Use [SearchField](/components/input.search-field/) when the query itself is the value and no option is committed.
 
 ## Properties and defaults
 
@@ -39,11 +45,11 @@ Relevant states:
 
 With a static `options` array, the component filters the bounded list as the
 query changes. `optionsLoader(query, signal)` is the optional remote path: the
-host implements the request and its authorization, while the component aborts
-the previous load and ignores an older completion. It accepts at most 500
-options. A current loader failure leaves the field visible and reports
-“Options could not be loaded”; it does not commit a different value. The
-`minQueryLength` threshold prevents a load until enough characters are typed.
+host owns the request and its authorization, while the component aborts the
+previous load and ignores an older completion. At most 500 options are
+accepted. A loader failure keeps the field visible, reports “Options could
+not be loaded”, and never commits a different value. `minQueryLength` delays
+loading until enough characters are typed.
 
 ## Keyboard, focus, and accessibility
 
