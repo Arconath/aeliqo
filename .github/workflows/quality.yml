@@ -114,7 +114,8 @@ jobs:
             while IFS= read -r path; do
               changed=$((changed + 1))
               case "$path" in
-                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*) ;;
+                docs/packages/*) site_only=false; break ;;
+                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*|docs/*|README.md|AGENTS.md|CONTRIBUTING.md|SECURITY.md|CODE_OF_CONDUCT.md) ;;
                 *) site_only=false; break ;;
               esac
             done < <(git diff --name-only "$BASE_SHA" HEAD)

@@ -94,10 +94,15 @@ jobs:
               exit 1
             fi
             git fetch --quiet --depth=1 origin "$PUBLISHED_SHA"
+            # Deploy-safe paths cannot change the published package bytes or
+            # require new package evidence; anything else needs a republication.
             while IFS= read -r path; do
               case "$path" in
-                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*) ;;
-                *) echo "Package-affecting path changed since published source $PUBLISHED_SHA: $path" >&2; exit 1 ;;
+                docs/packages/*)
+                  echo "Package-affecting path changed since published source $PUBLISHED_SHA: $path" >&2; exit 1 ;;
+                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*|docs/*|README.md|AGENTS.md|CONTRIBUTING.md|SECURITY.md|CODE_OF_CONDUCT.md|.github/*|tests/*|quality/*) ;;
+                *)
+                  echo "Package-affecting path changed since published source $PUBLISHED_SHA: $path" >&2; exit 1 ;;
               esac
             done < <(git diff --name-only "$PUBLISHED_SHA" "$SOURCE_SHA")
             STABLE_RUN_ID="$PUBLISH_RUN_ID"
