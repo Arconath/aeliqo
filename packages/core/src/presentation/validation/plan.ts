@@ -46,10 +46,9 @@ function requiredResultReferences(
   plan: PresentationPlanLike,
   prepared: PreparedPresentationContext,
 ): readonly ResultRef[] {
-  return [
-    ...prepared.taskStructure.resultReferences,
-    ...plan.nodes.flatMap((node) => (node.result === undefined ? [] : [node.result])),
-  ];
+  const references = [...prepared.taskStructure.resultReferences];
+  for (const node of plan.nodes) if (node.result !== undefined) references.push(node.result);
+  return references;
 }
 
 function findReadSetOutcome(

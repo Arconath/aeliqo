@@ -26,6 +26,9 @@ views, header/sidebar structure, and business actions.
   actions clear only the unchanged drafts captured for that exact action.
 - `onPresentation` observes successful renderer updates, including responsive
   adaptations. Runtime subscriptions keep their existing runtime-state role.
+- Result bindings retain their complete identity, including `sourceLineage`,
+  when candidates share otherwise identical nodes. Unavailable lineages remain
+  rejected before a representation callback runs.
 - The public Playground offers manual tasks and experimental native WebMCP.
   Component, workspace, and page demos share the connection. Hosted MCP relay
   and in-page model setup are removed from this public surface.

@@ -4,6 +4,7 @@ import {
   createPresentationRegistry,
   validatePresentationPlan,
 } from '../../packages/core/src/presentation/index.js';
+import { preparePresentationTree } from '../../packages/core/src/presentation/validation/tree-coverage.js';
 import { canonicalJSON } from '../../packages/core/src/contracts/parse.js';
 import { parseContract } from '../../packages/core/src/contracts/parse-generic.js';
 import {
@@ -127,6 +128,186 @@ function request(
 }
 
 describe('presentation validation memoization', () => {
+  it('keeps structurally memoized nodes bound to their exact result source lineage', () => {
+    const nextRef = { ...ref, sourceLineage: 'source-r2' };
+    const nextResult = { ...result, ref: nextRef };
+    const seen: (string | undefined)[] = [];
+    const leaf = tableManifest((values, descriptor) => {
+      seen.push(descriptor?.ref.sourceLineage);
+      return {
+        ok: true,
+        value: { values, fields: descriptor!.fields.map((item) => item.id), ports: [], operations: [read] },
+      };
+    });
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const activeContext = context({
+      task: {
+        ...presentationTask,
+        inputs: [ref, nextRef],
+        needs: [{ id: 'browse', operation: read, fields: [field.id], required: true }],
+      },
+      results: [result, nextResult],
+      current: { ...presentationPlan.preconditions, results: [ref, nextRef] },
+    });
+    const first = basePlan('z-layout', 'leaf', {}, ref);
+    const next = basePlan('a-layout', 'leaf', {}, nextRef);
+    const composed = composePresentation(
+      {
+        ...request(first, activeContext, [
+          { source: 'explicit', plan: first },
+          { source: 'explicit', plan: next },
+        ]),
+        searchRegistered: false,
+      },
+      registry([leaf, root]),
+    );
+    expect(composed.ok).toBe(true);
+    if (!composed.ok) return;
+    expect(composed.value.presentation?.plan.rootId).toBe('a-layout');
+    expect(seen).toEqual(['source-r1', 'source-r2']);
+    expect(composed.value.presentation?.nodes.find((node) => node.node.id === 'leaf')?.result?.ref).toEqual(nextRef);
+    expect(composed.value.presentation?.plan.nodes.find((node) => node.id === 'leaf')?.result).toEqual(nextRef);
+  });
+
+  it('does not authorize a new lineage through an otherwise equal cached node', () => {
+    const seen: (string | undefined)[] = [];
+    const leaf = tableManifest((values, descriptor) => {
+      seen.push(descriptor?.ref.sourceLineage);
+      return { ok: true, value: { values, fields: [field.id], ports: [], operations: [read] } };
+    });
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const first = basePlan('z-layout', 'leaf');
+    const unauthorized = basePlan('a-layout', 'leaf', {}, { ...ref, sourceLineage: 'unavailable' });
+    const composed = composePresentation(
+      {
+        ...request(first, context(), [
+          { source: 'explicit', plan: first },
+          { source: 'explicit', plan: unauthorized },
+        ]),
+        searchRegistered: false,
+      },
+      registry([leaf, root]),
+    );
+    expect(composed).toMatchObject({
+      ok: true,
+      value: { rejected: [{ diagnostics: [{ code: 'commit.missing-dependency' }] }] },
+    });
+    expect(seen).toEqual(['source-r1']);
+  });
+
+  it('reparses caller result lineage on a later composition without freezing caller input', () => {
+    const mutableRef = { ...ref, sourceLineage: 'first-source' };
+    const leaf = tableManifest((values, descriptor) => ({
+      ok: true,
+      value: {
+        values: { lineage: descriptor!.ref.sourceLineage ?? '' },
+        fields: [field.id],
+        ports: [],
+        operations: [read],
+      },
+    }));
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const installed = registry([leaf, root]);
+    const active = context({
+      task: {
+        ...presentationTask,
+        inputs: [mutableRef],
+        needs: [{ id: 'browse', operation: read, fields: [field.id], required: true }],
+      },
+      results: [{ ...result, ref: mutableRef }],
+      current: { ...presentationPlan.preconditions, results: [mutableRef] },
+    });
+    const plan = basePlan('layout', 'leaf', {}, mutableRef);
+    const first = composePresentation(
+      { ...request(plan, active, [{ source: 'explicit', plan }]), searchRegistered: false },
+      installed,
+    );
+    expect(first.ok).toBe(true);
+    mutableRef.sourceLineage = 'second-source';
+    const next = composePresentation(
+      { ...request(plan, active, [{ source: 'explicit', plan }]), searchRegistered: false },
+      installed,
+    );
+    expect(next.ok).toBe(true);
+    if (!first.ok || !next.ok) return;
+    expect(first.value.presentation?.nodes[1]?.result?.ref.sourceLineage).toBe('first-source');
+    expect(next.value.presentation?.nodes[1]?.result?.ref.sourceLineage).toBe('second-source');
+  });
+
+  it('compares cached topology against every ordered node and retains dependency order and duplicates', () => {
+    const nextRef = { ...ref, sourceLineage: 'source-r2' };
+    const leaf = tableManifest((values) => ({
+      ok: true,
+      value: { values, fields: [field.id], ports: [], operations: [read] },
+    }));
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const installed = registry([leaf, root]);
+    const active = context({
+      task: {
+        ...presentationTask,
+        inputs: [nextRef, ref],
+        needs: [{ id: 'browse', operation: read, fields: [field.id], required: true }],
+      },
+      results: [result, { ...result, ref: nextRef }],
+      current: { ...presentationPlan.preconditions, results: [ref, nextRef] },
+    });
+    const base = basePlan('layout', 'leaf-a');
+    const plan = {
+      ...base,
+      preconditions: active.current,
+      nodes: [
+        { ...base.nodes[0]!, children: ['leaf-a', 'leaf-b'] },
+        base.nodes[1]!,
+        { ...base.nodes[1]!, id: 'leaf-b', result: nextRef },
+      ],
+    };
+    const parsed = parseContract('presentation-plan', plan);
+    const prepared = preparePresentationContext(active);
+    if (!parsed.ok || !prepared.ok) throw Error('fixture parse failed');
+    const cache = preparePresentationValidationCache(prepared.value, installed);
+    if (!cache.ok) throw Error('fixture cache failed');
+    const validated = validatePreparedPresentationPlan(
+      Object.freeze({ ...parsed.value, preconditions: Object.freeze(parsed.value.preconditions) }),
+      active,
+      installed,
+      prepared.value,
+      {},
+      new Map(),
+      new WeakMap(),
+      undefined,
+      cache.value,
+      true,
+    );
+    expect(validated.ok).toBe(true);
+    const firstTree = preparePresentationTree(parsed.value, cache.value);
+    expect(firstTree.ok).toBe(true);
+    if (!firstTree.ok) return;
+    expect(preparePresentationTree({ ...parsed.value, nodes: [...parsed.value.nodes] }, cache.value)).toEqual(
+      firstTree,
+    );
+    const reordered = preparePresentationTree(
+      { ...parsed.value, nodes: [parsed.value.nodes[0]!, parsed.value.nodes[2]!, parsed.value.nodes[1]!] },
+      cache.value,
+    );
+    expect(reordered.ok).toBe(true);
+    if (reordered.ok) expect(reordered.value.nodeIndexes.get('leaf-a')).toBe(2);
+    const invalid = {
+      ...parsed.value,
+      nodes: [{ ...parsed.value.nodes[0]!, children: ['leaf-a', 'leaf-a'] }, ...parsed.value.nodes.slice(1)],
+    };
+    expect(preparePresentationTree(invalid, cache.value)).toMatchObject({
+      ok: false,
+      diagnostics: [{ code: 'presentation.tree' }],
+    });
+    const entry = cache.value.readSetOutcomes.get(parsed.value.preconditions)?.[0];
+    expect(entry?.references.map((item) => item.sourceLineage)).toEqual([
+      'source-r2',
+      'source-r1',
+      'source-r1',
+      'source-r2',
+    ]);
+  });
+
   it('reuses an owned link-free graph only while ordered node identities and resolved ports remain identical', () => {
     const leaf = tableManifest((values, descriptor) => ({
       ok: true,

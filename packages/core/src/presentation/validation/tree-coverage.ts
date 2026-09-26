@@ -8,17 +8,13 @@ import type {
   PresentationValidationCache,
 } from './types.js';
 
-function sameTreeShape(
-  entry: PresentationTreeCacheEntry,
-  plan: PresentationPlanLike,
-  nodeIds: readonly string[],
-  children: readonly (readonly string[])[],
-): boolean {
-  if (entry.rootId !== plan.rootId || entry.nodeIds.length !== nodeIds.length) return false;
-  for (let index = 0; index < nodeIds.length; index++) {
+function sameTreeShape(entry: PresentationTreeCacheEntry, plan: PresentationPlanLike): boolean {
+  if (entry.rootId !== plan.rootId || entry.nodeIds.length !== plan.nodes.length) return false;
+  for (let index = 0; index < plan.nodes.length; index++) {
     const cachedChildren = entry.children[index]!;
-    const candidateChildren = children[index]!;
-    if (entry.nodeIds[index] !== nodeIds[index]) return false;
+    const candidate = plan.nodes[index]!;
+    const candidateChildren = candidate.children;
+    if (entry.nodeIds[index] !== candidate.id) return false;
     if (cachedChildren === candidateChildren) continue;
     if (cachedChildren.length !== candidateChildren.length) return false;
     if (cachedChildren.some((child, childIndex) => child !== candidateChildren[childIndex])) return false;
@@ -45,11 +41,11 @@ function buildTreeEntry(
   plan: PresentationPlanLike,
   cache: PresentationValidationCache,
 ): Outcome<PresentationTreeCacheEntry> {
+  for (const entry of cache.treeEntries) {
+    if (sameTreeShape(entry, plan)) return { ok: true, value: entry };
+  }
   const nodeIds = plan.nodes.map((node) => node.id);
   const children = plan.nodes.map((node) => node.children);
-  for (const entry of cache.treeEntries) {
-    if (sameTreeShape(entry, plan, nodeIds, children)) return { ok: true, value: entry };
-  }
 
   const childrenById = new Map(plan.nodes.map((node) => [node.id, node.children]));
   if (childrenById.size !== plan.nodes.length || !childrenById.has(plan.rootId))
