@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import type { AeliqoTextFieldElement, AeliqoTextAreaElement } from '../../packages/web/src/input/index.js';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/tests/input/index.html');
@@ -219,10 +220,7 @@ test('field groups propagate disabled through nested and dynamic children', asyn
     };
     group.id = 'nested-disabled-group';
     const wrapper = document.createElement('div');
-    const preserved = document.createElement('aeliqo-text-field') as HTMLElement & {
-      disabled: boolean;
-      updateComplete: Promise<unknown>;
-    };
+    const preserved = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
     preserved.name = 'preserved';
     preserved.disabled = true;
     wrapper.append(preserved);
@@ -231,10 +229,7 @@ test('field groups propagate disabled through nested and dynamic children', asyn
     await Promise.all([group.updateComplete, preserved.updateComplete]);
     group.disabled = true;
     await group.updateComplete;
-    const dynamic = document.createElement('aeliqo-text-field') as HTMLElement & {
-      disabled: boolean;
-      updateComplete: Promise<unknown>;
-    };
+    const dynamic = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
     dynamic.name = 'dynamic';
     group.append(dynamic);
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -485,15 +480,13 @@ test('readonly native controls reconcile user attempts', async ({ page }) => {
     checkbox.shadowRoot?.querySelector<HTMLInputElement>('input')?.click();
     radio.shadowRoot?.querySelectorAll<HTMLInputElement>('input')[1]?.click();
     const selectNative = select.shadowRoot?.querySelector<HTMLSelectElement>('select');
-    if (selectNative !== undefined) {
-      selectNative.value = 'b';
-      selectNative.dispatchEvent(new Event('change', { bubbles: true }));
-    }
+    if (selectNative === null || selectNative === undefined) throw new Error('select input missing');
+    selectNative.value = 'b';
+    selectNative.dispatchEvent(new Event('change', { bubbles: true }));
     const range = slider.shadowRoot?.querySelector<HTMLInputElement>('input[type=range]');
-    if (range !== undefined) {
-      range.value = '41';
-      range.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    if (range === null || range === undefined) throw new Error('slider input missing');
+    range.value = '41';
+    range.dispatchEvent(new Event('input', { bubbles: true }));
     return {
       checkbox: {
         value: checkbox.checked,
@@ -550,10 +543,7 @@ test('form wrapper defers child Enter behavior and respects native ownership', a
     const bypassLabel = document.createElement('span');
     bypassLabel.textContent = 'Bypass';
     bypass.append(bypassLabel);
-    const customNotes = document.createElement('aeliqo-text-area') as HTMLElement & {
-      value: string;
-      updateComplete: Promise<unknown>;
-    };
+    const customNotes = document.createElement('aeliqo-text-area') as AeliqoTextAreaElement;
     customNotes.name = 'custom-notes';
     customNotes.value = 'draft';
     const combo = document.createElement('aeliqo-combobox') as HTMLElement & {
@@ -833,10 +823,7 @@ test('text fields are uncontrolled by default and searches only commit user prop
   const state = await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>('#fixture');
     if (root === null) throw new Error('fixture missing');
-    const field = document.createElement('aeliqo-text-field') as HTMLElement & {
-      defaultValue: string;
-      updateComplete: Promise<unknown>;
-    };
+    const field = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
     field.defaultValue = 'Ada';
     root.append(field);
     const search = document.createElement('aeliqo-search-field') as HTMLElement & {
@@ -858,7 +845,7 @@ test('text fields are uncontrolled by default and searches only commit user prop
     native.value = 'Lin';
     native.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: 'Lin' }));
     await field.updateComplete;
-    const afterEdit = { native: native.value, value: (field as HTMLElement & { value: string }).value };
+    const afterEdit = { native: native.value, value: field.value };
     await search.updateComplete;
     const afterMount = searches;
     search.value = 'programmatic';
@@ -914,12 +901,7 @@ test('stale text validation cannot mark a newer programmatic value invalid', asy
   const state = await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>('#fixture');
     if (root === null) throw new Error('fixture missing');
-    const field = document.createElement('aeliqo-text-field') as HTMLElement & {
-      value: string;
-      validator: (value: string, signal: AbortSignal) => Promise<string | boolean>;
-      updateComplete: Promise<unknown>;
-      error: string;
-    };
+    const field = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
     const pending: Array<(result: string | boolean) => void> = [];
     field.validator = (value) =>
       new Promise((resolve) => {
@@ -940,7 +922,7 @@ test('stale text validation cannot mark a newer programmatic value invalid', asy
     return {
       value: field.value,
       error: field.error,
-      state: (field as HTMLElement & { validationState: string }).validationState,
+      state: field.validationState,
     };
   });
   expect(state).toEqual({ value: 'new', error: '', state: 'idle' });
@@ -950,12 +932,7 @@ test('completed validation is cleared when the host value changes', async ({ pag
   const state = await page.evaluate(async () => {
     const root = document.querySelector<HTMLElement>('#fixture');
     if (root === null) throw new Error('fixture missing');
-    const field = document.createElement('aeliqo-text-field') as HTMLElement & {
-      value: string;
-      validator: (value: string, signal: AbortSignal) => Promise<string | boolean>;
-      updateComplete: Promise<unknown>;
-      error: string;
-    };
+    const field = document.createElement('aeliqo-text-field') as AeliqoTextFieldElement;
     field.validator = async (value) => (value === 'accepted' ? true : 'Old value invalid');
     root.append(field);
     await field.updateComplete;
@@ -966,13 +943,13 @@ test('completed validation is cleared when the host value changes', async ({ pag
     await new Promise((resolve) => setTimeout(resolve, 0));
     const completed = {
       error: field.error,
-      state: (field as HTMLElement & { validationState: string }).validationState,
+      state: field.validationState,
     };
     field.value = 'accepted';
     await field.updateComplete;
     return {
       completed,
-      afterChange: { error: field.error, state: (field as HTMLElement & { validationState: string }).validationState },
+      afterChange: { error: field.error, state: field.validationState },
     };
   });
   expect(state).toEqual({

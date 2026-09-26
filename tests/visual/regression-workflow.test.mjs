@@ -57,6 +57,7 @@ test('paired performance gate and same-source probe preserve the required qualit
 test('container jobs trust only their exact checkout after checkout temporary HOME is gone', () => {
   for (const name of ['visual', 'visual-probe', 'performance', 'performance-probe']) {
     const block = job(name);
+    assert.ok(block.includes('chown "$(id -u):$(id -g)" "$HOME"'));
     assert.ok(block.includes('git config --global --add safe.directory "$GITHUB_WORKSPACE"'));
     assert.doesNotMatch(block, /safe\.directory ['"]?\*/u);
   }

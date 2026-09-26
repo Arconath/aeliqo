@@ -229,6 +229,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          chown "$(id -u):$(id -g)" "$HOME"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
@@ -273,6 +274,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          chown "$(id -u):$(id -g)" "$HOME"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
@@ -316,6 +318,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          chown "$(id -u):$(id -g)" "$HOME"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
@@ -360,6 +363,7 @@ jobs:
           package-manager-cache: false
       - name: Select the pinned package manager without changing image fonts or browsers
         run: |
+          chown "$(id -u):$(id -g)" "$HOME"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate

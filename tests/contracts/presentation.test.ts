@@ -461,7 +461,7 @@ describe('registered presentation feasibility', () => {
         revision: '1',
         context: c,
         preconditions: c.current,
-        candidates: [{ source: 'pattern', pattern: preset.ref }],
+        candidates: [{ source: 'pattern', pattern: preset.ref, plan: plan() }],
       },
       installed.value,
     );
@@ -477,7 +477,7 @@ describe('registered presentation feasibility', () => {
         revision: '1',
         context: { ...c, incumbent: stale },
         preconditions: c.current,
-        candidates: [{ source: 'pattern', pattern: preset.ref }],
+        candidates: [{ source: 'pattern', pattern: preset.ref, plan: plan() }],
       },
       installed.value,
     );
@@ -1138,7 +1138,7 @@ describe('presentation plan replay', () => {
 
 it('mutating caller incumbent cannot erase required state transfers after snapshot', () => {
   const previous = structuredClone(plan());
-  const candidate = {
+  const candidate: PresentationPlan = {
     ...plan(),
     rootId: 'replacement',
     nodes: [{ ...plan().nodes[0]!, id: 'replacement' }],
@@ -1172,7 +1172,7 @@ it('mutating caller incumbent cannot erase required state transfers after snapsh
       revision: '1',
       context: c,
       preconditions: c.current,
-      candidates: [{ source: 'pattern', pattern: preset.ref }],
+      candidates: [{ source: 'pattern', pattern: preset.ref, plan: candidate }],
     },
     installed.value,
   );
