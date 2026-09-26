@@ -6,6 +6,15 @@ async function openScenario(page: Page, scenario: 'people' | 'products' | 'suppo
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
 }
 
+async function openTaskRail(page: Page): Promise<void> {
+  await expect(page.locator('#pg-boot')).toBeHidden();
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await page.evaluate(() => {
+    const rail = document.querySelector<HTMLDetailsElement>('#pg-request');
+    if (rail !== null) rail.open = true;
+  });
+}
+
 test('guided intents render real adaptive views without a model', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -32,13 +41,15 @@ test('guided intents render real adaptive views without a model', async ({ page 
   expect(errors).toEqual([]);
 });
 
-test('public 0.5 journeys remain legible at mobile, tablet, and desktop widths', async ({ page }) => {
+test('guided demos remain legible at mobile, tablet, and desktop widths', async ({ page }) => {
   await page.goto('/playground/');
   for (const width of [360, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
+    await openTaskRail(page);
     await page.locator('[data-journey="attendance"]').click();
     await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await openTaskRail(page);
     await page.locator('[data-journey="workspace"]').click();
     await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -74,6 +85,7 @@ test('a constant series keeps its mark on the labeled y-axis tick', async ({ pag
 test('trend axis labels stay inside the chart on narrow screens', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 820 });
   await page.goto('/playground/');
+  await openTaskRail(page);
   await page.getByRole('button', { name: 'Monthly headcount' }).click();
 
   const svg = page.locator('aeliqo-chart svg');
@@ -101,6 +113,7 @@ test('trend axis labels stay inside the chart on narrow screens', async ({ page 
 test('trend geometry follows its container without stretching labels', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 820 });
   await page.goto('/playground/');
+  await openTaskRail(page);
   await page.getByRole('button', { name: 'Monthly headcount' }).click();
   const svg = page.locator('aeliqo-chart svg');
   await expect(svg).toBeVisible();
@@ -135,6 +148,7 @@ test('container adaptation switches browse to cards but preserves comparisons', 
   await expect(page.locator('#pg-status')).toContainText('is ready');
   await openScenario(page, 'products');
   await expect(page.locator('aeliqo-card-collection')).toContainText('Field notebook');
+  await openTaskRail(page);
   await page.getByRole('button', { name: 'Compare products' }).click();
   await expect(page.locator('aeliqo-table')).toBeVisible();
   await expect(page.locator('aeliqo-table')).toContainText('Desk lamp');
@@ -221,7 +235,7 @@ test('mobile controls, disconnected agent state, and accessibility remain honest
   await page.goto('/playground/');
   await page.getByRole('button', { name: 'Connect AI' }).click();
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
-  await page.getByRole('button', { name: 'Check local connection' }).click();
+  await page.getByRole('button', { name: 'Check connection' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
   await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
