@@ -177,27 +177,85 @@ await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 const quickstart = await readFile(join(root, 'docs/site/pages/quickstart.md'), 'utf8');
 const quickstartDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-quickstart-consumer-'));
 const codeFence = String.fromCharCode(96).repeat(3);
-await mkdir(join(quickstartDirectory, 'src'), { recursive: true });
-for (const [label, language, path] of [
-  ['package.json', 'json', 'package.json'],
-  ['tsconfig.json', 'json', 'tsconfig.json'],
-  ['index.html', 'html', 'index.html'],
-  ['src/main.tsx', 'tsx', 'src/main.tsx'],
-]) {
-  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = quickstart.match(
-    new RegExp(`\\*\\*${escaped}\\*\\*\\s*${codeFence}${language}\\n([\\s\\S]*?)\\n${codeFence}`, 'u'),
+
+// The documented flow scaffolds a Vite react-ts app, installs the pinned SDK
+// packages, then writes src/people.ts and src/main.tsx. Rebuild that consumer
+// honestly: extract the install command and the authored source blocks, then
+// provide the same scaffold files the Vite template produces.
+const installMatch = quickstart.match(
+  new RegExp(`${codeFence}bash\\nnpm install --save-exact ([^\\n]+)\\n${codeFence}`, 'u'),
+);
+assert(installMatch, 'Quickstart install command is missing');
+const installSpecifiers = installMatch[1].trim().split(/\s+/u);
+for (const name of packageNames)
+  assert(
+    installSpecifiers.includes(`@aeliqo/${name}@${RELEASE_VERSION}`),
+    `Quickstart does not pin @aeliqo/${name}@${RELEASE_VERSION}`,
   );
-  assert(match, `Quickstart ${label} example is missing`);
-  await writeFile(join(quickstartDirectory, path), `${match[1]}\n`);
-}
-const quickstartManifest = JSON.parse(await readFile(join(quickstartDirectory, 'package.json'), 'utf8'));
-for (const name of packageNames) assert.equal(quickstartManifest.dependencies[`@aeliqo/${name}`], RELEASE_VERSION);
+
+const fencedBlocks = (language) =>
+  [...quickstart.matchAll(new RegExp(`${codeFence}${language}\\n([\\s\\S]*?)\\n${codeFence}`, 'gu'))].map(
+    (match) => match[1],
+  );
+const tsBlocks = fencedBlocks('ts');
+const tsxBlocks = fencedBlocks('tsx');
+assert.equal(tsBlocks.length, 1, 'Quickstart must contain exactly one TypeScript data example');
+assert.equal(tsxBlocks.length, 2, 'Quickstart must contain the render and filter TSX examples');
+assert.match(tsxBlocks[1], /useState/u, 'The final quickstart example must be the filtering version');
+
+await mkdir(join(quickstartDirectory, 'src'), { recursive: true });
+await writeFile(join(quickstartDirectory, 'src/people.ts'), `${tsBlocks[0]}\n`);
+await writeFile(join(quickstartDirectory, 'src/main.tsx'), `${tsxBlocks[1]}\n`);
 const quickstartSource = await readFile(join(quickstartDirectory, 'src/main.tsx'), 'utf8');
 assert.match(quickstartSource, /useDataSurface\(\{ data: rows, getRowId:/u);
 assert.doesNotMatch(quickstartSource, /AeliqoProvider|createAeliqoApp|factory|model|agent/u);
+
+const quickstartManifest = {
+  name: 'aeliqo-quickstart-consumer',
+  private: true,
+  type: 'module',
+  dependencies: {
+    react: '19.2.8',
+    'react-dom': '19.2.8',
+  },
+  devDependencies: {
+    '@types/node': '24.13.3',
+    '@types/react': '19.2.18',
+    '@types/react-dom': '19.2.7',
+    typescript: '7.0.2',
+    vite: '8.2.2',
+  },
+};
 for (const artifact of artifacts) quickstartManifest.dependencies[artifact.name] = `file:${artifact.path}`;
 await writeFile(join(quickstartDirectory, 'package.json'), `${JSON.stringify(quickstartManifest, null, 2)}\n`);
+await writeFile(
+  join(quickstartDirectory, 'index.html'),
+  '<div id="root"></div><script type="module" src="/src/main.tsx"></script>\n',
+);
+await writeFile(
+  join(quickstartDirectory, 'tsconfig.json'),
+  `${JSON.stringify(
+    {
+      compilerOptions: {
+        target: 'ES2022',
+        module: 'ESNext',
+        moduleResolution: 'bundler',
+        strict: true,
+        exactOptionalPropertyTypes: true,
+        noUncheckedIndexedAccess: true,
+        skipLibCheck: true,
+        jsx: 'react-jsx',
+        noEmit: true,
+        lib: ['ES2022', 'DOM', 'DOM.Iterable'],
+        types: ['node', 'react'],
+        verbatimModuleSyntax: true,
+      },
+      include: ['src'],
+    },
+    null,
+    2,
+  )}\n`,
+);
 run(['npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund'], quickstartDirectory);
 const quickstartLock = JSON.parse(await readFile(join(quickstartDirectory, 'package-lock.json'), 'utf8'));
 for (const artifact of artifacts) {
@@ -620,12 +678,12 @@ try {
   await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
   const minimal = page.locator('#root main');
   assert.match(await minimal.textContent(), /Sam Rivera/u);
-  await minimal.getByRole('button', { name: 'Show Engineering' }).click();
+  await minimal.getByRole('button', { name: 'Engineering only' }).click();
   await page.waitForFunction(() => {
     const text = document.querySelector('#root main')?.textContent ?? '';
     return text.includes('Sam Rivera') && !text.includes('Ada Chen');
   });
-  await minimal.getByRole('button', { name: 'Show everyone' }).click();
+  await minimal.getByRole('button', { name: 'Everyone' }).click();
   await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
   assert.deepEqual(externalRequests, [], 'Minimal local React app made a remote request');
   assert.deepEqual(browserErrors, [], 'Minimal local React app raised a browser error');
@@ -643,7 +701,7 @@ await writeFile(
       sourceDigest: before,
       passed: true,
       scope:
-        'Installed core/runtime/web/react tarballs; exact four-file minimal React quickstart mounts, filters, and restores local rows without a provider, factory, or remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
+        'Installed core/runtime/web/react tarballs; Vite-scaffolded React quickstart mounts, filters, and restores local rows without a provider, factory, or remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
       artifacts: artifacts.map(({ entries, ...artifact }) => ({ ...artifact, entries })),
       consumerDirectory: consumer,
       quickstartConsumerDirectory: quickstartDirectory,
