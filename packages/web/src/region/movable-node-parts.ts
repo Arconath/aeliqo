@@ -1,18 +1,26 @@
 import { noChange, nothing, render, type RootPart, type TemplateResult } from 'lit';
 import { Directive, directive, type ChildPart } from 'lit/directive.js';
-import { insertPart, removePart, setChildPartValue, setCommittedValue } from 'lit/directive-helpers.js';
+import {
+  getCommittedValue,
+  insertPart,
+  removePart,
+  setChildPartValue,
+  setCommittedValue,
+} from 'lit/directive-helpers.js';
 
 type Entry = { readonly part: ChildPart; container: ChildPart };
 
 /** Region-owned Lit parts can move between layout parents without replacing child owners. */
 export class MovableNodeParts {
   private readonly entries = new Map<string, Entry>();
+  private readonly pending = new Map<string, ChildPart>();
   private used = new Set<string>();
   private parking: RootPart | undefined;
   private layout: string | undefined;
   private dependencies: readonly unknown[] = [];
 
   begin(layout?: string, dependencies: readonly unknown[] = []): void {
+    this.adoptRenderedParts();
     this.used = new Set();
     const sameInputs =
       dependencies.length === this.dependencies.length &&
@@ -31,22 +39,26 @@ export class MovableNodeParts {
     this.syncParking();
   }
 
-  place(container: ChildPart, key: string, value: TemplateResult | typeof nothing): void {
-    let entry = this.entries.get(key);
+  place(container: ChildPart, key: string, value: TemplateResult | typeof nothing) {
+    this.used.add(key);
+    const entry = this.entries.get(key);
     if (entry === undefined) {
-      entry = { part: insertPart(container), container };
-      this.entries.set(key, entry);
-    } else if (entry.container !== container) {
+      // Let Lit render or hydrate the same iterable produced on the server.
+      this.pending.set(key, container);
+      return [value];
+    }
+    if (entry.container !== container) {
       insertPart(container, undefined, entry.part);
       entry.container = container;
     }
     setCommittedValue(container, [entry.part]);
-    this.used.add(key);
     this.syncParking();
     setChildPartValue(entry.part, value);
+    return noChange;
   }
 
   complete(): void {
+    this.adoptRenderedParts();
     for (const [key, entry] of this.entries) {
       if (this.used.has(key)) continue;
       const end = entry.part.endNode;
@@ -61,6 +73,14 @@ export class MovableNodeParts {
   clear(): void {
     this.begin();
     this.complete();
+  }
+
+  private adoptRenderedParts(): void {
+    for (const [key, container] of this.pending) {
+      const parts = getCommittedValue(container) as ChildPart[] | undefined;
+      if (Array.isArray(parts) && parts.length === 1) this.entries.set(key, { part: parts[0]!, container });
+    }
+    this.pending.clear();
   }
 
   private parkingPart(): RootPart {
@@ -82,15 +102,14 @@ export class MovableNodeParts {
 
 class MovableNodeDirective extends Directive {
   override render(_owner: MovableNodeParts, _key: string, value: TemplateResult | typeof nothing) {
-    return value;
+    return [value];
   }
 
   override update(
     container: ChildPart,
     [owner, key, value]: [MovableNodeParts, string, TemplateResult | typeof nothing],
   ) {
-    owner.place(container, key, value);
-    return noChange;
+    return owner.place(container, key, value);
   }
 }
 

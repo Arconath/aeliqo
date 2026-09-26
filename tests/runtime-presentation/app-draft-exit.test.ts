@@ -41,7 +41,7 @@ function fixture(onDraftExit?: AeliqoAppOptions['onDraftExit']) {
     requestId: 'target',
     diagnostics: [{ code: 'fixture.target-failed', message: 'Target failure', retryable: false }],
   }));
-  const read = vi.fn(() => ({ ok: true as const, value: authority }));
+  const read = vi.fn<AeliqoAppOptions['authority']['read']>(() => ({ ok: true, value: authority }));
   const context = {
     options: { authority: { read }, ...(onDraftExit ? { onDraftExit } : {}) },
     runtime: { render, snapshot: () => undefined },
@@ -326,3 +326,78 @@ it.each([{ grants: ['task.evaluate', 'result.inspect'] }, { grants: [] }])(
     expect(state.render).toHaveBeenCalledOnce();
   },
 );
+
+describe('draft exit host denial diagnostics', () => {
+  const diagnostics = [
+    { code: 'journey.access-denied', message: 'Workspace access was revoked.', retryable: false },
+  ] as const;
+  it.each([true, false])('preserves initial denial and revokes current state with dirty=%s', async (dirty) => {
+    const onExit = vi.fn(() => ({ status: 'discard' as const }));
+    const state = fixture(onExit);
+    if (!dirty) state.region.drafts.clear();
+    const action = new AbortController();
+    state.region.actionAbort = action;
+    state.region.actionPending = true;
+    state.read.mockReturnValue({ ok: false, diagnostics });
+    const result = await renderRequest(state.context, { regionId: 'main', intent });
+    expect(result).toMatchObject({ status: 'denied', diagnostics });
+    expect(state.render).not.toHaveBeenCalled();
+    expect(onExit).not.toHaveBeenCalled();
+    expect(state.element.revoke).toHaveBeenCalledOnce();
+    expect(state.region.drafts.size).toBe(0);
+    expect(action.signal.aborted).toBe(true);
+    expect(state.region.actionPending).toBe(false);
+  });
+  it('preserves denial before save without executing the host effect', async () => {
+    const decision = deferred<{ status: 'save'; save: () => Promise<{ ok: true; value: undefined }> }>();
+    const save = vi.fn(async () => ({ ok: true as const, value: undefined }));
+    const state = fixture(() => decision.promise);
+    const pending = renderRequest(state.context, { regionId: 'main', intent });
+    state.read.mockReturnValue({ ok: false, diagnostics });
+    decision.resolve({ status: 'save', save });
+    expect(await pending).toMatchObject({ status: 'denied', diagnostics });
+    expect(save).not.toHaveBeenCalled();
+    expect(state.render).not.toHaveBeenCalled();
+  });
+  it('preserves denial after a successful host save and does not evaluate target', async () => {
+    const saved = deferred<{ ok: true; value: undefined }>();
+    const started = deferred<void>();
+    const state = fixture(() => ({
+      status: 'save',
+      save: () => {
+        started.resolve();
+        return saved.promise;
+      },
+    }));
+    const pending = renderRequest(state.context, { regionId: 'main', intent });
+    await started.promise;
+    state.read.mockReturnValue({ ok: false, diagnostics });
+    saved.resolve({ ok: true, value: undefined });
+    expect(await pending).toMatchObject({ status: 'denied', diagnostics });
+    expect(state.render).not.toHaveBeenCalled();
+  });
+  it('uses runtime revocation diagnostics even when the host decision ignores abort', async () => {
+    const state = fixture(() => new Promise(() => {}));
+    const pending = renderRequest(state.context, { regionId: 'main', intent });
+    state.context.runtime.snapshot = () => ({
+      regionId: 'main',
+      resourceId: 'people',
+      phase: 'denied',
+      results: [],
+      diagnostics,
+    });
+    state.region.renderAbort?.abort();
+    expect(await pending).toMatchObject({ status: 'denied', diagnostics });
+    expect(state.render).not.toHaveBeenCalled();
+  });
+  it('returns a generic safe diagnostic when the host authority callback throws', async () => {
+    const state = fixture();
+    state.read.mockImplementation(() => {
+      throw Error('private-host-details');
+    });
+    const result = await renderRequest(state.context, { regionId: 'main', intent });
+    expect(result).toMatchObject({ status: 'denied', diagnostics: [{ code: 'web.app.draft-denied' }] });
+    expect(JSON.stringify(result)).not.toContain('private-host-details');
+    expect(state.element.revoke).toHaveBeenCalledOnce();
+  });
+});

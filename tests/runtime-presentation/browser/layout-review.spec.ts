@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 type Host = typeof window & {
   layoutFixture: {
     render(kind: 'workspace' | 'page'): Promise<{ status: string; diagnostics: unknown }>;
+    initialPartsBeforeCompletion(): { rejected: boolean; preserved: boolean; cleared: boolean }[];
     reversedParts(): { sameInput: boolean; cleared: boolean };
     changeParentShape(fail: boolean): Promise<{ status: string }>;
     focusTable(): void;
@@ -160,4 +161,13 @@ test('stale publication completion cannot retire parts needed by a newer rollbac
     return header === element.shadowRoot!.querySelector('.demo-page-header');
   });
   expect(restored).toBe(true);
+});
+
+test('first synchronous render and failure retain pending parts before completion', async ({ page }) => {
+  await page.goto('/tests/runtime-presentation/browser/layout-review.html');
+  await expect(page.locator('#status')).toHaveText('renderer-ready');
+  expect(await page.evaluate(() => (window as Host).layoutFixture.initialPartsBeforeCompletion())).toEqual([
+    { rejected: false, preserved: true, cleared: true },
+    { rejected: true, preserved: true, cleared: true },
+  ]);
 });

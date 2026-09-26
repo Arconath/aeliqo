@@ -10,9 +10,10 @@ export function selection() {
   };
 }
 
-export async function capture(root, destination) {
+export async function capture(root, destination, project) {
   await mkdir(destination, { recursive: true });
   const args = ['exec', 'playwright', 'test', '--config', 'tests/visual/regression.capture.playwright.config.mjs'];
+  if (project) args.push('--project', project);
   const selected = selection();
   if (selected.batch) args.push(`tests/visual/${selected.batch}.spec.ts`);
   if (selected.grep) args.push('--grep', selected.grep);

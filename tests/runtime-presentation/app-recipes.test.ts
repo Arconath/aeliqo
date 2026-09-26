@@ -515,6 +515,35 @@ describe('0.3 standard recipes', () => {
     }
   });
 
+  it('refreshes both comparison children with explicit identity transfers and current Result references', () => {
+    const initial = input('compare', 800);
+    const first = standardDataRecipe.build(initial);
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    const nextResult = { ...initial.result, ref: { ...initial.result.ref, id: 'next-result' } };
+    for (const width of [800, 320]) {
+      const next = standardDataRecipe.build({
+        ...initial,
+        result: nextResult,
+        results: [nextResult],
+        current: { ...current, results: [nextResult.ref] },
+        environment: environment(width),
+        incumbent: first.value,
+      });
+      expect(next.ok).toBe(true);
+      if (!next.ok) continue;
+      expect(next.value.nodes.slice(1).map((node) => node.result)).toEqual([nextResult.ref, nextResult.ref]);
+      expect(next.value.preconditions.results).toEqual([nextResult.ref]);
+      expect(next.value.stateTransfer).toEqual(
+        first.value.nodes.map((node) => ({
+          fromNode: node.id,
+          toNode: node.id,
+          mapping: { id: 'aeliqo.state.identity', revision: '1' },
+        })),
+      );
+    }
+  });
+
   it('reaches a registered categorical bar and preserves trend clarification when bar is unavailable', () => {
     const barContext = barInput();
     const registry = registryFor(

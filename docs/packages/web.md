@@ -78,6 +78,20 @@ authorized result. Narrow layouts retain the simultaneous table comparison. The
 split is not an implicit permission grant: the resource's allowed views, renderer
 registry, operation and result bindings must all permit it.
 
+Standard data views use a 24px hysteresis band around the 640px container
+breakpoint during automatic resize: a wide view changes below 616px, and a
+narrow view changes above 664px. An explicit render evaluates the current size
+immediately. Registered workspace/page patterns receive every measured size;
+the standard breakpoint band does not constrain their layouts.
+
+Repeating a comparison evaluates a fresh result and transfers each existing
+child to its same registered identity. A custom recipe must likewise declare
+`stateTransfer` entries when it replaces result references or changes a layout.
+For unchanged node IDs, roles, and representations, use the registered
+`aeliqo.state.identity` mapping at revision `1`. Other transitions require an
+appropriate registered mapping; omitting one rejects the update and keeps the
+previous valid presentation.
+
 An explicit view pin is a hard gate and never falls through to another recipe
 candidate. A preferred view remains a ranking input and may fall back only to a
 fully eligible candidate. Direct `RecipeDefinition.build` calls remain a
@@ -145,6 +159,11 @@ visualizations such as `<aeliqo-trend>` provide semantic views for
 registered resources and meanings.
 
 ## Styling and browser behavior
+
+Plot and Cartesian marks use `--aeliqo-visualization-series1` through `series6`.
+Quantitative marks and their keys share `--aeliqo-visualization-quantitative-start`
+and `--aeliqo-visualization-quantitative-end`. Canvas repaints after component or
+inherited theme changes and system color changes, using the same colors as SVG.
 
 Components use the library's public design tokens and exposed shadow parts.
 Applications can set those tokens on a host to match their own design system.

@@ -37,6 +37,7 @@ interface PreparedDependencies {
   readonly environment: PresentationEnvironment;
   readonly policy?: RecipePresentationPolicy;
   readonly incumbent?: ValidatedPresentation['plan'];
+  readonly transitionBlocked: boolean;
 }
 
 export interface PreparedPresentation {
@@ -124,6 +125,7 @@ function preparedDependencies(
     ok: true,
     value: {
       current: source.current,
+      transitionBlocked: standardResizeBlocked(region, recipe, registry, environment, replacingTask),
       ...(source.result === undefined ? {} : { result: source.result }),
       results: Object.freeze([...descriptors]),
       registry,
@@ -231,6 +233,7 @@ function resolvedPlan(
       results: descriptors,
       current,
       environment: prepared.environment,
+      transitionBlocked: prepared.transitionBlocked,
       rendererCapabilities: prepared.registry.manifests.map((manifest) => manifest.ref),
       stateMappingCapabilities: prepared.registry.stateMappings?.map((mapping) => mapping.ref) ?? [],
       ...(prepared.incumbent === undefined ? {} : { incumbent: prepared.incumbent }),
@@ -323,4 +326,18 @@ function incumbentFor(
   if (continuity?.kind === 'retain') return continuity.incumbent;
   const prior = region.element.presentation?.plan;
   return !replacingTask && prior?.preconditions.taskRevision === current.taskRevision ? prior : undefined;
+}
+
+/** Standard views keep the established breakpoint band; registered layouts see every measured size. */
+function standardResizeBlocked(
+  region: WebRegion,
+  recipe: RecipeDefinition | undefined,
+  registry: PresentationRegistry,
+  environment: PresentationEnvironment,
+  replacingTask: boolean,
+): boolean {
+  if (replacingTask || recipe === undefined || !sameRecipe(recipe, standardDataRecipe)) return false;
+  if ((registry.patterns?.length ?? 0) > 0 || environment.inlineSize.state !== 'known') return false;
+  const measuredCategory = environment.inlineSize.value < 640 ? 'narrow' : 'wide';
+  return region.category !== 'unknown' && measuredCategory !== region.category;
 }

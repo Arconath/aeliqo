@@ -3,7 +3,7 @@ import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import { createLocalDataService } from '@aeliqo/runtime/data';
 import { createAeliqoApp } from '@aeliqo/web/app';
 import { createAppToolEndpoint } from '@aeliqo/agent/app';
-import { createPlaygroundSession } from '../../../apps/site/src/playground/session.ts';
+import { PLAYGROUND_RESOURCES, PLAYGROUND_RECORDS } from '../../../apps/site/src/playground/scenarios.ts';
 import { attendanceDayFilter } from '../../../examples/vnext/attendance/period.ts';
 import { z } from 'zod';
 
@@ -90,23 +90,71 @@ function attendanceResource(digest) {
   });
 }
 
+/** Browser evaluation host for the server-owned model; the public Playground exposes WebMCP only. */
 export async function openJ1(target) {
-  const session = createPlaygroundSession(() => undefined);
-  const initial = await session.render(target, {
-    version: '1',
-    id: 'j1-initial',
-    kind: 'browse',
-    resource: 'people',
-    fields: ['name', 'team', 'location'],
+  const functions = createQueryFunctionRegistry({ version: '2' });
+  if (!functions.ok) throw new Error('J1 query registry unavailable.');
+  const resource = PLAYGROUND_RESOURCES.people;
+  const data = createLocalDataService({
+    snapshot: {
+      catalog: resource.catalog,
+      sourceRevision: 'live-people-1',
+      records: { people: PLAYGROUND_RECORDS.people },
+    },
+    functionRegistry: functions.value,
+    authorize: () => ({ ok: true, value: { scopeDigest: 'synthetic-local', policyRevision: '1' } }),
+  });
+  const app = createAeliqoApp({
+    resources: [{ resource, data }],
+    authority: {
+      read: () => ({
+        ok: true,
+        value: {
+          principalKey: 'synthetic-people',
+          scopeDigest: 'synthetic-local',
+          policyRevision: '1',
+          experienceRevision: '1',
+          grants: [
+            'catalog.read',
+            'task.propose',
+            'task.evaluate',
+            'result.inspect',
+            'experience.commit',
+            'model.egress',
+          ],
+          readContext: { principal: 'synthetic-people' },
+        },
+      }),
+    },
+  });
+  const regionId = 'playground-main';
+  const mounted = app.mount({ target, regionId, resourceId: resource.id });
+  if (!mounted.ok) throw new Error(mounted.diagnostics[0]?.message ?? 'J1 mount failed.');
+  const render = ({ intent, signal }) => app.render({ regionId, intent, signal });
+  const initial = await render({
+    intent: {
+      version: '1',
+      id: 'j1-initial',
+      kind: 'browse',
+      resource: 'people',
+      fields: ['name', 'team', 'location'],
+    },
   });
   if (initial.status !== 'renderer-ready') throw new Error('The J1 host could not render its initial view.');
-  const connected = await session.connectAgent('byok', 'live-j1');
+  const connected = createAppToolEndpoint({
+    runtime: app.runtime,
+    regionId,
+    goalEpoch: 'live-j1',
+    transport: 'byok',
+    expiresAt: Date.now() + 300_000,
+    render: { render },
+  });
   if (!connected.ok) throw new Error(connected.diagnostics[0]?.message ?? 'J1 pairing failed.');
   return {
     endpoint: connected.value,
     close() {
       connected.value.close();
-      session.dispose();
+      app.dispose();
     },
   };
 }

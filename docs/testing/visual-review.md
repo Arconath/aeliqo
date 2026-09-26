@@ -94,14 +94,16 @@ suite in the quality matrix throughout.
 
 ## Required CI gate and diagnostic bootstrap
 
-The `visual` job in `.github/workflows/quality.yml` always runs the approved
-comparison in the immutable amd64 Playwright image:
+The required `visual-shards` matrix in `.github/workflows/quality.yml` runs one
+job for each of Chromium, Firefox, and WebKit. Each job performs its baseline,
+baseline repeat, candidate, candidate repeat, and pixel comparison sequentially
+on the same runner in the immutable amd64 Playwright image:
 
 ```text
 mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
 ```
 
-Both visual jobs use Node 24.20.0, pnpm 11.24.0, the image's installed browsers,
+All browser capture jobs use Node 24.20.0, pnpm 11.24.0, the image's installed browsers,
 `TZ=UTC`, `LANG=C.UTF-8`, and the image's system font directories. They do not
 install or upgrade browsers or fonts after selecting the image. Browser locale
 and timezone remain explicitly fixed in the capture configuration. The runner
@@ -110,10 +112,30 @@ identity; changing the image requires reviewed metadata.
 
 For bootstrap commit A, the repository owner dispatches the existing quality
 workflow with `visual_probe: true` and its exact source SHA. That adds a separate
-`visual-probe` job running `--probe --full` in the same image. The normal `visual`
-gate still runs and rejects an unapproved baseline. The probe can therefore
+`visual-probe-shards` matrix running `--probe --shard <browser>` in the same image.
+The normal approved gate still runs and rejects an unapproved baseline. The probe can therefore
 produce review evidence without creating a successful release-quality result.
-Both jobs upload their complete artifact directories even on failure.
+Every browser job uploads its complete artifact directory and a compact shard
+report even on failure.
+
+The required `visual` aggregate runs after all three browser jobs, including when
+one fails. It rejects failed, skipped, cancelled, missing, or duplicate shards;
+source, fixture, or environment mismatches; incomplete captures; and selected
+family filters. It independently lists the full source test suite and requires
+exactly 610 successful tests and 954 PNGs per browser (1,830 tests and 2,862 PNGs
+in total). Every test must execute once and pass; metadata-only tests need no
+screenshot. Both repeats must have identical PNG hashes. The `visual-probe`
+aggregate applies the same completeness checks to the two candidate captures
+and remains explicitly unapproved.
+
+This partition preserves one worker per capture and the same complete suite.
+A shard uses `--shard chromium|firefox|webkit`; it cannot claim a full pass by
+itself or combine with `--full` or local selection filters. Serial `--full`
+remains available locally. Splitting by browser gives each hosted job a bounded
+share of the four-capture workload instead of putting all browsers into one
+360-minute job. The aggregate evidence is under `artifacts/visual-aggregate/`;
+compact shard evidence is under `artifacts/visual-shard-report/`. Changes to the
+reviewed fixture inventory require deliberate count updates and baseline review.
 
 After review, commit B records A's source SHA and exact environment/fixture
 metadata. Dispatch B with the default `visual_probe: false`. The full approved

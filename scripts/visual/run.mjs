@@ -6,23 +6,40 @@ import { capture, compare, selection } from './capture.mjs';
 import { approveInputs, runCaptures, verifyRepeat, verifyCandidateSource } from './policy.mjs';
 import { execute, output } from './process.mjs';
 import { withBaseline } from './source.mjs';
+import { parseOptions, REPRODUCIBILITY } from './shards.mjs';
+import { captureEvidence, plannedTests } from './inventory.mjs';
 
 const root = process.cwd();
-const probe = process.argv.includes('--probe');
-if (process.argv.slice(2).some((arg) => !['--probe', '--full'].includes(arg)))
-  throw Error('Usage: node scripts/visual/run.mjs [--probe] [--full]');
+const { probe, full, project } = parseOptions(process.argv.slice(2));
 const destination = resolve('artifacts/visual-regression', new Date().toISOString().replaceAll(':', '-'));
 await mkdir(destination, { recursive: true });
 const selected = selection();
-const scope = Object.values(selected).some(Boolean) ? 'selected' : 'full';
+const localScope = Object.values(selected).some(Boolean) ? 'selected' : 'full';
+const scope = project ? 'browser-shard' : localScope;
 const report = {
   status: 'failed',
   approved: false,
   sourceBuilt: false,
+  candidateDirty: false,
+  project,
+  captures: {},
   scope,
   selection: selected,
   artifacts: destination,
 };
+
+async function checkedCapture(source, label) {
+  const directory = join(destination, label);
+  const planned = project ? plannedTests(source, directory, project) : undefined;
+  const result = await capture(source, directory, project);
+  if (planned) {
+    const evidence = await captureEvidence(directory, planned);
+    assert.equal(evidence.tests.length, 610, 'Expected full browser test inventory');
+    assert.equal(evidence.images.length, 954, 'Expected full browser PNG inventory');
+    report.captures[label] = evidence;
+  }
+  return result;
+}
 
 async function describe(source, label) {
   const path = join(destination, `${label}-environment.json`);
@@ -41,14 +58,14 @@ async function probeCandidate() {
   const before = candidateSource();
   report.candidateSHA = before.sha;
   report.candidateDirty = before.dirty;
-  if (scope === 'full') {
+  if (scope !== 'selected') {
     execute(root, 'pnpm', ['install', '--frozen-lockfile']);
     execute(root, 'pnpm', ['build:platform']);
     report.sourceBuilt = true;
   }
   Object.assign(report, await describe(root, 'candidate'));
-  const first = await capture(root, join(destination, 'candidate'));
-  const repeat = await capture(root, join(destination, 'candidate-repeat'));
+  const first = await checkedCapture(root, 'candidate');
+  const repeat = await checkedCapture(root, 'candidate-repeat');
   report.images = (await verifyRepeat(first, repeat)).length;
   const after = candidateSource();
   report.candidateDirty = before.dirty || after.dirty;
@@ -78,7 +95,7 @@ async function gate() {
     await runCaptures({
       baseline,
       candidate: root,
-      capture: (source, label) => capture(source, join(destination, label)),
+      capture: checkedCapture,
       compare: (first, next) => compare(root, first, next, destination),
     });
   });
@@ -88,19 +105,25 @@ async function gate() {
     'Candidate source changed during capture',
   );
   if (output(root, 'git', ['status', '--porcelain'])) throw Error('Candidate changed during capture');
+  report.comparisonPassed = true;
   report.status = 'passed';
   report.approved = true;
 }
 
 try {
-  if (process.argv.includes('--full') && scope !== 'full') throw Error('Full visual gate rejects selection filters');
+  if ((full || project) && Object.values(selected).some(Boolean))
+    throw Error('Full visual gate rejects selection filters');
   if (probe) await probeCandidate();
   else await gate();
 } catch (error) {
   report.error = error instanceof Error ? error.message : String(error);
   process.exitCode = 1;
 } finally {
-  report.reproducibility = { capturesPerSource: 2, byteIdenticalRepeats: true, maxDiffPixels: 0, threshold: 0 };
+  report.reproducibility = REPRODUCIBILITY;
+  if (project) {
+    await mkdir(resolve('artifacts/visual-shard-report'), { recursive: true });
+    await writeFile(resolve('artifacts/visual-shard-report/report.json'), JSON.stringify(report, null, 2));
+  }
   await writeFile(join(destination, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
 }

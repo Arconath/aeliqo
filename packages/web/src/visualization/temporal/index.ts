@@ -71,6 +71,13 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
       [part='viewport'] {
         direction: ltr;
       }
+      :host(aeliqo-timeline) [part='viewport'] {
+        /* Reserve text-scaled space without changing interval or tick coordinates. */
+        padding-block: 1em;
+      }
+      :host(aeliqo-timeline) svg {
+        overflow: visible;
+      }
       button {
         background: var(--aeliqo-color-surface, #f8fafc);
         border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #64748b);

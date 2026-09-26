@@ -65,6 +65,10 @@
   --aeliqo-visualization-series3: #b45309;
   --aeliqo-visualization-series4: #be185d;
   --aeliqo-visualization-reference: #64748b;
+  --aeliqo-visualization-series5: #0369a1;
+  --aeliqo-visualization-series6: #7e22ce;
+  --aeliqo-visualization-quantitative-start: #647dcc;
+  --aeliqo-visualization-quantitative-end: #4338ca;
   color-scheme: light;
 }
 
@@ -86,6 +90,10 @@
   --aeliqo-visualization-series3: #fbbf24;
   --aeliqo-visualization-series4: #f9a8d4;
   --aeliqo-visualization-reference: #cbd5e1;
+  --aeliqo-visualization-series5: #7dd3fc;
+  --aeliqo-visualization-series6: #d8b4fe;
+  --aeliqo-visualization-quantitative-start: #647dcc;
+  --aeliqo-visualization-quantitative-end: #c7d2fe;
   color-scheme: dark;
 }
 
@@ -108,6 +116,10 @@
     --aeliqo-visualization-series3: #fbbf24;
     --aeliqo-visualization-series4: #f9a8d4;
     --aeliqo-visualization-reference: #cbd5e1;
+    --aeliqo-visualization-series5: #7dd3fc;
+    --aeliqo-visualization-series6: #d8b4fe;
+    --aeliqo-visualization-quantitative-start: #647dcc;
+    --aeliqo-visualization-quantitative-end: #c7d2fe;
     color-scheme: dark;
   }
 }

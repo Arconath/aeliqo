@@ -73,9 +73,26 @@ for (const family of ['hierarchy', 'temporal']) {
 async function verifyScroll(region: Locator, browserName: string): Promise<void> {
   await region.focus();
   await expect(region).toBeFocused();
-  await region.press('ArrowRight');
-  // Headless WebKit also ignores native arrow scrolling in plain HTML overflow regions.
-  // Assert its scroll geometry here; Chromium and Firefox prove the native key behavior.
-  if (browserName === 'webkit') await region.evaluate((element) => element.scrollBy(40, 0));
-  await expect.poll(() => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  const completion = await region.evaluateHandle((element) => {
+    const state = { ended: false };
+    const finish = () => {
+      // A queued event from resetting to zero must not complete the keyboard check.
+      if (element.scrollLeft <= 0) return;
+      state.ended = true;
+      element.removeEventListener('scrollend', finish);
+    };
+    element.addEventListener('scrollend', finish);
+    return state;
+  });
+  try {
+    await region.press('ArrowRight');
+    // Headless WebKit also ignores native arrow scrolling in plain HTML overflow regions.
+    // Assert its scroll geometry here; Chromium and Firefox prove the native key behavior.
+    if (browserName === 'webkit') await region.evaluate((element) => element.scrollBy(40, 0));
+    await expect.poll(() => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+    // Resizing/resetting after only the first pixel can cancel the next native key scroll.
+    await expect.poll(() => completion.evaluate((state) => state.ended)).toBe(true);
+  } finally {
+    await completion.dispose();
+  }
 }

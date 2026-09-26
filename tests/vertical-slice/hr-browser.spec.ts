@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import type { AeliqoRegionElement } from '@aeliqo/web/region';
 import type { HrViewSession } from '../../examples/vertical-slice/src/view-session.js';
 
 declare global {
@@ -95,5 +96,59 @@ test('unknown server measurements render real HR output and hydrate without repl
     .getByRole('radio', { name: 'Select employees e1', exact: true })
     .check();
   await expect(page.locator('#hydration-status')).toHaveText('Selected e1 after hydration.');
+  expect(errors).toEqual([]);
+});
+
+test('hydrated owners survive synchronous wrapper publication, rollback, reverse and disposal', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/ssr');
+  await expect(page.locator('#ssr-region')).toHaveAttribute('data-hydrated', 'true');
+  await expect(page.locator('#ssr-region')).toHaveAttribute('data-preserved', 'true');
+  const result = await page.locator('#ssr-region').evaluate((host) => {
+    const element = host as AeliqoRegionElement;
+    const original = element.presentation!;
+    const root = original.nodes.find((node) => node.node.id === original.plan.rootId)!;
+    const wrapper = { ...root, node: { ...root.node, id: 'hydrated-wrapper', children: [root.node.id] } };
+    const wrapped = {
+      ...original,
+      plan: { ...original.plan, rootId: wrapper.node.id, nodes: [wrapper.node, ...original.plan.nodes] },
+      nodes: [wrapper, ...original.nodes],
+    };
+    const table = element.shadowRoot!.querySelector('aeliqo-table')!;
+    const preserved: boolean[] = [];
+    const record = () => preserved.push(table === element.shadowRoot!.querySelector('aeliqo-table'));
+    // No microtask or updateComplete between apply and rollback/adoption.
+    const rejected = element.preparePublication();
+    element.presentation = wrapped;
+    rejected.apply();
+    record();
+    element.presentation = original;
+    rejected.rollback();
+    rejected.complete();
+    record();
+    for (const presentation of [wrapped, original]) {
+      const publication = element.preparePublication();
+      element.presentation = presentation;
+      publication.apply();
+      publication.complete();
+      record();
+    }
+    element.dispose();
+    const disposed = !table.isConnected && element.shadowRoot!.querySelector('aeliqo-table') === null;
+    const recovered = element.preparePublication();
+    element.presentation = original;
+    recovered.apply();
+    recovered.complete();
+    const replacement = element.shadowRoot!.querySelector('aeliqo-table');
+    element.revoke();
+    return {
+      preserved,
+      disposed,
+      replacement: replacement !== null && replacement !== table,
+      revoked: !replacement?.isConnected,
+    };
+  });
+  expect(result).toEqual({ preserved: [true, true, true, true], disposed: true, replacement: true, revoked: true });
   expect(errors).toEqual([]);
 });

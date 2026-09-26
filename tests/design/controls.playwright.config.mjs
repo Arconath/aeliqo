@@ -5,7 +5,7 @@ const port = await testPort('AELIQO_CONTROL_DESIGN_TEST_PORT');
 const origin = `http://127.0.0.1:${port}`;
 export default defineConfig({
   testDir: '.',
-  testMatch: 'controls.spec.ts',
+  testMatch: ['controls.spec.ts', 'rtl-semantics.spec.ts', 'split-pane.spec.ts'],
   timeout: 30_000,
   outputDir: '../../artifacts/design-controls',
   use: { baseURL: origin, trace: 'retain-on-failure' },

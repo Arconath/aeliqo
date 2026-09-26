@@ -18,6 +18,10 @@ export type AeliqoTokenName =
   | '--aeliqo-visualization-series3'
   | '--aeliqo-visualization-series4'
   | '--aeliqo-visualization-reference'
+  | '--aeliqo-visualization-series5'
+  | '--aeliqo-visualization-series6'
+  | '--aeliqo-visualization-quantitative-start'
+  | '--aeliqo-visualization-quantitative-end'
   | '--aeliqo-space-4'
   | '--aeliqo-space-6'
   | '--aeliqo-space-8'
@@ -81,6 +85,10 @@ export const AELIQO_LIGHT_TOKENS = {
   '--aeliqo-visualization-series3': '#B45309',
   '--aeliqo-visualization-series4': '#BE185D',
   '--aeliqo-visualization-reference': '#64748B',
+  '--aeliqo-visualization-series5': '#0369A1',
+  '--aeliqo-visualization-series6': '#7E22CE',
+  '--aeliqo-visualization-quantitative-start': '#647DCC',
+  '--aeliqo-visualization-quantitative-end': '#4338CA',
 } as const as AeliqoTokenValues;
 export const AELIQO_DARK_TOKENS = {
   '--aeliqo-color-canvas': '#0F1117',
@@ -100,6 +108,10 @@ export const AELIQO_DARK_TOKENS = {
   '--aeliqo-visualization-series3': '#FBBF24',
   '--aeliqo-visualization-series4': '#F9A8D4',
   '--aeliqo-visualization-reference': '#CBD5E1',
+  '--aeliqo-visualization-series5': '#7DD3FC',
+  '--aeliqo-visualization-series6': '#D8B4FE',
+  '--aeliqo-visualization-quantitative-start': '#647DCC',
+  '--aeliqo-visualization-quantitative-end': '#C7D2FE',
 } as const as AeliqoTokenValues;
 export const AELIQO_SHARED_TOKENS = {
   '--aeliqo-space-4': '0.25rem',
@@ -166,6 +178,10 @@ export const AELIQO_TOKEN_NAMES = [
   '--aeliqo-visualization-series3',
   '--aeliqo-visualization-series4',
   '--aeliqo-visualization-reference',
+  '--aeliqo-visualization-series5',
+  '--aeliqo-visualization-series6',
+  '--aeliqo-visualization-quantitative-start',
+  '--aeliqo-visualization-quantitative-end',
   '--aeliqo-space-4',
   '--aeliqo-space-6',
   '--aeliqo-space-8',

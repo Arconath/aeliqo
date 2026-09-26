@@ -28,6 +28,10 @@ const forcedColorDeclarations = `
   --aeliqo-visualization-series2: Highlight;
   --aeliqo-visualization-series3: Highlight;
   --aeliqo-visualization-series4: Highlight;
+  --aeliqo-visualization-series5: Highlight;
+  --aeliqo-visualization-series6: Highlight;
+  --aeliqo-visualization-quantitative-start: CanvasText;
+  --aeliqo-visualization-quantitative-end: CanvasText;
   --aeliqo-visualization-reference: ButtonText;
 `;
 
@@ -141,7 +145,7 @@ export const aeliqoThemeStyles: CSSResult = css`
  * container carrying `data-aeliqo-theme`; importing this module has no global
  * side effect and does not mutate `document.documentElement`.
  */
-export const aeliqoStandaloneThemeStyles: CSSResult = css`
+export const aeliqoStandaloneThemeStyles: CSSResult = /* @__PURE__ */ (() => css`
   :where([data-aeliqo-theme]:not([data-aeliqo-theme='inherit'])) {
     ${unsafeCSS(baseDeclarations)}
     ${unsafeCSS(sharedRules)}
@@ -187,6 +191,6 @@ export const aeliqoStandaloneThemeStyles: CSSResult = css`
       forced-color-adjust: auto;
     }
   }
-`;
+`)();
 
 export const aeliqoThemeStyleText = aeliqoThemeStyles.cssText;

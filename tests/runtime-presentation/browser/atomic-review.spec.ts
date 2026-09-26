@@ -72,10 +72,14 @@ test('impure host-owned repeat callback can also fail during raw rollback', asyn
 test('app contains an impure rollback failure without publishing the candidate', async ({ page }) => {
   await page.goto('/tests/runtime-presentation/browser/atomic-review.html?wrap=false');
   await expect(page.locator('#status')).toHaveText('renderer-ready');
-  const before = await page.evaluate(() => (window as Host).transactionFixture.snapshot());
-  const receipt = await page.evaluate(() => (window as Host).transactionFixture.render('directive-throw'));
+  // Capture the transaction boundary in one browser call; initial resize may commit between calls.
+  const { before, receipt, after } = await page.evaluate(async () => {
+    const fixture = (window as Host).transactionFixture;
+    const before = fixture.snapshot();
+    const receipt = await fixture.render('directive-throw');
+    return { before, receipt, after: fixture.snapshot() };
+  });
   expect(receipt.status, JSON.stringify(receipt)).toBe('failed');
-  const after = await page.evaluate(() => (window as Host).transactionFixture.snapshot());
   expect(after.runtime).toEqual(before.runtime);
   await expect(page.getByRole('textbox', { name: 'Host draft' })).toHaveCount(0);
 });

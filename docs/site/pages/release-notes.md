@@ -37,10 +37,13 @@ views, header/sidebar structure, and business actions.
   against the implementation.
 - Select chevrons, logical padding, focus, touch targets, form alignment, and
   token consistency are corrected while preserving public token names.
+- Chart marks and numeric color keys share theme tokens in SVG and Canvas.
+  Enlarged hierarchy/timeline labels remain visible, RTL switch thumbs stay
+  within their tracks, and split-pane handles reserve their own touch area.
 
 ### Transactional rendering and narrow visualizations
 
-The 0.6 candidate prepares and applies a presentation before publishing its task. Unsupported targets and synchronous renderer failures retain the previous authorized UI and state. Revocation clears private content. Hierarchy and temporal exact-data tables adapt to their container width; their scrollable graphics retain readable label sizes.
+The 0.6 candidate prepares and applies a presentation before publishing its task. Unsupported targets and synchronous renderer failures retain the previous authorized UI and state. Revocation clears private content and retains the host denial reason. Repeated comparison requests use fresh results with explicit child-state transfers. Standard data views preserve the existing 24px resize hysteresis band; registered layout patterns still receive every measured container size. Hierarchy and temporal exact-data tables adapt to their container width; their scrollable graphics retain readable label sizes.
 
 Follow the [0.5 to 0.6 migration guide](/ship/migration-0.5/) when upgrading.
 Use all packages at the same exact version. The new registrations and callbacks
@@ -52,7 +55,6 @@ a supported, enabled configuration; it is not a requirement for manual use.
 Final source-SHA quality, registry, image, and live deployment evidence will be
 recorded with the release. Local or simulated checks alone are not publication
 or provider-quality evidence.
-
 
 ## Aeliqo 0.5.2
 

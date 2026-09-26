@@ -67,6 +67,9 @@ export class AeliqoSwitchElement extends AeliqoCheckboxElement {
       input:checked + .switch-track .switch-thumb {
         transform: translateX(1.25rem);
       }
+      :host(:dir(rtl)) input:checked + .switch-track .switch-thumb {
+        transform: translateX(-1.25rem);
+      }
       @media (prefers-reduced-motion: reduce) {
         .switch-track,
         .switch-thumb {

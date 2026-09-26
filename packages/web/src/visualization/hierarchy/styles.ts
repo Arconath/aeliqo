@@ -36,6 +36,8 @@ export const aeliqoHierarchyStyles = [
       unicode-bidi: plaintext;
     }
     [part='viewport'] {
+      /* Enlarged glyphs may extend beyond the fixed data-coordinate canvas. */
+      padding-block: 1em;
       direction: ltr;
       overflow: auto;
       max-inline-size: 100%;
@@ -43,6 +45,7 @@ export const aeliqoHierarchyStyles = [
       border-radius: var(--aeliqo-radius-medium, 0.625rem);
     }
     svg {
+      overflow: visible;
       display: block;
       max-inline-size: none;
     }

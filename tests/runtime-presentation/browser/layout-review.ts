@@ -2,6 +2,7 @@ import { html, render as renderTemplate, nothing } from 'lit';
 import { MovableNodeParts, movableNode } from '../../../packages/web/src/region/movable-node-parts.js';
 import { AsyncDirective, directive } from 'lit/async-directive.js';
 import { Directive } from 'lit/directive.js';
+import { ref } from 'lit/directives/ref.js';
 import type { PresentationPlan } from '@aeliqo/core';
 import { createIntentCompilerRegistry } from '@aeliqo/core/app';
 import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
@@ -124,6 +125,38 @@ const first = await render('workspace');
 if (first.status !== 'renderer-ready') throw Error(JSON.stringify(first));
 await region.updateComplete;
 const table = region.shadowRoot!.querySelector('aeliqo-table');
+function initialPartsBeforeCompletion() {
+  return [false, true].map((fail) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const owner = new MovableNodeParts();
+    const captured: { input?: HTMLInputElement } = {};
+    const capture = (element?: Element) => {
+      if (element instanceof HTMLInputElement) captured.input ??= element;
+    };
+    const leaf = () => html`${movableNode(owner, 'input', html`<input ${ref(capture)} aria-label="Initial draft" />`)}`;
+    owner.begin('first');
+    let rejected = false;
+    try {
+      renderTemplate(html`${leaf()}${fault(fail)}`, host);
+    } catch {
+      rejected = true;
+    }
+    const original = captured.input!;
+    original.value = 'uncommitted draft';
+    // Recover/move before complete(), without yielding to a microtask.
+    owner.begin('wrapped');
+    renderTemplate(html`<section>${leaf()}</section>`, host);
+    owner.complete();
+    const preserved = host.querySelector('input') === original && original.value === 'uncommitted draft';
+    owner.clear();
+    renderTemplate(nothing, host);
+    const cleared = !original.isConnected && host.querySelector('input') === null;
+    host.remove();
+    return { rejected, preserved, cleared };
+  });
+}
+
 function reversedParts() {
   const host = document.createElement('div');
   document.body.append(host);
@@ -154,6 +187,7 @@ Object.assign(window, {
   layoutFixture: {
     render,
     reversedParts,
+    initialPartsBeforeCompletion,
     async changeParentShape(fail: boolean) {
       alternateShape = true;
       failPage = fail;

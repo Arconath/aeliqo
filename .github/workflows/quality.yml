@@ -200,8 +200,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  visual:
+  visual-shards:
     needs: policy
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     container:
@@ -234,19 +238,75 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
       - name: Require approved source pixel comparison
-        run: node scripts/visual/run.mjs --full
+        run: node scripts/visual/run.mjs --shard ${{ matrix.browser }}
       - name: Preserve visual source, environment, repeated captures, and diffs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: aeliqo-visual-${{ env.SOURCE_SHA }}
+          name: aeliqo-visual-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
           path: artifacts/visual-regression
           if-no-files-found: warn
           retention-days: 7
 
-  visual-probe:
+      - name: Preserve compact browser shard report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-shard-report-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
+          path: artifacts/visual-shard-report/report.json
+          if-no-files-found: error
+          retention-days: 7
+
+  visual:
+    needs: [policy, visual-shards]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VISUAL_SHARD_RESULT: ${{ needs.visual-shards.result }}
+    steps:
+      - name: Require authorized source policy
+        env:
+          POLICY_RESULT: ${{ needs.policy.result }}
+        run: test "$POLICY_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Install exact inventory tooling
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: aeliqo-visual-shard-report-${{ env.SOURCE_SHA }}-*
+          path: artifacts/visual-shard-reports
+          merge-multiple: false
+      - name: Require all browser evidence and complete inventory
+        if: always()
+        run: node scripts/visual/aggregate.mjs
+      - name: Preserve full aggregate decision
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-${{ env.SOURCE_SHA }}
+          path: artifacts/visual-aggregate
+          if-no-files-found: error
+          retention-days: 7
+
+  visual-probe-shards:
     needs: policy
     if: github.event_name == 'workflow_dispatch' && inputs.visual_probe
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     container:
@@ -279,14 +339,66 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
       - name: Capture unapproved diagnostic evidence
-        run: node scripts/visual/run.mjs --probe --full
+        run: node scripts/visual/run.mjs --probe --shard ${{ matrix.browser }}
       - name: Preserve visual source, environment, repeated captures, and diffs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: aeliqo-visual-probe-${{ env.SOURCE_SHA }}
+          name: aeliqo-visual-probe-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
           path: artifacts/visual-regression
           if-no-files-found: warn
+          retention-days: 7
+
+      - name: Preserve compact browser shard report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-probe-shard-report-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
+          path: artifacts/visual-shard-report/report.json
+          if-no-files-found: error
+          retention-days: 7
+
+  visual-probe:
+    needs: [policy, visual-probe-shards]
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.visual_probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VISUAL_SHARD_RESULT: ${{ needs.visual-probe-shards.result }}
+    steps:
+      - name: Require authorized source policy
+        env:
+          POLICY_RESULT: ${{ needs.policy.result }}
+        run: test "$POLICY_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Install exact inventory tooling
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: aeliqo-visual-probe-shard-report-${{ env.SOURCE_SHA }}-*
+          path: artifacts/visual-shard-reports
+          merge-multiple: false
+      - name: Require all browser evidence and complete inventory
+        if: always()
+        run: node scripts/visual/aggregate.mjs --probe
+      - name: Preserve full aggregate decision
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-probe-${{ env.SOURCE_SHA }}
+          path: artifacts/visual-aggregate
+          if-no-files-found: error
           retention-days: 7
 
   performance:

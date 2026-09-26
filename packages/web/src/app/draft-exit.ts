@@ -1,4 +1,4 @@
-import { parseWireValue, type Outcome } from '@aeliqo/core';
+import { parseWireValue, type Diagnostic, type Outcome } from '@aeliqo/core';
 import type { AppAuthorityContext } from '@aeliqo/runtime/app';
 import type { ScopeLeaveDecision } from '@aeliqo/runtime/scopes';
 import { diagnostic, type WebAppContext, type WebRegion } from './context.js';
@@ -30,23 +30,25 @@ function receipt(
   region: WebRegion,
   status: 'cancelled' | 'denied' | 'failed' | 'needs-input',
   message: string,
+  diagnostics?: readonly Diagnostic[],
 ): WebRenderReceipt {
+  const [first, ...rest] = diagnostics ?? [];
   return {
     status,
     regionId: region.id,
     requestId: ('draft-exit-' + region.id + '-' + region.sequence).slice(0, 160),
-    diagnostics: [diagnostic('web.app.draft-' + status, message)],
+    diagnostics: first === undefined ? [diagnostic('web.app.draft-' + status, message)] : [first, ...rest],
   };
 }
 
-function denied(region: WebRegion): WebRenderReceipt {
+function denied(region: WebRegion, diagnostics?: readonly Diagnostic[]): WebRenderReceipt {
   cancelActiveAction(region);
   region.values.clear();
   region.drafts.clear();
   delete region.last;
   delete region.renderedAuthority;
   region.element.revoke();
-  return receipt(region, 'denied', 'The draft owner is no longer authorized.');
+  return receipt(region, 'denied', 'The draft owner is no longer authorized.', diagnostics);
 }
 
 function authorityKey(authority: AppAuthorityContext): string {
@@ -64,7 +66,11 @@ function readAuthority(
   region: WebRegion,
   signal: AbortSignal,
   enforcePrior: boolean,
-): string | undefined {
+): Outcome<string> {
+  const unavailable = (): Outcome<never> => ({
+    ok: false,
+    diagnostics: [diagnostic('web.app.draft-denied', 'The draft owner is no longer authorized.')],
+  });
   try {
     const result = context.options.authority.read({
       resourceId: region.resourceId,
@@ -72,7 +78,7 @@ function readAuthority(
       effect: 'render',
       signal,
     });
-    if (!result.ok) return undefined;
+    if (!result.ok) return result;
     const value = result.value;
     const prior = enforcePrior ? region.last?.receipt.region.readSet : undefined;
     if (
@@ -81,10 +87,10 @@ function readAuthority(
         prior.policyRevision !== value.policyRevision ||
         prior.experienceRevision !== value.experienceRevision)
     )
-      return undefined;
-    return authorityKey(value);
+      return unavailable();
+    return { ok: true, value: authorityKey(value) };
   } catch {
-    return undefined;
+    return unavailable();
   }
 }
 
@@ -105,9 +111,11 @@ function current(
   if (context.disposed || context.regions.get(region.id) !== region || region.sequence !== capture.sequence)
     return receipt(region, 'cancelled', 'A newer render or disposal replaced the draft exit.');
   const state = context.runtime.snapshot(region.id);
-  if (state?.phase === 'denied' && state !== capture.previousDenial) return denied(region);
+  if (state?.phase === 'denied' && state !== capture.previousDenial) return denied(region, state.diagnostics);
   if (signal.aborted) return receipt(region, 'cancelled', 'The draft exit was cancelled.');
-  if (readAuthority(context, region, signal, capture.drafts.size > 0) !== capture.authority) return denied(region);
+  const authority = readAuthority(context, region, signal, capture.drafts.size > 0);
+  if (!authority.ok) return denied(region, authority.diagnostics);
+  if (authority.value !== capture.authority) return denied(region);
   if (!sameDrafts(region, capture)) return receipt(region, 'cancelled', 'The draft changed during the exit decision.');
   return undefined;
 }
@@ -210,26 +218,24 @@ export async function guardDraftExit(
   if (signal.aborted) return { ok: false, receipt: cancelled() };
   const dirty = region.drafts.size > 0;
   const authority = readAuthority(context, region, signal, dirty);
-  if (
-    authority === undefined ||
-    (dirty && region.renderedAuthority !== undefined && region.renderedAuthority !== authority)
-  )
+  if (!authority.ok) return { ok: false, receipt: denied(region, authority.diagnostics) };
+  if (dirty && region.renderedAuthority !== undefined && region.renderedAuthority !== authority.value)
     return { ok: false, receipt: denied(region) };
   const wire = parseWireValue(input.intent);
   if (!wire.ok)
     return { ok: false, receipt: receipt(region, 'failed', 'The requested intent is not a bounded wire value.') };
   const capturedInput = { ...input, intent: frozen(structuredClone(wire.value)) };
-  const capture = captureDrafts(context, region, authority);
+  const capture = captureDrafts(context, region, authority.value);
   try {
     const blocked = dirty ? await resolveDecision(context, region, capturedInput, capture, signal) : undefined;
     if (blocked !== undefined) return { ok: false, receipt: blocked };
     return {
       ok: true,
       input: capturedInput,
-      authority,
+      authority: authority.value,
       current: () => current(context, region, capture, signal),
       committed: () => {
-        region.renderedAuthority = authority;
+        region.renderedAuthority = authority.value;
       },
     };
   } catch {

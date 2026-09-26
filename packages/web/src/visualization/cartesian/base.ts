@@ -136,6 +136,12 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
         margin: var(--aeliqo-space-8, 0.5rem) 0 0;
         padding: 0;
       }
+      [part='color-key-ticks'] {
+        direction: ltr;
+        inline-size: min(24rem, 100%);
+        justify-content: space-between;
+        unicode-bidi: isolate;
+      }
       [part='legend'] li {
         align-items: center;
         display: inline-flex;

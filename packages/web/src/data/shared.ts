@@ -149,7 +149,7 @@ export function statusTemplate(status: AeliqoDataStatus, message?: string): Temp
   return html`<p part="status" class=${kind} role=${status === 'loading' ? 'status' : 'alert'}>${text}</p>`;
 }
 
-export const dataStyles = css`
+export const dataStyles = /* @__PURE__ */ (() => css`
   :host {
     box-sizing: border-box;
     color: var(--aeliqo-color-text, #18202a);
@@ -204,4 +204,4 @@ export const dataStyles = css`
       outline: 2px solid Highlight;
     }
   }
-`;
+`)();
