@@ -18,8 +18,9 @@ Two boundary corrections ship in this patch: scoped agent endpoints now mint
 only the intersection of the host grant ceiling and the operations their tools
 require — a broader request is clamped rather than unioned, so `manual`
 pairings no longer carry the unused `model.egress` grant; and modal drawers
-now trap keyboard focus like dialogs and popovers. Install all
-five packages at exactly `0.5.2` when using this release.
+now trap keyboard focus like dialogs and popovers. There is no `0.5.1`; this release
+supersedes that version number. Install all five packages at exactly `0.5.2`
+when using this release.
 
 ## Aeliqo 0.5.0
 
@@ -32,11 +33,11 @@ succeeded. The [site image run](https://github.com/Arconath/aeliqo/actions/runs/
 also succeeded. At image publication, production cutover and public live checks
 had not yet been verified.
 Production was subsequently accepted at 2026-09-24 11:17 UTC in the
-[platform deployment evidence](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a).
+[platform deployment evidence](https://github.com/Arconath/platform-apps/commit/1ffebc47de046c17f1d8b9fba4b059a5cf8fe94a) (internal repository).
 The apex, www, and docs sites reported 0.5.0 at that source revision; the
 [stable GitHub release](https://github.com/Arconath/aeliqo/releases/tag/v0.5.0)
 was published after live verification.
-The [platform cutover receipt](https://github.com/Arconath/workspace/blob/c35cb83c60e276a21f7500fa39a497db17e000a6/docs/platform/cutover.json)
+The [platform cutover receipt](https://github.com/Arconath/workspace/blob/c35cb83c60e276a21f7500fa39a497db17e000a6/docs/platform/cutover.json) (internal repository)
 records reviewed promotion gates, Flux and pod readback, and a qualified route
 back to the retained 0.4.2 image. No production rollback was executed.
 
@@ -59,7 +60,7 @@ and browser rendering of the ZIP's synthetic products.
 
 The items in this section describe the 0.5.0 source. For an existing
 0.4.2 integration, use the compatibility app/Region path described in
-the [React tutorial](/start/). The providerless local surface
+the [registered-app tutorial](/start/registered-app/). The providerless local surface
 and scoped APIs below require matching 0.5 packages. Follow the
 [0.4.2 to 0.5 migration guide](/ship/migration-0.4/) for adoption boundaries.
 

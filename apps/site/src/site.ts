@@ -159,14 +159,13 @@ async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
     if (status) status.textContent = message;
   };
   const showDemoResult = (
-    selectedTeam: string,
     receipt: Extract<Awaited<ReturnType<typeof example.render>>, { readonly status: 'renderer-ready' }>,
   ): void => {
     setFlow('view');
-    const count = selectedTeam === 'all' ? '4' : '2';
+    const rows = receipt.runtime.outputs[0]?.handle.snapshot().batches.flatMap((batch) => batch.rows) ?? [];
     const viewId = receipt.presentation.plan.nodes[0]?.representation.id.split('.').at(-1) ?? 'registered';
     const view = viewId === 'card-collection' ? 'cards' : viewId;
-    setDemoStatus(`${count} of 4 synthetic people matched. Aeliqo chose the ${view} view. Zero model calls.`);
+    setDemoStatus(`${rows.length} of 4 synthetic people matched. Aeliqo chose the ${view} view. Zero model calls.`);
   };
   async function renderIntent(): Promise<void> {
     const selectedTeam = teamControl?.value ?? 'all';
@@ -177,7 +176,7 @@ async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
     try {
       const receipt = await example.render(selectedTeam);
       if (receipt.status !== 'renderer-ready') throw new Error(receipt.diagnostics[0]?.message ?? receipt.status);
-      showDemoResult(selectedTeam, receipt);
+      showDemoResult(receipt);
     } catch {
       setDemoStatus('This request could not be shown. The previous valid view remains available.');
     } finally {
@@ -218,6 +217,23 @@ async function setupHomeDemo(demoRoot: HTMLElement): Promise<void> {
   });
   window.addEventListener('pagehide', () => example.dispose(), { once: true });
 }
-if (demo) void setupHomeDemo(demo);
-if (document.body.dataset.docs === 'true') void import('/docs-src/docs.js');
-if (location.pathname.startsWith('/playground/')) void import('/playground-src/playground.js');
+const bootFailure = (selector: string, message: string): void => {
+  const target = document.querySelector<HTMLElement>(selector);
+  if (target) {
+    target.setAttribute('role', 'alert');
+    target.textContent = message;
+  }
+};
+if (demo)
+  void setupHomeDemo(demo).catch(() =>
+    bootFailure('#demo-status', 'The live demo could not load. Reload the page to try again.'),
+  );
+if (document.body.dataset.docs === 'true')
+  void import('/docs-src/docs.js').catch(() => {
+    // Enhanced docs tooling stays unavailable; the authored content is static.
+  });
+if (location.pathname.startsWith('/playground/'))
+  void import('/playground-src/playground.js').catch(() => {
+    document.querySelector<HTMLElement>('.pg-app')?.setAttribute('aria-busy', 'false');
+    bootFailure('#pg-boot', 'The playground could not load. Check your connection and reload the page.');
+  });

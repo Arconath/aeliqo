@@ -20,7 +20,7 @@ const previewLoaders: Record<CatalogExampleFamily, () => Promise<readonly Catalo
   compound: async () => (await import('../../../examples/catalog/compound.js')).compoundExamples,
 };
 
-window.scrollTo(0, 0);
+if (!location.hash) window.scrollTo(0, 0);
 
 const trigger = document.querySelector<HTMLButtonElement>('.search-trigger');
 if (trigger) {
@@ -259,7 +259,7 @@ async function mountComponentPreview(componentMount: HTMLElement): Promise<void>
   window.addEventListener('pagehide', cleanup, { once: true });
   const previewStatus = preview.querySelector<HTMLElement>('[data-preview-status]');
   if (previewStatus) previewStatus.textContent = 'Interactive preview loaded.';
-  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
+  if (!location.hash) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
   installExampleCopy(componentMount, requested.id);
 }
 

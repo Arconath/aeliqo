@@ -2,7 +2,7 @@
 id: 'support-matrix'
 path: '/ship/support-matrix/'
 section: 'Ship'
-title: 'vNext support matrix'
+title: 'Aeliqo 0.5 support matrix'
 description: 'Bounded framework, browser, provider, and workload evidence for the Aeliqo 0.5 line.'
 ---
 

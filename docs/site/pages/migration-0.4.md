@@ -2,7 +2,7 @@
 id: 'migration-0-4'
 path: '/ship/migration-0.4/'
 section: 'Ship'
-title: 'Migrate from 0.4.2 to vNext 0.5'
+title: 'Migrate from 0.4.2 to 0.5'
 description: 'Move from Aeliqo 0.4.2 to the breaking 0.5.0 release line.'
 ---
 
@@ -36,7 +36,7 @@ non-data features through the dedicated feature entry:
 // Existing 0.4.2 path
 import { defineResource } from '@aeliqo/core';
 
-// vNext 0.5.0 path
+// 0.5.0 path
 import { defineDataFeature, defineFeature } from '@aeliqo/core/features';
 ```
 
@@ -103,9 +103,9 @@ model port; never put them in prompts or tool arguments.
 
 ## Migration checks
 
-Build a clean consumer from packed artifacts and run the T20 qualification
-fixture before requesting a release candidate. From the repository root, run
-`pnpm test:release-tooling`; this includes the T20 packaging fixture. It checks
+Build a clean consumer from packed artifacts and run the packaging
+qualification fixture before requesting a release candidate. From the repository root, run
+`pnpm test:release-tooling`. It checks
 the old 0.4 root
 imports, every new feature/surface/browser entry, export targets, legal files,
 optional peers, and the browser no-agent module graph. See the

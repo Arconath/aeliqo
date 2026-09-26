@@ -40,6 +40,6 @@ package has already been published, correct it with a patch release.
 
 See [SSR and hydration](/ship/ssr/), [browser support](/ship/browser-support/),
 the [0.3 to 0.4 migration guide](/ship/migration-0.3/), and the
-[vNext migration guide](/ship/migration-0.4/) for the matching integration
-details. The [vNext support matrix](/ship/support-matrix/) records the exact
+[0.5 migration guide](/ship/migration-0.4/) for the matching integration
+details. The [0.5 support matrix](/ship/support-matrix/) records the exact
 qualified and unverified profiles.

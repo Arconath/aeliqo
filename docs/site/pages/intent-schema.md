@@ -13,11 +13,14 @@ description: "Fields, defaults, validation, and examples for browse, detail, cre
 
 ```json
 {
-  version: '1', id: 'active-people', kind: 'browse', resource: 'people',
-  fields: ['name', 'team'],
-  filter: {op: 'compare', field: 'active', comparison: 'eq', value: true},
-  sort: [{field: 'name', direction: 'asc'}],
-  page: {size: 25},
+  "version": "1",
+  "id": "active-people",
+  "kind": "browse",
+  "resource": "people",
+  "fields": ["name", "team"],
+  "filter": { "op": "compare", "field": "active", "comparison": "eq", "value": true },
+  "sort": [{ "field": "name", "direction": "asc" }],
+  "page": { "size": 25 }
 }
 ```
 
