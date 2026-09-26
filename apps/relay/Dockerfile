@@ -1,4 +1,6 @@
 ARG SOURCE_REVISION=unknown
+ARG SDK_SOURCE_REVISION=unknown
+ARG SDK_VERSION=unknown
 
 # Build the workspace packages the relay consumes (@aeliqo/core, runtime, agent)
 # then compile the relay itself.
@@ -27,9 +29,13 @@ RUN pnpm --filter @aeliqo/relay deploy --prod --legacy /deploy \
 FROM node:24.20.0-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
 
 ARG SOURCE_REVISION
+ARG SDK_SOURCE_REVISION
+ARG SDK_VERSION
 LABEL org.opencontainers.image.source="https://github.com/Arconath/aeliqo"
 LABEL org.opencontainers.image.description="Aeliqo hosted MCP relay (pair/attach/ack broker)"
 LABEL org.opencontainers.image.revision="${SOURCE_REVISION}"
+LABEL com.aeliqo.sdk.revision="${SDK_SOURCE_REVISION}"
+LABEL com.aeliqo.sdk.version="${SDK_VERSION}"
 
 ENV NODE_ENV=production
 ENV SOURCE_REVISION=${SOURCE_REVISION}
