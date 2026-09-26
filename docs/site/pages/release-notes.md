@@ -11,7 +11,7 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 
 ## Aeliqo 0.6.0
 
-This source candidate adds registered workspace and page layouts to the same
+Aeliqo 0.6.0 adds registered workspace and page layouts to the same
 `createAeliqoApp` facade used for components. The host owns the data, permitted
 views, header/sidebar structure, and business actions.
 
@@ -46,7 +46,7 @@ views, header/sidebar structure, and business actions.
 
 ### Transactional rendering and narrow visualizations
 
-The 0.6 candidate prepares and applies a presentation before publishing its task. Unsupported targets and synchronous renderer failures retain the previous authorized UI and state. Revocation clears private content and retains the host denial reason. Repeated comparison requests use fresh results with explicit child-state transfers. Standard data views preserve the existing 24px resize hysteresis band; registered layout patterns still receive every measured container size. Hierarchy and temporal exact-data tables adapt to their container width; their scrollable graphics retain readable label sizes.
+Aeliqo 0.6 prepares and applies a presentation before publishing its task. Unsupported targets retain the previous authorized UI and state. Supported renderers restore the previous presentation after a synchronous rendering failure. Custom renderers must keep previous templates replayable; if restoration fails, the region is cleared and the candidate remains unpublished. Revocation clears private content and retains the host denial reason. Repeated comparison requests use fresh results with explicit child-state transfers. Standard data views preserve the existing 24px resize hysteresis band; registered layout patterns still receive every measured container size. Hierarchy and temporal exact-data tables adapt to their container width; their scrollable graphics retain readable label sizes.
 
 Follow the [0.5 to 0.6 migration guide](/ship/migration-0.5/) when upgrading.
 Use all packages at the same exact version. The new registrations and callbacks
@@ -55,9 +55,11 @@ exit decision; integrate `onDraftExit` if your application previously replaced
 forms while edits were pending. Browser WebMCP remains experimental and requires
 a supported, enabled configuration; it is not a requirement for manual use.
 
-Final source-SHA quality, registry, image, and live deployment evidence will be
-recorded with the release. Local or simulated checks alone are not publication
-or provider-quality evidence.
+Use the [0.6.0 release record](https://github.com/Arconath/aeliqo/releases/tag/v0.6.0)
+for source-bound quality, registry, image, and deployment receipts when published.
+The publication banner above follows registry verification. The
+[support matrix](/ship/support-matrix/) describes the maintained profiles and
+recorded source checks; local or simulated results do not establish hosted-model quality.
 
 ## Aeliqo 0.5.2
 
