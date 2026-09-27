@@ -33,6 +33,11 @@ views, header/sidebar structure, and business actions.
   composition for owned immutable configurations and validated registry
   declarations. Host-created structural registries and changes to data or
   permissions still require validation.
+- Hierarchy data pagination keeps its buttons and row count grouped at narrow
+  widths, including RTL and enlarged text.
+- Factory-owned presentation registries can reuse bounded port checks for
+  equivalent nodes within one composition. Structural host registries retain
+  full validation, while public graph IDs and wire-size bounds stay unchanged.
 - The public Playground offers manual tasks and experimental native WebMCP.
   Component, workspace, and page demos share the connection. Hosted MCP relay
   and in-page model setup are removed from this public surface.
