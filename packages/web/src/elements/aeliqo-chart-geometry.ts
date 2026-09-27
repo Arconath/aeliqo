@@ -269,11 +269,19 @@ function numericExtent(series: readonly AeliqoChartSeries[]): readonly [number, 
   return Number.isFinite(minimum) ? [minimum, maximum] : undefined;
 }
 
+/** Whole-number data never gets a fractional midpoint label such as 1.5. */
+function yTickValues(minimum: number, maximum: number): number[] {
+  if (minimum === maximum) return [minimum];
+  const middle = minimum / 2 + maximum / 2;
+  if (Number.isInteger(minimum) && Number.isInteger(maximum) && !Number.isInteger(middle)) return [minimum, maximum];
+  return [minimum, middle, maximum];
+}
+
 export function yAxisTicks(series: readonly AeliqoChartSeries[]): ChartYAxisTick[] {
   const extent = numericExtent(series);
   if (extent === undefined) return [];
   const [minimum, maximum] = extent;
-  const values = minimum === maximum ? [minimum] : [minimum, minimum / 2 + maximum / 2, maximum];
+  const values = yTickValues(minimum, maximum);
   const scale = Math.max(Math.abs(minimum), Math.abs(maximum), 1);
   const scaledMinimum = minimum / scale;
   const span = maximum / scale - scaledMinimum;

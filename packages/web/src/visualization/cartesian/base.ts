@@ -12,6 +12,7 @@ import type { AeliqoVisualizationSelectionDetail, VisualizationDataset, Visualiz
 import { renderCartesian } from './render.js';
 import type { CartesianState, CartesianView } from './types.js';
 import type { CartesianRenderContext } from './types.js';
+import { fitAxisTickRows } from './tick-rows.js';
 
 export type { CartesianView } from './types.js';
 
@@ -190,6 +191,12 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       [part='layer'] > div {
         grid-area: 1 / 1;
       }
+      [part='viewport'] svg[data-single-row-ticks] .axis-x-tick-offset {
+        transform: translateY(-44px);
+      }
+      [part='data-details'] > summary {
+        cursor: pointer;
+      }
       @media (max-width: 30rem) {
         [part='viewport'] svg {
           inline-size: 100%;
@@ -279,6 +286,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   private focusedIdentity: string | undefined;
   private focusedResult: string | undefined;
   private focusedElement: HTMLElement | undefined;
+  private tickRows: ResizeObserver | undefined;
 
   protected abstract readonly expectedView: CartesianView;
 
@@ -360,7 +368,24 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     return { ok: true, value: datasets };
   }
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    // Text size changes resize the figure without a Lit update; re-measure the axis labels then.
+    this.tickRows ??= typeof ResizeObserver === 'function' ? new ResizeObserver(() => this.fitTickRows()) : undefined;
+    this.tickRows?.observe(this);
+  }
+
+  override disconnectedCallback(): void {
+    this.tickRows?.disconnect();
+    super.disconnectedCallback();
+  }
+
+  private fitTickRows(): void {
+    if (this.shadowRoot !== null) fitAxisTickRows(this.shadowRoot);
+  }
+
   protected override updated(changed: Map<string, unknown>): void {
+    this.fitTickRows();
     if (!inputChanged(changed) || this.focusedIdentity === undefined || this.focusedResult === undefined) return;
     const identity = this.focusedIdentity;
     const result = this.focusedResult;

@@ -14,6 +14,7 @@ import {
   buildAeliqoChartDomain,
   buildAeliqoChartGeometry,
 } from '../../../packages/web/src/elements/aeliqo-chart.js';
+import { yAxisTicks } from '../../../packages/web/src/elements/aeliqo-chart-geometry.js';
 import {
   environment,
   experience,
@@ -338,6 +339,15 @@ describe('registered web region', () => {
       },
     ]);
     expect(halfSecond.circles.map((circle) => circle.x)).toEqual([56, 340, 624]);
+  });
+
+  it('never labels a fractional midpoint on an integer y axis', () => {
+    const series = (values: readonly number[]) => [
+      { id: 'hires', label: 'Hires', points: values.map((value, index) => ({ label: String(index), value })) },
+    ];
+    expect(yAxisTicks(series([1, 2, 1])).map((tick) => tick.label)).toEqual(['1', '2']);
+    expect(yAxisTicks(series([118, 130])).map((tick) => tick.label)).toEqual(['118', '124', '130']);
+    expect(yAxisTicks(series([0.5, 1])).map((tick) => tick.label)).toEqual(['0.5', '0.75', '1']);
   });
 
   it('builds separate SVG segments for null gaps and keeps multiple series distinct', () => {

@@ -164,7 +164,11 @@ function renderGeometry(
     ${
       data
         ? html`${renderLegend(geometry)}${renderColorKey(geometry)}
-          ${renderDataTable(geometry, label, tableLabel, context, page.rows)} ${renderPagination(page, label, context)}`
+            <details part="data-details">
+              <summary>View data table</summary>
+              ${renderDataTable(geometry, label, tableLabel, context, page.rows)}
+              ${renderPagination(page, label, context)}
+            </details>`
         : nothing
     }
   </figure>`;
@@ -266,7 +270,7 @@ function renderChart(
       ></path>
       ${axes.x.ticks.map(
         (tick, index) =>
-          svg`<text class="axis-x-tick" x=${tick.position} y=${xTickStart + (index % 2) * xTickRowGap} text-anchor=${xTickAnchor(index, axes.x.ticks.length)}>${tickText(tick.label)}</text>`,
+          svg`<text class=${index % 2 === 0 ? 'axis-x-tick' : 'axis-x-tick axis-x-tick-offset'} x=${tick.position} y=${xTickStart + (index % 2) * xTickRowGap} text-anchor=${xTickAnchor(index, axes.x.ticks.length)}>${tickText(tick.label)}</text>`,
       )}
       ${axes.y.ticks.map(
         (tick) =>
