@@ -147,3 +147,74 @@ for (const direction of ['ltr', 'rtl']) {
     }
   });
 }
+
+for (const tag of ['timeline', 'calendar-grid']) {
+  for (const direction of ['ltr', 'rtl']) {
+    test(`${tag} Select labels fit narrow ${direction} controls at enlarged text`, async ({ page }, info) => {
+      await page.goto('/tests/visualization/temporal.html');
+      const host = page.locator(`aeliqo-${tag}`);
+      for (const width of [176, 240, 320, 480, 752]) {
+        await page.setViewportSize({ width: Math.max(320, width + 48), height: 900 });
+        for (const textScale of [1, 2]) {
+          await page.evaluate((scale) => {
+            document.documentElement.style.fontSize = `${16 * scale}px`;
+            Object.assign(window, { selection: undefined });
+          }, textScale);
+          await host.evaluate(
+            async (element, settings) => {
+              element.setAttribute('dir', settings.direction);
+              (element as HTMLElement).style.width = `${settings.width}px`;
+              const view = element as HTMLElement & { selectedIdentity: string; updateComplete: Promise<unknown> };
+              view.selectedIdentity = '';
+              await view.updateComplete;
+            },
+            { width, direction },
+          );
+          const button = host.locator('[part="data"] button').first();
+          const geometry = await button.evaluate((element) => {
+            const text = [...element.childNodes].find(
+              (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.includes('Select'),
+            );
+            if (text === undefined) throw new Error('Missing Select text');
+            const start = text.textContent!.indexOf('Select');
+            const range = document.createRange();
+            range.setStart(text, start);
+            range.setEnd(text, start + 'Select'.length);
+            const rects = [...range.getClientRects()].map((rect) => rect.toJSON());
+            const box = element.getBoundingClientRect();
+            const cell = element.closest('td')!.getBoundingClientRect();
+            return { rects, button: box.toJSON(), cell: cell.toJSON() };
+          });
+          const label = `${tag} ${direction} ${width}px ${textScale * 100}%`;
+          expect(geometry.rects, `${label} one-line Select label`).toHaveLength(1);
+          expect(geometry.button.width, `${label} target width`).toBeGreaterThanOrEqual(44);
+          expect(geometry.button.height, `${label} target height`).toBeGreaterThanOrEqual(44);
+          for (const rect of geometry.rects) {
+            expect(rect.left, `${label} text start`).toBeGreaterThanOrEqual(geometry.button.left);
+            expect(rect.right, `${label} text end`).toBeLessThanOrEqual(geometry.button.right);
+            expect(rect.top, `${label} text top`).toBeGreaterThanOrEqual(geometry.button.top);
+            expect(rect.bottom, `${label} text bottom`).toBeLessThanOrEqual(geometry.button.bottom);
+          }
+          expect(geometry.button.left, `${label} control start`).toBeGreaterThanOrEqual(geometry.cell.left);
+          expect(geometry.button.right, `${label} control end`).toBeLessThanOrEqual(geometry.cell.right);
+          await button.focus();
+          await button.press('Enter');
+          await expect(button).toHaveAttribute('aria-pressed', 'true');
+          const identity = await host.evaluate(
+            (element) => (element as HTMLElement & { selectedIdentity: string }).selectedIdentity,
+          );
+          expect(identity).not.toBe('');
+          const receipt = await page.evaluate(
+            () => (window as Window & { selection?: { source: string; identity: string } }).selection,
+          );
+          expect(receipt, `${label} Enter selection receipt`).toMatchObject({ source: 'user', identity });
+          expect(
+            await page.evaluate(() => document.documentElement.scrollWidth),
+            `${label} page containment`,
+          ).toBeLessThanOrEqual(Math.max(320, width + 48));
+          await host.screenshot({ path: info.outputPath(`${tag}-${direction}-${width}-${textScale}x.png`) });
+        }
+      }
+    });
+  }
+}

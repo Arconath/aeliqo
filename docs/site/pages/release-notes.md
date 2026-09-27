@@ -42,6 +42,9 @@ views, header/sidebar structure, and business actions.
 - Documentation starts with Get started, Components, and Advanced. Existing
   routes remain available. Component prose and copyable examples are maintained
   against the implementation.
+- The docs reading column reflows when text is enlarged. Timeline previews
+  reserve space for their responsive data table, and temporal selection buttons
+  keep their labels on one line in narrow containers.
 - Select chevrons, logical padding, focus, touch targets, form alignment, and
   token consistency are corrected while preserving public token names.
 - Reduced-motion preferences apply to explicit dark themes, system themes,

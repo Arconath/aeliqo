@@ -57,6 +57,8 @@ Exposed semantics:
 
 At container widths of 30rem or less, exact-data rows become stacked records so labels remain readable inside narrow desktop panels as well as mobile pages.
 
+At 7rem or less, each selection label moves above its button. The button text stays on one line, including when text is enlarged.
+
 ## Style hooks
 
 {{aeliqo:style-hooks}}

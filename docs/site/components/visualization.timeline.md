@@ -56,6 +56,8 @@ Exposed semantics:
 
 At container widths of 30rem or less, exact-data rows become stacked records so labels remain readable inside narrow desktop panels as well as mobile pages. The graphic keeps its declared dimensions inside a focusable scroll region instead of shrinking its text to fit. Tab to the region to access its overflow; exact values remain available below.
 
+At 7rem or less, each selection label moves above its button. The button text stays on one line, including when text is enlarged.
+
 ## Style hooks
 
 {{aeliqo:style-hooks}}

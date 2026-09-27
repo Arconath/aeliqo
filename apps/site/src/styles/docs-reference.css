@@ -473,6 +473,18 @@
 .component-preview[data-preview-family='visualization'] {
   min-block-size: 58rem;
 }
+[data-component-preview='visualization.timeline'] {
+  container: timeline-preview / inline-size;
+}
+.component-preview[data-preview-id='timeline'] {
+  min-block-size: 60rem;
+}
+/* Match the timeline's 30rem stacked-table breakpoint, including shell padding. */
+@container timeline-preview (max-width: calc(32.5rem + 2px)) {
+  .component-preview[data-preview-id='timeline'] {
+    min-block-size: 110rem;
+  }
+}
 .component-preview[data-preview-family='visualization'][data-preview-id='trend'],
 .component-preview[data-preview-family='visualization'][data-preview-id='area'],
 .component-preview[data-preview-family='visualization'][data-preview-id='scatter'] {
@@ -629,6 +641,44 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
     background: var(--surface-raised);
+  }
+  .docs-nav-toggle {
+    display: block;
+  }
+  .docs-sidebar .docs-nav-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-weight: var(--weight-strong);
+  }
+  .docs-nav-toggle:not(:checked) ~ .docs-sidebar-content {
+    display: none;
+  }
+  .docs-sidebar-content {
+    padding-top: var(--space-4);
+  }
+  .docs-sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Container rem units follow enlarged root text, unlike viewport media queries. */
+@container docs-layout (max-width: 56.25rem) {
+  .docs-sidebar {
+    grid-area: 1 / 1 / 2 / -1;
+    position: static;
+    max-height: none;
+    padding: 0.9rem var(--space-4);
+    overflow: visible;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface-raised);
+  }
+  .reading {
+    grid-area: 2 / 1 / 3 / -1;
+  }
+  .docs-toc {
+    display: none;
   }
   .docs-nav-toggle {
     display: block;

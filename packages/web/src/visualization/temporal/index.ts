@@ -83,6 +83,8 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
         border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #64748b);
         color: var(--aeliqo-color-text, #111827);
         font: inherit;
+        white-space: nowrap;
+        overflow-wrap: normal;
         min-inline-size: 2.75rem;
         min-block-size: 2.75rem;
       }
@@ -184,7 +186,11 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
           justify-self: start;
           min-inline-size: min(2.75rem, 100%);
           max-inline-size: 100%;
-          overflow-wrap: anywhere;
+        }
+      }
+      @container (max-width: 7rem) {
+        :is(.timeline, .calendar-grid) td[data-label='Select'] {
+          grid-template-columns: minmax(0, 1fr);
         }
       }
       @media (forced-colors: active) {
