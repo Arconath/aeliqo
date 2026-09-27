@@ -124,7 +124,7 @@
     "test:local-agent": "pnpm build:platform && pnpm build:agent && node --test tests/local-agent/standalone.test.mjs && node tests/local-agent/consumer.mjs",
     "test:visual:tooling": "node --test tests/visual/regression.test.mjs tests/visual/regression-comparator.test.mjs tests/visual/regression-workflow.test.mjs tests/visual/regression-shards.test.mjs tests/visual/regression-families.test.mjs",
     "test:visual:regression": "node scripts/visual/run.mjs --full",
-    "test:performance:paired:tooling": "node --test tests/performance/paired-runner.test.mjs",
+    "test:performance:paired:tooling": "pnpm build:platform && node --test tests/performance/paired-runner.test.mjs tests/performance/workloads.test.mjs",
     "test:performance:paired": "node scripts/performance/compare.mjs"
   },
   "devDependencies": {

@@ -47,7 +47,7 @@ export default defineConfig({
   },
   webServer: {
     cwd: fileURLToPath(new URL('../../', import.meta.url)),
-    command: `pnpm exec vite --host 127.0.0.1 --port ${port} --strictPort`,
+    command: `pnpm exec vite build --config tests/visual/vite.config.mjs && pnpm exec vite preview --config tests/visual/vite.config.mjs --host 127.0.0.1 --port ${port} --strictPort`,
     url: `http://127.0.0.1:${port}/tests/visual/index.html`,
     reuseExistingServer: false,
     timeout: 30000,

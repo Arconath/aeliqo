@@ -10,12 +10,17 @@ export function selection() {
   };
 }
 
-export async function capture(root, destination, project) {
+export function captureArguments(project, selected) {
   const args = ['exec', 'playwright', 'test', '--config', 'tests/visual/regression.capture.playwright.config.mjs'];
-  if (project) args.push('--project', project);
-  const selected = selection();
+  if (project) args.push(`--project=${project}`);
   if (selected.batch) args.push(`tests/visual/${selected.batch}.spec.ts`);
   if (selected.grep) args.push('--grep', selected.grep);
+  return args;
+}
+
+export async function capture(root, destination, project) {
+  const selected = selection();
+  const args = captureArguments(project, selected);
   const plan = JSON.parse(
     output(root, 'pnpm', [...args, '--list', '--reporter=json'], { AELIQO_VISUAL_CAPTURE: destination }),
   );

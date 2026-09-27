@@ -191,3 +191,43 @@ test('clean probe evidence fails if the source becomes dirty or moves during cap
   assert.doesNotThrow(() => verifyCandidateSource(before, before));
   assert.doesNotThrow(() => verifyCandidateSource({ ...before, dirty: true }, { ...before, dirty: true }));
 });
+
+test('visual fixtures build and serve the canonical production entry in a port-isolated directory', async () => {
+  const { default: capture } = await import('./playwright.config.mjs');
+  const { default: fixture } = await import('./vite.config.mjs');
+  assert.match(capture.webServer.command, /vite build --config tests\/visual\/vite\.config\.mjs/u);
+  assert.match(capture.webServer.command, /&& .*vite preview --config tests\/visual\/vite\.config\.mjs/u);
+  assert.equal(capture.webServer.reuseExistingServer, false);
+  assert.equal(capture.webServer.timeout, 30000);
+  assert.equal(fixture.publicDir, false);
+  assert.equal(fixture.base, '/');
+  assert.equal(fixture.build.rollupOptions.input, join(fixture.root, 'tests/visual/index.html'));
+  assert.equal(fixture.build.outDir, join(fixture.root, 'artifacts/visual-fixture', process.env.AELIQO_VISUAL_PORT));
+  assert.equal(fixture.build.emptyOutDir, true);
+  assert.equal(fixture.build.sourcemap, false);
+});
+
+test('production visual fixtures reject missing or unsafe ports and isolate different servers', async () => {
+  const previous = process.env.AELIQO_VISUAL_PORT;
+  try {
+    for (const port of [undefined, '', '0', '-1', '65536', '../outside', '12.5']) {
+      if (port === undefined) delete process.env.AELIQO_VISUAL_PORT;
+      else process.env.AELIQO_VISUAL_PORT = port;
+      await assert.rejects(
+        import(`./vite.config.mjs?invalid=${encodeURIComponent(String(port))}`),
+        /AELIQO_VISUAL_PORT/u,
+      );
+    }
+    const directories = [];
+    for (const port of ['4931', '4932']) {
+      process.env.AELIQO_VISUAL_PORT = port;
+      const { default: fixture } = await import(`./vite.config.mjs?valid=${port}`);
+      directories.push(fixture.build.outDir);
+      assert.equal(fixture.build.outDir, join(fixture.root, 'artifacts/visual-fixture', port));
+    }
+    assert.notEqual(directories[0], directories[1]);
+  } finally {
+    if (previous === undefined) delete process.env.AELIQO_VISUAL_PORT;
+    else process.env.AELIQO_VISUAL_PORT = previous;
+  }
+});

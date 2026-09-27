@@ -3,7 +3,9 @@ import { mkdtemp, mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { test } from 'node:test';
+import { spawnSync } from 'node:child_process';
 import { captureFamilies } from '../../scripts/visual/families.mjs';
+import { captureArguments } from '../../scripts/visual/capture.mjs';
 import { testInventory } from '../../scripts/visual/shards.mjs';
 
 function suite(file, id) {
@@ -125,3 +127,27 @@ test('rejects output collisions rather than overwriting earlier images', async (
   );
   await assert.rejects(access(join(f.destination, 'results.json')));
 });
+
+for (const project of ['chromium', 'firefox', 'webkit'])
+  test(`real Playwright parser keeps every unfiltered ${project} family separate from its project option`, async () => {
+    const destination = await mkdtemp(join(tmpdir(), 'aeliqo-family-cli-'));
+    const args = captureArguments(project, { batch: null, grep: null });
+    function list(extra = []) {
+      const result = spawnSync('pnpm', [...args, ...extra, '--list', '--reporter=json'], {
+        encoding: 'utf8',
+        env: { ...process.env, AELIQO_VISUAL_CAPTURE: destination },
+        maxBuffer: 16 * 1024 * 1024,
+      });
+      assert.equal(result.status, 0, result.stderr || result.stdout);
+      return JSON.parse(result.stdout);
+    }
+    const complete = list();
+    const actual = [];
+    for (const family of complete.suites) {
+      const report = list([`tests/visual/${family.file}`]);
+      assert.deepEqual(testInventory(report), testInventory({ suites: [family] }));
+      actual.push(...testInventory(report));
+    }
+    assert.deepEqual(actual.sort(), testInventory(complete));
+    assert.ok(actual.every((id) => id.startsWith(`${project}:`)));
+  });
