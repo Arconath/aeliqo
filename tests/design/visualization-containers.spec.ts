@@ -220,93 +220,101 @@ for (const tag of ['timeline', 'calendar-grid']) {
   }
 }
 
-for (const direction of ['ltr', 'rtl']) {
-  test(`hierarchy pagination keeps controls and row summary together in enlarged ${direction}`, async ({
-    page,
-  }, info) => {
-    await page.goto('/tests/visualization/index.html');
-    const host = page.locator('aeliqo-tree');
-    await expect(host.locator('tbody tr')).toHaveCount(3);
-    await host.evaluate(async (element) => {
-      const view = element as AeliqoHierarchyElementBase;
-      const result = view.context!.results[0]!;
-      const rows = Array.from({ length: 30 }, (_, index) => ({
-        id: index === 0 ? 'root' : `node-${index}`,
-        parent: index === 0 ? null : 'root',
-        label: index === 0 ? 'Root' : `Node ${index}`,
-        amount: index + 1,
-      }));
-      view.context = {
-        ...view.context!,
-        results: [{ ...result, counts: { ...result.counts, loaded: 30 } }],
-      };
-      view.datasets = [{ result: result.ref, rows }];
-      view.maxMarks = 1;
-      await view.updateComplete;
-    });
-    const nav = host.getByRole('navigation', { name: 'Visualization data pages' });
-    const previous = nav.getByRole('button', { name: 'Previous', exact: true });
-    const next = nav.getByRole('button', { name: 'Next', exact: true });
-    const baseFontSize = await nav.evaluate((element) => parseFloat(getComputedStyle(element).fontSize));
-    for (const width of [240, 320, 480]) {
-      await page.setViewportSize({ width: width + 16, height: 900 });
-      for (const scale of [2, 4]) {
-        await host.evaluate(
-          (element, settings) => {
-            document.documentElement.dir = settings.direction;
-            document.documentElement.style.fontSize = `${16 * settings.scale}px`;
-            (element as HTMLElement).style.width = `${settings.width}px`;
-          },
-          { direction, width, scale },
-        );
-        await expect(nav).toContainText('Rows 1–25 of 30');
-        await expect(previous).toBeDisabled();
-        const geometry = await nav.evaluate((element) => ({
-          box: element.getBoundingClientRect().toJSON(),
-          children: [...element.children].map((child) => ({
-            tag: child.tagName,
-            fontSize: parseFloat(getComputedStyle(child).fontSize),
-            boxes: [...child.getClientRects()].map((rect) => rect.toJSON()),
-          })),
+for (const font of ['system-ui', 'monospace']) {
+  for (const direction of ['ltr', 'rtl']) {
+    test(`hierarchy pagination keeps controls and row summary together in enlarged ${direction} with ${font}`, async ({
+      page,
+    }, info) => {
+      await page.goto('/tests/visualization/index.html');
+      const host = page.locator('aeliqo-tree');
+      await expect(host.locator('tbody tr')).toHaveCount(3);
+      await host.evaluate(async (element, fontFamily) => {
+        (element as HTMLElement).style.fontFamily = fontFamily;
+        const view = element as AeliqoHierarchyElementBase;
+        const result = view.context!.results[0]!;
+        const rows = Array.from({ length: 30 }, (_, index) => ({
+          id: index === 0 ? 'root' : `node-${index}`,
+          parent: index === 0 ? null : 'root',
+          label: index === 0 ? 'Root' : `Node ${index}`,
+          amount: index + 1,
         }));
-        const label = `${width}px ${scale * 100}% ${direction}`;
-        for (const child of geometry.children) {
-          expect(child.fontSize, `${label} actual text size`).toBeCloseTo(baseFontSize * scale, 1);
-          // The summary may wrap internally, but must remain one group between the controls.
-          expect(child.boxes, `${label} ${child.tag} remains a single group`).toHaveLength(1);
-          const box = child.boxes[0]!;
-          expect(box.left, `${label} child start`).toBeGreaterThanOrEqual(geometry.box.left - 1);
-          expect(box.right, `${label} child end`).toBeLessThanOrEqual(geometry.box.right + 1);
-          if (child.tag === 'BUTTON') {
-            expect(box.width, `${label} target width`).toBeGreaterThanOrEqual(44);
-            expect(box.height, `${label} target height`).toBeGreaterThanOrEqual(44);
+        view.context = {
+          ...view.context!,
+          results: [{ ...result, counts: { ...result.counts, loaded: 30 } }],
+        };
+        view.datasets = [{ result: result.ref, rows }];
+        view.maxMarks = 1;
+        await view.updateComplete;
+      }, font);
+      const nav = host.getByRole('navigation', { name: 'Visualization data pages' });
+      const previous = nav.getByRole('button', { name: 'Previous', exact: true });
+      const next = nav.getByRole('button', { name: 'Next', exact: true });
+      const baseFontSize = await nav.evaluate((element) => parseFloat(getComputedStyle(element).fontSize));
+      for (const width of [240, 320, 480]) {
+        await page.setViewportSize({ width: width + 16, height: 900 });
+        for (const scale of [2, 4]) {
+          await host.evaluate(
+            (element, settings) => {
+              document.documentElement.dir = settings.direction;
+              document.documentElement.style.fontSize = `${16 * settings.scale}px`;
+              (element as HTMLElement).style.width = `${settings.width}px`;
+            },
+            { direction, width, scale },
+          );
+          await expect(nav).toContainText('Rows 1–25 of 30');
+          await expect(previous).toBeDisabled();
+          const geometry = await nav.evaluate((element) => ({
+            box: element.getBoundingClientRect().toJSON(),
+            children: [...element.children].map((child) => ({
+              tag: child.tagName,
+              fontSize: parseFloat(getComputedStyle(child).fontSize),
+              overflow: child.scrollWidth - child.clientWidth,
+              boxes: [...child.getClientRects()].map((rect) => rect.toJSON()),
+            })),
+          }));
+          const label = `${width}px ${scale * 100}% ${direction} ${font}`;
+          for (const child of geometry.children) {
+            expect(child.fontSize, `${label} actual text size`).toBeCloseTo(baseFontSize * scale, 1);
+            expect(child.overflow, `${label} ${child.tag} text fits its group`).toBeLessThanOrEqual(1);
+            // The summary may wrap internally, but must remain one group between the controls.
+            expect(child.boxes, `${label} ${child.tag} remains a single group`).toHaveLength(1);
+            const box = child.boxes[0]!;
+            expect(box.left, `${label} child start`).toBeGreaterThanOrEqual(geometry.box.left - 1);
+            expect(box.right, `${label} child end`).toBeLessThanOrEqual(geometry.box.right + 1);
+            if (child.tag === 'BUTTON') {
+              expect(box.width, `${label} target width`).toBeGreaterThanOrEqual(44);
+              expect(box.height, `${label} target height`).toBeGreaterThanOrEqual(44);
+            }
           }
+          const boxes = geometry.children.map((child) => child.boxes[0]!);
+          for (let index = 1; index < boxes.length; index++) {
+            const before = boxes[index - 1]!;
+            const after = boxes[index]!;
+            const separated =
+              after.top >= before.bottom ||
+              (direction === 'rtl' ? after.right <= before.left : after.left >= before.right);
+            expect(separated, `${label} summary and controls do not interleave`).toBe(true);
+          }
+          expect(
+            await host.evaluate((element) => element.scrollWidth - element.clientWidth),
+            label,
+          ).toBeLessThanOrEqual(1);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth), label).toBeLessThanOrEqual(
+            width + 16,
+          );
+          await next.focus();
+          await next.press('Enter');
+          await expect(host.locator('tbody tr')).toHaveCount(5);
+          await expect(nav).toContainText('Rows 26–30 of 30');
+          await expect(next).toBeDisabled();
+          await expect(host.locator('tbody tr').first()).toContainText('node-25');
+          await previous.focus();
+          await previous.press('Enter');
+          await expect(host.locator('tbody tr')).toHaveCount(25);
+          await expect(nav).toContainText('Rows 1–25 of 30');
+          await nav.screenshot({ path: info.outputPath(`pagination-${direction}-${font}-${width}-${scale}x.png`) });
         }
-        const boxes = geometry.children.map((child) => child.boxes[0]!);
-        for (let index = 1; index < boxes.length; index++) {
-          const before = boxes[index - 1]!;
-          const after = boxes[index]!;
-          const separated =
-            after.top >= before.bottom ||
-            (direction === 'rtl' ? after.right <= before.left : after.left >= before.right);
-          expect(separated, `${label} summary and controls do not interleave`).toBe(true);
-        }
-        expect(await host.evaluate((element) => element.scrollWidth - element.clientWidth), label).toBeLessThanOrEqual(
-          1,
-        );
-        expect(await page.evaluate(() => document.documentElement.scrollWidth), label).toBeLessThanOrEqual(width + 16);
-        await next.focus();
-        await next.press('Enter');
-        await expect(host.locator('tbody tr')).toHaveCount(5);
-        await expect(nav).toContainText('Rows 26–30 of 30');
-        await expect(next).toBeDisabled();
-        await expect(host.locator('tbody tr').first()).toContainText('node-25');
-        await previous.focus();
-        await previous.press('Enter');
-        await expect(host.locator('tbody tr')).toHaveCount(25);
-        await expect(nav).toContainText('Rows 1–25 of 30');
-        await nav.screenshot({ path: info.outputPath(`pagination-${direction}-${width}-${scale}x.png`) });
       }
-    }
-  });
+    });
+  }
 }

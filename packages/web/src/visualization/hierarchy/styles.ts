@@ -173,7 +173,8 @@ export const aeliqoHierarchyStyles = [
         font-weight: 600;
         overflow-wrap: anywhere;
       }
-      td > button {
+      td > button,
+      nav > button {
         justify-self: start;
         min-inline-size: min(2.75rem, 100%);
         max-inline-size: 100%;
