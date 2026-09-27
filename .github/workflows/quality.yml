@@ -78,10 +78,11 @@ jobs:
               ;;
           esac
 
-  functional:
+  scope:
     needs: policy
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    outputs:
+      mode: ${{ steps.scope.outputs.mode }}
     env:
       NEXT_TELEMETRY_DISABLED: '1'
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -92,20 +93,6 @@ jobs:
         with:
           ref: ${{ env.SOURCE_SHA }}
           persist-credentials: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with:
-          node-version: '24.20.0'
-          package-manager-cache: false
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
-        with:
-          go-version: '1.27.0'
-          cache: false
-      - name: Install the locked framework and site toolchains
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.24.0 --activate
-          pnpm install --frozen-lockfile
-          pnpm exec playwright install --with-deps chromium firefox webkit
       # Pull requests and pushes to main take the lane matching their changed
       # paths; owner dispatches always run the full matrix because package
       # publication requires a same-SHA full-quality success. Site redeploys
@@ -134,26 +121,100 @@ jobs:
           fi
           echo "mode=$mode"
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
-      - name: Run required functional, security, browser, and package checks
-        if: steps.scope.outputs.mode == 'full'
-        run: pnpm check
-      - name: Run the site-surface checks
-        if: steps.scope.outputs.mode == 'site'
+
+  # The full matrix runs as four parallel shards; `functional` merges their evidence into one
+  # source-bound report, so the required check and package publication contract are unchanged.
+  functional-shards:
+    needs: scope
+    if: needs.scope.outputs.mode == 'full'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SITE_BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Install the locked framework and site toolchains
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Build the packages shared by quality commands
         run: |
           pnpm build:platform
           pnpm build:agent
-          pnpm format:check
-          pnpm lint
-          pnpm site:test
-      - name: Build and consume the five exact package candidates
-        if: steps.scope.outputs.mode == 'full'
+      - name: Run quality shard ${{ matrix.shard }} of 4
+        run: python3 scripts/quality.py --shard ${{ matrix.shard }} --shards 4
+      - name: Upload shard evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-quality-shard-${{ env.SOURCE_SHA }}-${{ matrix.shard }}
+          path: |
+            artifacts/product-ci
+            artifacts/performance-bundles
+            artifacts/feedback-browser
+            artifacts/visual-catalog
+            artifacts/vnext-visual
+          if-no-files-found: warn
+          retention-days: 7
+
+  release-contract:
+    needs: scope
+    if: needs.scope.outputs.mode == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SITE_BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Install the locked framework and site toolchains
         run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Build and consume the five exact package candidates
+        run: |
+          pnpm build:platform
+          pnpm build:agent
           pnpm test:release-tooling
           node scripts/release/candidate.mjs
       - name: Verify the public documentation artifact
         run: pnpm test:docs-artifact
       - name: Verify the web, docs, playground, and static server contract
-        if: steps.scope.outputs.mode == 'full'
         run: pnpm site:test
       - name: Require unchanged exact source
         run: |
@@ -161,6 +222,98 @@ jobs:
           git diff --quiet
           git diff --cached --quiet
       - name: Build and smoke the production image contract
+        run: |
+          sdk_revision="$SOURCE_SHA"
+          release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
+          sdk_version="$(jq -er --arg version "$release_version" '.version | select(. == $version)' packages/core/package.json)"
+          image="aeliqo-web-quality:$SOURCE_SHA"
+          DOCKER_BUILDKIT=1 docker build \
+            --file apps/site/Dockerfile \
+            --build-arg "SOURCE_REVISION=$SOURCE_SHA" \
+            --build-arg "SDK_SOURCE_REVISION=$sdk_revision" \
+            --build-arg "SDK_VERSION=$sdk_version" \
+            --tag "$image" \
+            .
+          apps/site/scripts/ci/check-static-image.sh "$image" "$SOURCE_SHA" "$sdk_revision" "$sdk_version"
+          mkdir -p apps/site/artifacts/image-contract
+          docker image inspect "$image" > apps/site/artifacts/image-contract/inspect.json
+          sha256sum \
+            apps/site/Dockerfile \
+            apps/site/deploy/server.go \
+            apps/site/scripts/ci/check-static-image.sh \
+            packages/core/package.json \
+            release-metadata.json \
+            docs/public-site/routes.mjs \
+            catalog/components.json \
+            > apps/site/artifacts/image-contract/source-sha256.txt
+      - name: Upload release contract evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-release-contract-${{ env.SOURCE_SHA }}
+          path: |
+            artifacts/release-candidate
+            apps/site/artifacts
+          if-no-files-found: warn
+          retention-days: 7
+
+  functional:
+    needs: [scope, functional-shards, release-contract]
+    if: always() && needs.scope.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SITE_BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - name: Require every quality shard and the release contract
+        if: needs.scope.outputs.mode == 'full'
+        env:
+          SHARDS_RESULT: ${{ needs.functional-shards.result }}
+          CONTRACT_RESULT: ${{ needs.release-contract.result }}
+        run: |
+          test "$SHARDS_RESULT" = success
+          test "$CONTRACT_RESULT" = success
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        if: needs.scope.outputs.mode == 'full'
+        with:
+          pattern: aeliqo-quality-shard-${{ env.SOURCE_SHA }}-*
+          path: artifacts
+          merge-multiple: true
+      - name: Run required functional, security, browser, and package checks
+        if: needs.scope.outputs.mode == 'full'
+        run: python3 scripts/quality.py --merge 4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        if: needs.scope.outputs.mode == 'site'
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        if: needs.scope.outputs.mode == 'site'
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Run the site-surface checks
+        if: needs.scope.outputs.mode == 'site'
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+          pnpm build:platform
+          pnpm build:agent
+          pnpm format:check
+          pnpm lint
+          pnpm site:test
+          pnpm test:docs-artifact
+      - name: Build and smoke the site-lane production image contract
+        if: needs.scope.outputs.mode == 'site'
         run: |
           sdk_revision="$SOURCE_SHA"
           release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
@@ -196,7 +349,6 @@ jobs:
             artifacts/feedback-browser
             artifacts/visual-catalog
             artifacts/vnext-visual
-            artifacts/release-candidate
             apps/site/artifacts
           if-no-files-found: warn
           retention-days: 7
