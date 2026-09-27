@@ -244,10 +244,10 @@ function renderChart(
   const axes = geometry.axes;
   if (!graphic || axes === undefined || geometry.state !== 'plot') return nothing;
   const left = geometry.axisLeft ?? 64;
-  const xTickStart = geometry.height - 6;
+  const xTickStart = geometry.height - 26;
   const xTickRowGap = 44;
-  const xTitleBaseline = geometry.height + 86;
-  const svgHeight = geometry.height + 110;
+  const xTitleBaseline = geometry.height + 66;
+  const svgHeight = geometry.height + 90;
   return html`<div
     part="viewport"
     role="region"
@@ -276,7 +276,9 @@ function renderChart(
         (tick) =>
           svg`<text class="axis-y-tick" x=${left - 4} y=${tick.position} text-anchor="end">${tickText(tick.label)}</text>`,
       )}
-      <text class="axis-title" x=${geometry.width / 2} y=${xTitleBaseline} text-anchor="middle">${axes.xLabel}</text>
+      <text class="axis-title axis-title-x" x=${geometry.width / 2} y=${xTitleBaseline} text-anchor="middle">
+        ${axes.xLabel}
+      </text>
       <text class="axis-title" x=${left + 8} y="32">${axes.yLabel}</text>
     </svg>
   </div>`;

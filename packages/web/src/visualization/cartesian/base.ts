@@ -191,7 +191,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       [part='layer'] > div {
         grid-area: 1 / 1;
       }
-      [part='viewport'] svg[data-single-row-ticks] .axis-x-tick-offset {
+      [part='viewport'] svg[data-single-row-ticks] :is(.axis-x-tick-offset, .axis-title-x) {
         transform: translateY(-44px);
       }
       [part='data-details'] > summary {
@@ -371,7 +371,10 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   override connectedCallback(): void {
     super.connectedCallback();
     // Text size changes resize the figure without a Lit update; re-measure the axis labels then.
-    this.tickRows ??= typeof ResizeObserver === 'function' ? new ResizeObserver(() => this.fitTickRows()) : undefined;
+    this.tickRows ??=
+      typeof ResizeObserver === 'function'
+        ? new ResizeObserver(() => requestAnimationFrame(() => this.fitTickRows()))
+        : undefined;
     this.tickRows?.observe(this);
   }
 

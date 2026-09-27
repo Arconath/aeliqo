@@ -1,4 +1,6 @@
 const TICK_GAP = 8;
+/** Matches the staggered row offset in the renderer and the lifted-label styles. */
+const ROW_GAP = 44;
 
 function fitsOneRow(ticks: readonly SVGTextElement[]): boolean {
   const boxes = ticks.map((tick) => tick.getBBox()).sort((left, right) => left.x - right.x);
@@ -12,7 +14,11 @@ function fitsOneRow(ticks: readonly SVGTextElement[]): boolean {
 export function fitAxisTickRows(root: ParentNode): void {
   for (const chart of root.querySelectorAll<SVGSVGElement>('svg')) {
     const ticks = [...chart.querySelectorAll<SVGTextElement>('text.axis-x-tick')];
-    const single = ticks.length > 1 && typeof ticks[0]!.getBBox === 'function' && fitsOneRow(ticks);
+    const single = ticks.length > 0 && typeof ticks[0]!.getBBox === 'function' && fitsOneRow(ticks);
     chart.toggleAttribute('data-single-row-ticks', single);
+    // The unused second row stays in the viewBox; pull the following content up by its rendered height.
+    const scale = chart.getBoundingClientRect().height / (chart.viewBox.baseVal?.height || 1);
+    const margin = single ? `${-ROW_GAP * scale}px` : '';
+    if (chart.style.marginBlockEnd !== margin) chart.style.marginBlockEnd = margin;
   }
 }

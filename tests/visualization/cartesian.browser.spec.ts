@@ -33,9 +33,17 @@ test('keeps x-axis labels on one row when they fit and staggers them when text g
         single: svg?.hasAttribute('data-single-row-ticks') ?? false,
         tops: new Set(boxes.map((box) => Math.round(box.top))).size,
         overlaps: boxes.some((box, index) => index > 0 && boxes[index - 1]!.right > box.left),
+        titleGap: Math.round(
+          (svg?.querySelector('text.axis-title-x')?.getBoundingClientRect().top ?? 0) -
+            Math.max(...boxes.map((box) => box.bottom)),
+        ),
       };
     });
   await expect.poll(rows).toMatchObject({ single: true, tops: 1, overlaps: false });
+  expect((await rows()).titleGap).toBeLessThan(40);
+  await expect
+    .poll(() => bar.evaluate((host) => host.shadowRoot?.querySelector('svg')?.style.marginBlockEnd))
+    .toMatch(/^-/u);
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '64px';
   });
