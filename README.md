@@ -15,13 +15,15 @@ cannot supply HTML, executable code, permissions, or an unregistered view.
 
 This checkout targets **0.6.0**. Published versions and installation status are
 shown in the [package guide](https://docs.aeliqo.com/reference/packages/).
-Install matching package versions in your application:
+For the React example below, use React 19.2 or a newer 19.x release and install matching
+Aeliqo package versions:
 
 ```sh
 npm install --save-exact \
   @aeliqo/core@0.6.0 \
   @aeliqo/runtime@0.6.0 \
-  @aeliqo/web@0.6.0
+  @aeliqo/web@0.6.0 \
+  @aeliqo/react@0.6.0
 ```
 
 The [local React quickstart](https://docs.aeliqo.com/start/) renders and filters
@@ -57,6 +59,7 @@ import { AeliqoProvider, AeliqoRegion } from '@aeliqo/react';
 import { createAppToolEndpoint } from '@aeliqo/agent';
 ```
 
+The optional agent entry point additionally requires `@aeliqo/agent@0.6.0`.
 Each package root contains its primary API. Component families, query planning,
 transport adapters, and other advanced APIs use explicit package subpaths.
 

@@ -178,11 +178,23 @@ await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 const quickstart = await readFile(join(root, 'docs/site/pages/quickstart.md'), 'utf8');
 const quickstartDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-quickstart-consumer-'));
 const codeFence = String.fromCharCode(96).repeat(3);
+const readme = await readFile(join(root, 'README.md'), 'utf8');
+const readmeInstall = readme.match(
+  new RegExp(`${codeFence}sh\\nnpm install --save-exact ([\\s\\S]*?)\\n${codeFence}`, 'u'),
+);
+assert(readmeInstall, 'README install command is missing');
+for (const name of packageNames)
+  assert(
+    readmeInstall[1].includes(`@aeliqo/${name}@${RELEASE_VERSION}`),
+    `README does not install @aeliqo/${name}@${RELEASE_VERSION} for its React example`,
+  );
+const readmeExample = readme.match(new RegExp(`${codeFence}tsx\\n([\\s\\S]*?)\\n${codeFence}`, 'u'));
+assert(readmeExample, 'README React example is missing');
 
 // The documented flow scaffolds a Vite react-ts app, installs the pinned SDK
 // packages, then writes src/people.ts and one complete src/main.tsx. Rebuild that consumer
 // honestly: extract the install command and the authored source blocks, then
-// provide the same scaffold files the Vite template produces.
+// provide a minimal Vite scaffold with pinned dependencies; this does not execute create-vite.
 const installMatch = quickstart.match(
   new RegExp(`${codeFence}bash\\nnpm install --save-exact ([^\\n]+)\\n${codeFence}`, 'u'),
 );
@@ -200,13 +212,17 @@ const fencedBlocks = (language) =>
   );
 const tsBlocks = fencedBlocks('ts');
 const tsxBlocks = fencedBlocks('tsx');
+const cssBlocks = fencedBlocks('css');
 assert.equal(tsBlocks.length, 1, 'Quickstart must contain exactly one TypeScript data example');
 assert.equal(tsxBlocks.length, 1, 'Quickstart must contain one complete filtering entry');
+assert.equal(cssBlocks.length, 1, 'Quickstart must contain one complete host stylesheet');
 assert.match(tsxBlocks[0], /useState/u, 'The final quickstart example must be the filtering version');
 
 await mkdir(join(quickstartDirectory, 'src'), { recursive: true });
 await writeFile(join(quickstartDirectory, 'src/people.ts'), `${tsBlocks[0]}\n`);
 await writeFile(join(quickstartDirectory, 'src/main.tsx'), `${tsxBlocks[0]}\n`);
+await writeFile(join(quickstartDirectory, 'src/people.css'), `${cssBlocks[0]}\n`);
+await writeFile(join(quickstartDirectory, 'src/readme-example.tsx'), `${readmeExample[1]}\n`);
 const quickstartSource = await readFile(join(quickstartDirectory, 'src/main.tsx'), 'utf8');
 assert.match(quickstartSource, /useDataSurface\(\{ data: rows, getRowId:/u);
 assert.doesNotMatch(quickstartSource, /AeliqoProvider|createAeliqoApp|factory|model|agent/u);
@@ -248,7 +264,7 @@ await writeFile(
         jsx: 'react-jsx',
         noEmit: true,
         lib: ['ES2022', 'DOM', 'DOM.Iterable'],
-        types: ['node', 'react'],
+        types: ['node', 'react', 'vite/client'],
         verbatimModuleSyntax: true,
       },
       include: ['src'],
@@ -684,15 +700,32 @@ try {
   const minimal = page.locator('#root main');
   assert.match(await minimal.textContent(), /Sam Rivera/u);
   await minimal.getByRole('button', { name: 'Engineering only' }).click();
+  assert.equal(await minimal.getByRole('button', { name: 'Engineering only' }).getAttribute('aria-pressed'), 'true');
   await page.waitForFunction(() => {
     const text = document.querySelector('#root main')?.textContent ?? '';
     return text.includes('Sam Rivera') && !text.includes('Ada Chen');
   });
   await minimal.getByRole('button', { name: 'Everyone' }).click();
   await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
+  assert.equal(await minimal.getByRole('button', { name: 'Everyone' }).getAttribute('aria-pressed'), 'true');
+  for (const button of await minimal.getByRole('button').all()) {
+    const box = await button.boundingBox();
+    assert(box && box.width >= 44 && box.height >= 44, 'Quickstart filter targets must be at least 44px');
+  }
+  await minimal.getByRole('button', { name: 'Engineering only' }).focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Everyone');
+  assert.equal(await page.evaluate(() => getComputedStyle(document.activeElement).outlineWidth), '3px');
   assert.deepEqual(externalRequests, [], 'Minimal local React app made a remote request');
   assert.deepEqual(browserErrors, [], 'Minimal local React app raised a browser error');
   await page.screenshot({ path: join(runDirectory, 'quickstart-local-react.png'), fullPage: true });
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.waitForFunction(() => document.querySelector('ul[aria-label="Records"]') !== null);
+  assert(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    'Quickstart overflows at 320px',
+  );
+  await page.screenshot({ path: join(runDirectory, 'quickstart-local-react-narrow.png'), fullPage: true });
   await verifyAuthoredGuides(page, origin, runDirectory);
   assert.deepEqual(browserErrors, [], 'Authored framework guide raised a browser error');
 } finally {
@@ -708,7 +741,7 @@ await writeFile(
       sourceDigest: before,
       passed: true,
       scope:
-        'Installed core/runtime/web/react tarballs; Vite-scaffolded React quickstart mounts, filters, and restores local rows without a provider, factory, or remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
+        'Installed core/runtime/web/react tarballs; Authored React quickstart in a minimal Vite consumer with pinned dependencies mounts, filters, and restores local rows without a provider, factory, or remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
       artifacts: artifacts.map(({ entries, ...artifact }) => ({ ...artifact, entries })),
       consumerDirectory: consumer,
       quickstartConsumerDirectory: quickstartDirectory,
