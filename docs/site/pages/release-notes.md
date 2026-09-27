@@ -15,6 +15,21 @@ Aeliqo 0.6.0 adds registered workspace and page layouts to the same
 `createAeliqoApp` facade used for components. The host owns the data, permitted
 views, header/sidebar structure, and business actions.
 
+- `defineResource` accepts `measures` for counts, distinct counts, and sums.
+  Each expands into a reviewed meaning, replacing about twenty lines of meaning
+  metadata for the common case.
+- A local data service resolves the built-in `core-query-2` and
+  `core-standard-1` function registries from the catalog digest, so a resource
+  with the default registry renders without host registry wiring.
+- An analyze intent without a view preference now renders an eligible bar or
+  trend chart; the table remains the fallback and can still be requested with
+  `preferredView: 'table'`. Region charts are named after their result, such
+  as "New hires by Team".
+- The quickstart shows one resource answering browse, filtered, monthly trend,
+  and per-team intents. The playground shows the exact intent behind each view.
+- Visual comparison and paired performance CI jobs are advisory; the functional
+  matrix remains required for merges and publication.
+
 - Register `patterns` and `stateMappings` in `AeliqoAppOptions`. Recipes receive
   every result through `RecipeContext.results`; `result` remains the primary
   result for existing recipes.

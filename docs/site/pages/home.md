@@ -6,15 +6,17 @@ title: 'Build interfaces that adapt to the task'
 description: 'Aeliqo turns typed requests into views of your application data, using the components, permissions, and layouts you register.'
 ---
 
-<section class="docs-landing-hero"><div><p class="docs-steps-label">Aeliqo documentation</p><p class="lead">Build a People list once, then show a table in a wide panel or cards in a narrow one. Let a button or an optional agent request a different task. Your application keeps control of the records, permissions, and business actions.</p><div class="docs-landing-actions"><a class="primary" href="/start/">Render your first view <span aria-hidden="true">→</span></a><a href="/playground/">Try the playground</a></div></div><dl class="docs-facts"><div><dt>01</dt><dd>Provide data</dd></div><div><dt>02</dt><dd>Request a task</dd></div><div><dt>03</dt><dd>Render an allowed view</dd></div></dl></section>
+<section class="docs-landing-hero"><div><p class="docs-steps-label">Aeliqo documentation</p><p class="lead">Describe your data once, then ask for what you want to see. “Show everyone” becomes a table, or cards on a phone. “How many people joined each month?” becomes a line chart. The request can come from a button, your code, or an optional AI agent. Your application keeps control of the records, permissions, and business actions.</p><div class="docs-landing-actions"><a class="primary" href="/start/">Ask your first questions <span aria-hidden="true">→</span></a><a href="/playground/">Try the playground</a></div></div><dl class="docs-facts"><div><dt>01</dt><dd>Provide data</dd></div><div><dt>02</dt><dd>Request a task</dd></div><div><dt>03</dt><dd>Render an allowed view</dd></div></dl></section>
 
 Read [What is Aeliqo?](/start/what-is-aeliqo/) for the main concepts and ownership boundaries.
 
 ## Start with one useful result
 
-The [React quickstart](/start/) creates a working People view from five local
-records. You can filter the list and resize its container without writing table
-or card markup. You need Node.js 24; no account, backend, or model key is needed.
+The [React quickstart](/start/) describes five local People records once, then
+asks four questions about them: everyone, one team, hires per month, and hires
+per team. Aeliqo answers with a table, a filtered table, a line chart, and a bar
+chart, without any table or chart markup from you. You need Node.js 24; no
+account, backend, or model key is needed.
 
 After that first view, follow the steps in order:
 

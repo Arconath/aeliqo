@@ -19,9 +19,35 @@ validators, schema helpers, and the primary wire types. Typed parsers include
 `parseContract` when the contract kind is selected dynamically. The root does
 not expose query planner or presentation implementation details.
 
+## Measures
+
+`defineResource` accepts a `measures` map for the common count and sum cases.
+Each entry expands into an approved, active meaning with the output type taken
+from the schema, so analyze intents can reference it immediately:
+
+```ts
+const people = defineResource({
+  id: 'people',
+  revision: '1',
+  label: 'People',
+  identity: ['id'],
+  schema: z.object({ id: z.string(), team: z.string(), joined: z.iso.date() }),
+  fields: { team: { role: 'dimension' }, joined: { role: 'time' } },
+  measures: { hires: { label: 'New hires', aggregate: 'count' } },
+  presentation: { allowedViews: ['table', 'trend', 'bar'] },
+});
+// analyze intent: measures: [{ id: 'hires', revision: '1' }]
+```
+
+`aggregate` is `count`, `count-distinct`, or `sum`. Counts default to the first
+identity field; `sum` requires a numeric `field`. `semiAdditiveOver` marks a
+snapshot measure that must never be summed across the named fields. Invalid
+entries fail with a `resource.measure` diagnostic. Use `meanings` for ratios,
+denominators, and host capabilities.
+
 ## Reusable feature definitions
 
-Use `@aeliqo/core/features` for immutable vNext feature metadata. A data
+Use `@aeliqo/core/features` for immutable feature metadata. A data
 feature keeps its schema, identity fields, meanings, and eligible view aliases
 separate from live rows, principals, credentials, selection, and subscriptions:
 

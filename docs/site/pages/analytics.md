@@ -31,35 +31,24 @@ const workforceHeadcount = defineResource({
     month: { label: 'Month', role: 'time' },
     headcount: { label: 'Month end headcount', role: 'measure' },
   },
-  meanings: [
-    {
-      id: 'month-end-headcount',
-      revision: '1',
+  measures: {
+    'month-end-headcount': {
       label: 'Month end headcount',
       explanation: 'Employees active at the end of each month. Never sum across time.',
-      output: { value: 'integer', nullable: false, grain: ['month'] },
-      implementation: {
-        kind: 'expression',
-        expression: {
-          kind: 'call',
-          function: { id: 'core.aggregate.sum', revision: '1' },
-          arguments: [{ kind: 'field', ref: 'headcount' }],
-        },
-      },
-      dependencies: [],
-      functionRegistryDigest: 'core-query-2',
-      origin: 'manual',
-      lifecycle: 'active',
-      scope: 'workspace',
-      authority: 'approved',
-      aggregation: 'semi-additive',
-      aggregationDimensions: ['month'],
-      missingPolicy: 'reject',
+      aggregate: 'sum',
+      field: 'headcount',
+      semiAdditiveOver: ['month'],
     },
-  ],
+  },
   presentation: { allowedViews: ['table', 'trend'], preferred: { analyze: 'trend' } },
 });
 ```
+
+`measures` covers counts, distinct counts, and sums. Each entry becomes a
+reviewed meaning whose output type comes from the schema; `semiAdditiveOver`
+marks snapshot values that must never be added across those fields. For ratios,
+denominators, or host capabilities, declare a full `meanings` entry instead.
+An analyze request references a measure as `{ id: 'month-end-headcount', revision: '1' }`.
 
 See [semantic contracts](/concepts/semantics/) and [resource metadata](/guides/resources/).
 
