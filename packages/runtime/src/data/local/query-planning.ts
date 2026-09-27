@@ -76,22 +76,11 @@ function validateHostRegistry(registry: FunctionRegistry, catalog: Catalog): Out
   );
 }
 
-const BUILT_IN_REGISTRIES: Readonly<Record<string, () => Outcome<FunctionRegistry>>> = Object.freeze({
-  'core-standard-1': () => createStandardFunctionRegistry(),
-  'core-query-1': () => createQueryFunctionRegistry('core-query-1'),
-  'core-query-2': () => createQueryFunctionRegistry({ version: '2' }),
-});
-
 /** Resolves only the built-in registries named by their canonical digests; custom digests need a host registry. */
 function defaultRegistry(catalog: Catalog): Outcome<FunctionRegistry> {
-  const create = Object.hasOwn(BUILT_IN_REGISTRIES, catalog.functionRegistryDigest)
-    ? BUILT_IN_REGISTRIES[catalog.functionRegistryDigest]
-    : undefined;
-  if (create !== undefined) {
-    const registry = create();
-    if (registry.ok && registry.value.digest === catalog.functionRegistryDigest) return registry;
-    return failure('data.unsupported', 'The default function registry could not be initialized.');
-  }
+  const digest = catalog.functionRegistryDigest;
+  if (digest === 'core-standard-1') return createStandardFunctionRegistry();
+  if (digest === 'core-query-2') return createQueryFunctionRegistry({ version: '2' });
   return failure(
     'data.unsupported',
     'The catalog requires a host function registry that was not supplied.',

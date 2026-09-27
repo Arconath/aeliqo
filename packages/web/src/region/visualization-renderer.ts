@@ -273,12 +273,16 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
 };
 
 /** Names the chart from the result it answers, for example "New hires by Team". */
-function visualizationLabel(result: Result, view: VisualizationView): string {
-  const labels = (role: string) => result.fields.filter((field) => field.role === role).map((field) => field.label);
-  const measures = labels('measure');
-  const groups = [...labels('dimension'), ...labels('time')];
-  if (measures.length === 0) return `${view.charAt(0).toUpperCase()}${view.slice(1)} chart`;
-  return groups.length === 0 ? measures.join(', ') : `${measures.join(', ')} by ${groups.join(', ')}`;
+function visualizationLabel(result: Result, view: string): string {
+  const labels = (measure: boolean) =>
+    result.fields
+      .filter((field) => (field.role === 'measure') === measure)
+      .map((field) => field.label)
+      .join(', ');
+  const measures = labels(true);
+  if (measures === '') return view;
+  const groups = labels(false);
+  return groups === '' ? measures : `${measures} by ${groups}`;
 }
 
 function renderElement(

@@ -439,17 +439,17 @@ function authoredCandidates(
   };
 }
 
-const CHART_CANDIDATES: ReadonlySet<string> = new Set(['standard.bar', 'standard.trend']);
-
 /** An analysis answers with an eligible chart; the table stays the fallback unless the request names it. */
 function chartsBeforeTable(
   context: RecipeContext,
   preferred: keyof typeof aliases | undefined,
   candidates: PresentationResolverCandidate[],
 ): PresentationResolverCandidate[] {
-  if (context.intent.kind !== 'analyze' || preferred === 'table') return candidates;
-  if (!candidates.some((candidate) => CHART_CANDIDATES.has(candidate.id))) return candidates;
-  return candidates.filter((candidate) => candidate.id !== 'standard.table');
+  const charted =
+    context.intent.kind === 'analyze' &&
+    preferred !== 'table' &&
+    candidates.some((candidate) => candidate.id === 'standard.bar' || candidate.id === 'standard.trend');
+  return charted ? candidates.filter((candidate) => candidate.id !== 'standard.table') : candidates;
 }
 
 /** Author deterministic standard candidates; core remains the sole eligibility and ranking authority. */

@@ -57,7 +57,7 @@ const trend: Intent = {
 };
 
 describe('local data service default function registry', () => {
-  it.each([undefined, 'core-query-2', 'core-query-1', 'core-standard-1'])(
+  it.each([undefined, 'core-query-2', 'core-standard-1'])(
     'renders browse and analyze intents with the built-in %s registry and no host wiring',
     async (digest) => {
       const runtime = runtimeFor(digest);

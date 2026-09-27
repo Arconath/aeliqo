@@ -281,13 +281,8 @@ export class TaskEvaluationSession {
     );
     if (!planned.ok) return planned;
     const accepted = planned.value;
-    const mismatch = this.acceptedPlanMismatch(accepted, output);
-    if (mismatch !== undefined)
-      return failure(
-        'runtime.evaluation-stale',
-        `The data service plan does not match the fresh trusted task authority (${mismatch}). ` +
-          'Return the same scopeDigest and policyRevision from the data service authorize() and the app authority.',
-      );
+    if (!this.acceptedPlanMatches(accepted, output))
+      return failure('runtime.evaluation-stale', 'Data plan scope or policy differs from the app authority.');
     const handle = this.allocateHandle(accepted, request.requestId);
     if (!handle.ok) return handle;
     const consumed = await this.consumeResult(handle.value, accepted);
@@ -310,17 +305,16 @@ export class TaskEvaluationSession {
     };
   }
 
-  /** Names the first accepted-plan field that differs from the trusted task context. */
-  private acceptedPlanMismatch(accepted: PlanAcceptance, output: QueryOutput): string | undefined {
+  private acceptedPlanMatches(accepted: PlanAcceptance, output: QueryOutput): boolean {
     const context = this.contextValue();
-    const checks: readonly (readonly [string, boolean])[] = [
-      ['catalogRevision', accepted.catalogRevision === context.catalogRevision],
-      ['scopeDigest', accepted.scopeDigest === context.scopeDigest],
-      ['functionRegistryDigest', accepted.functionRegistryDigest === context.functionRegistryDigest],
-      ['policyRevision', accepted.policyRevision === context.policyRevision],
-      ['target', accepted.target.taskId === this.input.task.id && accepted.target.outputId === output.id],
-    ];
-    return checks.find(([, matches]) => !matches)?.[0];
+    return (
+      accepted.catalogRevision === context.catalogRevision &&
+      accepted.scopeDigest === context.scopeDigest &&
+      accepted.functionRegistryDigest === context.functionRegistryDigest &&
+      accepted.policyRevision === context.policyRevision &&
+      accepted.target.taskId === this.input.task.id &&
+      accepted.target.outputId === output.id
+    );
   }
 
   private allocateHandle(accepted: PlanAcceptance, requestId: string): Outcome<ResultHandle> {
