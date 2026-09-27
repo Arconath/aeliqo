@@ -244,10 +244,10 @@ function renderChart(
   const axes = geometry.axes;
   if (!graphic || axes === undefined || geometry.state !== 'plot') return nothing;
   const left = geometry.axisLeft ?? 64;
-  const xTickStart = geometry.height - 26;
+  const xTickStart = geometry.height - 6;
   const xTickRowGap = 44;
-  const xTitleBaseline = geometry.height + 66;
-  const svgHeight = geometry.height + 90;
+  const xTitleBaseline = geometry.height + 86;
+  const svgHeight = geometry.height + 110;
   return html`<div
     part="viewport"
     role="region"

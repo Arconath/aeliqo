@@ -100,6 +100,9 @@ async function openVisualization(
   await page.waitForFunction(() => Boolean((window as ReviewWindow).aeliqoReviewReady));
   const host = componentLocator(page, id);
   await expect(host).toBeAttached();
+  // Cartesian charts fold their exact-values table; hierarchy and temporal views show it inline.
+  const disclosure = host.locator('[part="data-details"] > summary');
+  if ((await disclosure.count()) > 0) await disclosure.first().click();
   await expect(host.locator('[part=data]')).toBeVisible();
   await page.evaluate(() => {
     const selections: unknown[] = [];

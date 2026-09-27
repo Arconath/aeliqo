@@ -109,6 +109,8 @@ for (const component of components.components)
           const trendPanel = root.querySelector<HTMLElement>('[part="trend"]')!;
           const trend = root.querySelector('aeliqo-trend')!;
           const trendRoot = trend.shadowRoot!;
+          // Measure the exact-values table in its expanded state.
+          trendRoot.querySelector<HTMLDetailsElement>('[part="data-details"]')!.open = true;
           const data = trendRoot.querySelector<HTMLElement>('[part="data"]')!;
           const dataBox = data.getBoundingClientRect();
           const caption = trendRoot.querySelector('caption')!.getBoundingClientRect();
@@ -300,6 +302,7 @@ for (const component of components.components)
         const layout = await page.locator('aeliqo-investigation').evaluate((element) => {
           const trend = element.shadowRoot!.querySelector('aeliqo-trend')!;
           const root = trend.shadowRoot!;
+          root.querySelector<HTMLDetailsElement>('[part="data-details"]')!.open = true;
           const viewport = root.querySelector<HTMLElement>('[part="viewport"]')!;
           const data = root.querySelector<HTMLElement>('[part="data"]')!;
           const graphic = viewport.querySelector('svg')!.getBoundingClientRect();

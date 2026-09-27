@@ -214,6 +214,7 @@ for (const variant of REVIEW_VARIANTS) {
     test('investigation forwards evidence selection with result lineage', async ({ page }, info) => {
       const session = await openCompound(page, 'investigation', variant);
       const trend = session.host.locator('aeliqo-trend');
+      await trend.getByText('View data table', { exact: true }).click();
       await expect(trend.locator('[part="data"] button').first()).toBeVisible();
       const select = trend.locator('[part="data"] button').first();
       await select.click();
