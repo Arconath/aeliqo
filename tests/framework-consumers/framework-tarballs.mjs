@@ -12,7 +12,7 @@ import { access, cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promise
 import { tmpdir, platform, release, arch } from 'node:os';
 import { extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import { stageAuthoredGuides, verifyAuthoredGuides } from './authored-guides.mjs';
 import { RELEASE_VERSION } from '../../scripts/release/candidate-lib.mjs';
 
@@ -213,10 +213,10 @@ const fencedBlocks = (language) =>
 const tsBlocks = fencedBlocks('ts');
 const tsxBlocks = fencedBlocks('tsx');
 const cssBlocks = fencedBlocks('css');
-assert.equal(tsBlocks.length, 1, 'Quickstart must contain exactly one TypeScript data example');
-assert.equal(tsxBlocks.length, 1, 'Quickstart must contain one complete filtering entry');
+assert.equal(tsBlocks.length, 1, 'Quickstart must contain exactly one TypeScript data definition');
+assert.equal(tsxBlocks.length, 1, 'Quickstart must contain one complete intent entry');
 assert.equal(cssBlocks.length, 1, 'Quickstart must contain one complete host stylesheet');
-assert.match(tsxBlocks[0], /useState/u, 'The final quickstart example must be the filtering version');
+assert.match(tsBlocks[0], /measures: \{ hires:/u, 'The quickstart data must declare the hires measure');
 
 await mkdir(join(quickstartDirectory, 'src'), { recursive: true });
 await writeFile(join(quickstartDirectory, 'src/people.ts'), `${tsBlocks[0]}\n`);
@@ -224,8 +224,8 @@ await writeFile(join(quickstartDirectory, 'src/main.tsx'), `${tsxBlocks[0]}\n`);
 await writeFile(join(quickstartDirectory, 'src/people.css'), `${cssBlocks[0]}\n`);
 await writeFile(join(quickstartDirectory, 'src/readme-example.tsx'), `${readmeExample[1]}\n`);
 const quickstartSource = await readFile(join(quickstartDirectory, 'src/main.tsx'), 'utf8');
-assert.match(quickstartSource, /useDataSurface\(\{ data: rows, getRowId:/u);
-assert.doesNotMatch(quickstartSource, /AeliqoProvider|createAeliqoApp|factory|model|agent/u);
+for (const kind of ['browse', 'analyze']) assert.match(quickstartSource, new RegExp(`kind: '${kind}'`, 'u'));
+assert.doesNotMatch(quickstartSource, /factory|model|agent/u);
 
 const quickstartManifest = {
   name: 'aeliqo-quickstart-consumer',
@@ -234,6 +234,7 @@ const quickstartManifest = {
   dependencies: {
     react: '19.2.8',
     'react-dom': '19.2.8',
+    zod: '4.5.4',
   },
   devDependencies: {
     '@types/node': '24.13.3',
@@ -696,31 +697,40 @@ try {
     if (new URL(request.url()).origin !== origin) externalRequests.push(request.url());
   });
   await page.goto(`${origin}/quickstart/index.html`);
-  await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
   const minimal = page.locator('#root main');
-  assert.match(await minimal.textContent(), /Sam Rivera/u);
-  await minimal.getByRole('button', { name: 'Engineering only' }).click();
-  assert.equal(await minimal.getByRole('button', { name: 'Engineering only' }).getAttribute('aria-pressed'), 'true');
-  await page.waitForFunction(() => {
-    const text = document.querySelector('#root main')?.textContent ?? '';
-    return text.includes('Sam Rivera') && !text.includes('Ada Chen');
-  });
-  await minimal.getByRole('button', { name: 'Everyone' }).click();
-  await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
-  assert.equal(await minimal.getByRole('button', { name: 'Everyone' }).getAttribute('aria-pressed'), 'true');
+  const region = minimal.locator('aeliqo-region');
+  const shows = (text) => region.getByText(text, { exact: true }).first().waitFor({ timeout: 15_000 });
+  const ask = async (name) => {
+    await minimal.getByRole('button', { name, exact: true }).click();
+    assert.equal(await minimal.getByRole('button', { name, exact: true }).getAttribute('aria-pressed'), 'true');
+  };
+  await shows('Ada Chen');
+  await shows('Sam Rivera');
+  await ask('Engineering only');
+  await shows('Jo Patel');
+  await expect(region.getByText('Ada Chen', { exact: true })).toHaveCount(0, { timeout: 15_000 });
+  await ask('Hires per month');
+  await region.locator('svg').first().waitFor({ timeout: 15_000 });
+  await page.screenshot({ path: join(runDirectory, 'quickstart-hires-per-month.png'), fullPage: true });
+  await ask('Hires per team');
+  await shows('Product');
+  await region.locator('svg').first().waitFor({ timeout: 15_000 });
+  await page.screenshot({ path: join(runDirectory, 'quickstart-hires-per-team.png'), fullPage: true });
+  await ask('Everyone');
+  await shows('Ada Chen');
   for (const button of await minimal.getByRole('button').all()) {
     const box = await button.boundingBox();
-    assert(box && box.width >= 44 && box.height >= 44, 'Quickstart filter targets must be at least 44px');
+    assert(box && box.height >= 44, 'Quickstart question targets must be at least 44px tall');
   }
-  await minimal.getByRole('button', { name: 'Engineering only' }).focus();
+  await minimal.getByRole('button', { name: 'Everyone', exact: true }).focus();
   await page.keyboard.press('Tab');
-  assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Everyone');
+  assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Engineering only');
   assert.equal(await page.evaluate(() => getComputedStyle(document.activeElement).outlineWidth), '3px');
-  assert.deepEqual(externalRequests, [], 'Minimal local React app made a remote request');
-  assert.deepEqual(browserErrors, [], 'Minimal local React app raised a browser error');
+  assert.deepEqual(externalRequests, [], 'Quickstart app made a remote request');
+  assert.deepEqual(browserErrors, [], 'Quickstart app raised a browser error');
   await page.screenshot({ path: join(runDirectory, 'quickstart-local-react.png'), fullPage: true });
   await page.setViewportSize({ width: 320, height: 800 });
-  await page.waitForFunction(() => document.querySelector('ul[aria-label="Records"]') !== null);
+  await shows('Ada Chen');
   assert(
     await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
     'Quickstart overflows at 320px',
@@ -741,7 +751,7 @@ await writeFile(
       sourceDigest: before,
       passed: true,
       scope:
-        'Installed core/runtime/web/react tarballs; Authored React quickstart in a minimal Vite consumer with pinned dependencies mounts, filters, and restores local rows without a provider, factory, or remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
+        'Installed core/runtime/web/react tarballs; Authored React quickstart in a minimal Vite consumer with pinned dependencies answers browse, filtered browse, monthly trend, and per-team analyze intents from one resource without a remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
       artifacts: artifacts.map(({ entries, ...artifact }) => ({ ...artifact, entries })),
       consumerDirectory: consumer,
       quickstartConsumerDirectory: quickstartDirectory,

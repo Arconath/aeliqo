@@ -588,6 +588,22 @@ describe('0.3 standard recipes', () => {
     });
   });
 
+  it('answers an analyze intent without a view preference with an eligible chart before a table', () => {
+    const withoutPreference = <T extends { intent: Intent; task: Task }>(context: T): T => {
+      const { preferredView: _intentPreference, ...intent } = context.intent as Intent & { preferredView?: string };
+      const { viewPreference: _taskPreference, ...task } = context.task;
+      return { ...context, intent: intent as Intent, task: task as Task };
+    };
+    const categorical = resolveStandard(withoutPreference(barInput()));
+    expect(categorical.status === 'ready' && categorical.plan.plan.nodes[0]?.representation.id).toBe(
+      'visualization.bar',
+    );
+    const temporal = resolveStandard(withoutPreference(trendInput(['headcount'])));
+    expect(temporal.status === 'ready' && temporal.plan.plan.nodes[0]?.representation.id).toMatch(/trend/u);
+    const pinnedTable = resolveStandard(barInput(800, 'table'));
+    expect(pinnedTable.status === 'ready' && pinnedTable.plan.plan.nodes[0]?.representation.id).toBe('data.table');
+  });
+
   it('keeps a narrow browse in the only representation permitted by resource policy', () => {
     const outcome = standardDataRecipe.build({
       ...input('browse', 360),
