@@ -198,9 +198,6 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
         stroke-dasharray: 2 4;
         stroke-width: 1;
       }
-      [part='viewport'] svg .axis-y-tick {
-        dominant-baseline: middle;
-      }
       [part='viewport'] svg[data-single-row-ticks] :is(.axis-x-tick-offset, .axis-title-x) {
         transform: translateY(-44px);
       }

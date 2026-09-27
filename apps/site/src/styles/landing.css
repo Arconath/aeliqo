@@ -273,8 +273,9 @@
 }
 .demo-intent-line code {
   min-width: 0;
-  overflow-x: auto;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: var(--type-code);
+  text-overflow: ellipsis;
   white-space: nowrap;
 }

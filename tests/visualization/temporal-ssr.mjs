@@ -46,7 +46,7 @@ const output = await renderAeliqo(
 assert.equal((output.match(/9007199254740993.001/g) || []).length, 3);
 assert(output.includes('<line'));
 assert(output.includes('2026-09-08'));
-assert(output.includes('Scope unknown: Bounded supplied rows'));
+assert(output.includes('Coverage unknown (Bounded supplied rows)'));
 const fresh = await renderAeliqo(
   html`<aeliqo-matrix></aeliqo-matrix><aeliqo-timeline></aeliqo-timeline><aeliqo-calendar-grid></aeliqo-calendar-grid>`,
 );

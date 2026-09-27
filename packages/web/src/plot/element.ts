@@ -313,7 +313,7 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
     const scope = scopeDescription(g.result);
     const valueLabel = g.result.precision.kind === 'exact' ? 'Exact loaded values' : 'Loaded approximate values';
     return html`<figure part="figure">
-      ${data ? this.renderMetadata(g, label, scope, displayed.length) : nothing} ${this.renderAxisNotice(g, graphic)}
+      ${data ? this.renderMetadata(g, label, displayed.length) : nothing} ${this.renderAxisNotice(g, graphic)}
       ${g.state === 'data-only' ? html`<p role="status">${g.reason}</p>` : nothing}
       ${graphic ? this.renderGraphic(g, label, scope) : nothing}
       ${data ? this.renderData(g, label, valueLabel, displayed, pageRows, page) : nothing}
@@ -329,7 +329,7 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
     return g.rows.filter((row) => identities.has(row.identity));
   }
 
-  private renderMetadata(g: PlotGeometry, label: string, scope: string, displayedCount: number): unknown {
+  private renderMetadata(g: PlotGeometry, label: string, displayedCount: number): unknown {
     const precision = g.result.precision;
     return html`<figcaption>${label}</figcaption>
       <p part="scope">

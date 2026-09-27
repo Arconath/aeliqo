@@ -337,6 +337,12 @@
   .mini i {
     background: CanvasText;
   }
+  .how-steps pre,
+  .developers-code pre {
+    border: 1px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+  }
   .demo-view button[aria-pressed='true'] {
     border-color: Highlight;
   }

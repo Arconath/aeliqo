@@ -32,9 +32,7 @@ test('grid mode is explicit and virtualization remains bounded', async ({ page }
   await expect(grid.locator("[role=row][aria-rowindex='1']")).toHaveCount(1);
   await expect(grid.locator("[role=gridcell][data-col-index='0']").first()).toHaveAttribute('aria-colindex', '1');
   await expect(grid.locator('[role=row][data-row-index]')).toHaveCount(1);
-  await expect(grid.locator('[part=scope]')).toHaveText(
-    '1 of 2 rows on screen; Showing 2 of 100 matching records.',
-  );
+  await expect(grid.locator('[part=scope]')).toHaveText('1 of 2 rows on screen; Showing 2 of 100 matching records.');
   const firstCell = grid.locator("[role=gridcell][data-row-index='0'][data-col-index='0']");
   await firstCell.focus();
   await page.keyboard.press('ArrowRight');
