@@ -182,7 +182,8 @@ class WireWalker {
       if (!property.ok) return property;
       if (property.value === undefined) continue;
 
-      const bytes = this.propertySyntaxBytes(shape.isArray, property.value.key, propertyIndex);
+      const key = shape.keys[index] as string; // inspectProperty rejects non-string keys.
+      const bytes = this.propertySyntaxBytes(shape.isArray, key, propertyIndex);
       if (!this.addEncodedBytes(bytes)) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
       propertyIndex++;
       this.frames.push({
@@ -191,7 +192,7 @@ class WireWalker {
         scope,
         path: {
           parent: path,
-          key: shape.isArray ? Number(property.value.key) : property.value.key,
+          key: shape.isArray ? Number(key) : key,
           depth: depth + 1,
         },
       });

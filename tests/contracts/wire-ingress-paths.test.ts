@@ -122,3 +122,74 @@ test('escaped and unicode JSON strings use exact object byte accounting', () => 
     diagnostics: [{ code: 'wire.bytes' }],
   });
 });
+
+test('undefined data properties are rejected while array length remains structural', () => {
+  expect(inspectWire([])).toEqual({ ok: true, value: [] });
+  expect(inspectWire({ missing: undefined })).toMatchObject({
+    ok: false,
+    diagnostics: [{ code: 'wire.type', path: ['missing'] }],
+  });
+  expect(inspectWire([undefined])).toMatchObject({
+    ok: false,
+    diagnostics: [{ code: 'wire.type', path: [0] }],
+  });
+});
+
+test('array descriptor inspection keeps trap order without reading property values', () => {
+  const events: string[] = [];
+  const input = new Proxy([1, undefined], {
+    get(target, key, receiver) {
+      events.push(`get:${String(key)}`);
+      return Reflect.get(target, key, receiver);
+    },
+    getPrototypeOf(target) {
+      events.push('prototype');
+      return Reflect.getPrototypeOf(target);
+    },
+    ownKeys(target) {
+      events.push('keys');
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target, key) {
+      events.push(`descriptor:${String(key)}`);
+      return Reflect.getOwnPropertyDescriptor(target, key);
+    },
+  });
+  expect(inspectWire(input)).toMatchObject({ ok: false, diagnostics: [{ code: 'wire.type', path: [1] }] });
+  expect(events).toEqual([
+    'prototype',
+    'keys',
+    'descriptor:length',
+    'descriptor:length',
+    'descriptor:1',
+    'descriptor:length',
+    'descriptor:0',
+  ]);
+});
+
+test('descriptor mutations preserve inspection order and accessors never execute', () => {
+  const events: string[] = [];
+  const target: { first: number | undefined; last: number } = { first: 1, last: 2 };
+  const input = new Proxy(target, {
+    getOwnPropertyDescriptor(object, key) {
+      events.push(`descriptor:${String(key)}`);
+      if (key === 'last') object.first = undefined;
+      return Reflect.getOwnPropertyDescriptor(object, key);
+    },
+  });
+  expect(inspectWire(input)).toMatchObject({ ok: false, diagnostics: [{ code: 'wire.type', path: ['first'] }] });
+  expect(events).toEqual(['descriptor:length', 'descriptor:last', 'descriptor:first']);
+  let reads = 0;
+  const accessor = Object.defineProperty({}, 'value', {
+    enumerable: true,
+    get() {
+      reads++;
+      return 1;
+    },
+  });
+  expect(inspectWire(accessor)).toMatchObject({
+    ok: false,
+    diagnostics: [{ code: 'wire.accessor', path: ['value'] }],
+  });
+  expect(reads).toBe(0);
+});

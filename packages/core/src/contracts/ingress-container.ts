@@ -4,7 +4,7 @@ import type { Outcome } from './types.js';
 import { pathParts, type WirePath } from './ingress-walk-types.js';
 
 export type WireContainer = { readonly isArray: boolean; readonly keys: PropertyKey[] };
-export type WireProperty = { readonly key: string; readonly value: unknown };
+export type WireProperty = { readonly value: unknown };
 
 function arrayLength(current: object): number {
   return (Object.getOwnPropertyDescriptor(current, 'length')?.value as number | undefined) ?? -1;
@@ -48,5 +48,5 @@ export function inspectProperty(
       ...pathParts(path),
       key,
     ]);
-  return { ok: true, value: { key, value: descriptor.value as unknown } };
+  return { ok: true, value: descriptor as WireProperty };
 }

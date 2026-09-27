@@ -1,8 +1,7 @@
 import { parseEnvironment, parseResult, parsePresentationPlan } from '../../contracts/parse.js';
 import { validateCommitReadSet } from '../../contracts/commit.js';
 import { WIRE_LIMITS } from '../../contracts/limits.js';
-import { resolveExperienceConstraints } from '../../contracts/experience/index.js';
-import { validateTaskStructure } from '../../contracts/task/index.js';
+import { resolveExperienceContext } from '../../contracts/experience/index.js';
 import type { Outcome, Result, Task } from '../../contracts/types.js';
 import type { PresentationContext, PresentationRegistry } from '../types.js';
 import { freezePresentation, presentationFailure as fail, versionKey } from '../registry.js';
@@ -103,10 +102,9 @@ function prepareAuthorizedResults(
 }
 
 export function preparePresentationContext(context: PresentationContext): Outcome<PreparedPresentationContext> {
-  const constraints = resolveExperienceConstraints(context.experience, context.task, context.restrictions);
-  if (!constraints.ok) return constraints;
-  const taskStructure = validateTaskStructure(constraints.value.task);
-  if (!taskStructure.ok) return taskStructure;
+  const resolved = resolveExperienceContext(context.experience, context.task, context.restrictions);
+  if (!resolved.ok) return resolved;
+  const { constraints, taskStructure } = resolved.value;
   const environment = parseEnvironment(context.environment);
   if (!environment.ok) return environment;
   const current = validateCommitReadSet(context.current, context.current);
@@ -118,8 +116,8 @@ export function preparePresentationContext(context: PresentationContext): Outcom
 
   const incumbent = prepareIncumbent(context);
   if (!incumbent.ok) return incumbent;
-  const task = freezePresentation(constraints.value.task);
-  const experience = freezePresentation(constraints.value.experience);
+  const task = freezePresentation(constraints.task);
+  const experience = freezePresentation(constraints.experience);
   const environmentValue = freezePresentation(environment.value);
   const currentValue = freezePresentation(current.value);
   const patternContext = freezePresentation({
@@ -133,14 +131,14 @@ export function preparePresentationContext(context: PresentationContext): Outcom
   return {
     ok: true,
     value: freezePresentation({
-      constraints: freezePresentation(constraints.value),
+      constraints: freezePresentation(constraints),
       task,
       experience,
       results: results.value,
       current: currentValue,
       environment: environmentValue,
       rendererCapabilities: rendererCapabilities.value,
-      taskStructure: freezePresentation(taskStructure.value),
+      taskStructure: freezePresentation(taskStructure),
       patternContext,
     }),
   };
