@@ -29,7 +29,15 @@ export default defineConfig({
   ],
   projects: browsers
     .filter((name) => selectedProject === undefined || name === selectedProject)
-    .map((name) => ({ name, fullyParallel: false, use: { browserName: name } })),
+    .map((name) => ({
+      name,
+      fullyParallel: false,
+      use: {
+        browserName: name,
+        // Keep Chromium's rounded-border rasterization stable across captures.
+        ...(name === 'chromium' ? { launchOptions: { args: ['--disable-gpu'] } } : {}),
+      },
+    })),
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     trace: 'retain-on-failure',

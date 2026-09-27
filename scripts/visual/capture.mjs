@@ -1,6 +1,6 @@
-import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { execute } from './process.mjs';
+import { execute, output } from './process.mjs';
+import { captureFamilies } from './families.mjs';
 
 export function selection() {
   return {
@@ -11,13 +11,20 @@ export function selection() {
 }
 
 export async function capture(root, destination, project) {
-  await mkdir(destination, { recursive: true });
   const args = ['exec', 'playwright', 'test', '--config', 'tests/visual/regression.capture.playwright.config.mjs'];
   if (project) args.push('--project', project);
   const selected = selection();
   if (selected.batch) args.push(`tests/visual/${selected.batch}.spec.ts`);
   if (selected.grep) args.push('--grep', selected.grep);
-  execute(root, 'pnpm', args, { AELIQO_VISUAL_CAPTURE: destination });
+  const plan = JSON.parse(
+    output(root, 'pnpm', [...args, '--list', '--reporter=json'], { AELIQO_VISUAL_CAPTURE: destination }),
+  );
+  await captureFamilies(destination, plan, (file, directory) => {
+    // The original selection is already reflected in the plan. Keep grep for
+    // selected local runs; each release family still executes its full plan.
+    const familyArgs = args.filter((arg) => arg !== `tests/visual/${selected.batch}.spec.ts`);
+    execute(root, 'pnpm', [...familyArgs, `tests/visual/${file}`], { AELIQO_VISUAL_CAPTURE: directory });
+  });
   return destination;
 }
 

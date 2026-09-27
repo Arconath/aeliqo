@@ -96,3 +96,54 @@ async function verifyScroll(region: Locator, browserName: string): Promise<void>
     await completion.dispose();
   }
 }
+
+for (const direction of ['ltr', 'rtl']) {
+  test(`investigation caution keeps text inside its border padding in enlarged ${direction}`, async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto('/tests/compound/index.html');
+    const host = page.locator('aeliqo-investigation');
+    const caution = host.locator('[part="caution"]');
+    await expect(caution).toContainText('They do not establish causal claims.');
+    for (const size of ['32px', '64px']) {
+      await host.evaluate(
+        (element, settings) => {
+          document.documentElement.dir = settings.direction;
+          document.documentElement.style.fontSize = settings.size;
+          (element as HTMLElement).style.width = '328px';
+          element.setAttribute('data-aeliqo-theme', 'dark');
+        },
+        { direction, size },
+      );
+      const geometry = await caution.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        const edges: { left: number; right: number }[] = [];
+        for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+          for (let index = 0; index < (node.textContent?.length ?? 0); index++) {
+            if (!node.textContent?.[index]?.trim()) continue;
+            const range = document.createRange();
+            range.setStart(node, index);
+            range.setEnd(node, index + 1);
+            const glyph = range.getBoundingClientRect();
+            edges.push({ left: glyph.left, right: glyph.right });
+          }
+        }
+        return {
+          contentLeft: box.left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft),
+          contentRight: box.right - parseFloat(style.borderRightWidth) - parseFloat(style.paddingRight),
+          textLeft: Math.min(...edges.map((edge) => edge.left)),
+          textRight: Math.max(...edges.map((edge) => edge.right)),
+          glyphCount: edges.length,
+          overflow: element.scrollWidth - element.clientWidth,
+        };
+      });
+      expect(geometry.glyphCount).toBeGreaterThan(0);
+      expect(geometry.textLeft, `${size} left inset`).toBeGreaterThanOrEqual(geometry.contentLeft - 1);
+      expect(geometry.textRight, `${size} right inset`).toBeLessThanOrEqual(geometry.contentRight + 1);
+      expect(geometry.overflow).toBeLessThanOrEqual(1);
+      await expect(caution).toHaveCSS('direction', direction);
+      await expect(caution.locator('span')).toHaveCSS('unicode-bidi', 'plaintext');
+    }
+  });
+}

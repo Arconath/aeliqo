@@ -9,7 +9,7 @@ const declarations = (values: Readonly<Record<string, string>>): string =>
 
 // Shared defaults come first so theme-specific values, including palettes, win.
 const baseDeclarations = `${declarations(AELIQO_SHARED_TOKENS)}\n${declarations(AELIQO_LIGHT_TOKENS)}`;
-const darkDeclarations = `${declarations(AELIQO_SHARED_TOKENS)}\n${declarations(AELIQO_DARK_TOKENS)}`;
+const darkDeclarations = declarations(AELIQO_DARK_TOKENS);
 
 const forcedColorDeclarations = `
   --aeliqo-color-canvas: Canvas;
@@ -126,7 +126,8 @@ export const aeliqoThemeStyles: CSSResult = css`
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :host {
+    :host,
+    :host([data-aeliqo-theme='inherit']) {
       --aeliqo-motion-duration-fast: 0ms;
       --aeliqo-motion-duration-standard: 0ms;
     }

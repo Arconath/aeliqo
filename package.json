@@ -122,7 +122,7 @@
     "test:performance:adverse-visualization": "playwright test --config tests/performance/adverse-visualization.playwright.config.mjs",
     "test:agent-evaluation:ui": "pnpm build:platform && pnpm build:agent && playwright test --config tests/agent-evaluation/ui-development/playwright.config.mjs",
     "test:local-agent": "pnpm build:platform && pnpm build:agent && node --test tests/local-agent/standalone.test.mjs && node tests/local-agent/consumer.mjs",
-    "test:visual:tooling": "node --test tests/visual/regression.test.mjs tests/visual/regression-comparator.test.mjs tests/visual/regression-workflow.test.mjs tests/visual/regression-shards.test.mjs",
+    "test:visual:tooling": "node --test tests/visual/regression.test.mjs tests/visual/regression-comparator.test.mjs tests/visual/regression-workflow.test.mjs tests/visual/regression-shards.test.mjs tests/visual/regression-families.test.mjs",
     "test:visual:regression": "node scripts/visual/run.mjs --full",
     "test:performance:paired:tooling": "node --test tests/performance/paired-runner.test.mjs",
     "test:performance:paired": "node scripts/performance/compare.mjs"

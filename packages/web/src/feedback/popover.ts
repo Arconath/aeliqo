@@ -53,7 +53,12 @@ export class AeliqoPopoverElement extends AeliqoFoundationElement {
         background: rgb(15 23 42 / 0.45);
       }
       [part='close'] {
+        background: transparent;
+        border: 0;
+        color: inherit;
+        cursor: pointer;
         float: inline-end;
+        min-inline-size: var(--aeliqo-control-min-target, 2.75rem);
       }
       [part='close'],
       [part='trigger'] {

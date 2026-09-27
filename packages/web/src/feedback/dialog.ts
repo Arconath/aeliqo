@@ -32,6 +32,7 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
         align-items: center;
         border-block-end: 0.0625rem solid var(--aeliqo-color-border, #64748b);
         display: flex;
+        flex-wrap: wrap;
         gap: var(--aeliqo-space-8, 0.5rem);
         justify-content: space-between;
         padding: var(--aeliqo-space-12, 0.75rem) var(--aeliqo-space-16, 1rem);
@@ -40,10 +41,16 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
         overflow: auto;
         padding: var(--aeliqo-space-16, 1rem);
       }
+      [part='header'] h2 {
+        flex: 1 1 auto;
+        min-inline-size: 0;
+        overflow-wrap: anywhere;
+      }
       [part='close'] {
         background: transparent;
         border: 0;
         cursor: pointer;
+        flex-shrink: 0;
         min-block-size: var(--aeliqo-control-min-target, 2.75rem);
         min-inline-size: var(--aeliqo-control-min-target, 2.75rem);
       }

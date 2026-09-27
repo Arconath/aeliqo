@@ -40,6 +40,11 @@ views, header/sidebar structure, and business actions.
   against the implementation.
 - Select chevrons, logical padding, focus, touch targets, form alignment, and
   token consistency are corrected while preserving public token names.
+- Reduced-motion preferences apply to explicit dark themes, system themes,
+  and inherited themes, including controls with custom inherited motion tokens.
+- Dialog headings and close controls reflow at enlarged text sizes. Popover
+  close controls follow the active theme, and RTL investigation cautions keep
+  text inside their logical border and padding.
 - Chart marks and numeric color keys share theme tokens in SVG and Canvas.
   Enlarged hierarchy/timeline labels remain visible, RTL switch thumbs stay
   within their tracks, and split-pane handles reserve their own touch area.

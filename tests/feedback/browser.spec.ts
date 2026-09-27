@@ -31,7 +31,8 @@ test('tooltip is supplemental, focusable and dismissible', async ({ page }) => {
 test('popover distinguishes nonmodal dismissal from modal focus containment', async ({ page }) => {
   const popover = page.locator('#popover');
   const trigger = popover.getByRole('button', { name: 'Details' });
-  await trigger.click();
+  await trigger.focus();
+  await trigger.press('Enter');
   const firstSurface = popover.locator('[part=popover]');
   await expect(firstSurface).toBeVisible();
   const action = popover.getByRole('button', { name: 'Popover action' });
@@ -53,7 +54,8 @@ test('popover distinguishes nonmodal dismissal from modal focus containment', as
   await popover.evaluate((element) => {
     (element as HTMLElement & { modal: boolean }).modal = true;
   });
-  await trigger.click();
+  await trigger.focus();
+  await trigger.press('Enter');
   const surface = popover.locator('[part=popover]');
   await expect(surface).toHaveAttribute('aria-modal', 'true');
   const close = popover.getByRole('button', { name: 'Close' });
@@ -304,7 +306,8 @@ test('feedback remains usable at narrow RTL text scale', async ({ page }) => {
 test('nonmodal popover does not steal focus on open or listener policy updates', async ({ page }) => {
   const popover = page.locator('#popover');
   const trigger = popover.getByRole('button', { name: 'Details' });
-  await trigger.click();
+  await trigger.focus();
+  await trigger.press('Enter');
   await expect(popover.locator('[part=popover]')).toBeVisible();
   await expect(trigger).toBeFocused();
   await page.locator('#before').focus();
@@ -314,4 +317,98 @@ test('nonmodal popover does not steal focus on open or listener policy updates',
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
   await expect(page.locator('#before')).toBeFocused();
+});
+
+test.describe('enlarged narrow feedback controls', () => {
+  test.use({ hasTouch: true });
+
+  test('dialog keeps its close control and focus paint inside the surface', async ({ page }, info) => {
+    for (const width of [320, 360]) {
+      for (const direction of ['ltr', 'rtl']) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+        await page.evaluate(() => {
+          document.documentElement.style.fontSize = '32px';
+        });
+        const host = page.locator('#dialog');
+        await host.evaluate((element, dir) => {
+          element.setAttribute('dir', dir);
+          element.setAttribute('data-aeliqo-theme', 'dark');
+          Object.assign(element, { heading: 'Confirm archive', open: true });
+        }, direction);
+        const close = host.locator('[part=close]');
+        await close.focus();
+        await expect(close).toBeFocused();
+        const geometry = await close.evaluate((button) => {
+          const surface = button.closest('dialog')!;
+          const bounds = surface.getBoundingClientRect();
+          const rect = button.getBoundingClientRect();
+          const style = getComputedStyle(button);
+          const focus = parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+          return {
+            left: rect.left - focus,
+            right: rect.right + focus,
+            top: rect.top - focus,
+            bottom: rect.bottom + focus,
+            surfaceLeft: bounds.left,
+            surfaceRight: bounds.right,
+            surfaceTop: bounds.top,
+            surfaceBottom: bounds.bottom,
+            width: rect.width,
+            height: rect.height,
+          };
+        });
+        expect(geometry.width).toBeGreaterThanOrEqual(44);
+        expect(geometry.height).toBeGreaterThanOrEqual(44);
+        expect(geometry.left).toBeGreaterThanOrEqual(geometry.surfaceLeft);
+        expect(geometry.right).toBeLessThanOrEqual(geometry.surfaceRight);
+        expect(geometry.top).toBeGreaterThanOrEqual(geometry.surfaceTop);
+        expect(geometry.bottom).toBeLessThanOrEqual(geometry.surfaceBottom);
+        const headingWordLines = await host.locator('h2').evaluate((heading) => {
+          const range = document.createRange();
+          const text = Array.from(heading.childNodes).find(
+            (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.includes('Confirm'),
+          );
+          if (text === undefined) throw new Error('Heading text is missing.');
+          range.setStart(text, 0);
+          range.setEnd(text, 'Confirm'.length);
+          return range.getClientRects().length;
+        });
+        expect(headingWordLines).toBe(1);
+        await page.screenshot({ path: info.outputPath(`dialog-${width}-${direction}.png`) });
+        await close.press('Enter');
+        await expect(host.locator('dialog')).toBeHidden();
+      }
+    }
+  });
+
+  test('popover close uses readable theme paint and a square touch target', async ({ page }, info) => {
+    for (const width of [320, 360]) {
+      for (const direction of ['ltr', 'rtl']) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+        await page.evaluate(() => {
+          document.documentElement.style.fontSize = '32px';
+        });
+        const host = page.locator('#popover');
+        await host.evaluate((element, dir) => {
+          element.setAttribute('dir', dir);
+          element.setAttribute('data-aeliqo-theme', 'dark');
+          Object.assign(element, { content: 'The report includes the authorized current scope.', open: true });
+        }, direction);
+        const close = host.locator('[part=close]');
+        await expect(close).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+        const box = await close.boundingBox();
+        expect(box).not.toBeNull();
+        expect(box!.width).toBeGreaterThanOrEqual(44);
+        expect(box!.height).toBeGreaterThanOrEqual(44);
+        await close.focus();
+        await expect(close).toBeFocused();
+        await expect(close).toHaveCSS('outline-style', 'solid');
+        await page.screenshot({ path: info.outputPath(`popover-${width}-${direction}.png`) });
+        await close.press('Enter');
+        await expect(host.locator('[part=popover]')).toBeHidden();
+      }
+    }
+  });
 });

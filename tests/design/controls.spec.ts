@@ -6,6 +6,42 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('#country select')).toHaveValue('id');
 });
 
+test('reduced motion overrides theme defaults and inherited motion tokens', async ({ page }) => {
+  const host = page.locator('#button');
+  const button = host.locator('button');
+  for (const colorScheme of ['light', 'dark'] as const) {
+    for (const theme of ['light', 'dark', 'inherit', 'system']) {
+      await host.evaluate((element, mode) => {
+        if (mode === 'system') element.removeAttribute('data-aeliqo-theme');
+        else element.setAttribute('data-aeliqo-theme', mode);
+        element.parentElement!.style.setProperty('--aeliqo-motion-duration-fast', '260ms');
+        element.parentElement!.style.setProperty('--aeliqo-motion-duration-standard', '360ms');
+      }, theme);
+      await page.emulateMedia({ colorScheme, reducedMotion: 'no-preference' });
+      await expect(button, `${colorScheme}/${theme} default`).toHaveCSS(
+        'transition-duration',
+        theme === 'inherit' ? '0.26s' : '0.12s',
+      );
+      await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
+      await expect(host, `${colorScheme}/${theme} fast token`).toHaveCSS('--aeliqo-motion-duration-fast', '0ms');
+      await expect(host, `${colorScheme}/${theme} standard token`).toHaveCSS(
+        '--aeliqo-motion-duration-standard',
+        '0ms',
+      );
+      await expect(button, `${colorScheme}/${theme} computed motion`).toHaveCSS('transition-duration', '0s');
+      await button.focus();
+      await expect(button).toBeFocused();
+      await expect(button).toHaveCSS('outline-style', 'solid');
+      await button.hover();
+      expect(
+        await button.evaluate(
+          (element) => element.getAnimations().filter((animation) => animation.playState === 'running').length,
+        ),
+      ).toBe(0);
+    }
+  }
+});
+
 for (const direction of ['ltr', 'rtl']) {
   test(`select keeps one centered chevron clear of long text in ${direction}`, async ({ page }, info) => {
     await page.locator('#country').evaluate((element, dir) => {

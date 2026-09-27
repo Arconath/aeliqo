@@ -12,6 +12,16 @@ const approved = {
   review: 'https://example.test/review/1',
   runner: { container: `sha256:${'c'.repeat(64)}` },
 };
+test('Chromium visual captures use a fixed software raster path without changing the other engines', async () => {
+  const { default: config } = await import('./playwright.config.mjs');
+  assert.deepEqual(
+    config.projects.map(({ name }) => name),
+    ['chromium', 'firefox', 'webkit'],
+  );
+  assert.deepEqual(config.projects[0].use.launchOptions, { args: ['--disable-gpu'] });
+  assert.equal(config.projects[1].use.launchOptions, undefined);
+  assert.equal(config.projects[2].use.launchOptions, undefined);
+});
 test('unapproved metadata cannot run a baseline comparison', () => {
   assert.throws(() => approveInputs({ ...approved, status: 'candidate' }), /approved/u);
 });
