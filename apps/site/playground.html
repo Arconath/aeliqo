@@ -45,8 +45,9 @@
     </div>
     <div class="pg-toolbar-actions">
       <button type="button" id="pg-inspect" data-playground-boot-control disabled aria-haspopup="dialog">
-        Inspect</button
-      ><details class="pg-menu" id="pg-menu">
+        Inspect
+      </button>
+      <details class="pg-menu" id="pg-menu">
         <summary>More</summary>
         <div class="pg-menu-body">
           <button type="button" id="pg-export" data-playground-boot-control disabled>Export project</button>
@@ -79,24 +80,29 @@
               <strong>People in Jakarta</strong><span>Commit a location filter on the People view.</span>
             </button>
             <button type="button" data-journey="attendance">
-              <strong>Daily attendance</strong><span>Inspect an approved rate, period, coverage, and metric choice.</span>
+              <strong>Daily attendance</strong
+              ><span>Inspect an approved rate, period, coverage, and metric choice.</span>
             </button>
             <button type="button" data-journey="workspace">
               <strong>Analytical workspace</strong
               ><span>Render a registered summary, trend, and breakdown together.</span>
             </button>
-            <button type="button" data-journey="page"><strong>Entire page</strong><span>Include a registered header, sidebar, and workspace.</span></button>
+            <button type="button" data-journey="page">
+              <strong>Entire page</strong><span>Include a registered header, sidebar, and workspace.</span>
+            </button>
           </div>
           <p class="pg-note">Registered tasks with synthetic data. No model calls.</p>
         </section>
         <section id="pg-connected" hidden aria-labelledby="pg-connected-title">
           <h3 id="pg-connected-title">Use your browser agent</h3>
-          <p>Enable WebMCP, keep this tab open, then ask your browser agent to change the interface.
-            It uses the same validated requests as the manual controls. Actions still require confirmation.</p>
+          <p>
+            Enable WebMCP, keep this tab open, then ask your browser agent to change the interface. It uses the same
+            validated requests as the manual controls. Actions still require confirmation.
+          </p>
           <p id="pg-webmcp-note" class="pg-webmcp-note" hidden>
             WebMCP is experimental. Tested with Chrome 153.0.8010.12 and
-            <code>chrome://flags/#enable-webmcp-testing</code> enabled.
-            Without the API, use the manual controls. <a href="/agents/webmcp/">WebMCP setup</a>
+            <code>chrome://flags/#enable-webmcp-testing</code> enabled. Without the API, use the manual controls.
+            <a href="/agents/webmcp/">WebMCP setup</a>
           </p>
           <button type="button" id="pg-connect" data-playground-boot-control disabled>Enable WebMCP</button>
           <p id="pg-connect-status" class="pg-note" role="status">Tools are not registered yet.</p>
@@ -131,10 +137,12 @@
             ><span id="pg-view-badge" class="pg-view-badge" data-state="pending">Waiting for a request</span>
           </li>
         </ol>
-        <p id="pg-status" class="pg-status" role="status" aria-live="polite">
-          Choose a task to show the first view.
-        </p>
+        <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to show the first view.</p>
       </section>
+      <details id="pg-intent" class="pg-intent" open hidden>
+        <summary>Intent sent to Aeliqo</summary>
+        <pre tabindex="0"><code id="pg-intent-json"></code></pre>
+      </details>
       <p id="pg-result-definition" class="pg-result-definition" hidden></p>
       <p id="pg-committed-filter" class="pg-result-definition" hidden></p>
       <div id="pg-error" class="pg-error" role="alert" hidden></div>

@@ -388,6 +388,9 @@
   color: var(--faint);
   font-size: var(--type-caption);
 }
+.pg-request[open] .pg-request-hint {
+  display: none;
+}
 .pg-request-body {
   display: flex;
   min-width: 0;

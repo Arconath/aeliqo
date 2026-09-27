@@ -36,6 +36,8 @@ const viewBadge = required<HTMLElement>('#pg-view-badge');
 const resultTitle = required<HTMLElement>('#pg-result-title');
 const receiptState = required<HTMLElement>('#pg-receipt-state');
 const journeyIntent = required<HTMLElement>('#pg-journey-intent');
+const intentPanel = required<HTMLDetailsElement>('#pg-intent');
+const intentJson = required<HTMLElement>('#pg-intent-json');
 const journeyResult = required<HTMLElement>('#pg-journey-result');
 const journeyView = required<HTMLElement>('#pg-journey-view');
 const setJourney = createJourneyTracker(document.querySelectorAll<HTMLElement>('.pg-journey li'), viewBadge).set;
@@ -131,6 +133,15 @@ function renderInspector(): void {
   inspectorContent.textContent = stringify(section.value);
 }
 
+/** Shows the exact bounded request, which is the same shape an agent tool sends. */
+function showIntent(intent: Intent | undefined): void {
+  intentPanel.hidden = intent === undefined;
+  const lines = Object.entries(intent ?? {}).map(
+    ([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`,
+  );
+  intentJson.textContent = intent === undefined ? '' : `{\n${lines.join(',\n')}\n}`;
+}
+
 function resetSession(): void {
   activeRequest?.abort();
   session?.dispose();
@@ -143,6 +154,7 @@ function resetSession(): void {
   setError();
   status.textContent = 'Session reset. Choose a task.';
   journeyIntent.textContent = 'Choose a task';
+  showIntent(undefined);
   journeyResult.textContent = 'Waiting';
   journeyView.textContent = 'Waiting';
   setJourney('pending', 'pending', 'pending');
@@ -179,6 +191,7 @@ async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<
   receiptState.textContent = receipt.status;
   viewBadge.textContent = selectedView(receipt);
   journeyIntent.textContent = labelIntent(scenario, intent);
+  showIntent(intent);
   const activeStep = scenario.steps.find((step) => step.id === intent.id);
   resultTitle.textContent = activeStep?.label ?? labelIntent(scenario, intent);
   resultDefinition.textContent = activeStep?.definition ?? '';
@@ -200,7 +213,7 @@ function applyReadyReceipt(intent: Intent, receipt: WebRenderReceipt): void {
   journeyResult.textContent = 'Evaluated';
   journeyView.textContent = viewLabel(selectedView(receipt));
   setJourney('done', 'done', 'done');
-  status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
+  status.textContent = `${resultTitle.textContent} is ready. The intent above chose this view; Inspect shows the full evidence.`;
 }
 
 function applyFailedReceipt(receipt: WebRenderReceipt): void {
@@ -224,6 +237,7 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
   activeRequest = controller;
   setError();
   journeyIntent.textContent = labelIntent(scenario, intent);
+  showIntent(intent);
   journeyResult.textContent = 'Checking…';
   journeyView.textContent = 'Waiting';
   setJourney('done', 'active', 'pending');
