@@ -1,4 +1,5 @@
 import { html, svg } from 'lit';
+import { resultCaption } from '../scope-caption.js';
 import { repeat } from 'lit/directives/repeat.js';
 import type { Result, ResultRef, Scalar } from '@aeliqo/core';
 import type { VisualizationBindingContext } from '@aeliqo/core/visualization';
@@ -159,23 +160,7 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
   }
 
   private scopeText(result: Result): string {
-    const coverage = result.coverage;
-    let scope: string;
-    switch (coverage.kind) {
-      case 'complete':
-        scope = 'Complete result';
-        break;
-      case 'sample':
-        scope = 'Sample: ' + coverage.method;
-        break;
-      case 'partial':
-        scope = 'Partial result: ' + coverage.reason;
-        break;
-      case 'unknown':
-        scope = 'Scope unknown: ' + coverage.reason;
-        break;
-    }
-    return scope + '. ' + result.counts.loaded + ' loaded rows.';
+    return resultCaption(result, result.counts.loaded) + '.';
   }
 
   private renderGeometry(geometry: HierarchyVisualizationGeometry) {

@@ -33,3 +33,30 @@ it('rejects nonpositive log observations and centers equal values', () => {
   const scale = makePlotScale({ field: 'v', scale: 'linear' }, { value: 'float', nullable: false }, [2, 2], [0, 100]);
   expect(scale.at(2)).toBe(50);
 });
+it('labels a zero-based linear axis with round steps instead of raw data values', () => {
+  const scale = makePlotScale(
+    { field: 'amount', scale: 'linear', zero: true },
+    { value: 'integer', nullable: false },
+    [96, 120, 144],
+    [300, 0],
+  );
+  expect(scale.ticks.map((tick) => tick.label)).toEqual(['0', '50', '100']);
+  expect(scale.ticks[0]!.position).toBe(300);
+  expect(scale.at(144)).toBe(0);
+});
+it('keeps whole-number steps for small counts and exact decimal labels', () => {
+  const counts = makePlotScale(
+    { field: 'hires', scale: 'linear', zero: true },
+    { value: 'integer', nullable: false },
+    [1, 2],
+    [100, 0],
+  );
+  expect(counts.ticks.map((tick) => tick.label)).toEqual(['0', '1', '2']);
+  const decimals = makePlotScale(
+    { field: 'rate', scale: 'linear' },
+    { value: 'decimal', nullable: false },
+    [{ decimal: '0.5' }, { decimal: '1.0' }],
+    [100, 0],
+  );
+  expect(decimals.ticks.map((tick) => tick.label)).toEqual(['0.5', '0.6', '0.7', '0.8', '0.9', '1']);
+});

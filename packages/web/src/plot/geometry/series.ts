@@ -32,7 +32,9 @@ function seriesIdentity(
   return { ok: true, value: JSON.stringify(parts) };
 }
 
+/** One series encoding shows just its value; several keep their field labels so series stay distinguishable. */
 function legendLabel(datum: PlotDatum, fields: PlotFields, encodings: ReturnType<typeof seriesEncodings>): string {
+  if (encodings.length === 1) return exactLabel(datum.values[encodings[0]!.field]!);
   return encodings
     .map((encoding) => {
       const field = fields.get(encoding.field)!;

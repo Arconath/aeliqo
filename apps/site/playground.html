@@ -99,16 +99,28 @@
             Enable WebMCP, keep this tab open, then ask your browser agent to change the interface. It uses the same
             validated requests as the manual controls. Actions still require confirmation.
           </p>
-          <p id="pg-webmcp-note" class="pg-webmcp-note" hidden>
-            WebMCP is experimental. Tested with Chrome 153.0.8010.12 and
-            <code>chrome://flags/#enable-webmcp-testing</code> enabled. Without the API, use the manual controls.
-            <a href="/agents/webmcp/">WebMCP setup</a>
-          </p>
+          <div id="pg-webmcp-note" class="pg-webmcp-note" hidden>
+            <p>This browser does not expose WebMCP yet. To try it:</p>
+            <ol>
+              <li>Use Chrome 153 or later.</li>
+              <li>Enable <code>chrome://flags/#enable-webmcp-testing</code> and restart.</li>
+              <li>Open a browser agent that supports WebMCP on this tab.</li>
+            </ol>
+            <p><a href="/agents/webmcp/">WebMCP setup guide</a> · The manual controls work without it.</p>
+          </div>
           <button type="button" id="pg-connect" data-playground-boot-control disabled>Enable WebMCP</button>
           <p id="pg-connect-status" class="pg-note" role="status">Tools are not registered yet.</p>
-          <p>Try this prompt in your browser agent:</p>
-          <blockquote id="pg-agent-prompt">Inspect the Aeliqo context, then show people in Engineering.</blockquote>
-          <button type="button" id="pg-copy-prompt">Copy prompt</button>
+          <p>Ask your browser agent one of these. Each answer picks a different view:</p>
+          <ul class="pg-prompts" aria-label="Prompts to copy">
+            <li>
+              <button type="button" data-copy-prompt>Show the people in Engineering.</button><span>Filtered table</span>
+            </li>
+            <li>
+              <button type="button" data-copy-prompt>How did month-end headcount change over time?</button
+              ><span>Trend chart</span>
+            </li>
+            <li><button type="button" data-copy-prompt>Show everyone as cards.</button><span>Cards</span></li>
+          </ul>
           <p id="pg-copy-status" class="pg-note" role="status"></p>
           <p><a href="/agents/mcp/">Run MCP or BYOK locally</a> using the standalone example.</p>
         </section>

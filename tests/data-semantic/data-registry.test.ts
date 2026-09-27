@@ -481,7 +481,7 @@ describe('data registry semantics', () => {
       outputId: 'people',
     });
     expect(filter.ok).toBe(true);
-    if (filter.ok) expect(filter.value.config.values.scopeLabel).toBe('2 of 2 population records loaded');
+    if (filter.ok) expect(filter.value.config.values.scopeLabel).toBe('2 records');
   });
 
   it('does not allow presentation config to redefine identity or field labels', () => {

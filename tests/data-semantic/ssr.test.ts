@@ -112,7 +112,7 @@ describe('data semantic region SSR', () => {
       ></aeliqo-region>`,
     );
     expect(markup).toContain('<aeliqo-filter-builder');
-    expect(markup).toContain('Active people; 2 of 3 population records loaded');
+    expect(markup).toContain('Active people; Showing 2 of 3 records');
     expect(markup).not.toContain('Data unavailable.');
   });
 
@@ -140,7 +140,7 @@ describe('data semantic region SSR', () => {
     );
     expect(markup).toContain('12.50');
     expect(markup).toContain('+2.5');
-    expect(markup).toContain('Scope unknown; 2 of 3 population records loaded');
+    expect(markup).toContain('Scope unknown; Showing 2 of 3 records');
     expect(markup).not.toContain('Value unavailable.');
   });
 });

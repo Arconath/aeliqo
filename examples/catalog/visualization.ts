@@ -226,7 +226,7 @@ function configure<T extends CatalogVisualizationElement>(element: T, visualizat
   element.visualization = visualization;
   element.context = context;
   element.datasets = datasets;
-  element.label = "Catalog example";
+  element.label = "Sample people amounts";
   element.width = 640;
   element.height = 360;
   element.maxMarks = 500;
@@ -405,7 +405,7 @@ function configure<T extends CatalogVisualizationElement>(
   element.visualization = visualization;
   element.context = context;
   element.datasets = datasets;
-  element.label = 'Catalog example';
+  element.label = 'Sample people amounts';
   element.width = 640;
   element.height = 360;
   element.maxMarks = 500;

@@ -1,4 +1,5 @@
 import { html, svg, css, nothing } from 'lit';
+import { resultCaption } from '../visualization/scope-caption.js';
 import type { PlotUnit, PlotSpec, Result, ResultRef, Outcome } from '@aeliqo/core';
 import { AeliqoFoundationElement, aeliqoFoundationThemeStyles } from '../foundation/base.js';
 import { compilePlotComposition, type PlotDataset, type CompiledPlot, type CompiledPlotNode } from './composition.js';
@@ -332,8 +333,7 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
     const precision = g.result.precision;
     return html`<figcaption>${label}</figcaption>
       <p part="scope">
-        ${scope}. ${g.rows.length} loaded
-        rows.${displayedCount !== g.rows.length ? ` ${displayedCount} rows in this display partition.` : ''}
+        ${resultCaption(g.result, g.rows.length)}.${displayedCount !== g.rows.length ? ` ${displayedCount} rows in this view.` : ''}
       </p>
       ${g.result.period ? html`<p>${g.result.period.interpretation} (${g.result.period.timezone})</p>` : nothing}
       ${g.result.filters.length ? html`<p>Filtered result (${g.result.filters.length} applied conditions).</p>` : nothing}

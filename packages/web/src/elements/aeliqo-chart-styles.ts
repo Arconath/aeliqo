@@ -51,7 +51,7 @@ export const aeliqoChartStyles = [
     text:is(.axis-x-tick, .axis-y-tick) {
       fill: currentColor;
       font:
-        8px system-ui,
+        11px system-ui,
         sans-serif;
     }
 

@@ -65,7 +65,7 @@ function virtualizedScope(
   if (description !== undefined) totalText = `; ${description}`;
   else if (total !== undefined && total !== loaded) totalText = `; ${total.toLocaleString()} matching ${entity}s`;
   return html`<p part="scope">
-    Showing ${rendered.toLocaleString()} rendered of ${loaded.toLocaleString()} loaded ${entity}s${totalText}.
+    ${rendered.toLocaleString()} of ${loaded.toLocaleString()} ${entity}s on screen${totalText}.
   </p>`;
 }
 

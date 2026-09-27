@@ -5,7 +5,7 @@ test('native table preserves exact values, stable identity and scope', async ({ 
   const table = page.locator('#table');
   await expect(table.locator('table')).toHaveCount(1);
   await expect(table.locator('td').filter({ hasText: '100000000000000000.01' })).toHaveCount(1);
-  await expect(table.locator('[part=scope]')).toHaveText('2 of 100 matching records loaded');
+  await expect(table.locator('[part=scope]')).toHaveText('Showing 2 of 100 matching records');
   await table.locator('input[type=checkbox]').first().check();
   await expect
     .poll(() =>
@@ -33,7 +33,7 @@ test('grid mode is explicit and virtualization remains bounded', async ({ page }
   await expect(grid.locator("[role=gridcell][data-col-index='0']").first()).toHaveAttribute('aria-colindex', '1');
   await expect(grid.locator('[role=row][data-row-index]')).toHaveCount(1);
   await expect(grid.locator('[part=scope]')).toHaveText(
-    'Showing 1 rendered of 2 loaded rows; 2 of 100 matching records loaded.',
+    '1 of 2 rows on screen; Showing 2 of 100 matching records.',
   );
   const firstCell = grid.locator("[role=gridcell][data-row-index='0'][data-col-index='0']");
   await firstCell.focus();
@@ -567,7 +567,7 @@ test('RTL scope prose and long metric numbers keep their reading order', async (
     await Promise.all([table.updateComplete, metric.updateComplete]);
   });
   const tableScope = page.locator('#table [part=scope]');
-  await expect(tableScope).toContainText('2 of 100 matching records loaded');
+  await expect(tableScope).toContainText('Showing 2 of 100 matching records');
   await expect.poll(() => tableScope.evaluate((element) => getComputedStyle(element).unicodeBidi)).toBe('plaintext');
   const metricNumber = page.locator('#metric [part=number]');
   await expect(metricNumber).toHaveAttribute('dir', 'ltr');

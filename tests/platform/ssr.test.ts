@@ -70,7 +70,7 @@ describe('SSR boundary', () => {
     const output = await renderAeliqo(html`
       <aeliqo-chart
         lang="id-ID"
-        scope="2 dari 3 rekaman populasi dimuat"
+        scope="Menampilkan 2 dari 3 rekaman"
         .points=${[
           { label: 'Jan', value: 4 },
           { label: 'Feb', value: null },
@@ -80,7 +80,7 @@ describe('SSR boundary', () => {
 
     const visible = output.replace(/<!--.*?-->/gs, '');
     expect(visible).toContain('<strong>Grafik</strong>');
-    expect(visible).toContain('Cakupan: 2 dari 3 rekaman populasi dimuat');
+    expect(visible).toContain('Cakupan: Menampilkan 2 dari 3 rekaman');
     expect(visible).toContain('Lihat tabel data');
     expect(visible).toContain('Nilai');
     expect(visible).toContain('Data yang hilang ditampilkan sebagai celah.');
@@ -90,7 +90,7 @@ describe('SSR boundary', () => {
 
   it('localizes scope metadata while preserving the host scope label', () => {
     const scope = { kind: 'sample' as const, label: 'Wilayah Barat', loaded: 2, filteredTotal: 3 };
-    expect(scopeText(scope, 'id-ID')).toBe('Wilayah Barat; Sampel terbatas; 2 dari 3 rekaman yang cocok dimuat');
-    expect(scopeText(scope)).toBe('Wilayah Barat; Bounded sample; 2 of 3 matching records loaded');
+    expect(scopeText(scope, 'id-ID')).toBe('Wilayah Barat; Sampel terbatas; Menampilkan 2 dari 3 rekaman yang cocok');
+    expect(scopeText(scope)).toBe('Wilayah Barat; Bounded sample; Showing 2 of 3 matching records');
   });
 });
