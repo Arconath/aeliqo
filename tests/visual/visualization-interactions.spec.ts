@@ -338,6 +338,14 @@ for (const id of ['trend', 'timeline', 'tree'] as const) {
       expect(pageOne.at(-1)?.[1]).toBe(id === 'tree' ? 'node-24' : 'row-24');
       await expect(session.host.locator('[role="status"]')).toContainText(/budget|density/i);
       expect(session.errors).toEqual([]);
+      // Capture the keyboard pagination result independently of the earlier pointer click.
+      const focus = await session.host.evaluateHandle((element) => element.shadowRoot?.activeElement);
+      await page.mouse.move(0, 0);
+      await expect(session.host.locator('button:hover, tbody tr:hover')).toHaveCount(0);
+      expect(
+        await session.host.evaluate((element, active) => element.shadowRoot?.activeElement === active, focus),
+      ).toBe(true);
+      await focus.dispose();
       await page.screenshot({ path: info.outputPath('bounded-page.png'), fullPage: true });
     });
   }

@@ -81,6 +81,12 @@ export const aeliqoHierarchyStyles = [
       overflow: auto;
       margin-block-start: 1rem;
     }
+    nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
     button {
       background: var(--aeliqo-color-surface, #f8fafc);
       border: var(--aeliqo-control-border-width, 0.0625rem) solid
