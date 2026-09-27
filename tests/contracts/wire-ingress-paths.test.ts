@@ -2,6 +2,40 @@ import { expect, test } from 'vitest';
 import { inspectWire, utf8Bytes } from '../../packages/core/src/contracts/ingress.js';
 import { WIRE_LIMITS } from '../../packages/core/src/contracts/limits.js';
 
+test('wire inspection returns fresh public outcomes with the original input identity', () => {
+  const input = { values: [null, true, false, 0, 'value', {}, []] };
+  const first = inspectWire(input);
+  const second = inspectWire(input);
+  expect(first).toEqual({ ok: true, value: input });
+  expect(second).toEqual(first);
+  expect(second).not.toBe(first);
+  if (!first.ok || !second.ok) throw Error('Expected valid wire data');
+  expect(first.value).toBe(input);
+  expect(second.value).toBe(input);
+});
+
+test('wire success reuse does not retain failures or state across inspections', () => {
+  const shared = { valid: true };
+  const valid = { first: shared, second: shared };
+  const hostile = new Proxy(
+    {},
+    {
+      ownKeys() {
+        throw Error('Hostile inspection');
+      },
+    },
+  );
+  for (const invalid of [{ nested: NaN }, hostile, { absent: undefined }]) {
+    expect(inspectWire(valid)).toEqual({ ok: true, value: valid });
+    const first = inspectWire(invalid);
+    const second = inspectWire(invalid);
+    expect(first.ok).toBe(false);
+    expect(second).toEqual(first);
+    expect(second).not.toBe(first);
+    expect(inspectWire(valid)).toEqual({ ok: true, value: valid });
+  }
+});
+
 test('wire diagnostics retain exact object and array paths', () => {
   const invalid = inspectWire({ output: [{ values: [0, NaN] }] });
   expect(invalid).toMatchObject({

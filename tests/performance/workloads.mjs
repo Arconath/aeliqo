@@ -83,10 +83,14 @@ export async function firstSubsequent(label, operation, options = {}) {
 
 export function makeRows(count, fieldCount = 4) {
   const rows = [];
+  // Share field names within setup; every row and cell value is still created anew.
+  const fieldKeys = [];
+  if (count > 0) {
+    for (let field = 1; field < fieldCount; field += 1) fieldKeys[field] = `field-${String(field).padStart(3, '0')}`;
+  }
   for (let index = 0; index < count; index += 1) {
     const row = { id: `row-${index + 1}`, label: `Row ${index + 1}`, value: index };
-    for (let field = 1; field < fieldCount; field += 1)
-      row[`field-${String(field).padStart(3, '0')}`] = `v-${index}-${field}`;
+    for (let field = 1; field < fieldCount; field += 1) row[fieldKeys[field]] = `v-${index}-${field}`;
     rows.push(row);
   }
   return rows;
