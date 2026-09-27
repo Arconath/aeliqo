@@ -24,7 +24,8 @@ instead of inventing alternatives.
 - `packages/web` owns the shared Lit elements, renderers, and browser registration.
 - `packages/react` provides React bindings over the web elements.
 - `packages/agent` accepts bounded proposals through MCP, WebMCP, and model adapters. It must not grant permissions or produce executable UI.
-- `apps/site` owns the public landing page, documentation shell, playground, local runner, static build, and production image. It consumes the packages; packages must not depend on the site.
+- `apps/site` owns the public landing page, documentation shell, playground, static build, and production image. It consumes the packages; packages must not depend on the site.
+- `examples/local-agent` owns the standalone MCP HTTP/stdio and optional BYOK host, runner, and browser UI. It uses public package exports and must work outside the monorepo.
 - `catalog/components.json` defines the public component catalog. `examples/catalog` supplies runnable component examples.
 - `docs/site/` is the authored public documentation source, including all 71 component pages and the other public routes.
 - `docs/packages/` is the canonical source for the five npm package guides. Release staging copies these guides into each tarball as `README.md`.
