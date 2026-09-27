@@ -1,7 +1,8 @@
 import { createServer } from 'node:http';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { extname, join, resolve } from 'node:path';
+import { dirname, extname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
 const FLAG = '--enable-features=WebMCPTesting';
@@ -10,16 +11,24 @@ const executablePath = process.env.WEBMCP_CHROME_PATH ?? chromium.executablePath
 const measuredAt = new Date().toISOString();
 const repositoryRoot = resolve(process.cwd());
 const serverErrors = [];
+const zodRoot = dirname(fileURLToPath(import.meta.resolve('zod/package.json')));
+const dependencyUrl = (specifier) =>
+  `/dependencies/zod/${relative(zodRoot, fileURLToPath(import.meta.resolve(specifier))).replaceAll('\\', '/')}`;
+const importMap = JSON.stringify({
+  imports: {
+    '@aeliqo/core': '/packages/core/dist/index.js',
+    zod: dependencyUrl('zod'),
+    'zod/mini': dependencyUrl('zod/mini'),
+    'zod/': '/dependencies/zod/',
+  },
+});
 
 const pageHtml = `<!doctype html>
 <meta charset="utf-8">
 <title>Aeliqo native WebMCP probe</title>
 <p id="status">Running native WebMCP probe…</p>
 <script type="importmap">
-{"imports":{"@aeliqo/core":"/packages/core/dist/index.js",
-  "zod":"/node_modules/.pnpm/node_modules/zod/index.js",
-  "zod/mini":"/node_modules/.pnpm/node_modules/zod/mini/index.js",
-  "zod/":"/node_modules/.pnpm/node_modules/zod/"}}
+${importMap}
 </script>
 <script type="module">
 import {parseWireValue,
@@ -294,13 +303,12 @@ async function runMode(mode, args, url) {
 const server = createServer(async (request, response) => {
   try {
     const pathname = new URL(request.url ?? '/', 'http://127.0.0.1').pathname;
-    if (pathname.startsWith('/packages/') || pathname.startsWith('/node_modules/.pnpm/node_modules/zod/')) {
-      const candidate = resolve(repositoryRoot, `.${pathname}`);
-      const allowed = [
-        resolve(repositoryRoot, 'packages') + '/',
-        resolve(repositoryRoot, 'node_modules/.pnpm/node_modules/zod') + '/',
-      ];
-      if (!allowed.some((root) => candidate.startsWith(root))) {
+    if (pathname.startsWith('/packages/') || pathname.startsWith('/dependencies/zod/')) {
+      const dependencyRequest = pathname.startsWith('/dependencies/zod/');
+      const root = dependencyRequest ? zodRoot : resolve(repositoryRoot, 'packages');
+      const prefix = dependencyRequest ? '/dependencies/zod/' : '/packages/';
+      const candidate = resolve(root, pathname.slice(prefix.length));
+      if (!candidate.startsWith(root + '/')) {
         response.statusCode = 403;
         response.end('Forbidden');
         return;

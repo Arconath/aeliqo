@@ -1,64 +1,10 @@
-import type { RuntimeCommittedReceipt } from '@aeliqo/runtime/app';
+import { guardDraftExit } from './draft-exit.js';
 import { cancelActiveAction } from './interaction.js';
-import {
-  diagnostic,
-  failedAfterRuntime,
-  interactionLocked,
-  materialize,
-  type WebAppContext,
-  type WebRegion,
-} from './context.js';
+import { createRenderTransaction } from './render-transaction.js';
+import { diagnostic, interactionLocked, type WebAppContext, type WebRegion } from './context.js';
 import { present } from './presentation.js';
-import { resolveFormBindings } from './form-state.js';
 import { cancelPendingPresentation } from './presentation-operation.js';
 import type { WebRenderInput, WebRenderReceipt } from './types.js';
-
-function cancelledRender(receipt: RuntimeCommittedReceipt, message: string): WebRenderReceipt {
-  return failedAfterRuntime('cancelled', receipt, receipt.requestId, [diagnostic('web.app.cancelled', message)]);
-}
-
-function materializationFailure(receipt: RuntimeCommittedReceipt): WebRenderReceipt {
-  return failedAfterRuntime('failed', receipt, receipt.requestId, [
-    diagnostic('web.app.materialization', 'The committed Result is unavailable to the renderer.'),
-  ]);
-}
-
-function formFailure(receipt: RuntimeCommittedReceipt, diagnostics: Parameters<typeof failedAfterRuntime>[3]) {
-  const status = receipt.intent.kind === 'edit' ? 'needs-input' : 'failed';
-  return failedAfterRuntime(status, receipt, receipt.requestId, diagnostics);
-}
-
-async function presentCommitted(
-  context: WebAppContext,
-  region: WebRegion,
-  receipt: RuntimeCommittedReceipt,
-  sequence: number,
-  input: WebRenderInput,
-): Promise<WebRenderReceipt> {
-  if (sequence !== region.sequence) return cancelledRender(receipt, 'A newer web render replaced this request.');
-  cancelActiveAction(region);
-  const bound = materialize(receipt);
-  if (bound === undefined) return materializationFailure(receipt);
-  const form = await resolveFormBindings(context, region, receipt, input.signal);
-  if (!form.ok) return formFailure(receipt, form.diagnostics);
-  if (sequence !== region.sequence) return cancelledRender(receipt, 'A newer web render replaced form state loading.');
-  const result = await present(
-    context,
-    region,
-    receipt,
-    bound.results,
-    bound.descriptors,
-    ('present-' + receipt.requestId).slice(0, 160),
-    sequence,
-    form.value,
-    input.signal,
-  );
-  if (result.status === 'renderer-ready' && sequence === region.sequence) {
-    region.last = { receipt: result.runtime, ...bound, ...(form.value === undefined ? {} : { inputs: form.value }) };
-    if (region.pendingAdapt) return (await adaptRegion(context, region)) ?? result;
-  }
-  return result;
-}
 
 function missingRegion(input: WebRenderInput): WebRenderReceipt {
   return {
@@ -69,22 +15,76 @@ function missingRegion(input: WebRenderInput): WebRenderReceipt {
   };
 }
 
+function beginRender(region: WebRegion, parent?: AbortSignal) {
+  region.renderAbort?.abort();
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (parent?.aborted) abort();
+  else parent?.addEventListener('abort', abort, { once: true });
+  region.renderAbort = controller;
+  return {
+    signal: controller.signal,
+    close() {
+      parent?.removeEventListener('abort', abort);
+      if (region.renderAbort === controller) delete region.renderAbort;
+    },
+  };
+}
+
+function renderCurrent(region: WebRegion, sequence: number, signal: AbortSignal): boolean {
+  return sequence === region.sequence && !signal.aborted;
+}
+
+async function finishAdapt(context: WebAppContext, region: WebRegion, sequence: number, result: WebRenderReceipt) {
+  if (result.status === 'renderer-ready' && region.pendingAdapt && sequence === region.sequence)
+    return (await adaptRegion(context, region)) ?? result;
+  return result;
+}
+
 export async function renderRequest(context: WebAppContext, input: WebRenderInput): Promise<WebRenderReceipt> {
   const region = context.regions.get(input.regionId);
   if (region === undefined) return missingRegion(input);
   const sequence = ++region.sequence;
+  const operation = beginRender(region, input.signal);
   cancelPendingPresentation(region);
-  const receipt = await context.runtime.render(input);
-  if (receipt.status !== 'committed') {
-    if (receipt.status === 'denied') region.element.revoke();
-    return receipt;
+  let result: WebRenderReceipt;
+  let transaction: ReturnType<typeof createRenderTransaction> | undefined;
+  try {
+    const guarded = await guardDraftExit(context, region, { ...input, signal: operation.signal }, operation.signal);
+    if (!guarded.ok) return guarded.receipt;
+    const blocked = guarded.current();
+    if (blocked !== undefined) return blocked;
+    cancelActiveAction(region);
+    transaction = createRenderTransaction(
+      context,
+      region,
+      sequence,
+      operation.signal,
+      guarded.current,
+      guarded.authority,
+    );
+    const receipt = await context.runtime.render(guarded.input, { prepare: transaction.prepare });
+    if (receipt.status !== 'committed') {
+      if (receipt.status === 'denied') region.element.revoke();
+      return transaction.rejected() ?? receipt;
+    }
+    const superseded = guarded.current();
+    if (superseded !== undefined) return superseded;
+    result = transaction.complete(receipt);
+    if (result.status === 'renderer-ready' && renderCurrent(region, sequence, operation.signal)) guarded.committed();
+  } finally {
+    try {
+      transaction?.close();
+    } finally {
+      operation.close();
+    }
   }
-  return presentCommitted(context, region, receipt, sequence, input);
+  return finishAdapt(context, region, sequence, result);
 }
 
 export async function adaptRegion(context: WebAppContext, region: WebRegion): Promise<WebRenderReceipt | undefined> {
   if (context.disposed || context.regions.get(region.id) !== region) return undefined;
-  if (region.last === undefined || interactionLocked(region)) {
+  if (region.renderAbort !== undefined || region.last === undefined || interactionLocked(region)) {
     region.pendingAdapt = true;
     return undefined;
   }

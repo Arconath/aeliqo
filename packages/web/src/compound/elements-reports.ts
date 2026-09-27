@@ -38,6 +38,9 @@ export class AeliqoInvestigationElement extends AeliqoCompoundElement {
         border-inline-start: 0.25rem solid var(--aeliqo-color-warning, #b54708);
         overflow-wrap: anywhere;
         padding-inline-start: var(--aeliqo-space-12, 0.75rem);
+      }
+      [part='caution'] > span {
+        display: block;
         unicode-bidi: plaintext;
       }
     `,
@@ -94,7 +97,7 @@ export class AeliqoInvestigationElement extends AeliqoCompoundElement {
         </section>
       </div>
       <p part="caution">
-        Associations are displayed as evidence in the selected scope. They do not establish causal claims.
+        <span>Associations are displayed as evidence in the selected scope. They do not establish causal claims.</span>
       </p>
       ${current !== 'ready' ? html`<p part="status" role="status">${this.statusText(current, this.message)}</p>` : nothing}
     </section>`;

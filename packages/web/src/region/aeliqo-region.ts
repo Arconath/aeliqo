@@ -29,6 +29,7 @@ import type { InteractionPayload, InteractionState } from '@aeliqo/core';
 import type { ValidatedPresentation } from '@aeliqo/core/presentation';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
+import { MovableNodeParts, movableNode } from './movable-node-parts.js';
 import type { PropertyValues } from 'lit';
 import { AELIQO_WEB_VERSION } from '../version.js';
 import { aeliqoThemeStyles } from '../styles/theme.js';
@@ -65,8 +66,55 @@ export class AeliqoRegionElement extends LitElement {
   onSemanticInteraction: AeliqoSemanticInteractionHandler | undefined = undefined;
   onDataRequest: AeliqoRegionDataRequestHandler | undefined = undefined;
   viewRenderers: readonly AeliqoViewDefinition[] = [];
+  private readonly nodeParts = new MovableNodeParts();
+  private synchronousPublication = false;
+  private publicationOwner: symbol | undefined;
+  private renderedTemplate: TemplateResult | typeof nothing = nothing;
+  private retainedTemplate: { readonly value: TemplateResult | typeof nothing } | undefined;
   private focusedNodeId: string | undefined;
   private focusedElement: HTMLElement | undefined;
+
+  /** Flush the Region root synchronously inside an authorized host transaction.
+   * Custom renderer errors propagate; descendant async work is not awaited.
+   */
+  flushPresentation(): void {
+    this.synchronousPublication = true;
+    try {
+      this.performUpdate();
+    } finally {
+      this.synchronousPublication = false;
+    }
+  }
+
+  /** Retain the existing template for rollback without invoking a failed host renderer again. */
+  preparePublication(): { apply(): void; rollback(): void; complete(): void } {
+    const previous = this.renderedTemplate;
+    const owner = Symbol('publication');
+    return {
+      apply: () => {
+        this.publicationOwner = owner;
+        this.flushPresentation();
+      },
+      complete: () => {
+        if (this.publicationOwner !== owner) return;
+        try {
+          this.nodeParts.complete();
+        } finally {
+          this.publicationOwner = undefined;
+        }
+      },
+      rollback: () => {
+        if (this.publicationOwner !== owner) return;
+        this.retainedTemplate = { value: previous };
+        try {
+          this.requestUpdate();
+          this.flushPresentation();
+        } finally {
+          this.retainedTemplate = undefined;
+        }
+      },
+    };
+  }
 
   /** Clear committed content when the host revokes or disposes the region. */
   clear(): void {
@@ -77,9 +125,14 @@ export class AeliqoRegionElement extends LitElement {
 
   revoke(): void {
     this.clear();
+    this.flushPresentation();
+    this.nodeParts.clear();
+    this.publicationOwner = undefined;
   }
   dispose(): void {
     this.clear();
+    this.nodeParts.clear();
+    this.publicationOwner = undefined;
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
@@ -95,6 +148,7 @@ export class AeliqoRegionElement extends LitElement {
   }
 
   protected override updated(changed: PropertyValues<this>): void {
+    if (!this.synchronousPublication && this.publicationOwner === undefined) this.nodeParts.complete();
     if (!changed.has('presentation') || this.focusedNodeId === undefined) return;
     const focusedElement = this.focusedElement;
     const nodeId = this.focusedNodeId;
@@ -122,6 +176,36 @@ export class AeliqoRegionElement extends LitElement {
   }
 
   protected override render(): TemplateResult | typeof nothing {
+    const template = this.retainedTemplate?.value ?? this.renderPresentation();
+    const layout = this.layoutIdentity();
+    this.nodeParts.begin(layout.signature, layout.dependencies);
+    this.renderedTemplate = template;
+    return template;
+  }
+
+  private layoutIdentity(): { signature: string; dependencies: readonly unknown[] } {
+    const customParent = this.presentation?.nodes.some(
+      (node) =>
+        node.node.children.length > 0 &&
+        this.viewRenderers.some(
+          (view) => view.ref.id === node.manifest.id && view.ref.revision === node.manifest.revision,
+        ),
+    );
+    const signature = JSON.stringify({
+      root: this.presentation?.plan.rootId,
+      nodes: this.presentation?.plan.nodes.map(({ id, representation, children, config }) => ({
+        id,
+        representation,
+        children,
+        config,
+      })),
+      // A custom parent may derive wrapper structure from its captured Result or children.
+      results: customParent ? this.results.map((result) => result.ref) : undefined,
+    });
+    return { signature, dependencies: [this.viewRenderers, customParent ? this.results : undefined] };
+  }
+
+  private renderPresentation(): TemplateResult | typeof nothing {
     if (this.presentation === undefined) return nothing;
     const nodes = new Map(this.presentation.nodes.map((node) => [node.node.id, node]));
     if (!nodes.has(this.presentation.plan.rootId)) return nothing;
@@ -140,12 +224,22 @@ export class AeliqoRegionElement extends LitElement {
   ): TemplateResult | typeof nothing {
     const resolved = nodes.get(nodeId);
     if (resolved === undefined) return nothing;
-    const children = (): TemplateResult =>
-      html`${repeat(
-        resolved.node.children,
-        (childId) => childId,
-        (childId) => this.renderNode(childId, nodes),
+    const key = JSON.stringify([nodeId, resolved.manifest.id, resolved.manifest.revision]);
+    return html`${movableNode(this.nodeParts, key, this.renderNodeContent(resolved, nodes))}`;
+  }
+
+  private renderNodeContent(
+    resolved: ValidatedPresentation['nodes'][number],
+    nodes: ReadonlyMap<string, ValidatedPresentation['nodes'][number]>,
+  ): TemplateResult | typeof nothing {
+    const children = (): TemplateResult => {
+      const rendered = resolved.node.children.map((id) => ({ id, template: this.renderNode(id, nodes) }));
+      return html`${repeat(
+        rendered,
+        (child) => child.id,
+        (child) => child.template,
       )}`;
+    };
     const values = valuesOf(resolved);
     switch (resolved.manifest.id) {
       case 'layout.stack': {
@@ -209,7 +303,8 @@ export class AeliqoRegionElement extends LitElement {
     const result = resultFor(node, this.results);
     try {
       return definition.render({ node, ...(result === undefined ? {} : { result }), children });
-    } catch {
+    } catch (error) {
+      if (this.synchronousPublication) throw error;
       return html`<div part="unsupported">Custom view could not be rendered.</div>`;
     }
   }

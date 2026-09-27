@@ -10,6 +10,7 @@ import type {
 import {
   freezePresentation,
   freezePresentationContainer,
+  ownsPresentationRegistration,
   presentationFailure as fail,
   versionKey,
 } from '../registry.js';
@@ -17,24 +18,13 @@ import type { PresentationNodeResolutionInput, PresentationPlanLike } from './ty
 import { parsePresentationQuality, parseResolvedConfig, validateResolvedConfig } from './configuration.js';
 import { refKey } from './shared.js';
 
-interface NodeMemoEntry {
-  readonly key: string | undefined;
-  readonly node: ResolvedPresentationNode | undefined;
-}
-
-function memoEntry(node: PresentationPlanLike['nodes'][number], input: PresentationNodeResolutionInput): NodeMemoEntry {
-  const identity = input.nodeIdentityMemo?.get(node as object);
-  const key = identity === undefined && input.nodeMemo !== undefined ? nodeMemoKey(node) : undefined;
-  return { key, node: identity ?? (key === undefined ? undefined : input.nodeMemo?.get(key)) };
-}
-
 function nodeMemoKey(node: PresentationPlanLike['nodes'][number]): string {
   const result = node.result;
   return JSON.stringify([
     node.id,
     node.role,
     versionKey(node.representation),
-    result === undefined ? null : [result.id, result.revision, result.outputId, result.queryDigest, result.scopeDigest],
+    result === undefined ? null : refKey(result),
     versionKey(node.config.schema),
     canonicalJSON(node.config.values),
     node.children,
@@ -132,9 +122,8 @@ function checkedConfig(
   const valid = validateResolvedConfig(
     parsed.value,
     manifest.operations,
-    input.cache.allowedOperations,
     result === undefined ? undefined : input.cache.resultFields.get(result),
-    result !== undefined,
+    input.cache,
   );
   if (!valid.ok) return valid;
   return { ok: true, value: { config: parsed.value, operations: valid.value } };
@@ -145,7 +134,16 @@ function validateNodePorts(
   config: ResolvedPresentationConfig,
   input: PresentationNodeResolutionInput,
 ): Outcome<readonly InteractionPort[]> {
-  const graphInput = { nodes: [{ id: node.id, ports: config.ports }], links: [] };
+  // This private, link-free graph returns only ports. Preserve ID wire byte costs.
+  const graphInput = {
+    nodes: [
+      {
+        id: ownsPresentationRegistration(input.registry) ? node.id.replace(/\w/g, 'x') : node.id,
+        ports: config.ports,
+      },
+    ],
+    links: [],
+  };
   const key = canonicalJSON(graphInput);
   let graph = input.cache.nodeGraphs.get(key);
   if (graph === undefined) {
@@ -220,16 +218,22 @@ export function resolvePresentationNodes(
 ): Outcome<readonly ResolvedPresentationNode[]> {
   const resolved: ResolvedPresentationNode[] = [];
   for (const node of input.plan.nodes) {
-    const memo = memoEntry(node, input);
-    if (memo.node !== undefined) {
-      resolved.push(memo.node);
+    const identity = input.nodeIdentityMemo?.get(node as object);
+    if (identity !== undefined) {
+      resolved.push(identity);
+      continue;
+    }
+    const key = input.nodeMemo === undefined ? undefined : nodeMemoKey(node);
+    const cached = key === undefined ? undefined : input.nodeMemo?.get(key);
+    if (cached !== undefined) {
+      resolved.push(cached);
       continue;
     }
     const checked = validateUncachedNode(node, input);
     if (!checked.ok) return checked;
     resolved.push(checked.value);
     input.nodeIdentityMemo?.set(node as object, checked.value);
-    if (memo.key !== undefined) input.nodeMemo?.set(memo.key, checked.value);
+    if (key !== undefined) input.nodeMemo?.set(key, checked.value);
   }
   return { ok: true, value: resolved };
 }

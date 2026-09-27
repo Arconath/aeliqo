@@ -2,6 +2,7 @@ import * as z from 'zod';
 import { parseCatalog } from '../contracts/parse.js';
 import type { Catalog, Diagnostic, Outcome, SemanticType } from '../contracts/types.js';
 import { createCatalogIndex } from '../semantics/catalog.js';
+import { expandMeasures } from './measures.js';
 import { STANDARD_INTENTS, ResourceDefinitionError } from './types.js';
 import type {
   GeneratedResourceInput,
@@ -231,10 +232,18 @@ function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schem
   const firstDiagnostic = generated.diagnostics[0];
   if (firstDiagnostic !== undefined)
     return { ok: false, diagnostics: [firstDiagnostic, ...generated.diagnostics.slice(1)] };
+  const functionRegistryDigest = input.functionRegistryDigest ?? 'core-query-2';
+  const measures = expandMeasures(input.measures, {
+    fields: generated.fields,
+    identity: input.identity[0],
+    functionRegistryDigest,
+    reserved: new Set((input.meanings ?? []).map((meaning) => meaning.id)),
+  });
+  if (!measures.ok) return measures;
   const catalog: Catalog = {
     version: '1',
     revision: input.revision,
-    functionRegistryDigest: input.functionRegistryDigest ?? 'core-query-2',
+    functionRegistryDigest,
     entities: [
       {
         id: input.id,
@@ -245,7 +254,7 @@ function generatedCatalog<Schema extends z.ZodObject>(input: ResourceInput<Schem
       },
     ],
     relationships: [],
-    meanings: input.meanings ?? [],
+    meanings: [...(input.meanings ?? []), ...measures.value],
     capabilities: [],
   };
   return parseCatalog(catalog);

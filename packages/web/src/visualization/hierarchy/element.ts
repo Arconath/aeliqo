@@ -312,7 +312,8 @@ export abstract class AeliqoHierarchyElementBase extends AeliqoFoundationElement
     return svg`<text
       class=${className}
       x=${node.x + 6}
-      y=${node.y + Math.min(18, node.height - 4)}
+      y=${node.y + 4}
+      dominant-baseline="text-before-edge"
     >${text}</text>`;
   }
 

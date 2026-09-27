@@ -1,9 +1,15 @@
 import * as z from 'zod/mini';
-import { idSchema, jsonSchema, versionRefSchema } from '../../contracts/schemas.js';
-import { WIRE_LIMITS } from '../../contracts/limits.js';
+import { jsonSchema, versionRefSchema } from '../../contracts/schemas.js';
+import { canonicalIds, canonicalRefs } from '../../contracts/schema-primitives.js';
 import type { Outcome, VersionRef } from '../../contracts/types.js';
 import type { PresentationQuality, PresentationValues, ResolvedPresentationConfig } from '../types.js';
-import { freezePresentation, isThenable, presentationFailure as fail, versionKey } from '../registry.js';
+import {
+  freezePresentation,
+  isThenable,
+  ownsPresentationRegistration,
+  presentationFailure as fail,
+  versionKey,
+} from '../registry.js';
 import type { PresentationValidationCache } from './types.js';
 import { callbackOutcome } from './shared.js';
 
@@ -11,18 +17,19 @@ const MAX_MEASURED_MICROSECONDS = 1_000_000_000_000;
 const EMPTY_RESOLVED_LIST = Object.freeze([]) as readonly never[];
 const resolvedSchema = z.strictObject({
   values: z.record(z.string(), jsonSchema),
-  fields: z.array(idSchema).check(z.maxLength(WIRE_LIMITS.array)),
+  fields: canonicalIds,
   ports: z.array(z.unknown()).check(z.maxLength(128)),
-  operations: z.optional(z.array(versionRefSchema).check(z.maxLength(WIRE_LIMITS.array))),
+  operations: z.optional(canonicalRefs),
 });
+const ordinalSchema = z.int().check(z.minimum(0), z.maximum(100));
 const qualitySchema = z.strictObject({
-  taskFit: z.number().check(z.int(), z.minimum(0), z.maximum(100)),
-  informationDensity: z.number().check(z.int(), z.minimum(0), z.maximum(100)),
-  interactionEffort: z.number().check(z.int(), z.minimum(0), z.maximum(100)),
-  legibilityPenalty: z.number().check(z.int(), z.minimum(0), z.maximum(100)),
+  taskFit: ordinalSchema,
+  informationDensity: ordinalSchema,
+  interactionEffort: ordinalSchema,
+  legibilityPenalty: ordinalSchema,
   cost: z.optional(
     z.strictObject({
-      microseconds: z.number().check(z.int(), z.minimum(0), z.maximum(MAX_MEASURED_MICROSECONDS)),
+      microseconds: z.int().check(z.minimum(0), z.maximum(MAX_MEASURED_MICROSECONDS)),
       measurement: versionRefSchema,
     }),
   ),
@@ -57,7 +64,11 @@ function hasExactEmptyConfig(config: unknown, values: PresentationValues): boole
     !descriptors.values.enumerable
   )
     return false;
-  return (['fields', 'ports', 'operations'] as const).every((key) => isEmptyArrayDescriptor(descriptors[key]));
+  return (
+    isEmptyArrayDescriptor(descriptors.fields) &&
+    isEmptyArrayDescriptor(descriptors.ports) &&
+    isEmptyArrayDescriptor(descriptors.operations)
+  );
 }
 
 /** Fast path only for the exact accessor-free empty layout shape owned by the supplied values. */
@@ -128,31 +139,28 @@ export function parseResolvedConfig(
   if (raw !== null && typeof raw === 'object' && isRecursivelyFrozenOutcome(raw)) {
     const owned = freezePresentation(config);
     cache.resolvedConfigs.set(raw, owned);
+    cache.checkedConfigs.set(owned, []);
     return { ok: true, value: owned };
   }
   return { ok: true, value: config };
 }
 
 function failConfiguration(): Outcome<never> {
-  return {
-    ok: false,
-    diagnostics: [
-      {
-        code: 'presentation.configuration',
-        message: 'The registered configuration result is malformed.',
-        retryable: false,
-      },
-    ],
-  };
+  return fail('configuration', 'The registered configuration result is malformed.');
 }
 
 export function validateResolvedConfig(
   config: ResolvedPresentationConfig,
   operations: readonly VersionRef[],
-  allowedOperations: ReadonlySet<string> | undefined,
   resultFields: ReadonlySet<string> | undefined,
-  resultAvailable: boolean,
+  cache: PresentationValidationCache,
 ): Outcome<readonly VersionRef[]> {
+  // Both config and declarations must be owned. Field/permission sets remain
+  // private and stable within this validation context.
+  const allowedOperations = cache.allowedOperations;
+  const entries = cache.checkedConfigs.get(config);
+  const previous = entries?.find(([declared, fields]) => declared === operations && fields === resultFields);
+  if (previous) return { ok: true, value: previous[2] };
   if (new Set(config.fields).size !== config.fields.length) return failConfiguration();
   const enabled = config.operations ?? operations;
   if (
@@ -160,10 +168,11 @@ export function validateResolvedConfig(
     enabled.some((op) => !operations.some((declared) => versionKey(op) === versionKey(declared)))
   )
     return fail('configuration', 'Enabled operations must be a unique subset of the registered manifest.');
-  if (allowedOperations !== undefined && enabled.some((op) => !allowedOperations.has(versionKey(op))))
+  if (allowedOperations && enabled.some((op) => !allowedOperations.has(versionKey(op))))
     return fail('restricted', 'The representation exposes an operation restricted by the active experience.');
-  if (config.fields.some((field) => !resultAvailable || !resultFields?.has(field)))
+  if (config.fields.some((field) => !resultFields?.has(field)))
     return fail('field', 'A representation refers to a field absent from its result.');
+  if (entries && ownsPresentationRegistration(operations)) entries.push([operations, resultFields, enabled]);
   return { ok: true, value: enabled };
 }
 
@@ -173,7 +182,5 @@ export function parsePresentationQuality(raw: unknown): Outcome<PresentationQual
   const parsed = z.safeParse(qualitySchema, outcome.value);
   if (!parsed.success)
     return fail('quality', 'A presentation quality assessment is malformed or outside its bounded ordinal contract.');
-  if (parsed.data.cost !== undefined && !Number.isSafeInteger(parsed.data.cost.microseconds))
-    return fail('quality', 'A measured presentation cost must be a finite safe integer.');
   return { ok: true, value: freezePresentation(parsed.data as PresentationQuality) };
 }

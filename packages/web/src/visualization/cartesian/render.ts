@@ -164,7 +164,11 @@ function renderGeometry(
     ${
       data
         ? html`${renderLegend(geometry)}${renderColorKey(geometry)}
-          ${renderDataTable(geometry, label, tableLabel, context, page.rows)} ${renderPagination(page, label, context)}`
+            <details part="data-details">
+              <summary>View data table</summary>
+              ${renderDataTable(geometry, label, tableLabel, context, page.rows)}
+              ${renderPagination(page, label, context)}
+            </details>`
         : nothing
     }
   </figure>`;
@@ -266,13 +270,15 @@ function renderChart(
       ></path>
       ${axes.x.ticks.map(
         (tick, index) =>
-          svg`<text class="axis-x-tick" x=${tick.position} y=${xTickStart + (index % 2) * xTickRowGap} text-anchor=${xTickAnchor(index, axes.x.ticks.length)}>${tickText(tick.label)}</text>`,
+          svg`<text class=${index % 2 === 0 ? 'axis-x-tick' : 'axis-x-tick axis-x-tick-offset'} x=${tick.position} y=${xTickStart + (index % 2) * xTickRowGap} text-anchor=${xTickAnchor(index, axes.x.ticks.length)}>${tickText(tick.label)}</text>`,
       )}
       ${axes.y.ticks.map(
         (tick) =>
           svg`<text class="axis-y-tick" x=${left - 4} y=${tick.position} text-anchor="end">${tickText(tick.label)}</text>`,
       )}
-      <text class="axis-title" x=${geometry.width / 2} y=${xTitleBaseline} text-anchor="middle">${axes.xLabel}</text>
+      <text class="axis-title axis-title-x" x=${geometry.width / 2} y=${xTitleBaseline} text-anchor="middle">
+        ${axes.xLabel}
+      </text>
       <text class="axis-title" x=${left + 8} y="32">${axes.yLabel}</text>
     </svg>
   </div>`;
@@ -322,7 +328,7 @@ function renderDataTable(
       </caption>
       <thead>
         <tr>
-          <th scope="col">Select</th>
+          ${context.selectionEnabled ? html`<th scope="col">Select</th>` : nothing}
           ${geometry.result.fields.map((field) => fieldHeader(field))}
         </tr>
       </thead>
@@ -332,19 +338,7 @@ function renderDataTable(
           (row) => row.identity,
           (row) =>
             html`<tr>
-              <td data-label="Select">
-                <button
-                  type="button"
-                  ?disabled=${!context.selectionEnabled}
-                  data-aeliqo-row-identity=${row.identity}
-                  data-aeliqo-result=${resultKey(geometry.result.ref)}
-                  aria-pressed=${context.isSelected(row.identity, geometry.result.ref) ? 'true' : 'false'}
-                  aria-label=${'Select ' + identityLabel(row, geometry.result)}
-                  @click=${() => context.select(row.identity, geometry.result.ref)}
-                >
-                  Select
-                </button>
-              </td>
+              ${context.selectionEnabled ? renderSelectCell(row, geometry, context) : nothing}
               ${geometry.result.fields.map(
                 (field) => html`<td data-label=${field.label}>${exactLabel(row.values[field.id]!)}</td>`,
               )}
@@ -353,6 +347,25 @@ function renderDataTable(
       </tbody>
     </table>
   </div>`;
+}
+
+function renderSelectCell(
+  row: PlotGeometry['rows'][number],
+  geometry: PlotGeometry,
+  context: CartesianRenderContext,
+): unknown {
+  return html`<td data-label="Select">
+    <button
+      type="button"
+      data-aeliqo-row-identity=${row.identity}
+      data-aeliqo-result=${resultKey(geometry.result.ref)}
+      aria-pressed=${context.isSelected(row.identity, geometry.result.ref) ? 'true' : 'false'}
+      aria-label=${'Select ' + identityLabel(row, geometry.result)}
+      @click=${() => context.select(row.identity, geometry.result.ref)}
+    >
+      Select
+    </button>
+  </td>`;
 }
 
 function renderPagination(

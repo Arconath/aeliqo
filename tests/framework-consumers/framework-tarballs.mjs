@@ -12,7 +12,8 @@ import { access, cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promise
 import { tmpdir, platform, release, arch } from 'node:os';
 import { extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
+import { stageAuthoredGuides, verifyAuthoredGuides } from './authored-guides.mjs';
 import { RELEASE_VERSION } from '../../scripts/release/candidate-lib.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -177,27 +178,102 @@ await writeFile(join(runDirectory, 'consumer-package-lock.json'), lockBytes);
 const quickstart = await readFile(join(root, 'docs/site/pages/quickstart.md'), 'utf8');
 const quickstartDirectory = await mkdtemp(join(tmpdir(), 'aeliqo-quickstart-consumer-'));
 const codeFence = String.fromCharCode(96).repeat(3);
-await mkdir(join(quickstartDirectory, 'src'), { recursive: true });
-for (const [label, language, path] of [
-  ['package.json', 'json', 'package.json'],
-  ['tsconfig.json', 'json', 'tsconfig.json'],
-  ['index.html', 'html', 'index.html'],
-  ['src/main.tsx', 'tsx', 'src/main.tsx'],
-]) {
-  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = quickstart.match(
-    new RegExp(`\\*\\*${escaped}\\*\\*\\s*${codeFence}${language}\\n([\\s\\S]*?)\\n${codeFence}`, 'u'),
+const readme = await readFile(join(root, 'README.md'), 'utf8');
+const readmeInstall = readme.match(
+  new RegExp(`${codeFence}sh\\nnpm install --save-exact ([\\s\\S]*?)\\n${codeFence}`, 'u'),
+);
+assert(readmeInstall, 'README install command is missing');
+for (const name of packageNames)
+  assert(
+    readmeInstall[1].includes(`@aeliqo/${name}@${RELEASE_VERSION}`),
+    `README does not install @aeliqo/${name}@${RELEASE_VERSION} for its React example`,
   );
-  assert(match, `Quickstart ${label} example is missing`);
-  await writeFile(join(quickstartDirectory, path), `${match[1]}\n`);
-}
-const quickstartManifest = JSON.parse(await readFile(join(quickstartDirectory, 'package.json'), 'utf8'));
-for (const name of packageNames) assert.equal(quickstartManifest.dependencies[`@aeliqo/${name}`], RELEASE_VERSION);
+const readmeExample = readme.match(new RegExp(`${codeFence}tsx\\n([\\s\\S]*?)\\n${codeFence}`, 'u'));
+assert(readmeExample, 'README React example is missing');
+
+// The documented flow scaffolds a Vite react-ts app, installs the pinned SDK
+// packages, then writes src/people.ts and one complete src/main.tsx. Rebuild that consumer
+// honestly: extract the install command and the authored source blocks, then
+// provide a minimal Vite scaffold with pinned dependencies; this does not execute create-vite.
+const installMatch = quickstart.match(
+  new RegExp(`${codeFence}bash\\nnpm install --save-exact ([^\\n]+)\\n${codeFence}`, 'u'),
+);
+assert(installMatch, 'Quickstart install command is missing');
+const installSpecifiers = installMatch[1].trim().split(/\s+/u);
+for (const name of packageNames)
+  assert(
+    installSpecifiers.includes(`@aeliqo/${name}@${RELEASE_VERSION}`),
+    `Quickstart does not pin @aeliqo/${name}@${RELEASE_VERSION}`,
+  );
+
+const fencedBlocks = (language) =>
+  [...quickstart.matchAll(new RegExp(`${codeFence}${language}\\n([\\s\\S]*?)\\n${codeFence}`, 'gu'))].map(
+    (match) => match[1],
+  );
+const tsBlocks = fencedBlocks('ts');
+const tsxBlocks = fencedBlocks('tsx');
+const cssBlocks = fencedBlocks('css');
+assert.equal(tsBlocks.length, 1, 'Quickstart must contain exactly one TypeScript data definition');
+assert.equal(tsxBlocks.length, 1, 'Quickstart must contain one complete intent entry');
+assert.equal(cssBlocks.length, 1, 'Quickstart must contain one complete host stylesheet');
+assert.match(tsBlocks[0], /measures: \{ hires:/u, 'The quickstart data must declare the hires measure');
+
+await mkdir(join(quickstartDirectory, 'src'), { recursive: true });
+await writeFile(join(quickstartDirectory, 'src/people.ts'), `${tsBlocks[0]}\n`);
+await writeFile(join(quickstartDirectory, 'src/main.tsx'), `${tsxBlocks[0]}\n`);
+await writeFile(join(quickstartDirectory, 'src/people.css'), `${cssBlocks[0]}\n`);
+await writeFile(join(quickstartDirectory, 'src/readme-example.tsx'), `${readmeExample[1]}\n`);
 const quickstartSource = await readFile(join(quickstartDirectory, 'src/main.tsx'), 'utf8');
-assert.match(quickstartSource, /useDataSurface\(\{ data: rows, getRowId:/u);
-assert.doesNotMatch(quickstartSource, /AeliqoProvider|createAeliqoApp|factory|model|agent/u);
+for (const kind of ['browse', 'analyze']) assert.match(quickstartSource, new RegExp(`kind: '${kind}'`, 'u'));
+assert.doesNotMatch(quickstartSource, /factory|model|agent/u);
+
+const quickstartManifest = {
+  name: 'aeliqo-quickstart-consumer',
+  private: true,
+  type: 'module',
+  dependencies: {
+    react: '19.2.8',
+    'react-dom': '19.2.8',
+    zod: '4.5.4',
+  },
+  devDependencies: {
+    '@types/node': '24.13.3',
+    '@types/react': '19.2.18',
+    '@types/react-dom': '19.2.7',
+    typescript: '7.0.2',
+    vite: '8.2.2',
+  },
+};
 for (const artifact of artifacts) quickstartManifest.dependencies[artifact.name] = `file:${artifact.path}`;
 await writeFile(join(quickstartDirectory, 'package.json'), `${JSON.stringify(quickstartManifest, null, 2)}\n`);
+await writeFile(
+  join(quickstartDirectory, 'index.html'),
+  '<div id="root"></div><script type="module" src="/src/main.tsx"></script>\n',
+);
+await writeFile(
+  join(quickstartDirectory, 'tsconfig.json'),
+  `${JSON.stringify(
+    {
+      compilerOptions: {
+        target: 'ES2022',
+        module: 'ESNext',
+        moduleResolution: 'bundler',
+        strict: true,
+        exactOptionalPropertyTypes: true,
+        noUncheckedIndexedAccess: true,
+        skipLibCheck: true,
+        jsx: 'react-jsx',
+        noEmit: true,
+        lib: ['ES2022', 'DOM', 'DOM.Iterable'],
+        types: ['node', 'react', 'vite/client'],
+        verbatimModuleSyntax: true,
+      },
+      include: ['src'],
+    },
+    null,
+    2,
+  )}\n`,
+);
 run(['npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund'], quickstartDirectory);
 const quickstartLock = JSON.parse(await readFile(join(quickstartDirectory, 'package-lock.json'), 'utf8'));
 for (const artifact of artifacts) {
@@ -545,7 +621,11 @@ vueAppStatus.textContent = (await vueApp.render({regionId: "vue-people", intent:
 window.addEventListener("pagehide", () => { vanillaApp.dispose(); reactApp.dispose(); vueApp.dispose(); }, {once: true});
 `,
 );
-await writeFile(join(consumer, 'vite.config.mjs'), `export default {build: {target: "es2022"}};\n`);
+const guideEntries = await stageAuthoredGuides(root, consumer, run);
+await writeFile(
+  join(consumer, 'vite.config.mjs'),
+  `export default {build: {target: 'es2022',rolldownOptions:{input:${JSON.stringify(['index.html', ...guideEntries])}}}};\n`,
+);
 run([join(consumer, 'node_modules/.bin/vite'), 'build'], consumer);
 assert(await fileExists(join(consumer, 'dist', 'index.html')), 'Consumer build has no index.html');
 run([join(quickstartDirectory, 'node_modules/.bin/vite'), 'build', '--base', '/quickstart/'], quickstartDirectory);
@@ -617,19 +697,56 @@ try {
     if (new URL(request.url()).origin !== origin) externalRequests.push(request.url());
   });
   await page.goto(`${origin}/quickstart/index.html`);
-  await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
   const minimal = page.locator('#root main');
-  assert.match(await minimal.textContent(), /Sam Rivera/u);
-  await minimal.getByRole('button', { name: 'Show Engineering' }).click();
-  await page.waitForFunction(() => {
-    const text = document.querySelector('#root main')?.textContent ?? '';
-    return text.includes('Sam Rivera') && !text.includes('Ada Chen');
-  });
-  await minimal.getByRole('button', { name: 'Show everyone' }).click();
-  await page.waitForFunction(() => document.querySelector('#root main')?.textContent?.includes('Ada Chen'));
-  assert.deepEqual(externalRequests, [], 'Minimal local React app made a remote request');
-  assert.deepEqual(browserErrors, [], 'Minimal local React app raised a browser error');
+  const region = minimal.locator('aeliqo-region');
+  const shows = (text) => region.getByText(text, { exact: true }).first().waitFor({ timeout: 15_000 });
+  const ask = async (name) => {
+    await minimal.getByRole('button', { name, exact: true }).click();
+    assert.equal(await minimal.getByRole('button', { name, exact: true }).getAttribute('aria-pressed'), 'true');
+  };
+  await shows('Ada Chen');
+  await shows('Sam Rivera');
+  await ask('Engineering only');
+  await shows('Jo Patel');
+  await expect(region.getByText('Ada Chen', { exact: true })).toHaveCount(0, { timeout: 15_000 });
+  await ask('Hires per month');
+  await region.locator('svg').first().waitFor({ timeout: 15_000 });
+  await region.getByText('New hires', { exact: true }).first().waitFor({ timeout: 15_000 });
+  await page.screenshot({ path: join(runDirectory, 'quickstart-hires-per-month.png'), fullPage: true });
+  await ask('Hires per team');
+  await shows('Product');
+  await region.locator('svg').first().waitFor({ timeout: 15_000 });
+  await shows('New hires by Team');
+  await expect
+    .poll(async () => {
+      const chart = await region.locator('aeliqo-bar svg').first().boundingBox();
+      const host = await region.boundingBox();
+      return chart !== null && host !== null && chart.width >= host.width - 40;
+    })
+    .toBe(true);
+  await page.screenshot({ path: join(runDirectory, 'quickstart-hires-per-team.png'), fullPage: true });
+  await ask('Everyone');
+  await shows('Ada Chen');
+  for (const button of await minimal.getByRole('button').all()) {
+    const box = await button.boundingBox();
+    assert(box && box.height >= 44, 'Quickstart question targets must be at least 44px tall');
+  }
+  await minimal.getByRole('button', { name: 'Everyone', exact: true }).focus();
+  await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Engineering only');
+  assert.equal(await page.evaluate(() => getComputedStyle(document.activeElement).outlineWidth), '3px');
+  assert.deepEqual(externalRequests, [], 'Quickstart app made a remote request');
+  assert.deepEqual(browserErrors, [], 'Quickstart app raised a browser error');
   await page.screenshot({ path: join(runDirectory, 'quickstart-local-react.png'), fullPage: true });
+  await page.setViewportSize({ width: 320, height: 800 });
+  await shows('Ada Chen');
+  assert(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    'Quickstart overflows at 320px',
+  );
+  await page.screenshot({ path: join(runDirectory, 'quickstart-local-react-narrow.png'), fullPage: true });
+  await verifyAuthoredGuides(page, origin, runDirectory);
+  assert.deepEqual(browserErrors, [], 'Authored framework guide raised a browser error');
 } finally {
   await browser?.close();
   await new Promise((resolveServer) => server.close(resolveServer));
@@ -643,7 +760,7 @@ await writeFile(
       sourceDigest: before,
       passed: true,
       scope:
-        'Installed core/runtime/web/react tarballs; exact four-file minimal React quickstart mounts, filters, and restores local rows without a provider, factory, or remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
+        'Installed core/runtime/web/react tarballs; Authored React quickstart in a minimal Vite consumer with pinned dependencies answers browse, filtered browse, monthly trend, and per-team analyze intents from one resource without a remote request; all 71 React wrapper exports; one adaptive app facade rendered through Vanilla, React, and Vue hosts; React declarative Shadow DOM SSR; property/event behavior in Chromium; manual schema-reuse meaning path without model, Studio, chart, or layout imports.',
       artifacts: artifacts.map(({ entries, ...artifact }) => ({ ...artifact, entries })),
       consumerDirectory: consumer,
       quickstartConsumerDirectory: quickstartDirectory,

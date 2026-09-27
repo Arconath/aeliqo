@@ -27,8 +27,10 @@ function localizedTrendSummary(
   return dataStatusMessage(materializedDataStatus(result), undefined, locale) ?? '';
 }
 
-function trendTitle(value: unknown, locale: string | undefined): string {
-  return text(value, /^id(?:-|$)/i.test(locale ?? '') ? 'Tren' : 'Trend');
+/** Names the chart after its measure, for example "New hires", unless the config sets a title. */
+function trendTitle(values: Record<string, unknown>, locale: string | undefined): string {
+  const measure = text(record((values.series as readonly unknown[] | undefined)?.[0])?.label);
+  return text(values.title, measure || (/^id(?:-|$)/i.test(locale ?? '') ? 'Tren' : 'Trend'));
 }
 
 export function renderTrendNode(
@@ -101,7 +103,7 @@ export function renderTrendNode(
     data-aeliqo-node-id=${resolved.node.id}
     data-aeliqo-theme="inherit"
     lang=${locale ?? ''}
-    .title=${trendTitle(values.title, locale)}
+    .title=${trendTitle(values, locale)}
     .summary=${localizedTrendSummary(bound, resolved.result, locale)}
     .scope=${scopeText(bound?.scope, locale) ?? ''}
     .series=${series}

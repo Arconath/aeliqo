@@ -2,7 +2,7 @@
 component: 'compound.form-flow'
 title: 'FormFlow'
 family: 'compound'
-contract: 'Task-based steps, draft persistence, validation and reversible navigation before commit.'
+contract: 'Task-based steps, draft continuity, validation and reversible navigation before commit.'
 ---
 
 ## Import and live example
@@ -13,13 +13,15 @@ contract: 'Task-based steps, draft persistence, validation and reversible naviga
 
 ## Purpose
 
-FormFlow walks users through named steps with a persisted draft and per-step validation. Use it when a task splits into ordered, reversible screens before commit.
+FormFlow walks users through named steps while retaining field drafts across navigation and
+validating each step before commit. The host supplies `draft` and `activeStep` and owns durable
+persistence.
 
 ## When to use it
 
 - A task splits into named steps users move through forward and back.
 - Each step must validate before the next step or the commit runs.
-- Draft values must persist across steps and keep focus stable.
+- Draft values must carry across steps and keep focus stable.
 - Commit is a host proposal; the flow never applies the effect itself.
 
 ## When to use a different component
@@ -75,6 +77,4 @@ Keep the step label, validation, draft, and navigation in DOM order. Let the flo
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

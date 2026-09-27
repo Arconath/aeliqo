@@ -2,6 +2,10 @@ import { defineResource, type Intent } from '@aeliqo/core';
 import * as z from 'zod';
 import { HEADCOUNT_RECORDS, HEADCOUNT_RESOURCE } from './workforce-scenario.js';
 
+import { WORKSPACE_RESOURCE, WORKSPACE_RECORDS } from '../../../../examples/vnext/workspace/page.js';
+
+import { resource as dailyAttendance, records as dailyRecords } from '../../../../examples/vnext/attendance/data.js';
+
 export type ScenarioId = 'people' | 'products' | 'support' | 'knowledge';
 
 interface PlaygroundStep {
@@ -156,6 +160,8 @@ const articles = defineResource({
 });
 
 export const PLAYGROUND_RESOURCES = Object.freeze({
+  attendance: WORKSPACE_RESOURCE,
+  dailyAttendance,
   people,
   absences,
   headcount: HEADCOUNT_RESOURCE,
@@ -165,6 +171,8 @@ export const PLAYGROUND_RESOURCES = Object.freeze({
 });
 
 export const PLAYGROUND_RECORDS = Object.freeze({
+  attendance: WORKSPACE_RECORDS,
+  'daily-attendance': dailyRecords,
   people: [
     { id: 'p-1', name: 'Ada Chen', team: 'Design', location: 'Jakarta' },
     { id: 'p-2', name: 'Sam Rivera', team: 'Engineering', location: 'Lisbon' },

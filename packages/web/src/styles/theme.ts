@@ -9,7 +9,7 @@ const declarations = (values: Readonly<Record<string, string>>): string =>
 
 // Shared defaults come first so theme-specific values, including palettes, win.
 const baseDeclarations = `${declarations(AELIQO_SHARED_TOKENS)}\n${declarations(AELIQO_LIGHT_TOKENS)}`;
-const darkDeclarations = `${declarations(AELIQO_SHARED_TOKENS)}\n${declarations(AELIQO_DARK_TOKENS)}`;
+const darkDeclarations = declarations(AELIQO_DARK_TOKENS);
 
 const forcedColorDeclarations = `
   --aeliqo-color-canvas: Canvas;
@@ -28,6 +28,10 @@ const forcedColorDeclarations = `
   --aeliqo-visualization-series2: Highlight;
   --aeliqo-visualization-series3: Highlight;
   --aeliqo-visualization-series4: Highlight;
+  --aeliqo-visualization-series5: Highlight;
+  --aeliqo-visualization-series6: Highlight;
+  --aeliqo-visualization-quantitative-start: CanvasText;
+  --aeliqo-visualization-quantitative-end: CanvasText;
   --aeliqo-visualization-reference: ButtonText;
 `;
 
@@ -63,6 +67,7 @@ export const aeliqoThemeStyles: CSSResult = css`
     ${unsafeCSS(sharedRules)}
     color-scheme: light;
     box-sizing: border-box;
+    --_aeliqo-coarse-target: 0px;
   }
 
   :host([data-aeliqo-theme='dark']) {
@@ -114,8 +119,15 @@ export const aeliqoThemeStyles: CSSResult = css`
     --aeliqo-control-min-target: var(--aeliqo-control-compact-target);
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  @media (pointer: coarse) {
     :host {
+      --_aeliqo-coarse-target: max(44px, var(--aeliqo-control-coarse-target, 2.75rem));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :host,
+    :host([data-aeliqo-theme='inherit']) {
       --aeliqo-motion-duration-fast: 0ms;
       --aeliqo-motion-duration-standard: 0ms;
     }
@@ -134,7 +146,7 @@ export const aeliqoThemeStyles: CSSResult = css`
  * container carrying `data-aeliqo-theme`; importing this module has no global
  * side effect and does not mutate `document.documentElement`.
  */
-export const aeliqoStandaloneThemeStyles: CSSResult = css`
+export const aeliqoStandaloneThemeStyles: CSSResult = /* @__PURE__ */ (() => css`
   :where([data-aeliqo-theme]:not([data-aeliqo-theme='inherit'])) {
     ${unsafeCSS(baseDeclarations)}
     ${unsafeCSS(sharedRules)}
@@ -180,6 +192,6 @@ export const aeliqoStandaloneThemeStyles: CSSResult = css`
       forced-color-adjust: auto;
     }
   }
-`;
+`)();
 
 export const aeliqoThemeStyleText = aeliqoThemeStyles.cssText;

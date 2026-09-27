@@ -333,6 +333,8 @@ try {
         .locator('svg rect,svg line,svg circle,svg path')
         .evaluateAll((nodes) => nodes.length > 0 && nodes.every((node) => node instanceof SVGGraphicsElement)),
     );
+    const disclosure = host.getByText('View data table', { exact: true });
+    if ((await disclosure.count()) > 0) await disclosure.first().click();
     const button = host.locator('table button').first();
     await button.focus();
     await page.keyboard.press('Enter');

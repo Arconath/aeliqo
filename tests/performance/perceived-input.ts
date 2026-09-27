@@ -1,6 +1,6 @@
 import { AeliqoTextFieldElement } from '@aeliqo/web/inputs';
 import { AeliqoTableElement } from '@aeliqo/web/table';
-import type { AeliqoTableColumn, AeliqoTableRow } from '@aeliqo/web';
+import type { AeliqoTableColumn, AeliqoTableRow } from '@aeliqo/web/data';
 
 type TimingStatus = 'observed' | 'missing-or-threshold-censored';
 

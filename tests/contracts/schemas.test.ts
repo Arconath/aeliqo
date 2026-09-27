@@ -21,6 +21,9 @@ const kinds = [
   'agent-loop-budget',
   'agent-stop-reason',
   'narrative-claim',
+  'intent',
+  'plot-spec',
+  'visualization-spec',
 ] as const;
 
 type Schema = {

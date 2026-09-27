@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
+import { verifyManualLayouts, verifyNativePlayground } from './playground-live.mjs';
 import { RELEASE_VERSION } from './metadata.mjs';
 const expectedSha = process.argv[2];
 if (!/^[a-f0-9]{40}$/u.test(expectedSha ?? '')) throw new Error('Expected full release SHA.');
 const apexOrigin = process.env.AELIQO_APEX_ORIGIN ?? 'https://aeliqo.com';
 const docsOrigin = process.env.AELIQO_DOCS_ORIGIN ?? 'https://docs.aeliqo.com';
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ['--enable-features=WebMCPTesting'] });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
 const errors = [];
@@ -35,6 +36,11 @@ try {
   await visit(`${apexOrigin}/readyz`);
   await visit(`${apexOrigin}/`);
   assert((await page.locator('h1').count()) > 0);
+  await visit(`${docsOrigin}/`);
+  const brand = page.locator('header a').filter({ hasText: 'Aeliqo' }).first();
+  assert.equal(await brand.getAttribute('href'), `${apexOrigin}/`);
+  await brand.click();
+  await expect(page).toHaveURL(`${apexOrigin}/`);
   await visit(`${docsOrigin}/components/data.table/`);
   evidence.componentSidebarLinks = await page
     .locator('.docs-sidebar nav a[href^="/components/"]:not([href="/components/"])')
@@ -50,58 +56,18 @@ try {
   await page.waitForFunction(() => document.querySelector('#pg-receipt-state')?.textContent === 'renderer-ready');
   await page.locator('[data-journey="jakarta"]').click();
   await page.waitForFunction(() => document.querySelector('#pg-receipt-state')?.textContent === 'renderer-ready');
-  assert.match(await page.locator('#pg-committed-filter').textContent(), /Jakarta/u);
-  assert.equal(await page.locator('aeliqo-table').getByText('Ada Chen').count(), 1);
-  assert.equal(await page.locator('aeliqo-table').getByText('Sam Rivera').count(), 0);
+  await expect(page.locator('#pg-committed-filter')).toContainText('Jakarta');
+  await expect(page.locator('aeliqo-table').getByText('Ada Chen')).toHaveCount(1);
+  await expect(page.locator('aeliqo-table').getByText('Sam Rivera')).toHaveCount(0);
   evidence.peopleJakarta = {
     committedFilter: (await page.locator('#pg-committed-filter').textContent()).trim(),
     adaRows: await page.locator('aeliqo-table').getByText('Ada Chen').count(),
     samRows: await page.locator('aeliqo-table').getByText('Sam Rivera').count(),
   };
-  assert.equal(await page.locator('#pg-export').isEnabled(), false);
-  for (const [journey, selector] of [
-    ['attendance', '[data-testid="attendance-status"]'],
-    ['workspace', '[data-testid="goal-status"]'],
-  ]) {
-    await page.locator(`[data-journey="${journey}"]`).click();
-    await page.waitForFunction(
-      (target) => document.querySelector(target)?.textContent?.includes('renderer-ready'),
-      selector,
-    );
-    assert.equal(await page.locator('#pg-export').isEnabled(), false);
-  }
-  await page.locator('[data-journey="attendance"]').click();
-  await page.waitForFunction(() =>
-    document.querySelector('[data-testid="attendance-status"]')?.textContent?.includes('renderer-ready'),
-  );
-  assert.match(await page.locator('[data-testid="period"]').textContent(), /Asia\/Jakarta/u);
-  assert.match(await page.locator('[data-testid="daily-values"]').textContent(), /2026-09-02: 0\.5/u);
-  evidence.attendance = {
-    period: (await page.locator('[data-testid="period"]').textContent()).trim(),
-    dailyValues: await page.locator('[data-testid="daily-values"] li').allTextContents(),
-  };
-  assert.deepEqual(evidence.attendance.dailyValues, ['2026-09-01: 1', '2026-09-02: 0.5', '2026-09-03: 1']);
-  await page.getByRole('button', { name: 'Compare attendance metrics' }).click();
-  assert.match(await page.locator('#pg-journey-result').textContent(), /Needs a choice/u);
-  evidence.attendance.clarification = (await page.locator('#pg-journey-result').textContent()).trim();
-  await page.locator('[data-journey="workspace"]').click();
-  await page.waitForFunction(() =>
-    document.querySelector('[data-testid="goal-status"]')?.textContent?.includes('renderer-ready'),
-  );
-  assert.equal(
-    await page.locator('[data-testid="goal-workspace"]').getAttribute('data-needs'),
-    'summary,trend,breakdown',
-  );
-  await page.getByRole('button', { name: 'Request anomaly' }).click();
-  assert.match(await page.locator('[data-testid="goal-status"]').textContent(), /unsupported:intent\.unknown-custom/u);
-  assert((await page.locator('[data-testid="goal-workspace"]').getByText('Ada').count()) > 0);
-  evidence.workspace = {
-    needs: await page.locator('[data-testid="goal-workspace"]').getAttribute('data-needs'),
-    unsupported: (await page.locator('[data-testid="goal-status"]').textContent()).trim(),
-    priorAdaRetained: (await page.locator('[data-testid="goal-workspace"]').getByText('Ada').count()) > 0,
-  };
-  assert.equal(await page.locator('#pg-model-calls').textContent(), '0');
+  evidence.manualLayouts = await verifyManualLayouts(page);
+  evidence.webmcp = await verifyNativePlayground(page);
   await page.locator('#pg-scenario').selectOption('products');
+  await page.locator('#pg-menu > summary').click();
   assert.equal(await page.locator('#pg-export').isEnabled(), true);
   const downloadPromise = page.waitForEvent('download');
   await page.locator('#pg-export').click();
@@ -124,7 +90,8 @@ try {
       expectedSha,
       checks,
       evidence,
-      noAiJourneys: ['people', 'attendance', 'workspace'],
+      manualJourneys: ['people', 'attendance', 'workspace', 'page'],
+      browserVersion: browser.version(),
       modelCalls: 0,
       export: { filename: download.suggestedFilename(), bytes: archive.length, pinnedVersion: RELEASE_VERSION },
     }),

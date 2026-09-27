@@ -47,7 +47,7 @@ export function positive(value: number, name: string, ceiling = Number.MAX_SAFE_
 }
 
 /**
- * Canonical form for ADC wire-correlation equality only. Unlike
+ * Canonical form for data-service wire-correlation equality only. Unlike
  * ../canonical.js this normalizes `-0` exactly as the JSON transport does, so
  * a request object still matches the peer's echoed (wire-normalized) copy.
  * Do not use for persisted evidence or digests.

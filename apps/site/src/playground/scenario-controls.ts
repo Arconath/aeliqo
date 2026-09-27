@@ -28,6 +28,9 @@ export function renderScenarioControls(
 }
 
 export function labelIntent(scenario: PlaygroundScenario, intent: Intent): string {
+  if (intent.resource === 'daily-attendance') return 'Daily attendance';
+  if (intent.kind === 'custom' && intent.resource === 'attendance')
+    return intent.intent.id === 'attendance.page' ? 'Registered page' : 'Analytical workspace';
   if (intent.id === 'people-jakarta') return 'People in Jakarta';
   const registered = scenario.steps.find((step) => step.id === intent.id);
   if (registered !== undefined) return registered.label;

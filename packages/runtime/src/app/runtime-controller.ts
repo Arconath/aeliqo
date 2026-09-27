@@ -21,13 +21,15 @@ import type {
   RuntimeResourceBinding,
   RuntimeResourceContext,
 } from './types.js';
+import { indexResources, validateOptions } from './runtime-options.js';
 import { readAuthority } from './runtime-authority.js';
 import { describeResource, resolveTrackedResult } from './runtime-resource.js';
+import { commitRuntimePresentation } from './presentation-commit.js';
 import { RuntimeRenderCoordinator } from './runtime-render.js';
 import type { RuntimeRenderHost, RuntimeRenderPrepare } from './runtime-render.js';
 import { createTrackedResultStore } from './runtime-result-store.js';
 import type { MountedRegion } from './runtime-state.js';
-import { diagnostic, failure, sameAuthority, sameTask, statusFor, uniqueRefs, validId } from './runtime-state.js';
+import { diagnostic, failure, sameAuthority, statusFor, uniqueRefs, validId } from './runtime-state.js';
 
 interface PresentationTarget {
   readonly slot: MountedRegion;
@@ -84,7 +86,7 @@ export class RuntimeController implements RuntimeRenderHost {
       createSurface: ((input: CreateDataSurfaceInput<unknown> | CreateCapabilitySurfaceInput<unknown, unknown>) =>
         this.surfaceFactory.create(input)) as AeliqoRuntime['createSurface'],
       mount: (input) => this.mount(input),
-      render: (input) => this.render(input),
+      render: (input, options) => this.render(input, options?.prepare),
       context: (regionId) => this.context(regionId),
       contexts: (regionId) => this.contexts(regionId),
       commitPresentation: (input) => this.commitPresentation(input),
@@ -114,6 +116,37 @@ export class RuntimeController implements RuntimeRenderHost {
       this.replacePrincipal(slot, slot.principalKey);
     slot.principalKey = current.value.principalKey;
     return current;
+  }
+
+  recoverState(
+    slot: MountedRegion,
+    state: RuntimeRegionState,
+    authority: AppAuthorityContext,
+    sequence: number,
+  ): Outcome<void> {
+    const current = this.authorityFor(slot, 'commit');
+    if (this.getSlot(slot.regionId) !== slot || slot.sequence !== sequence)
+      return failure('runtime.render-cancelled', 'A newer render replaced this request.');
+    if (!current.ok) {
+      this.clearDeniedPrincipal(slot);
+      return current;
+    }
+    const keys = ['principalKey', 'scopeDigest', 'policyRevision', 'experienceRevision'] as const;
+    if (keys.some((key) => current.value[key] !== authority[key])) {
+      this.clearDeniedPrincipal(slot);
+      return failure('runtime.authority-stale', 'Authority changed before the render could be restored.');
+    }
+    const region = this.regions.get(slot.regionId);
+    if (this.getSlot(slot.regionId) !== slot || region?.snapshot().status !== 'active')
+      return failure('runtime.authority-denied', 'The Region is no longer active.');
+    const now = region.snapshot();
+    const before = state.region;
+    if (
+      before === undefined ||
+      (now.taskRevision === before.taskRevision && now.regionRevision === before.regionRevision)
+    )
+      this.setState(slot, state);
+    return { ok: true, value: undefined };
   }
 
   setState(slot: MountedRegion, state: RuntimeRegionState): void {
@@ -186,21 +219,41 @@ export class RuntimeController implements RuntimeRenderHost {
   async commitPresentation(input: RuntimePresentationInput) {
     const target = this.presentationTarget(input.regionId);
     if (!target.ok) return target;
-    const current = target.value.region.snapshot();
-    const valid = this.validatePresentation(input, current);
-    if (!valid.ok) return valid;
-    const staged = await target.value.region.stage({
-      requestId: input.requestId,
-      expected: current.readSet!,
-      state: { task: input.task, presentation: input.presentation },
-    });
-    if (!staged.ok) return staged;
-    const committed = await target.value.region.commit(staged.value, {
-      ...(input.signal === undefined ? {} : { signal: input.signal }),
-      recheck: (next) => this.presentationRecheck(next, input.task),
-    });
-    if (committed.ok) this.publishPresentation(target.value.slot, committed.value, input.task);
+    const before = target.value.region.snapshot();
+    const principal = target.value.slot.principalKey;
+    const sequence = target.value.slot.sequence;
+    const committed = await commitRuntimePresentation(target.value.region, input);
+    if (committed.ok)
+      this.setState(target.value.slot, {
+        ...target.value.slot.state,
+        task: committed.value.state?.task ?? input.task,
+        region: committed.value,
+      });
+    else this.reconcilePresentationAuthority(target.value.slot, before, principal, input.requestId, sequence);
     return committed;
+  }
+
+  private reconcilePresentationAuthority(
+    slot: MountedRegion,
+    before: RegionSnapshot,
+    principal: string | undefined,
+    requestId: string,
+    sequence: number,
+  ): void {
+    if (this.getSlot(slot.regionId) !== slot || slot.sequence !== sequence) return;
+    const current = this.authorityFor(slot, 'commit');
+    if (this.getSlot(slot.regionId) !== slot || slot.sequence !== sequence) return;
+    if (
+      current.ok &&
+      current.value.principalKey === principal &&
+      current.value.scopeDigest === before.readSet?.scopeDigest
+    )
+      return;
+    this.clearDeniedPrincipal(slot);
+    const diagnostics = current.ok
+      ? [diagnostic('runtime.authority-denied', 'The presentation authority changed before publication.')]
+      : current.diagnostics;
+    this.failReceipt(slot, slot.sequence, requestId, diagnostics);
   }
 
   snapshot(regionId: string): RuntimeRegionState | undefined {
@@ -308,6 +361,8 @@ export class RuntimeController implements RuntimeRenderHost {
     if (!current.ok) return current;
     if (slot.principalKey !== undefined && current.value.principalKey !== slot.principalKey)
       return this.regionDenied('The authenticated principal changed before commit.');
+    const publication = this.renderer.checkPublication(slot);
+    if (!publication.ok) return publication;
     return {
       ok: true,
       value: {
@@ -404,25 +459,6 @@ export class RuntimeController implements RuntimeRenderHost {
     return { ok: true, value: { slot, region } };
   }
 
-  private validatePresentation(input: RuntimePresentationInput, current: RegionSnapshot): Outcome<void> {
-    if (!validId(input.requestId))
-      return failure('runtime.presentation-invalid', 'Presentation request ID must be bounded.', ['requestId']);
-    if (!sameTask(current, input.task))
-      return failure('runtime.presentation-stale', 'Presentation Task is not the current committed Task.');
-    if (current.readSet === undefined)
-      return failure('runtime.presentation-stale', 'Presentation Task has no active read set.');
-    return { ok: true, value: undefined };
-  }
-
-  private presentationRecheck(next: RegionSnapshot | undefined, task: Task): RegionOutcome<void> {
-    if (next?.state?.task.id === task.id) return { ok: true, value: undefined };
-    return this.regionStale('Presentation Task changed before commit.');
-  }
-
-  private publishPresentation(slot: MountedRegion, region: RegionSnapshot, task: Task): void {
-    this.setState(slot, { ...slot.state, task: region.state?.task ?? task, region });
-  }
-
   private clearDeniedPrincipal(slot: MountedRegion): void {
     const prior = slot.principalKey;
     this.regions.get(slot.regionId)?.revoke('authority denied');
@@ -481,26 +517,4 @@ export class RuntimeController implements RuntimeRenderHost {
   }
 }
 
-function validateOptions(options: AeliqoRuntimeOptions): void {
-  if (
-    options === null ||
-    typeof options !== 'object' ||
-    options.authority === null ||
-    typeof options.authority?.read !== 'function'
-  )
-    throw new TypeError('createAeliqoRuntime requires one trusted authority adapter.');
-  if (!Array.isArray(options.resources) || options.resources.length === 0)
-    throw new TypeError('createAeliqoRuntime requires at least one resource binding.');
-}
-
 let nextRuntimeId = 1;
-
-function indexResources(resources: AeliqoRuntimeOptions['resources']): Map<string, RuntimeResourceBinding> {
-  const indexed = new Map<string, RuntimeResourceBinding>();
-  for (const binding of resources) {
-    if (indexed.has(binding.resource.id))
-      throw new TypeError(`Resource ${binding.resource.id} is bound more than once.`);
-    indexed.set(binding.resource.id, binding);
-  }
-  return indexed;
-}

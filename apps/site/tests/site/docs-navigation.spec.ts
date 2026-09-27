@@ -50,6 +50,8 @@ const ADOPTION_ROUTES = [
   '/reference/',
   '/ship/',
   '/examples/',
+  '/advanced/',
+  '/contribute/',
 ] as const;
 
 test('documentation information architecture exposes distinct adoption routes', async ({ page }) => {
@@ -60,6 +62,13 @@ test('documentation information architecture exposes distinct adoption routes', 
   }
 
   await page.goto('/docs/');
+  await expect(page.locator('.docs-nav-group > summary')).toHaveText(['Get started', 'Components', 'Advanced']);
+  await expect(page.locator('header .brand')).toHaveAttribute('href', 'https://aeliqo.com/');
+  await expect(page.locator('.footer-brand')).toHaveAttribute('href', 'https://aeliqo.com/');
+  await expect(page.locator('#site-nav').getByRole('link', { name: 'Docs', exact: true })).toHaveAttribute(
+    'href',
+    'https://docs.aeliqo.com/',
+  );
   for (const route of ADOPTION_ROUTES) await expect(page.locator(`.docs-sidebar a[href="${route}"]`)).toHaveCount(1);
   for (const route of [
     '/start/',
@@ -396,7 +405,7 @@ test('enabled analytics consent is announced in flow before documentation', asyn
   await expect(consent.getByRole('button', { name: 'Allow analytics', exact: true })).toBeVisible();
   const consentBox = await consent.boundingBox();
   const headingBox = await page
-    .getByRole('heading', { level: 1, name: 'Build your first adaptive interface', exact: true })
+    .getByRole('heading', { level: 1, name: 'Build interfaces that adapt to the task', exact: true })
     .boundingBox();
   expect(consentBox).not.toBeNull();
   expect(headingBox).not.toBeNull();

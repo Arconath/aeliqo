@@ -30,6 +30,9 @@ export const isThenable = (value: unknown): value is { then: (...args: readonly 
 };
 // Cache only graphs recursively frozen by this function, never arbitrary shallow-frozen input.
 const ownedFrozenGraphs = new WeakSet<object>();
+const ownedRegistrations = new WeakSet<object>();
+/** Only parsed, frozen factory registrations qualify for validation reuse. */
+export const ownsPresentationRegistration = (value: object): boolean => ownedRegistrations.has(value);
 export function freezePresentation<T>(value: T): T {
   if (value !== null && typeof value === 'object' && !ownedFrozenGraphs.has(value)) {
     for (const child of Object.values(value)) {
@@ -119,6 +122,7 @@ function registerManifest(manifest: PresentationManifest, seen: Set<string>): Ou
   const consistent = validateManifestIdentity(parsed.value, seen);
   if (consistent !== undefined) return consistent;
   seen.add(versionKey(parsed.value.ref));
+  ownedRegistrations.add(parsed.value.operations);
   return {
     ok: true,
     value: freezePresentation({
@@ -269,5 +273,7 @@ export function createPresentationRegistry(
 ): Outcome<PresentationRegistry> {
   const valid = validateRegistryInput(input, patterns);
   if (!valid.ok) return valid;
-  return registerRegistryParts(input, mappings, patterns, stateMappings);
+  const registered = registerRegistryParts(input, mappings, patterns, stateMappings);
+  if (registered.ok) ownedRegistrations.add(registered.value);
+  return registered;
 }

@@ -1,7 +1,13 @@
 {
-  "version": "0.5.2",
-  "line": "0.5",
-  "previousVersion": "0.4.2",
+  "version": "0.6.0",
+  "line": "0.6",
+  "previousVersion": "0.5.2",
   "status": "candidate",
-  "publicPackages": ["core", "runtime", "web", "react", "agent"]
+  "publicPackages": [
+    "core",
+    "runtime",
+    "web",
+    "react",
+    "agent"
+  ]
 }

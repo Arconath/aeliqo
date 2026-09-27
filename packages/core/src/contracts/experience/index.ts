@@ -6,6 +6,7 @@ import { WIRE_LIMITS } from '../limits.js';
 import type { Diagnostic, Experience, Outcome, Task, VersionRef, Wire } from '../types.js';
 import { compareText, versionRefKey } from '../stable.js';
 import { validateTaskStructure } from '../task/index.js';
+import type { TaskStructure } from '../task/index.js';
 
 const ids = z.array(idSchema).check(z.maxLength(WIRE_LIMITS.array));
 const refs = z.array(versionRefSchema).check(z.maxLength(WIRE_LIMITS.array));
@@ -256,6 +257,16 @@ export function resolveExperienceConstraints(
   taskInput: unknown,
   restrictionInput: readonly ExperienceRestriction[] = [],
 ): Outcome<ExperienceConstraints> {
+  const resolved = resolveExperienceContext(experienceInput, taskInput, restrictionInput);
+  return resolved.ok ? { ok: true, value: resolved.value.constraints } : resolved;
+}
+
+/** Package-internal preparation: retain the owned task analysis for presentation validation. */
+export function resolveExperienceContext(
+  experienceInput: unknown,
+  taskInput: unknown,
+  restrictionInput: readonly ExperienceRestriction[] = [],
+): Outcome<{ readonly constraints: ExperienceConstraints; readonly taskStructure: TaskStructure }> {
   const parsed = parseExperience(experienceInput);
   if (!parsed.ok) return parsed;
   const taskResult = validateTaskStructure(taskInput);
@@ -285,5 +296,11 @@ export function resolveExperienceConstraints(
   const unavailableOptionalNeeds: string[] = [];
   validateOperationRestrictions(experience, task, state, unavailableOptionalNeeds, diagnostics);
   if (diagnostics.length) return { ok: false, diagnostics: diagnostics as [Diagnostic, ...Diagnostic[]] };
-  return { ok: true, value: resolvedValue(experience, task, state, unavailableOptionalNeeds) };
+  return {
+    ok: true,
+    value: {
+      constraints: resolvedValue(experience, task, state, unavailableOptionalNeeds),
+      taskStructure: taskResult.value,
+    },
+  };
 }

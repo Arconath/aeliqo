@@ -47,11 +47,11 @@ them together:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.5.2 \
-  @aeliqo/runtime@0.5.2 \
-  @aeliqo/web@0.5.2 \
-  @aeliqo/react@0.5.2 \
-  @aeliqo/agent@0.5.2
+  @aeliqo/core@0.6.0 \
+  @aeliqo/runtime@0.6.0 \
+  @aeliqo/web@0.6.0 \
+  @aeliqo/react@0.6.0 \
+  @aeliqo/agent@0.6.0
 ```
 
 Component-only consumers can install only `@aeliqo/web`; skip `@aeliqo/agent`
@@ -64,4 +64,5 @@ does not contain the React local data path documented here. Do not mix package
 versions or treat an earlier RC as evidence for the current source.
 Wire contract version `"1"` is independent of either npm version. See the
 [0.3 to 0.4 migration guide](/ship/migration-0.3/) for older integrations and the
-[0.4 to 0.5 migration guide](/ship/migration-0.4/) for this release line.
+[0.4 to 0.5 migration guide](/ship/migration-0.4/) for that transition.
+Use [release notes](/ship/release-notes/) for changes after 0.5.

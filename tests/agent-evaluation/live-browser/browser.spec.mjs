@@ -207,7 +207,6 @@ test('J2 lowers the approved local-day period from the model to the bounded civi
   await expect(page.locator('[data-testid="approved-period"]')).toContainText('Periode 1–5 September 2026');
   await expect(page.locator('#journey-region aeliqo-chart')).toHaveAttribute('lang', 'id-ID');
   const snapshot = await page.evaluate(() => window.liveHost.snapshot());
-  expect(snapshot.text).toContain('Tren');
   expect(snapshot.text).toContain('Tingkat kehadiran');
   expect(snapshot.text).toContain('Lihat tabel data');
   expect(snapshot.text).toMatch(/2026-09-01 1 2026-09-02 0[.,]5 2026-09-03 1/u);

@@ -5,6 +5,8 @@ import { compilePlotComposition, type PlotDataset, type CompiledPlot, type Compi
 import { compilePlotUnit } from './geometry.js';
 import type { PlotGeometry } from './geometry.js';
 import { exactLabel } from './scales.js';
+import { canvasPlotColor } from './palette.js';
+import { observePlotTheme } from './theme.js';
 import { svgPlotMarks, paintPlotCanvas, seriesColor, seriesSymbol } from './render.js';
 
 export interface AeliqoPlotSelectionDetail {
@@ -155,6 +157,19 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
   private singleResult = true;
   private page = 0;
   private composition: Outcome<CompiledPlot> | undefined;
+  private stopThemeObservation: (() => void) | undefined;
+  override connectedCallback(): void {
+    super.connectedCallback();
+    if (this.renderer === 'canvas') this.requestUpdate();
+    this.stopThemeObservation = observePlotTheme(this, () => {
+      if (this.renderer === 'canvas') this.requestUpdate();
+    });
+  }
+  override disconnectedCallback(): void {
+    this.stopThemeObservation?.();
+    this.stopThemeObservation = undefined;
+    super.disconnectedCallback();
+  }
   private canvasGeometries: PlotGeometry[] = [];
   private compiled: Outcome<PlotGeometry> | undefined;
   protected override willUpdate(changed: Map<string, unknown>): void {
@@ -212,6 +227,8 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
   }
   protected override updated(): void {
     if (this.renderer !== 'canvas') return;
+    const style = getComputedStyle(this);
+    const forcedColors = this.ownerDocument.defaultView?.matchMedia('(forced-colors: active)').matches === true;
     const canvases = this.renderRoot.querySelectorAll<HTMLCanvasElement>('canvas');
     canvases.forEach((canvas, index) => {
       const g = this.canvasGeometries[index];
@@ -228,7 +245,7 @@ export class AeliqoPlotElement extends AeliqoFoundationElement {
       canvas.style.width = `${g.width}px`;
       canvas.style.height = `${g.height}px`;
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      paintPlotCanvas(context, g);
+      paintPlotCanvas(context, g, (color) => (forcedColors ? style.color : canvasPlotColor(color, style)));
     });
   }
 

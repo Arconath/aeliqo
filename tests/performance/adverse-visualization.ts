@@ -1,5 +1,6 @@
 import { registerAeliqoElements } from '@aeliqo/web';
-import type { Result, ResultRef, VisualizationBindingContext, VisualizationSpec } from '@aeliqo/core';
+import type { Result, ResultRef, VisualizationSpec } from '@aeliqo/core';
+import type { VisualizationBindingContext } from '@aeliqo/core/visualization';
 
 registerAeliqoElements();
 

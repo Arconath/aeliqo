@@ -1,3 +1,5 @@
+import { projectAppInteraction, retainAppInteraction } from '../../packages/web/src/app/interaction-projection.js';
+import type { WebRegion } from '../../packages/web/src/app/context.js';
 import { describe, it, expect } from 'vitest';
 import type { InteractionState } from '../../packages/core/src/contracts/index.js';
 import type { PresentationManifest } from '../../packages/core/src/presentation/index.js';
@@ -213,4 +215,43 @@ describe('adaptation state projection', () => {
       });
     }
   });
+});
+
+describe('app facade interaction projection', () => {
+  it('retains a compatible renamed port in the backing map after publication', () => {
+    if (!previous.ok || !next.ok) throw Error('fixture');
+    const region = {
+      element: { presentation: previous.value, interaction: state },
+      values: new Map(state.values.map((value) => [JSON.stringify([value.nodeId, value.portId]), value])),
+    } as unknown as WebRegion;
+    const projection = projectAppInteraction(region, next.value);
+    expect(projection.ok).toBe(true);
+    if (!projection.ok) return;
+    expect([...region.values.values()][0]?.portId).toBe('selection');
+    retainAppInteraction(region, projection.value);
+    expect([...region.values.values()][0]?.portId).toBe('chosen');
+    expect([...region.values.keys()]).toEqual([JSON.stringify(['table-1', 'chosen'])]);
+    expect([...region.values.values()][0]?.payload).toEqual(state.values[0]!.payload);
+    expect(projection.value?.drafts).toEqual(state.drafts);
+  });
+});
+
+it('retains interaction for an unchanged validated incumbent with no transfer operations', () => {
+  if (!previous.ok) throw Error('previous');
+  const region = { element: { presentation: previous.value, interaction: state } } as unknown as WebRegion;
+  const unchanged = { ...previous.value, plan: { ...previous.value.plan, stateTransfer: [] } };
+  expect(projectAppInteraction(region, unchanged)).toEqual({ ok: true, value: state });
+  const changedPort = {
+    ...unchanged,
+    nodes: unchanged.nodes.map((node) => ({
+      ...node,
+      config: { ...node.config, ports: node.config.ports.map((port) => ({ ...port, entity: 'other' })) },
+    })),
+  };
+  expect(projectAppInteraction(region, changedPort).ok).toBe(false);
+  const changedScope = {
+    ...unchanged,
+    plan: { ...unchanged.plan, preconditions: { ...unchanged.plan.preconditions, scopeDigest: 'other' } },
+  };
+  expect(projectAppInteraction(region, changedScope).ok).toBe(false);
 });

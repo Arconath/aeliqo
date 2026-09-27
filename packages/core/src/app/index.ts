@@ -15,6 +15,7 @@ export type {
   ResourceFieldMetadata,
   ResourceFormBinding,
   ResourceInput,
+  ResourceMeasure,
   ResourcePresentationDefaults,
   StandardIntentKind,
 } from './types.js';

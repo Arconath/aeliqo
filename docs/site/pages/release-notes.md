@@ -3,10 +3,101 @@ id: 'release-notes'
 path: '/ship/release-notes/'
 section: 'Releases'
 title: 'Release notes'
-description: 'Aeliqo 0.5 changes, migration boundaries, and the prior 0.4.2 release.'
+description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 ---
 
-<p class="lead">Read what changed in each release and what evidence backs it. The latest version is 0.5.2.</p>
+<p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
+<aeliqo-release-status></aeliqo-release-status>
+
+## Aeliqo 0.6.0
+
+Aeliqo 0.6.0 adds registered workspace and page layouts to the same
+`createAeliqoApp` facade used for components. The host owns the data, permitted
+views, header/sidebar structure, and business actions.
+
+- `defineResource` accepts `measures` for counts, distinct counts, and sums.
+  Each expands into a reviewed meaning, replacing about twenty lines of meaning
+  metadata for the common case.
+- A local data service resolves the built-in `core-query-2` and
+  `core-standard-1` function registries from the catalog digest, so a resource
+  with the default registry renders without host registry wiring.
+- An analyze intent without a view preference now renders an eligible bar or
+  trend chart; the table remains the fallback and can still be requested with
+  `preferredView: 'table'`. Region charts are named after their result, such
+  as "New hires by Team".
+- The quickstart shows one resource answering browse, filtered, monthly trend,
+  and per-team intents. The playground shows the exact intent behind each view.
+- Cartesian charts fold their exact-values table into "View data table", keep
+  x-axis labels on one row when they fit, follow the width of their region, and
+  never label a fractional midpoint on an integer axis. Region trends are titled
+  after their measure, such as "New hires".
+- The mounted region bundle budget is 168 KiB gzip (previously 160 KiB since
+  0.3) to cover workspace layouts and the chart improvements above.
+- Visual comparison and paired performance CI jobs are advisory; the functional
+  matrix remains required for merges and publication.
+
+- Register `patterns` and `stateMappings` in `AeliqoAppOptions`. Recipes receive
+  every result through `RecipeContext.results`; `result` remains the primary
+  result for existing recipes.
+- Container width and height changes re-resolve the presentation using existing
+  results. Compatible state mappings project selection and filters. Layout
+  changes remain subject to current authority and registered capabilities.
+- `onDraftExit` lets the host choose Save/Discard/Stay before replacing a dirty
+  form. Without a decision, replacement returns `needs-input`. Successful form
+  actions clear only the unchanged drafts captured for that exact action.
+- `onPresentation` observes successful renderer updates, including responsive
+  adaptations. Runtime subscriptions keep their existing runtime-state role.
+- Result bindings retain their complete identity, including `sourceLineage`,
+  when candidates share otherwise identical nodes. Unavailable lineages remain
+  rejected before a representation callback runs.
+- The planner reuses successful field and operation checks within one
+  composition for owned immutable configurations and validated registry
+  declarations. Host-created structural registries and changes to data or
+  permissions still require validation.
+- Hierarchy data pagination keeps its buttons and row count grouped at narrow
+  widths, including RTL and enlarged text.
+- Factory-owned presentation registries can reuse bounded port checks for
+  equivalent nodes within one composition. Structural host registries retain
+  full validation, while public graph IDs and wire-size bounds stay unchanged.
+- The public Playground offers manual tasks and experimental native WebMCP.
+  Component, workspace, and page demos share the connection. Hosted MCP relay
+  and in-page model setup are removed from this public surface.
+- MCP HTTP/stdio and optional BYOK move to `examples/local-agent/`, a standalone
+  app using public package exports. The model port remains provider independent;
+  supplied protocol adapters document their wire-format requirements.
+- Documentation starts with Get started, Components, and Advanced. Existing
+  routes remain available. Component prose and copyable examples are maintained
+  against the implementation.
+- The docs reading column reflows when text is enlarged. Timeline previews
+  reserve space for their responsive data table, and temporal selection buttons
+  keep their labels on one line in narrow containers.
+- Select chevrons, logical padding, focus, touch targets, form alignment, and
+  token consistency are corrected while preserving public token names.
+- Reduced-motion preferences apply to explicit dark themes, system themes,
+  and inherited themes, including controls with custom inherited motion tokens.
+- Dialog headings and close controls reflow at enlarged text sizes. Popover
+  close controls follow the active theme, and RTL investigation cautions keep
+  text inside their logical border and padding.
+- Chart marks and numeric color keys share theme tokens in SVG and Canvas.
+  Enlarged hierarchy/timeline labels remain visible, RTL switch thumbs stay
+  within their tracks, and split-pane handles reserve their own touch area.
+
+### Transactional rendering and narrow visualizations
+
+Aeliqo 0.6 prepares and applies a presentation before publishing its task. Unsupported targets retain the previous authorized UI and state. Supported renderers restore the previous presentation after a synchronous rendering failure. Custom renderers must keep previous templates replayable; if restoration fails, the region is cleared and the candidate remains unpublished. Revocation clears private content and retains the host denial reason. Repeated comparison requests use fresh results with explicit child-state transfers. Standard data views preserve the existing 24px resize hysteresis band; registered layout patterns still receive every measured container size. Hierarchy and temporal exact-data tables adapt to their container width; their scrollable graphics retain readable label sizes.
+
+Follow the [0.5 to 0.6 migration guide](/ship/migration-0.5/) when upgrading.
+Use all packages at the same exact version. The new registrations and callbacks
+are additive. A dirty form now blocks replacement until the host supplies an
+exit decision; integrate `onDraftExit` if your application previously replaced
+forms while edits were pending. Browser WebMCP remains experimental and requires
+a supported, enabled configuration; it is not a requirement for manual use.
+
+Use the [0.6.0 release record](https://github.com/Arconath/aeliqo/releases/tag/v0.6.0)
+for source-bound quality, registry, image, and deployment receipts when published.
+The publication banner above follows registry verification. The
+[support matrix](/ship/support-matrix/) describes the maintained profiles and
+recorded source checks; local or simulated results do not establish hosted-model quality.
 
 ## Aeliqo 0.5.2
 

@@ -27,6 +27,7 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
     ...aeliqoFoundationThemeStyles,
     css`
       :host {
+        container-type: inline-size;
         display: block;
         min-inline-size: 0;
         inline-size: 100%;
@@ -70,11 +71,20 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
       [part='viewport'] {
         direction: ltr;
       }
+      :host(aeliqo-timeline) [part='viewport'] {
+        /* Reserve text-scaled space without changing interval or tick coordinates. */
+        padding-block: 1em;
+      }
+      :host(aeliqo-timeline) svg {
+        overflow: visible;
+      }
       button {
         background: var(--aeliqo-color-surface, #f8fafc);
         border: var(--aeliqo-control-border-width, 0.0625rem) solid var(--aeliqo-color-border, #64748b);
         color: var(--aeliqo-color-text, #111827);
         font: inherit;
+        white-space: nowrap;
+        overflow-wrap: normal;
         min-inline-size: 2.75rem;
         min-block-size: 2.75rem;
       }
@@ -87,7 +97,7 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
       svg {
         display: block;
         color: var(--aeliqo-color-accent, #4338ca);
-        max-inline-size: 100%;
+        max-inline-size: none;
         block-size: auto;
       }
       svg text {
@@ -115,7 +125,7 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
       button:focus-visible {
         outline: 3px solid var(--aeliqo-color-focus, #4338ca);
       }
-      @media (max-width: 30rem) {
+      @container (max-width: 30rem) {
         svg text {
           font-size: max(0.875rem, calc(1rem - 2px));
         }
@@ -164,7 +174,7 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
           border: 0;
           display: grid;
           gap: 0.5rem;
-          grid-template-columns: minmax(4.75rem, 0.7fr) minmax(0, 1.3fr);
+          grid-template-columns: minmax(min(4.75rem, 40%), 0.7fr) minmax(0, 1.3fr);
           padding: 0.25rem;
         }
         :is(.timeline, .calendar-grid) td::before {
@@ -174,6 +184,13 @@ class AeliqoTemporalElement extends AeliqoFoundationElement implements Visualiza
         }
         :is(.timeline, .calendar-grid) td > button {
           justify-self: start;
+          min-inline-size: min(2.75rem, 100%);
+          max-inline-size: 100%;
+        }
+      }
+      @container (max-width: 7rem) {
+        :is(.timeline, .calendar-grid) td[data-label='Select'] {
+          grid-template-columns: minmax(0, 1fr);
         }
       }
       @media (forced-colors: active) {

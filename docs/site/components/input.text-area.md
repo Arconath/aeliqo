@@ -13,7 +13,9 @@ contract: 'Multiline editing preserves draft, selection and composition across u
 
 ## Purpose
 
-A labelled multi-line text area that keeps caret position and IME composition intact across updates. It emits draft and commit events; the host owns persistence and validation.
+A labelled multi-line text area that keeps caret position and IME composition intact across updates.
+The host can set `value` to supply or revise the draft; user edits update that local property and emit
+typed change and commit events. The host owns application validation and persistence.
 
 ## When to use it
 
@@ -73,6 +75,4 @@ Rows set the starting height. Keep the draft readable when the form narrows and 
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

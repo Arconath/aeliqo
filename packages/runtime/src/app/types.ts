@@ -1,6 +1,7 @@
 import type {
   Diagnostic,
   Intent,
+  InteractionState,
   Outcome,
   PresentationPlan,
   ResourceDefinition,
@@ -13,7 +14,7 @@ import type { IntentCompilerRegistry } from '@aeliqo/core/app';
 import type { ActionPort } from '../actions/types.js';
 import type { DataService, QueryBudget, ReadContext } from '../data/types.js';
 import type { MaterializedTaskOutput } from '../evaluation/types.js';
-import type { RegionSnapshot } from '../regions/types.js';
+import type { RegionReadSet, RegionSnapshot } from '../regions/types.js';
 import type { ResultStore, ResultStoreOptions } from '../results/types.js';
 import type {
   CreateCapabilitySurfaceInput,
@@ -111,11 +112,41 @@ export interface RuntimeRenderInput {
   readonly signal?: AbortSignal;
 }
 
+/** Host projection callbacks run synchronously inside the Region publication fence. */
+export interface RuntimePresentationProjection {
+  apply(next: RegionSnapshot): Outcome<void>;
+  rollback(): void;
+}
+
+export interface RuntimePreparedRender extends RuntimePresentationProjection {
+  readonly presentation: PresentationPlan;
+  readonly interaction?: InteractionState;
+}
+
+export interface RuntimeRenderPreparation {
+  readonly requestId: string;
+  readonly regionId: string;
+  readonly intent: Intent;
+  readonly task: Task;
+  readonly region: RegionSnapshot;
+  readonly outputs: readonly MaterializedTaskOutput[];
+  readonly signal: AbortSignal;
+  readonly current: RegionReadSet;
+}
+
+export interface RuntimeRenderOptions {
+  readonly prepare?: (
+    input: RuntimeRenderPreparation,
+  ) => Outcome<void | RuntimePreparedRender> | Promise<Outcome<void | RuntimePreparedRender>>;
+}
+
 export interface RuntimePresentationInput {
   readonly regionId: string;
   readonly requestId: string;
   readonly task: Task;
   readonly presentation: PresentationPlan;
+  readonly interaction?: InteractionState;
+  readonly projection?: RuntimePresentationProjection;
   readonly signal?: AbortSignal;
 }
 
@@ -169,7 +200,7 @@ export interface AeliqoRuntime {
   ):
     | { readonly ok: true; readonly value: RuntimeRegionState }
     | { readonly ok: false; readonly diagnostics: readonly [Diagnostic, ...Diagnostic[]] };
-  render(input: RuntimeRenderInput): Promise<RuntimeRenderReceipt>;
+  render(input: RuntimeRenderInput, options?: RuntimeRenderOptions): Promise<RuntimeRenderReceipt>;
   context(regionId: string): Outcome<RuntimeResourceContext>;
   /** Lists resources authorized for the paired principal and scope. Denied resources are omitted. */
   contexts(regionId: string): Outcome<readonly RuntimeResourceContext[]>;

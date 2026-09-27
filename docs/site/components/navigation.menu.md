@@ -52,6 +52,8 @@ Exposed semantics:
 
 {{aeliqo:semantics}}
 
+Use Home and End to move focus to the first or last enabled command.
+
 ## Responsive behavior
 
 Keep the menu within the visible viewport and its commands keyboard reachable. Avoid relying on hover to expose actions.
@@ -73,6 +75,4 @@ Keep the menu within the visible viewport and its commands keyboard reachable. A
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

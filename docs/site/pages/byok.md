@@ -6,88 +6,101 @@ title: 'Bring your own model'
 description: 'Connect a provider through a trusted local host while keeping credentials outside the browser.'
 ---
 
-BYOK connects your own provider account to Aeliqo's bounded tool loop. The
-local runner keeps the key in its host process. The public playground has no
-browser provider-key field and never calls a model directly.
+The standalone local agent example can connect a provider model to the same
+People directory used by MCP. Credentials stay in the trusted Node process.
+The browser sends a prompt to its own host and receives a bounded receipt.
+The public Playground has no model prompt or provider key input.
 
-## Set the model variables
+## Install and run without a model first
 
-1. Copy the example file:
+Follow the exact [standalone install steps](/agents/mcp/#install-a-standalone-copy).
+Open the printed URL and confirm that the People directory renders. The
+**Optional server model** section says no model is configured. Default startup
+makes no paid requests and MCP already works.
 
-   ```bash
-   cp apps/site/.env.example apps/site/.env.local
-   ```
+Stop the host with Ctrl+C. From the copied `aeliqo-local-agent` directory:
 
-2. Set every required value in `apps/site/.env.local`:
+```bash
+cp .env.example .env.local
+```
 
-   ```dotenv
-   AELIQO_MODEL_BASE_URL=https://your-provider.example/v1/
-   AELIQO_MODEL=your-tool-capable-model
-   AELIQO_MODEL_PROTOCOL=openai-compatible-chat
-   AELIQO_MODEL_AUTH_SCHEME=bearer
-   AELIQO_MODEL_API_KEY=your-local-secret
-   AELIQO_MODEL_CAPABILITIES=tool-calls,usage,request-cancellation
-   ```
+Edit **.env.local** with your own provider configuration:
 
-   `AELIQO_MODEL_PROTOCOL` also accepts `openai-compatible-responses`; that
-   profile requires HTTPS with bearer auth and no `request-retry` capability.
-   `AELIQO_MODEL_AUTH_SCHEME` accepts `bearer`, `header`, or `none`. Choose
-   `header` and set `AELIQO_MODEL_AUTH_HEADER` for a custom header. Choose
-   `none` only for a local endpoint, and omit the key. Capabilities must
-   include `tool-calls`.
+```dotenv
+AELIQO_MODEL_BASE_URL=https://your-provider.example/v1/
+AELIQO_MODEL=your-tool-capable-model
+AELIQO_MODEL_PROTOCOL=openai-compatible-chat
+AELIQO_MODEL_AUTH_SCHEME=bearer
+AELIQO_MODEL_API_KEY=your-local-secret
+AELIQO_MODEL_CAPABILITIES=tool-calls,usage,request-cancellation
+```
 
-3. For a loopback HTTP test endpoint, also set
-   `AELIQO_ALLOW_INSECURE_MODEL_HTTP=1`. Remote model endpoints must use HTTPS.
+The endpoint must implement the selected wire protocol; a model name alone
+does not establish compatibility. Set the base URL expected by your provider,
+including any required `/v1/` path. Never put credentials in the URL, source
+files, prompts, or browser storage. `.env.local` is ignored by Git and is read
+only by the Node startup command.
 
-## Start the runner and pair
+## Choose an explicit protocol and authentication profile
 
-1. From the repository root, run:
+| Setting                            | Supported values and constraints                                                                                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AELIQO_MODEL_PROTOCOL`            | `openai-compatible-chat` for Chat Completions; `openai-compatible-responses` for the Responses adapter                                                     |
+| `AELIQO_MODEL_AUTH_SCHEME`         | `bearer`; `header` with `AELIQO_MODEL_AUTH_HEADER`; or `none` for a local endpoint                                                                         |
+| `AELIQO_MODEL_CAPABILITIES`        | A comma-separated list including `tool-calls`; supported entries also include `usage`, `request-cancellation`, `input-token-estimate`, and `request-retry` |
+| `AELIQO_ALLOW_INSECURE_MODEL_HTTP` | Set to `1` only for an HTTP loopback development endpoint; remote endpoints require HTTPS                                                                  |
 
-   ```bash
-   pnpm playground:local
-   ```
+The Responses profile requires HTTPS bearer authentication and rejects
+`request-retry`. For `header` authentication provide the exact header name
+required by your compatible server. For `none`, omit both key and auth header;
+the endpoint must be local. Declare capabilities your provider supports.
+Incomplete or inconsistent configuration stops startup with an explicit error.
 
-2. Open the printed address, `http://127.0.0.1:4174/playground/`. Use this
-   local copy — the hosted site cannot pair with your runner because the
-   browser blocks cross-site pairing.
-3. Choose **Connect AI**, keep **Local Playground host**, and choose **Check
-   connection**.
-   You should see “Local runner connected — MCP endpoint and model are ready”.
-   With an incomplete model configuration, the prompt stays disabled and the
-   status tells you to configure a model in the local process.
+The implementation uses `ToolModelPort` through the public
+`@aeliqo/agent/model` protocol adapters and `runToolModel`. A different wire
+protocol requires an application-owned `ToolModelPort` adapter; changing the
+base URL does not make incompatible providers interchangeable.
 
-## Send a prompt
+## Send a bounded prompt
 
-Type a request and choose **Send to local agent**. The runner calls your
-provider, turns replies into bounded tool calls, and the browser validates
-each one against the paired Region. A proposal that fails validation commits
-nothing. A `no-commit` reply appears as an agent draft, not a UI change.
+Restart from the same directory:
 
-The host sets a short-lived HttpOnly session cookie. The browser pairs its
-current Region over a same-origin event stream, and your prompt goes to the
-same-origin runner. The runner owns provider configuration and credentials.
-The browser receives bounded tool calls, validates them against its current
-Region, and reports the resulting receipt.
+```bash
+pnpm dev
+```
 
-## Keep the host boundary
+Open **http://127.0.0.1:4174/** and wait for Connected. The prompt is now enabled.
+Sending it may incur charges from your provider and sends registered metadata
+and approved tool results to that provider. Startup still sends nothing.
 
-- Keep the API key in the local process or application server.
-- Set the provider URL and model in trusted configuration, never tool input.
-- Tell users which data may leave the application.
-- Bound tool calls, elapsed time, request size, and retries.
-- Do not store prompts or credentials by default.
+Enter **Show People as cards.** and choose **Send to local agent**. The model
+must read `aeliqo_context` before rendering; the host enforces that sequence.
+The browser validates the proposed intent and commits it through the same app
+API as manual rendering. Cards should appear and the prompt receipt reports
+how the loop stopped. A text draft alone is not evidence of a UI change.
 
-The local runner pairs one browser Region with an expiring session. Disconnect
-and reset cancel pending work and release the pairing. See
-[agent recovery](/agents/recovery/) and [data boundaries](/concepts/safety/)
-for failure handling.
+The host permits at most four turns, model requests, and tool calls per prompt,
+with a 45-second total budget, 2,000 output tokens, 36,000 total tokens, and
+128 KB input/output limits. It sends non-streaming requests without automatic
+retries. The browser pairing expires after 15 minutes. **Disconnect** cancels
+pending work and releases the session; start a new session to continue.
 
-## Plan a shared deployment
+## Recover and extend
 
-The static production site runs no model. The local runner is a loopback
-development option. A shared server needs authenticated users, scoped
-sessions, origin and CSRF checks, rate and cost limits, and an explicit
-retention policy before it can accept model requests. Keep model output as
-validated intents; never render generated HTML or execute generated code.
+If startup fails, check the explicit protocol, model, URL, authentication and
+capability values together. If the provider rejects a request, verify it
+supports that protocol's tool format. An unknown field or unsupported intent
+must fail without replacing the last valid render. See
+[agent recovery](/agents/recovery/) for expiry and uncertain outcomes.
 
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/agents/mcp/"><span>MCP transport</span><small>Let an external client drive the same session.</small><b aria-hidden="true">→</b></a><a href="/agents/recovery/"><span>Agent recovery</span><small>Handle expiry, failure, and uncertain outcomes.</small><b aria-hidden="true">→</b></a></nav>
+`runner/model-config.mjs` validates trusted configuration and
+`runner/model-adapter.mjs` constructs the model port. Adapt those host files
+when adding another provider protocol. Keep URLs, credentials and capabilities
+outside tool input. The browser bundle does not read `.env.local`, and model
+credentials are never returned by session or prompt routes.
+
+The example is a single-user loopback development host. A shared application
+must supply authentication, scoped permissions, origin checks, rate/cost limits,
+and its retention policy. No hosted model relay is included.
+
+<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/agents/mcp/"><span>MCP transport</span><small>Connect an external client to the same session.</small><b aria-hidden="true">→</b></a><a href="/agents/recovery/"><span>Agent recovery</span><small>Handle expiry and rejected proposals.</small><b aria-hidden="true">→</b></a></nav>

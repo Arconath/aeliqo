@@ -24,7 +24,8 @@ instead of inventing alternatives.
 - `packages/web` owns the shared Lit elements, renderers, and browser registration.
 - `packages/react` provides React bindings over the web elements.
 - `packages/agent` accepts bounded proposals through MCP, WebMCP, and model adapters. It must not grant permissions or produce executable UI.
-- `apps/site` owns the public landing page, documentation shell, playground, local runner, static build, and production image. It consumes the packages; packages must not depend on the site.
+- `apps/site` owns the public landing page, documentation shell, playground, static build, and production image. It consumes the packages; packages must not depend on the site.
+- `examples/local-agent` owns the standalone MCP HTTP/stdio and optional BYOK host, runner, and browser UI. It uses public package exports and must work outside the monorepo.
 - `catalog/components.json` defines the public component catalog. `examples/catalog` supplies runnable component examples.
 - `docs/site/` is the authored public documentation source, including all 71 component pages and the other public routes.
 - `docs/packages/` is the canonical source for the five npm package guides. Release staging copies these guides into each tarball as `README.md`.
@@ -76,7 +77,7 @@ Keep package guidance in `docs/packages/`. Release staging may generate the npm 
 ## Verification
 
 - `quality/commands.json` is the complete acceptance matrix. Run `pnpm check` on a clean commit before release and read its fresh results.
-- Pull requests and pushes to `main` run a lane matched to their changed paths: diffs confined to the site surface (`apps/site/`, `docs/site/`, `docs/public-site/`, `catalog/`, `examples/catalog/`, `scripts/docs/`) or to repository-only documentation (`docs/` outside `docs/packages/`, root Markdown) run the site gate (`pnpm format:check`, `pnpm lint`, `pnpm site:test`) plus the documentation artifact and image-contract steps; every other diff runs the full 89-command matrix. Owner dispatches always run the full matrix. Package publication requires a same-SHA full-matrix success; a site redeploy after a site-surface-only push binds its registry checks to the earlier published source instead.
+- Pull requests and pushes to `main` run a lane matched to their changed paths: diffs confined to the site surface (`apps/site/`, `docs/site/`, `docs/public-site/`, `catalog/`, `examples/catalog/`, `scripts/docs/`) or to repository-only documentation (`docs/` outside `docs/packages/`, root Markdown) run the site gate (`pnpm format:check`, `pnpm lint`, `pnpm site:test`) plus the documentation artifact and image-contract steps; every other diff runs the full matrix in `quality/commands.json`. Owner dispatches always run the full matrix. CI runs the full matrix as four parallel shards (`python3 scripts/quality.py --shard N --shards 4`) and merges their evidence with `--merge 4`; `pnpm check` runs the same matrix serially. The container visual comparison and paired performance jobs run on pushes to `main` and owner dispatches as advisory evidence; they do not block merges or publication. Package publication requires a same-SHA full-matrix push success on `main`; a site redeploy after a site-surface-only push binds its registry checks to the earlier published source instead.
 - Core and runtime changes need their package build, contract or lifecycle tests, type checks, and matching clean tarball consumer.
 - Web components need family behavior tests, browser tests, keyboard checks, and `pnpm test:components:a11y`. Changes to public exports also need the matching package consumer.
 - React, Vue, and Vanilla integrations are covered by `pnpm test:framework:consumers`; Next SSR and hydration are covered by `pnpm test:next-platform`.

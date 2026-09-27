@@ -25,7 +25,15 @@ const REGION_VALUE_KINDS: ReadonlySet<InteractionPayload['kind']> = new Set([
   'page',
 ]);
 
+interface ActionCapture {
+  readonly actionSequence: number;
+  readonly taskRevision: string;
+  readonly authority: string | undefined;
+  readonly drafts: ReadonlyMap<string, Extract<InteractionPayload, { readonly kind: 'draft' }>>;
+}
+
 interface ActionSession {
+  readonly capture: ActionCapture;
   active: boolean;
   readonly controller: AbortController;
   readonly preview: ActionPreview;
@@ -69,6 +77,8 @@ function publishInteraction(region: WebRegion): void {
 function saveInteraction(region: WebRegion, request: AeliqoSemanticInteractionRequest): void {
   const payload = request.payload;
   if (payload.kind === 'draft') {
+    region.draftRevision = (region.draftRevision ?? 0) + 1;
+    region.renderAbort?.abort();
     region.drafts.set(JSON.stringify([payload.entity, payload.key, payload.field]), payload);
     delete region.actionAttempt;
     publishInteraction(region);
@@ -88,6 +98,7 @@ function isRegionValue(payload: InteractionPayload): payload is RegionValuePaylo
 }
 
 function clearPendingAction(region: WebRegion, session: ActionSession): void {
+  if (region.actionAbort !== session.controller) return;
   if (region.actionAbort === session.controller) delete region.actionAbort;
   if (region.cancelAction === session.cancel) delete region.cancelAction;
   region.actionPending = false;
@@ -125,6 +136,7 @@ function createConfirmation(
       return confirmed;
     }
     const executed = await port.execute(confirmed.value, { signal: session.controller.signal });
+    if (executed.ok && executed.value.state === 'executed') clearSavedDrafts(context, region, session);
     session.active = false;
     clearPendingAction(region, session);
     if (!executed.ok) {
@@ -135,6 +147,57 @@ function createConfirmation(
     notifyAction(context, { state: 'executed', regionId: region.id, execution: executed.value });
     return executed;
   };
+}
+
+function actionAuthority(context: WebAppContext, region: WebRegion, signal: AbortSignal): string | undefined {
+  try {
+    const result = context.options.authority.read({
+      regionId: region.id,
+      resourceId: region.resourceId,
+      effect: 'action',
+      signal,
+    });
+    if (!result.ok) return undefined;
+    const value = result.value;
+    return JSON.stringify([
+      value.principalKey,
+      value.scopeDigest,
+      value.policyRevision,
+      value.experienceRevision,
+      [...value.grants].sort(),
+    ]);
+  } catch {
+    return undefined;
+  }
+}
+
+function actionStillCurrent(context: WebAppContext, region: WebRegion, session: ActionSession): boolean {
+  const capture = session.capture;
+  if (
+    context.disposed ||
+    context.regions.get(region.id) !== region ||
+    !session.active ||
+    session.controller.signal.aborted
+  )
+    return false;
+  if (region.actionAbort !== session.controller || region.actionSequence !== capture.actionSequence) return false;
+  if (context.runtime.snapshot(region.id)?.region?.taskRevision !== capture.taskRevision) return false;
+  return (
+    capture.authority !== undefined && actionAuthority(context, region, session.controller.signal) === capture.authority
+  );
+}
+
+function clearSavedDrafts(context: WebAppContext, region: WebRegion, session: ActionSession): void {
+  if (!actionStillCurrent(context, region, session)) return;
+  let changed = false;
+  for (const [key, draft] of session.capture.drafts) {
+    if (region.drafts.get(key) !== draft) continue;
+    region.drafts.delete(key);
+    changed = true;
+  }
+  if (!changed) return;
+  region.draftRevision = (region.draftRevision ?? 0) + 1;
+  publishInteraction(region);
 }
 
 function actionInput(region: WebRegion, payload: ActionRequestPayload): RuntimeActionRequest['input'] {
@@ -189,8 +252,9 @@ function openPreview(
   port: ActionPort,
   preview: ActionPreview,
   controller: AbortController,
+  capture: ActionCapture,
 ): void {
-  const session: ActionSession = { active: true, preview, controller };
+  const session: ActionSession = { active: true, preview, controller, capture };
   const cancel = (): boolean => cancelPreview(port, region, session);
   session.cancel = cancel;
   region.cancelAction = cancel;
@@ -200,6 +264,17 @@ function openPreview(
   }
   const confirm = createConfirmation(context, region, port, session);
   notifyAction(context, { state: 'preview', regionId: region.id, preview, confirm, cancel });
+}
+
+function savedFormDrafts(
+  context: WebAppContext,
+  region: WebRegion,
+  payload: ActionRequestPayload,
+): ActionCapture['drafts'] {
+  const task = context.runtime.snapshot(region.id)?.region?.state?.task;
+  if (task?.kind !== 'form' || task.action.id !== payload.action.id || task.action.revision !== payload.action.revision)
+    return new Map();
+  return new Map(region.drafts);
 }
 
 async function previewAction(context: WebAppContext, region: WebRegion, payload: ActionRequestPayload): Promise<void> {
@@ -215,6 +290,12 @@ async function previewAction(context: WebAppContext, region: WebRegion, payload:
   const controller = new AbortController();
   region.actionAbort = controller;
   region.actionPending = true;
+  const capture: ActionCapture = {
+    actionSequence: region.actionSequence,
+    taskRevision: snapshot.taskRevision,
+    authority: actionAuthority(context, region, controller.signal),
+    drafts: savedFormDrafts(context, region, payload),
+  };
   const request = previewRequest(region, payload, snapshot.taskRevision);
   const preview = await port.preview(request, { signal: controller.signal });
   if (!preview.ok) {
@@ -225,13 +306,14 @@ async function previewAction(context: WebAppContext, region: WebRegion, payload:
     port.cancel(preview.value);
     return;
   }
-  openPreview(context, region, port, preview.value, controller);
+  openPreview(context, region, port, preview.value, controller, capture);
 }
 
 export function createInteractionHandler(
   context: WebAppContext,
 ): (region: WebRegion, request: AeliqoSemanticInteractionRequest) => Promise<void> {
   return async (region, request) => {
+    if (region.presentationTransaction !== undefined) return;
     if (request.payload.kind !== 'action-request') {
       saveInteraction(region, request);
       return;

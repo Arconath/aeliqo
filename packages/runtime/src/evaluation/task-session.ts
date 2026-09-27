@@ -282,10 +282,7 @@ export class TaskEvaluationSession {
     if (!planned.ok) return planned;
     const accepted = planned.value;
     if (!this.acceptedPlanMatches(accepted, output))
-      return failure(
-        'runtime.evaluation-stale',
-        'The data service plan does not match the fresh trusted task authority.',
-      );
+      return failure('runtime.evaluation-stale', 'Data plan scope or policy differs from the app authority.');
     const handle = this.allocateHandle(accepted, request.requestId);
     if (!handle.ok) return handle;
     const consumed = await this.consumeResult(handle.value, accepted);

@@ -13,7 +13,9 @@ contract: 'Native file selection; host owns upload and validation; no file bytes
 
 ## Purpose
 
-Opens the native file picker and reports selected file metadata. It checks configured count and size limits; the host owns bytes, upload, and server validation.
+Opens the native file picker and updates its local `selected` metadata when the selection changes.
+`maxFiles` limits the count and `maxBytes` limits the combined size; the host owns file bytes, upload,
+and server validation.
 
 ## When to use it
 
@@ -79,6 +81,4 @@ Keep file type and size limits in visible helper text. Let long file names wrap 
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

@@ -4,6 +4,7 @@ import {
   createPresentationRegistry,
   validatePresentationPlan,
 } from '../../packages/core/src/presentation/index.js';
+import { preparePresentationTree } from '../../packages/core/src/presentation/validation/tree-coverage.js';
 import { canonicalJSON } from '../../packages/core/src/contracts/parse.js';
 import { parseContract } from '../../packages/core/src/contracts/parse-generic.js';
 import {
@@ -126,7 +127,367 @@ function request(
   };
 }
 
+function twoLeafPlan(first: string, second: string): PresentationPlan {
+  const plan = basePlan('layout', first);
+  return {
+    ...plan,
+    nodes: [{ ...plan.nodes[0]!, children: [first, second] }, plan.nodes[1]!, { ...plan.nodes[1]!, id: second }],
+  };
+}
+
+function portRegistry(
+  leaf: PresentationManifest = tableManifest((values) => ({
+    ok: true,
+    value: {
+      values,
+      fields: [field.id],
+      operations: [read],
+      ports: [{ id: 'filter', direction: 'input', payload: 'filter' }],
+    },
+  })),
+): PresentationRegistry {
+  return registry([
+    leaf,
+    layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } })),
+  ]);
+}
+
 describe('presentation validation memoization', () => {
+  it.each(['owned', 'structural', 'frozen structural', 'inherited', 'proxy'] as const)(
+    'shares ID-independent port validation only for an %s registry',
+    (ownership) => {
+      const leaf = tableManifest((values) => ({
+        ok: true,
+        value: {
+          values,
+          fields: [field.id],
+          operations: [read],
+          ports: [{ id: 'filter', direction: 'input', payload: 'filter' }],
+        },
+      }));
+      const layout = layoutManifest((values) => ({
+        ok: true,
+        value: { values, fields: [], ports: [], operations: [] },
+      }));
+      const owned = registry([leaf, layout]);
+      const active: PresentationRegistry = {
+        owned,
+        structural: { ...owned },
+        'frozen structural': Object.freeze({ ...owned }),
+        inherited: Object.create(owned) as PresentationRegistry,
+        proxy: new Proxy(owned, {}),
+      }[ownership];
+      const plan = basePlan('layout', 'leaf-a');
+      const checked = validatePresentationPlan(
+        {
+          ...plan,
+          nodes: [
+            { ...plan.nodes[0]!, children: ['leaf-a', 'leaf-b'] },
+            plan.nodes[1]!,
+            { ...plan.nodes[1]!, id: 'leaf-b' },
+          ],
+        },
+        context(),
+        active,
+      );
+      expect(checked.ok).toBe(true);
+      if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+      const first = checked.value.nodes.find((node) => node.node.id === 'leaf-a')!;
+      const second = checked.value.nodes.find((node) => node.node.id === 'leaf-b')!;
+      expect(first.config.ports).toEqual(second.config.ports);
+      expect(first.config.ports === second.config.ports).toBe(ownership === 'owned');
+      expect(checked.value.graph.nodes.map((node) => node.id)).toEqual(['layout', 'leaf-a', 'leaf-b']);
+    },
+  );
+
+  it.each([
+    { ids: ['quote"A', 'quote"B'], shared: true },
+    { ids: ['back\\A', 'back\\B'], shared: true },
+    { ids: ['éA', 'éB'], shared: true },
+    { ids: ['😀A', '😀B'], shared: true },
+    { ids: ['A'.repeat(160), 'B'.repeat(160)], shared: true },
+    { ids: ['a', 'bb'], shared: false },
+    { ids: ['a', 'é'], shared: false },
+    { ids: ['a"', 'ab'], shared: false },
+    { ids: ['a\\', 'ab'], shared: false },
+  ])('preserves public IDs and port-cache byte distinctions for $ids', ({ ids, shared }) => {
+    const checked = validatePresentationPlan(twoLeafPlan(ids[0]!, ids[1]!), context(), portRegistry());
+    expect(checked.ok).toBe(true);
+    if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+    const [first, second] = checked.value.nodes.slice(1);
+    expect(first!.config.ports).toEqual(second!.config.ports);
+    expect(first!.config.ports === second!.config.ports).toBe(shared);
+    expect(checked.value.plan.nodes.map((node) => node.id)).toEqual(['layout', ...ids]);
+    expect(checked.value.graph.nodes.map((node) => node.id)).toEqual(['layout', ...ids]);
+    const byteCounts = ids.map((id) => new TextEncoder().encode(JSON.stringify(id)).length);
+    expect(byteCounts[0] === byteCounts[1]).toBe(shared);
+  });
+
+  it('rejects a structural mapping swap before assessing a second equivalent node', () => {
+    let calls = 0;
+    let assessments = 0;
+    const mapping = {
+      ref: { id: 'filter.identity', revision: '1' },
+      source: { payload: 'filter' as const },
+      target: { payload: 'filter' as const },
+      kind: 'identity' as const,
+    };
+    const leaf: PresentationManifest = {
+      ...tableManifest((values) => {
+        calls++;
+        if (calls === 2) active.mappings = [mapping, mapping];
+        return {
+          ok: true,
+          value: {
+            values,
+            fields: [field.id],
+            operations: [read],
+            ports: [{ id: 'filter', direction: 'input', payload: 'filter' }],
+          },
+        };
+      }),
+      assess: () => {
+        assessments++;
+        // If a stale port cache bypassed validation, this would hide the invalid mappings from the final graph.
+        active.mappings = installed.mappings;
+        return { ok: true, value: { taskFit: 100, informationDensity: 0, interactionEffort: 0, legibilityPenalty: 0 } };
+      },
+    };
+    const installed = portRegistry(leaf);
+    const active = { ...installed };
+    const checked = validatePresentationPlan(twoLeafPlan('leaf-a', 'leaf-b'), context(), active);
+    expect(checked).toEqual({
+      ok: false,
+      diagnostics: [
+        {
+          code: 'interaction.duplicate-mapping',
+          message: 'A mapping version can be registered only once.',
+          retryable: false,
+        },
+      ],
+    });
+    expect(calls).toBe(2);
+    expect(assessments).toBe(1);
+  });
+
+  it('keeps port validation and parsed port objects local to each composition', () => {
+    let duplicate = false;
+    const leaf = tableManifest((values) => {
+      const port = { id: 'filter', direction: 'input' as const, payload: 'filter' as const };
+      return {
+        ok: true,
+        value: { values, fields: [field.id], operations: [read], ports: duplicate ? [port, port] : [port] },
+      };
+    });
+    const installed = portRegistry(leaf);
+    const plan = twoLeafPlan('leaf-a', 'leaf-b');
+    const active = context();
+    const compose = () =>
+      composePresentation(
+        {
+          ...request(plan, active, [{ source: 'explicit', plan }]),
+          searchRegistered: false,
+        },
+        installed,
+      );
+    const first = compose();
+    const second = compose();
+    if (!first.ok || !second.ok || !first.value.presentation || !second.value.presentation)
+      throw new Error('Both initial compositions must produce a presentation.');
+    const firstPorts = first.value.presentation.nodes[1]!.config.ports;
+    const secondPorts = second.value.presentation.nodes[1]!.config.ports;
+    expect(firstPorts).toEqual(secondPorts);
+    expect(firstPorts).not.toBe(secondPorts);
+    duplicate = true;
+    const rejected = compose();
+    expect(rejected).toMatchObject({
+      ok: true,
+      value: { rejected: [{ diagnostics: [{ code: 'interaction.duplicate-port' }] }] },
+    });
+    if (rejected.ok) expect(rejected.value.presentation).toBeUndefined();
+    expect(firstPorts).toHaveLength(1);
+  });
+
+  it('keeps structurally memoized nodes bound to their exact result source lineage', () => {
+    const nextRef = { ...ref, sourceLineage: 'source-r2' };
+    const nextResult = { ...result, ref: nextRef };
+    const seen: (string | undefined)[] = [];
+    const leaf = tableManifest((values, descriptor) => {
+      seen.push(descriptor?.ref.sourceLineage);
+      return {
+        ok: true,
+        value: { values, fields: descriptor!.fields.map((item) => item.id), ports: [], operations: [read] },
+      };
+    });
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const activeContext = context({
+      task: {
+        ...presentationTask,
+        inputs: [ref, nextRef],
+        needs: [{ id: 'browse', operation: read, fields: [field.id], required: true }],
+      },
+      results: [result, nextResult],
+      current: { ...presentationPlan.preconditions, results: [ref, nextRef] },
+    });
+    const first = basePlan('z-layout', 'leaf', {}, ref);
+    const next = basePlan('a-layout', 'leaf', {}, nextRef);
+    const composed = composePresentation(
+      {
+        ...request(first, activeContext, [
+          { source: 'explicit', plan: first },
+          { source: 'explicit', plan: next },
+        ]),
+        searchRegistered: false,
+      },
+      registry([leaf, root]),
+    );
+    expect(composed.ok).toBe(true);
+    if (!composed.ok) return;
+    expect(composed.value.presentation?.plan.rootId).toBe('a-layout');
+    expect(seen).toEqual(['source-r1', 'source-r2']);
+    expect(composed.value.presentation?.nodes.find((node) => node.node.id === 'leaf')?.result?.ref).toEqual(nextRef);
+    expect(composed.value.presentation?.plan.nodes.find((node) => node.id === 'leaf')?.result).toEqual(nextRef);
+  });
+
+  it('does not authorize a new lineage through an otherwise equal cached node', () => {
+    const seen: (string | undefined)[] = [];
+    const leaf = tableManifest((values, descriptor) => {
+      seen.push(descriptor?.ref.sourceLineage);
+      return { ok: true, value: { values, fields: [field.id], ports: [], operations: [read] } };
+    });
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const first = basePlan('z-layout', 'leaf');
+    const unauthorized = basePlan('a-layout', 'leaf', {}, { ...ref, sourceLineage: 'unavailable' });
+    const composed = composePresentation(
+      {
+        ...request(first, context(), [
+          { source: 'explicit', plan: first },
+          { source: 'explicit', plan: unauthorized },
+        ]),
+        searchRegistered: false,
+      },
+      registry([leaf, root]),
+    );
+    expect(composed).toMatchObject({
+      ok: true,
+      value: { rejected: [{ diagnostics: [{ code: 'commit.missing-dependency' }] }] },
+    });
+    expect(seen).toEqual(['source-r1']);
+  });
+
+  it('reparses caller result lineage on a later composition without freezing caller input', () => {
+    const mutableRef = { ...ref, sourceLineage: 'first-source' };
+    const leaf = tableManifest((values, descriptor) => ({
+      ok: true,
+      value: {
+        values: { lineage: descriptor!.ref.sourceLineage ?? '' },
+        fields: [field.id],
+        ports: [],
+        operations: [read],
+      },
+    }));
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const installed = registry([leaf, root]);
+    const active = context({
+      task: {
+        ...presentationTask,
+        inputs: [mutableRef],
+        needs: [{ id: 'browse', operation: read, fields: [field.id], required: true }],
+      },
+      results: [{ ...result, ref: mutableRef }],
+      current: { ...presentationPlan.preconditions, results: [mutableRef] },
+    });
+    const plan = basePlan('layout', 'leaf', {}, mutableRef);
+    const first = composePresentation(
+      { ...request(plan, active, [{ source: 'explicit', plan }]), searchRegistered: false },
+      installed,
+    );
+    expect(first.ok).toBe(true);
+    mutableRef.sourceLineage = 'second-source';
+    const next = composePresentation(
+      { ...request(plan, active, [{ source: 'explicit', plan }]), searchRegistered: false },
+      installed,
+    );
+    expect(next.ok).toBe(true);
+    if (!first.ok || !next.ok) return;
+    expect(first.value.presentation?.nodes[1]?.result?.ref.sourceLineage).toBe('first-source');
+    expect(next.value.presentation?.nodes[1]?.result?.ref.sourceLineage).toBe('second-source');
+  });
+
+  it('compares cached topology against every ordered node and retains dependency order and duplicates', () => {
+    const nextRef = { ...ref, sourceLineage: 'source-r2' };
+    const leaf = tableManifest((values) => ({
+      ok: true,
+      value: { values, fields: [field.id], ports: [], operations: [read] },
+    }));
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const installed = registry([leaf, root]);
+    const active = context({
+      task: {
+        ...presentationTask,
+        inputs: [nextRef, ref],
+        needs: [{ id: 'browse', operation: read, fields: [field.id], required: true }],
+      },
+      results: [result, { ...result, ref: nextRef }],
+      current: { ...presentationPlan.preconditions, results: [ref, nextRef] },
+    });
+    const base = basePlan('layout', 'leaf-a');
+    const plan = {
+      ...base,
+      preconditions: active.current,
+      nodes: [
+        { ...base.nodes[0]!, children: ['leaf-a', 'leaf-b'] },
+        base.nodes[1]!,
+        { ...base.nodes[1]!, id: 'leaf-b', result: nextRef },
+      ],
+    };
+    const parsed = parseContract('presentation-plan', plan);
+    const prepared = preparePresentationContext(active);
+    if (!parsed.ok || !prepared.ok) throw Error('fixture parse failed');
+    const cache = preparePresentationValidationCache(prepared.value, installed);
+    if (!cache.ok) throw Error('fixture cache failed');
+    const validated = validatePreparedPresentationPlan(
+      Object.freeze({ ...parsed.value, preconditions: Object.freeze(parsed.value.preconditions) }),
+      active,
+      installed,
+      prepared.value,
+      {},
+      new Map(),
+      new WeakMap(),
+      undefined,
+      cache.value,
+      true,
+    );
+    expect(validated.ok).toBe(true);
+    const firstTree = preparePresentationTree(parsed.value, cache.value);
+    expect(firstTree.ok).toBe(true);
+    if (!firstTree.ok) return;
+    expect(preparePresentationTree({ ...parsed.value, nodes: [...parsed.value.nodes] }, cache.value)).toEqual(
+      firstTree,
+    );
+    const reordered = preparePresentationTree(
+      { ...parsed.value, nodes: [parsed.value.nodes[0]!, parsed.value.nodes[2]!, parsed.value.nodes[1]!] },
+      cache.value,
+    );
+    expect(reordered.ok).toBe(true);
+    if (reordered.ok) expect(reordered.value.nodeIndexes.get('leaf-a')).toBe(2);
+    const invalid = {
+      ...parsed.value,
+      nodes: [{ ...parsed.value.nodes[0]!, children: ['leaf-a', 'leaf-a'] }, ...parsed.value.nodes.slice(1)],
+    };
+    expect(preparePresentationTree(invalid, cache.value)).toMatchObject({
+      ok: false,
+      diagnostics: [{ code: 'presentation.tree' }],
+    });
+    const entry = cache.value.readSetOutcomes.get(parsed.value.preconditions)?.[0];
+    expect(entry?.references.map((item) => item.sourceLineage)).toEqual([
+      'source-r2',
+      'source-r1',
+      'source-r1',
+      'source-r2',
+    ]);
+  });
+
   it('reuses an owned link-free graph only while ordered node identities and resolved ports remain identical', () => {
     const leaf = tableManifest((values, descriptor) => ({
       ok: true,
@@ -382,16 +743,21 @@ describe('presentation validation memoization', () => {
   });
 
   it('accepts one deeply frozen callback outcome shared by multiple compatible nodes', () => {
+    const calls: string[] = [];
+    const ownedRead = Object.freeze({ ...read });
     const sharedOutcome = Object.freeze({
       ok: true as const,
       value: Object.freeze({
         values: Object.freeze({}),
         fields: Object.freeze([field.id]),
         ports: Object.freeze([]),
-        operations: Object.freeze([read]),
+        operations: Object.freeze([ownedRead]),
       }),
     });
-    const leaf = tableManifest(() => sharedOutcome);
+    const leaf = tableManifest((_values, _result, node) => {
+      calls.push(node?.id ?? 'missing-node');
+      return sharedOutcome;
+    });
     const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
     const candidate = basePlan('layout', 'first');
     const second = { ...candidate.nodes[1]!, id: 'second' };
@@ -401,11 +767,189 @@ describe('presentation validation memoization', () => {
     };
     const checked = validatePresentationPlan(twoLeaves, context(), registry([leaf, root]));
 
+    expect(calls).toEqual(['first', 'second']);
     expect(checked.ok).toBe(true);
     if (!checked.ok) return;
     expect(checked.value.nodes.find((node) => node.node.id === 'first')?.config).toEqual(
       checked.value.nodes.find((node) => node.node.id === 'second')?.config,
     );
+  });
+
+  it('does not reuse bound result fields for another node without an optional result', () => {
+    const sharedOutcome = Object.freeze({
+      ok: true as const,
+      value: Object.freeze({
+        values: Object.freeze({}),
+        fields: Object.freeze([field.id]),
+        ports: Object.freeze([]),
+        operations: Object.freeze([Object.freeze({ ...read })]),
+      }),
+    });
+    const calls: string[] = [];
+    const leaf: PresentationManifest = {
+      ...tableManifest((_values, descriptor, node) => {
+        calls.push(`${node?.id}:${descriptor === undefined ? 'unbound' : 'bound'}`);
+        return sharedOutcome;
+      }),
+      result: 'optional',
+    };
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const candidate = basePlan('layout', 'first');
+    const unbound = {
+      id: 'second',
+      role: 'table',
+      representation: leaf.ref,
+      config: candidate.nodes[1]!.config,
+      children: [],
+    };
+    const twoLeaves: PresentationPlan = {
+      ...candidate,
+      nodes: [{ ...candidate.nodes[0]!, children: ['first', 'second'] }, candidate.nodes[1]!, unbound],
+    };
+    expect(validatePresentationPlan(twoLeaves, context(), registry([leaf, root]))).toMatchObject({
+      ok: false,
+      diagnostics: [{ code: 'presentation.field' }],
+    });
+    expect(calls).toEqual(['first:bound', 'second:unbound']);
+  });
+
+  it.each(['mutable array', 'shallow-frozen array'] as const)(
+    'rechecks changed operation declarations in a public registry with a %s',
+    (shape) => {
+      const declaredRead = { id: 'data.read', revision: '1' };
+      const declarations = [declaredRead];
+      if (shape === 'shallow-frozen array') Object.freeze(declarations);
+      const sharedOutcome = Object.freeze({
+        ok: true as const,
+        value: Object.freeze({
+          values: Object.freeze({}),
+          fields: Object.freeze([field.id]),
+          ports: Object.freeze([]),
+          operations: Object.freeze([Object.freeze({ ...read })]),
+        }),
+      });
+      const calls: string[] = [];
+      const leaf: PresentationManifest = {
+        ...tableManifest((_values, _result, node) => {
+          calls.push(node?.id ?? 'missing-node');
+          if (calls.length === 2) {
+            if (shape === 'mutable array') declarations.length = 0;
+            else declaredRead.id = 'data.other';
+          }
+          return sharedOutcome;
+        }),
+        operations: declarations,
+      };
+      const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+      const candidate = basePlan('layout', 'first');
+      const twoLeaves: PresentationPlan = {
+        ...candidate,
+        nodes: [
+          { ...candidate.nodes[0]!, children: ['first', 'second'] },
+          candidate.nodes[1]!,
+          { ...candidate.nodes[1]!, id: 'second' },
+        ],
+      };
+      // Public registries are structural; only the factory owns and freezes declarations.
+      const customRegistry: PresentationRegistry = { manifests: [leaf, root], mappings: [] };
+      const checked = validatePresentationPlan(twoLeaves, context(), customRegistry);
+      expect(calls).toEqual(['first', 'second']);
+      expect(checked).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.configuration' }] });
+    },
+  );
+
+  it.each(['inherited data', 'prototype getters', 'inherited array entry'] as const)(
+    'rechecks frozen declarations backed by mutable %s',
+    (shape) => {
+      const backing = { id: 'data.read', revision: '1' };
+      class DynamicOperation {
+        get id() {
+          return backing.id;
+        }
+        get revision() {
+          return backing.revision;
+        }
+      }
+      const declaration: Readonly<typeof backing> =
+        shape === 'prototype getters' ? Object.freeze(new DynamicOperation()) : Object.freeze(Object.create(backing));
+      const inherited = Object.create(Array.prototype) as Record<number, typeof read>;
+      inherited[0] = Object.freeze({ ...read });
+      const sparse: (typeof read)[] = [];
+      sparse.length = 1;
+      Object.setPrototypeOf(sparse, inherited);
+      const declarations = Object.freeze(shape === 'inherited array entry' ? sparse : [declaration]);
+      const sharedOutcome = Object.freeze({
+        ok: true as const,
+        value: Object.freeze({
+          values: Object.freeze({}),
+          fields: Object.freeze([field.id]),
+          ports: Object.freeze([]),
+          operations: Object.freeze([Object.freeze({ ...read })]),
+        }),
+      });
+      const calls: string[] = [];
+      const leaf: PresentationManifest = {
+        ...tableManifest((_values, _result, node) => {
+          calls.push(node?.id ?? 'missing-node');
+          if (calls.length === 2) {
+            backing.id = 'data.other';
+            // The frozen array owns only its length; its inherited entry remains replaceable.
+            Object.defineProperty(inherited, '0', { value: Object.freeze({ id: 'data.other', revision: '1' }) });
+          }
+          return sharedOutcome;
+        }),
+        operations: declarations,
+      };
+      const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+      const candidate = basePlan('layout', 'first');
+      const twoLeaves: PresentationPlan = {
+        ...candidate,
+        nodes: [
+          { ...candidate.nodes[0]!, children: ['first', 'second'] },
+          candidate.nodes[1]!,
+          { ...candidate.nodes[1]!, id: 'second' },
+        ],
+      };
+      const checked = validatePresentationPlan(twoLeaves, context(), { manifests: [leaf, root], mappings: [] });
+      expect(calls).toEqual(['first', 'second']);
+      expect(checked).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.configuration' }] });
+    },
+  );
+
+  it('rechecks permissions in a new composition with the same registered declarations and frozen config', () => {
+    const extra = Object.freeze({ id: 'data.extra', revision: '1' });
+    const sharedOutcome = Object.freeze({
+      ok: true as const,
+      value: Object.freeze({
+        values: Object.freeze({}),
+        fields: Object.freeze([field.id]),
+        ports: Object.freeze([]),
+        operations: Object.freeze([Object.freeze({ ...read }), extra]),
+      }),
+    });
+    let calls = 0;
+    const leaf = {
+      ...tableManifest(() => {
+        calls++;
+        return sharedOutcome;
+      }),
+      operations: [read, extra],
+    };
+    const root = layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } }));
+    const registered = registry([leaf, root]);
+    const candidate = basePlan();
+    expect(validatePresentationPlan(candidate, context(), registered).ok).toBe(true);
+    expect(
+      validatePresentationPlan(
+        candidate,
+        {
+          ...context(),
+          restrictions: [{ id: 'read-only', allowedOperations: [read] }],
+        },
+        registered,
+      ),
+    ).toMatchObject({ ok: false, diagnostics: [{ code: 'presentation.restricted' }] });
+    expect(calls).toBe(2);
   });
 
   it('rechecks manifest operation constraints for a shared deeply frozen callback outcome', () => {

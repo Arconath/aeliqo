@@ -5,6 +5,7 @@ export const aeliqoHierarchyStyles = [
   ...aeliqoFoundationThemeStyles,
   css`
     :host {
+      container-type: inline-size;
       display: block;
       min-inline-size: 0;
       inline-size: 100%;
@@ -35,6 +36,8 @@ export const aeliqoHierarchyStyles = [
       unicode-bidi: plaintext;
     }
     [part='viewport'] {
+      /* Enlarged glyphs may extend beyond the fixed data-coordinate canvas. */
+      padding-block: 1em;
       direction: ltr;
       overflow: auto;
       max-inline-size: 100%;
@@ -42,9 +45,9 @@ export const aeliqoHierarchyStyles = [
       border-radius: var(--aeliqo-radius-medium, 0.625rem);
     }
     svg {
+      overflow: visible;
       display: block;
-      max-inline-size: 100%;
-      min-inline-size: min(20rem, 100%);
+      max-inline-size: none;
     }
     svg text {
       font: inherit;
@@ -77,6 +80,12 @@ export const aeliqoHierarchyStyles = [
     [part='data'] {
       overflow: auto;
       margin-block-start: 1rem;
+    }
+    nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     button {
       background: var(--aeliqo-color-surface, #f8fafc);
@@ -120,7 +129,7 @@ export const aeliqoHierarchyStyles = [
     [part='scope'] {
       color: var(--aeliqo-color-muted, #4b5563);
     }
-    @media (max-width: 30rem) {
+    @container (max-width: 30rem) {
       [part='data'] {
         overflow: visible;
       }
@@ -156,7 +165,7 @@ export const aeliqoHierarchyStyles = [
         border: 0;
         display: grid;
         gap: 0.5rem;
-        grid-template-columns: minmax(4.75rem, 0.7fr) minmax(0, 1.3fr);
+        grid-template-columns: minmax(min(4.75rem, 40%), 0.7fr) minmax(0, 1.3fr);
         padding: 0.25rem;
       }
       td::before {
@@ -164,8 +173,12 @@ export const aeliqoHierarchyStyles = [
         font-weight: 600;
         overflow-wrap: anywhere;
       }
-      td > button {
+      td > button,
+      nav > button {
         justify-self: start;
+        min-inline-size: min(2.75rem, 100%);
+        max-inline-size: 100%;
+        overflow-wrap: anywhere;
       }
     }
     @media (forced-colors: active) {

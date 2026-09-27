@@ -59,8 +59,15 @@ export interface PresentationValidationCache {
   readonly coverageAnalyses: WeakMap<object, CoverageCacheEntry[]>;
   readonly readSetOutcomes: WeakMap<object, ReadSetCacheEntry[]>;
   readonly resolvedConfigs: WeakMap<object, ResolvedPresentationConfig>;
+  readonly checkedConfigs: WeakMap<ResolvedPresentationConfig, ResolvedConfigCheck[]>;
   readonly treeEntries: PresentationTreeCacheEntry[];
 }
+
+type ResolvedConfigCheck = readonly [
+  operations: readonly VersionRef[],
+  resultFields: ReadonlySet<string> | undefined,
+  enabled: readonly VersionRef[],
+];
 
 export interface PresentationCoverageAnalysis {
   readonly coverage: ReadonlyMap<string, PresentationPlanLike['coverage'][number]>;

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { type QuerySpec, type Task } from '@aeliqo/core';
+import { type PresentationPlan, type QuerySpec, type ResultRef, type Task } from '@aeliqo/core';
 import { createIntentCompilerRegistry } from '@aeliqo/core/app';
 import { defineDataFeature } from '@aeliqo/core/features';
 import type { PresentationPatternManifest } from '@aeliqo/core/presentation';
@@ -20,6 +20,7 @@ export const REF = {
 
 export const feature = defineDataFeature({
   id: 'attendance',
+  presentation: { allowedViews: ['table', 'trend', 'data.metric'] },
   schema: z.object({
     id: z.string(),
     employee: z.string(),
@@ -134,8 +135,32 @@ export function goalRegistry() {
   return registered.value;
 }
 
+function sameResult(actual: ResultRef | undefined, expected: ResultRef | undefined): boolean {
+  if (actual === undefined || expected === undefined) return actual === expected;
+  return (['id', 'revision', 'outputId', 'queryDigest', 'scopeDigest', 'sourceLineage'] as const).every(
+    (key) => actual[key] === expected[key],
+  );
+}
+
+function sameOverviewNode(
+  actual: PresentationPlan['nodes'][number],
+  expected: PresentationPlan['nodes'][number],
+): boolean {
+  return (
+    actual.id === expected.id &&
+    actual.role === expected.role &&
+    actual.representation.id === expected.representation.id &&
+    actual.representation.revision === expected.representation.revision &&
+    actual.config.schema.id === expected.config.schema.id &&
+    actual.config.schema.revision === expected.config.schema.revision &&
+    actual.children.length === expected.children.length &&
+    actual.children.every((child, index) => child === expected.children[index]) &&
+    sameResult(actual.result, expected.result)
+  );
+}
+
 export function overviewPattern(): PresentationPatternManifest {
-  return {
+  const pattern: PresentationPatternManifest = {
     ref: PATTERN,
     expand(request) {
       const matches = ROLES.map((role) => request.context.results.filter((result) => result.ref.outputId === role));
@@ -193,16 +218,18 @@ export function overviewPattern(): PresentationPatternManifest {
       };
     },
     matches(plan, context) {
-      return (
-        context.task.id === 'attendance-overview-task' &&
-        plan.rootId === 'workspace' &&
-        plan.nodes.length === 4 &&
-        ROLES.every(
-          (role, index) =>
-            plan.nodes[index + 1]?.representation.id === REF[role].id &&
-            plan.nodes[index + 1]?.result?.outputId === role,
-        )
+      const expanded = pattern.expand({
+        id: plan.id,
+        revision: plan.revision,
+        preconditions: plan.preconditions,
+        context,
+      });
+      if (!expanded.ok || plan.rootId !== expanded.value.rootId || plan.nodes.length !== expanded.value.nodes.length)
+        return false;
+      return expanded.value.nodes.every(
+        (expected) => plan.nodes.filter((actual) => sameOverviewNode(actual, expected)).length === 1,
       );
     },
   };
+  return pattern;
 }

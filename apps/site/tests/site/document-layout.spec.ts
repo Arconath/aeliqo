@@ -258,3 +258,88 @@ test('all component documentation routes preserve static content and hydration l
     'utf8',
   );
 });
+
+test('timeline preview reserves normal text and reflows enlarged content', async ({ browser }, testInfo) => {
+  const baseURL = testInfo.project.use.baseURL;
+  if (typeof baseURL !== 'string') throw new Error('document-layout probe requires a Playwright baseURL');
+  for (const width of [320, 360, 768, 1280, 1440]) {
+    for (const textScale of [1, 2]) {
+      const contexts = await Promise.all(
+        [false, true].map((javaScriptEnabled) =>
+          browser.newContext({ baseURL, javaScriptEnabled, viewport: { width, height: 900 } }),
+        ),
+      );
+      try {
+        const pages = await Promise.all(contexts.map((context) => context.newPage()));
+        for (const page of pages) {
+          await page.goto('/components/visualization.timeline/');
+          await page.evaluate((scale) => {
+            document.documentElement.style.fontSize = `${16 * scale}px`;
+          }, textScale);
+        }
+        const [staticPage, hydratedPage] = pages;
+        if (staticPage === undefined || hydratedPage === undefined) throw new Error('Missing timeline pages');
+        await hydratedPage.locator('aeliqo-timeline').evaluate(async (element) => {
+          await customElements.whenDefined('aeliqo-timeline');
+          await (element as HTMLElement & { updateComplete: Promise<unknown> }).updateComplete;
+          await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+        });
+        const before = await boxes(staticPage);
+        const after = await boxes(hydratedPage);
+        const label = `timeline ${width}px at ${textScale * 100}% text`;
+        if (textScale === 1) {
+          expectStable(before.componentPreview, after.componentPreview, `${label} preview`);
+          expectStable(before.propertiesHeading, after.propertiesHeading, `${label} following content`);
+        }
+        const content = await hydratedPage.locator('aeliqo-timeline').evaluate((element) => {
+          const viewport = element.shadowRoot?.querySelector<HTMLElement>('[part="viewport"]');
+          const shell = element.closest<HTMLElement>('[data-preview-mount]');
+          if (viewport === undefined || viewport === null || shell === null)
+            throw new Error('Missing timeline content');
+          const button = element.shadowRoot?.querySelector<HTMLButtonElement>('[part="data"] button');
+          if (button === undefined || button === null) throw new Error('Missing selection control');
+          const textRange = document.createRange();
+          textRange.selectNodeContents(button);
+          return {
+            selectionTextLines: textRange.getClientRects().length,
+            selectionTextWidth: textRange.getBoundingClientRect().width,
+            selectionWidth: button.getBoundingClientRect().width,
+            pageWidth: document.documentElement.scrollWidth,
+            readingWidth: document.querySelector('.reading')?.getBoundingClientRect().width ?? 0,
+            shellHeight: shell.clientHeight,
+            shellScrollHeight: shell.scrollHeight,
+            viewportPadding: Number.parseFloat(getComputedStyle(viewport).paddingBlockStart),
+            fontSize: Number.parseFloat(getComputedStyle(element).fontSize),
+            rows: element.shadowRoot?.querySelectorAll('tbody tr').length,
+          };
+        });
+        if (textScale === 2) expect(content.readingWidth, `${label} readable column`).toBeGreaterThan(width * 0.75);
+        expect(content.pageWidth, `${label} page overflow`).toBeLessThanOrEqual(width);
+        expect(
+          content.shellScrollHeight,
+          `${label} preview must grow without a nested vertical scroll`,
+        ).toBeLessThanOrEqual(content.shellHeight + 1);
+        expect(content.viewportPadding, `${label} chart label gutter`).toBeGreaterThanOrEqual(content.fontSize);
+        expect(content.rows, `${label} complete data table`).toBe(3);
+        expect(content.selectionTextLines, `${label} single-line Select control`).toBe(1);
+        expect(content.selectionTextWidth, `${label} Select text fits`).toBeLessThanOrEqual(content.selectionWidth);
+        if (textScale === 2 && width >= 1280) {
+          const navigationToggle = hydratedPage.locator('.docs-nav-toggle');
+          await navigationToggle.focus();
+          await navigationToggle.press('Space');
+          await expect(navigationToggle).toBeChecked();
+          await expect(hydratedPage.locator('.docs-sidebar-content')).toBeVisible();
+          await navigationToggle.press('Space');
+          await expect(navigationToggle).not.toBeChecked();
+          await expect(navigationToggle).toBeFocused();
+        }
+        await hydratedPage.screenshot({
+          path: testInfo.outputPath(`timeline-${width}-${textScale}x.png`),
+          fullPage: true,
+        });
+      } finally {
+        await Promise.all(contexts.map((context) => context.close()));
+      }
+    }
+  }
+});

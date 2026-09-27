@@ -2,6 +2,40 @@ import { expect, test } from 'vitest';
 import { inspectWire, utf8Bytes } from '../../packages/core/src/contracts/ingress.js';
 import { WIRE_LIMITS } from '../../packages/core/src/contracts/limits.js';
 
+test('wire inspection returns fresh public outcomes with the original input identity', () => {
+  const input = { values: [null, true, false, 0, 'value', {}, []] };
+  const first = inspectWire(input);
+  const second = inspectWire(input);
+  expect(first).toEqual({ ok: true, value: input });
+  expect(second).toEqual(first);
+  expect(second).not.toBe(first);
+  if (!first.ok || !second.ok) throw Error('Expected valid wire data');
+  expect(first.value).toBe(input);
+  expect(second.value).toBe(input);
+});
+
+test('wire success reuse does not retain failures or state across inspections', () => {
+  const shared = { valid: true };
+  const valid = { first: shared, second: shared };
+  const hostile = new Proxy(
+    {},
+    {
+      ownKeys() {
+        throw Error('Hostile inspection');
+      },
+    },
+  );
+  for (const invalid of [{ nested: NaN }, hostile, { absent: undefined }]) {
+    expect(inspectWire(valid)).toEqual({ ok: true, value: valid });
+    const first = inspectWire(invalid);
+    const second = inspectWire(invalid);
+    expect(first.ok).toBe(false);
+    expect(second).toEqual(first);
+    expect(second).not.toBe(first);
+    expect(inspectWire(valid)).toEqual({ ok: true, value: valid });
+  }
+});
+
 test('wire diagnostics retain exact object and array paths', () => {
   const invalid = inspectWire({ output: [{ values: [0, NaN] }] });
   expect(invalid).toMatchObject({
@@ -87,4 +121,75 @@ test('escaped and unicode JSON strings use exact object byte accounting', () => 
     ok: false,
     diagnostics: [{ code: 'wire.bytes' }],
   });
+});
+
+test('undefined data properties are rejected while array length remains structural', () => {
+  expect(inspectWire([])).toEqual({ ok: true, value: [] });
+  expect(inspectWire({ missing: undefined })).toMatchObject({
+    ok: false,
+    diagnostics: [{ code: 'wire.type', path: ['missing'] }],
+  });
+  expect(inspectWire([undefined])).toMatchObject({
+    ok: false,
+    diagnostics: [{ code: 'wire.type', path: [0] }],
+  });
+});
+
+test('array descriptor inspection keeps trap order without reading property values', () => {
+  const events: string[] = [];
+  const input = new Proxy([1, undefined], {
+    get(target, key, receiver) {
+      events.push(`get:${String(key)}`);
+      return Reflect.get(target, key, receiver);
+    },
+    getPrototypeOf(target) {
+      events.push('prototype');
+      return Reflect.getPrototypeOf(target);
+    },
+    ownKeys(target) {
+      events.push('keys');
+      return Reflect.ownKeys(target);
+    },
+    getOwnPropertyDescriptor(target, key) {
+      events.push(`descriptor:${String(key)}`);
+      return Reflect.getOwnPropertyDescriptor(target, key);
+    },
+  });
+  expect(inspectWire(input)).toMatchObject({ ok: false, diagnostics: [{ code: 'wire.type', path: [1] }] });
+  expect(events).toEqual([
+    'prototype',
+    'keys',
+    'descriptor:length',
+    'descriptor:length',
+    'descriptor:1',
+    'descriptor:length',
+    'descriptor:0',
+  ]);
+});
+
+test('descriptor mutations preserve inspection order and accessors never execute', () => {
+  const events: string[] = [];
+  const target: { first: number | undefined; last: number } = { first: 1, last: 2 };
+  const input = new Proxy(target, {
+    getOwnPropertyDescriptor(object, key) {
+      events.push(`descriptor:${String(key)}`);
+      if (key === 'last') object.first = undefined;
+      return Reflect.getOwnPropertyDescriptor(object, key);
+    },
+  });
+  expect(inspectWire(input)).toMatchObject({ ok: false, diagnostics: [{ code: 'wire.type', path: ['first'] }] });
+  expect(events).toEqual(['descriptor:length', 'descriptor:last', 'descriptor:first']);
+  let reads = 0;
+  const accessor = Object.defineProperty({}, 'value', {
+    enumerable: true,
+    get() {
+      reads++;
+      return 1;
+    },
+  });
+  expect(inspectWire(accessor)).toMatchObject({
+    ok: false,
+    diagnostics: [{ code: 'wire.accessor', path: ['value'] }],
+  });
+  expect(reads).toBe(0);
 });

@@ -34,6 +34,21 @@ export interface ResourcePresentationDefaults {
   readonly preferred?: Partial<Readonly<Record<StandardIntentKind, string>>>;
 }
 
+/** A business measure authored in application code and expanded into a reviewed meaning. */
+export interface ResourceMeasure {
+  readonly label: string;
+  /** Plain-language definition shown to people and agents. Defaults to the label. */
+  readonly explanation?: string;
+  readonly aggregate: 'count' | 'count-distinct' | 'sum';
+  /** Field to aggregate. `count` and `count-distinct` default to the first identity field; `sum` requires a numeric field. */
+  readonly field?: string;
+  /** Snapshot values, such as month-end headcount, that must never be summed across these fields. */
+  readonly semiAdditiveOver?: readonly [string, ...string[]];
+  readonly goal?: 'minimize' | 'maximize';
+  /** Referenced by analyze intents as `{ id, revision }`. Defaults to `'1'`; change it when the definition changes. */
+  readonly revision?: string;
+}
+
 interface ResourceInputBase<Schema extends z.ZodObject> {
   readonly id: string;
   readonly label: string;
@@ -52,6 +67,8 @@ export interface GeneratedResourceInput<Schema extends z.ZodObject> extends Reso
   readonly functionRegistryDigest?: string;
   /** Reviewed business meanings available to analyze intents. */
   readonly meanings?: readonly MeaningDefinition[];
+  /** Shorthand for count and sum meanings keyed by measure ID; the output type is derived from the schema. */
+  readonly measures?: Readonly<Record<string, ResourceMeasure>>;
   readonly catalog?: never;
   readonly entity?: never;
 }
@@ -64,6 +81,7 @@ export interface CatalogResourceInput<Schema extends z.ZodObject> extends Resour
   readonly rowGrain?: never;
   readonly functionRegistryDigest?: never;
   readonly meanings?: never;
+  readonly measures?: never;
 }
 
 export type ResourceInput<Schema extends z.ZodObject> = GeneratedResourceInput<Schema> | CatalogResourceInput<Schema>;

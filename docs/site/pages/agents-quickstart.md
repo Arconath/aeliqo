@@ -8,19 +8,18 @@ description: 'Expose the three standard tools for one expiring Region session wh
 
 <p class="lead">Start after your resource and Region already work without AI. The endpoint delegates render calls to the existing app; it does not create a second runtime.</p>
 
-<h2>Try the scripted demo first</h2>
+<h2>See the result first</h2>
 
-The [public playground](/playground/) ships a demo agent that needs no model,
-key, or runner. It answers only the requests listed in its panel.
+1. Open the [Playground](/playground/) and run a manual task.
+2. Choose **Browser agent**, then **Enable WebMCP** in a browser with the
+   experiment enabled. Follow [WebMCP setup](/agents/webmcp/) if unavailable.
+3. Give the displayed prompt to your browser agent. It discovers the tools,
+   proposes a registered intent, and changes the same result panel.
+4. Open **Inspect** to read the request and receipt. Try **Analytical workspace**
+   and **Entire page** without disconnecting the agent.
 
-1. Open the playground and choose **Connect AI**.
-2. Select **Demo agent (scripted)**, then choose **Check connection**.
-   You should see “Demo agent · scripted, no model calls”.
-3. Type one of the listed requests and choose **Send to demo agent**.
-   You should see the demo run `aeliqo_context` then `aeliqo_render`
-   through the real endpoint, and the view commit.
-4. Type a request that is not listed.
-   You should see a refusal: nothing is sent and nothing changes.
+For an MCP client or your own model, use the [standalone local example](/agents/mcp/).
+No model connection is required to build or manually operate the application.
 
 <h2>Create the endpoint</h2>
 

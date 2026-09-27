@@ -1,13 +1,11 @@
 import type { Intent } from '@aeliqo/core';
 import type { WebRenderReceipt } from '@aeliqo/web/app';
+import { dailyAttendanceIntent } from '../../../../examples/vnext/attendance/data.js';
+import { layoutIntent } from '../../../../examples/vnext/workspace/page.js';
 import { createActionReviewController } from './action-review.js';
 import { createConnectionFlow } from './connection-flow.js';
-import { demoTasksFor } from './demo-agent.js';
 import { evidenceFor, selectedView, viewLabel, type InspectorSection, type PlaygroundEvidence } from './inspect.js';
-import { fixtureEvidence } from './fixture-inspector.js';
-import { createFixtureJourneys, FIXTURE_JOURNEYS, fixtureStatus, type FixtureJourney } from './fixture-journeys.js';
-import { createJourneyTracker, journeyStagesFor } from './journey.js';
-import { bindConfigCopy, COPY_HINTS, renderMcpClientConfigs } from './mcp-configs.js';
+import { createJourneyTracker } from './journey.js';
 import { jakartaPeopleIntent, PLAYGROUND_SCENARIOS, type PlaygroundScenario } from './scenarios.js';
 import { findScenario, labelIntent, renderScenarioControls } from './scenario-controls.js';
 import { createPlaygroundSession, type PlaygroundSession } from './session.js';
@@ -37,8 +35,9 @@ const error = required<HTMLElement>('#pg-error');
 const viewBadge = required<HTMLElement>('#pg-view-badge');
 const resultTitle = required<HTMLElement>('#pg-result-title');
 const receiptState = required<HTMLElement>('#pg-receipt-state');
-const modelCalls = required<HTMLElement>('#pg-model-calls');
 const journeyIntent = required<HTMLElement>('#pg-journey-intent');
+const intentPanel = required<HTMLDetailsElement>('#pg-intent');
+const intentJson = required<HTMLElement>('#pg-intent-json');
 const journeyResult = required<HTMLElement>('#pg-journey-result');
 const journeyView = required<HTMLElement>('#pg-journey-view');
 const setJourney = createJourneyTracker(document.querySelectorAll<HTMLElement>('.pg-journey li'), viewBadge).set;
@@ -50,27 +49,16 @@ const actionContent = required<HTMLElement>('#pg-action-content');
 const actionStatus = required<HTMLElement>('#pg-action-status');
 const actionCancel = required<HTMLButtonElement>('#pg-action-cancel');
 const actionConfirm = required<HTMLButtonElement>('#pg-action-confirm');
-const connectionKind = required<HTMLSelectElement>('#pg-connection-kind');
 const connectButton = required<HTMLButtonElement>('#pg-connect');
 const connectionStatus = required<HTMLElement>('#pg-connect-status');
 const connectionLabel = required<HTMLElement>('#pg-connection-label');
 const connectionDot = required<HTMLElement>('#pg-connection-dot');
-const prompt = required<HTMLTextAreaElement>('#pg-prompt');
-const send = required<HTMLButtonElement>('#pg-send');
-const demoList = required<HTMLElement>('#pg-demo-list');
 const copyStatus = required<HTMLElement>('#pg-copy-status');
 const exportButton = required<HTMLButtonElement>('#pg-export');
 const exportNote = required<HTMLElement>('#pg-export-note');
 const actionsMenu = required<HTMLDetailsElement>('#pg-menu');
-const attendancePanel = required<HTMLElement>('#pg-attendance-journey');
-const workspacePanel = required<HTMLElement>('#pg-workspace-journey');
 const modeButtons = document.querySelectorAll<HTMLButtonElement>('[data-mode]');
 const inspectorButtons = document.querySelectorAll<HTMLButtonElement>('[data-inspector]');
-const FIXTURE_PANELS: Readonly<Record<FixtureJourney, HTMLElement>> = {
-  attendance: attendancePanel,
-  workspace: workspacePanel,
-};
-
 const requestedScenario = new URLSearchParams(window.location.search).get('scenario') ?? '';
 let mode: Mode = 'without-ai';
 let scenario: PlaygroundScenario = findScenario(requestedScenario);
@@ -78,31 +66,16 @@ let activeRequest: AbortController | undefined;
 let session: PlaygroundSession;
 let last: PlaygroundEvidence = {};
 let inspectorSection: InspectorSection = 'intent';
-let activeJourney: 'standard' | FixtureJourney = 'standard';
 
 const connectionFlow = createConnectionFlow(
   {
-    kind: connectionKind,
     status: connectionStatus,
     label: connectionLabel,
     dot: connectionDot,
-    prompt,
-    send,
-    modelCalls,
     connectButton,
-    localControls: required<HTMLElement>('#pg-local-connection-controls'),
-    demoPanel: required<HTMLElement>('#pg-demo-controls'),
-    relayControls: required<HTMLElement>('#pg-relay-controls'),
-    relayGenerate: required<HTMLButtonElement>('#pg-relay-generate'),
-    relaySession: required<HTMLElement>('#pg-relay-session'),
-    relayConfig: required<HTMLElement>('#pg-mcp-relay-json'),
-    relayCli: required<HTMLElement>('#pg-mcp-relay-cli'),
-    relayExpiry: required<HTMLElement>('#pg-relay-expiry'),
-    mcpConfig: required<HTMLElement>('#pg-mcp-config'),
     webmcpNote: required<HTMLElement>('#pg-webmcp-note'),
   },
   () => session,
-  { scenario: () => scenario.id },
 );
 
 function stringify(value: unknown): string {
@@ -155,38 +128,33 @@ const actionReview = createActionReviewController({
 });
 
 function renderInspector(): void {
-  if (activeJourney !== 'standard') {
-    const panel = FIXTURE_PANELS[activeJourney];
-    const evidence = fixtureEvidence(
-      activeJourney,
-      inspectorSection,
-      panel,
-      journeyIntent.textContent ?? '',
-      journeyView.textContent ?? '',
-    );
-    inspectorSummary.textContent = evidence.summary;
-    inspectorContent.textContent = stringify(evidence.value);
-    return;
-  }
   const section = evidenceFor(last, inspectorSection);
   inspectorSummary.textContent = section.summary;
   inspectorContent.textContent = stringify(section.value);
+}
+
+/** Shows the exact bounded request, which is the same shape an agent tool sends. */
+function showIntent(intent: Intent | undefined): void {
+  intentPanel.hidden = intent === undefined;
+  const lines = Object.entries(intent ?? {}).map(
+    ([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`,
+  );
+  intentJson.textContent = intent === undefined ? '' : `{\n${lines.join(',\n')}\n}`;
 }
 
 function resetSession(): void {
   activeRequest?.abort();
   session?.dispose();
   regionHost.replaceChildren();
-  session = createPlaygroundSession(actionReview.handle, applyAgentReceipt);
+  session = createPlaygroundSession(actionReview.handle, applyAgentReceipt, applyAdaptedPresentation);
   last = {};
   actionReview.reset();
   connectionFlow.reset();
-  showStandardJourney();
   setExportAvailability(false);
-  prompt.value = '';
   setError();
   status.textContent = 'Session reset. Choose a task.';
   journeyIntent.textContent = 'Choose a task';
+  showIntent(undefined);
   journeyResult.textContent = 'Waiting';
   journeyView.textContent = 'Waiting';
   setJourney('pending', 'pending', 'pending');
@@ -202,78 +170,30 @@ function resetSession(): void {
 
 function renderScenario(): void {
   renderScenarioControls(scenario, scenarioDescription, stepsHost, runIntent);
-  renderDemoTasks();
 }
 
-function renderDemoTasks(): void {
-  demoList.replaceChildren();
-  for (const task of demoTasksFor(scenario.id)) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.textContent = task.label;
-    button.addEventListener('click', () => {
-      prompt.value = task.label;
-      void connectionFlow.submitPrompt();
-    });
-    demoList.append(button);
-  }
-}
-
-function showStandardJourney(): void {
-  fixtureJourneys.hide();
-  activeJourney = 'standard';
-  regionHost.hidden = false;
-}
-
-function showFixtureJourney(kind: FixtureJourney): void {
-  activeRequest?.abort();
-  connectionFlow.disconnect();
-  connectionFlow.show('No agent · guided demo', 'disconnected');
-  setMode('without-ai');
-  activeJourney = kind;
-  setExportAvailability(true);
-  regionHost.hidden = true;
-  committedFilter.hidden = true;
-  setError();
-  const spec = FIXTURE_JOURNEYS[kind];
-  journeyIntent.textContent = spec.intentLabel;
-  journeyResult.textContent = 'Evaluating…';
-  journeyView.textContent = 'Waiting';
-  setJourney('done', 'active', 'pending');
-  resultTitle.textContent = spec.title;
-  resultDefinition.hidden = false;
-  resultDefinition.textContent = spec.definition;
-  status.textContent = 'Evaluating the registered guided demo…';
-  void fixtureJourneys.show(kind);
+function applyAdaptedPresentation(receipt: WebRenderReceipt): void {
+  if (receipt.status !== 'renderer-ready' || last.intent === undefined || last.receipt?.status !== 'renderer-ready')
+    return;
+  if (
+    receipt.runtime.task.id !== last.receipt.runtime.task.id ||
+    receipt.runtime.task.revision !== last.receipt.runtime.task.revision
+  )
+    return;
+  last = { ...last, receipt };
+  viewBadge.textContent = selectedView(receipt);
+  journeyView.textContent = viewLabel(selectedView(receipt));
   renderInspector();
 }
-
-const fixtureJourneys = createFixtureJourneys({
-  attendancePanel,
-  workspacePanel,
-  onStatus(kind, receipt) {
-    const state = fixtureStatus(kind, receipt, resultTitle.textContent ?? 'Demo');
-    receiptState.textContent = state.receipt;
-    journeyResult.textContent = state.result;
-    journeyView.textContent = state.view;
-    viewBadge.textContent = state.view;
-    status.textContent = state.status;
-    setJourney(...journeyStagesFor(state.receipt));
-  },
-  onError() {
-    setError('The guided demo could not load. Reload the page to retry.');
-    journeyResult.textContent = 'Could not complete';
-    setJourney('done', 'failed', 'pending');
-  },
-});
 
 async function applyReceipt(intent: Intent, receipt: WebRenderReceipt): Promise<void> {
   last = { intent, receipt };
   receiptState.textContent = receipt.status;
   viewBadge.textContent = selectedView(receipt);
   journeyIntent.textContent = labelIntent(scenario, intent);
+  showIntent(intent);
   const activeStep = scenario.steps.find((step) => step.id === intent.id);
-  resultTitle.textContent = activeStep?.label ?? `${scenario.label} result`;
+  resultTitle.textContent = activeStep?.label ?? labelIntent(scenario, intent);
   resultDefinition.textContent = activeStep?.definition ?? '';
   resultDefinition.hidden = activeStep?.definition === undefined;
   switch (receipt.status) {
@@ -293,7 +213,7 @@ function applyReadyReceipt(intent: Intent, receipt: WebRenderReceipt): void {
   journeyResult.textContent = 'Evaluated';
   journeyView.textContent = viewLabel(selectedView(receipt));
   setJourney('done', 'done', 'done');
-  status.textContent = `${resultTitle.textContent} is ready. Open Inspect to see the request, result, and view choice.`;
+  status.textContent = `${resultTitle.textContent} is ready. The intent above chose this view; Inspect shows the full evidence.`;
 }
 
 function applyFailedReceipt(receipt: WebRenderReceipt): void {
@@ -311,13 +231,13 @@ async function applyAgentReceipt(intent: Intent, receipt: WebRenderReceipt): Pro
 }
 
 async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJourney = false): Promise<void> {
-  showStandardJourney();
   setExportAvailability(publicJourney);
   activeRequest?.abort();
   const controller = new AbortController();
   activeRequest = controller;
   setError();
   journeyIntent.textContent = labelIntent(scenario, intent);
+  showIntent(intent);
   journeyResult.textContent = 'Checking…';
   journeyView.textContent = 'Waiting';
   setJourney('done', 'active', 'pending');
@@ -368,10 +288,6 @@ function inspectorFrom(value: string | undefined): InspectorSection | undefined 
   return INSPECTOR_SECTIONS.find((candidate) => candidate === value);
 }
 
-function isFixtureJourney(value: string | undefined): value is FixtureJourney {
-  return value === 'attendance' || value === 'workspace';
-}
-
 for (const item of PLAYGROUND_SCENARIOS) {
   const option = document.createElement('option');
   option.value = item.id;
@@ -396,7 +312,12 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-journey
       void runIntent(jakartaPeopleIntent(), undefined, true);
       return;
     }
-    if (isFixtureJourney(button.dataset.journey)) showFixtureJourney(button.dataset.journey);
+    if (button.dataset.journey === 'page') {
+      void runIntent(layoutIntent('page'), undefined, true);
+      return;
+    }
+    if (button.dataset.journey === 'workspace') void runIntent(layoutIntent('workspace'), undefined, true);
+    if (button.dataset.journey === 'attendance') void runIntent(dailyAttendanceIntent(), undefined, true);
   });
 for (const button of modeButtons)
   button.addEventListener('click', () => {
@@ -433,17 +354,15 @@ for (const button of inspectorButtons)
     renderInspector();
   });
 connectButton.addEventListener('click', () => void connectionFlow.connect());
-required<HTMLButtonElement>('#pg-relay-generate').addEventListener('click', () => void connectionFlow.connect());
-connectionKind.addEventListener('change', () => connectionFlow.changeKind());
-send.addEventListener('click', () => void connectionFlow.submitPrompt());
+required<HTMLButtonElement>('#pg-copy-prompt').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(required<HTMLElement>('#pg-agent-prompt').textContent ?? '');
+    copyStatus.textContent = 'Prompt copied. Paste it into your browser agent.';
+  } catch {
+    copyStatus.textContent = 'Select and copy the prompt above.';
+  }
+});
 
-renderMcpClientConfigs(required<HTMLElement>('#pg-mcp-http'), required<HTMLElement>('#pg-mcp-stdio'));
-bindConfigCopy(required<HTMLElement>('#pg-mcp-config'), copyStatus);
-bindConfigCopy(
-  required<HTMLElement>('#pg-relay-controls'),
-  required<HTMLElement>('#pg-relay-copy-status'),
-  COPY_HINTS.hosted,
-);
 const narrowRail = window.matchMedia('(max-width: 800px)');
 const syncRequestRail = () => {
   requestRail.open = !narrowRail.matches;

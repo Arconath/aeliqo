@@ -13,7 +13,9 @@ contract: 'Calendar date rather than timezone-shifted timestamp; typed entry and
 
 ## Purpose
 
-A native date input for one calendar date, with typed entry and picker kept in agreement. Values stay date-only; the host adds timezone and business meaning.
+A native date input for one calendar date, with typed entry and picker kept in agreement. The host
+can set its date-only `value`; editing updates that local property and emits a typed change. The host
+adds timezone and business meaning and decides what to persist.
 
 ## When to use it
 
@@ -73,6 +75,4 @@ Leave enough width for the localized date at 200% text. Keep the label and decla
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

@@ -13,7 +13,9 @@ contract: 'Explicit inclusive/exclusive boundaries, timezone/calendar policy and
 
 ## Purpose
 
-A pair of date fields that edits a start and end date as one range value. Boundary policy and calendar meaning travel with the value instead of being inferred.
+A pair of date fields whose `start` and `end` properties the host can set. User edits update those
+local properties and emit both dates with boundary and calendar meaning as one range value; the host
+decides what to persist.
 
 ## When to use it
 
@@ -81,6 +83,4 @@ Stack start and end fields in a narrow form. Keep each label and the range bound
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

@@ -120,7 +120,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -133,7 +133,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -146,7 +146,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -159,7 +159,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -172,7 +172,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -185,7 +185,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -271,6 +271,19 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       @aeliqo-visualization-select=${onSelect}
     ></aeliqo-relationship>`,
 };
+
+/** Names the chart from the result it answers, for example "New hires by Team". */
+function visualizationLabel(result: Result, view: string): string {
+  const labels = (measure: boolean) =>
+    result.fields
+      .filter((field) => (field.role === 'measure') === measure)
+      .map((field) => field.label)
+      .join(', ');
+  const measures = labels(true);
+  if (measures === '') return view;
+  const groups = labels(false);
+  return groups === '' ? measures : `${measures} by ${groups}`;
+}
 
 function renderElement(
   spec: VisualizationSpec,
@@ -463,7 +476,7 @@ function renderWith(
     ? selectedIdentity(context.interaction, node.node.id, result.ref, owner)
     : undefined;
   const handler = selectionHandler(node, current, validated.bound, context);
-  return renderElement(validated.spec, current, `Data visualization: ${view}`, selected, selectionEnabled, handler);
+  return renderElement(validated.spec, current, visualizationLabel(result, view), selected, selectionEnabled, handler);
 }
 
 export function renderAeliqoVisualizationPresentationNode(

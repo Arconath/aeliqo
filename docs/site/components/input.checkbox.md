@@ -13,7 +13,9 @@ contract: 'Native checked/indeterminate state; group ownership and submitted val
 
 ## Purpose
 
-A native checkbox for one checked value, with an explicit indeterminate display. A user change clears indeterminate and emits a proposal the host accepts or rejects.
+A native checkbox for one checked value, with an explicit indeterminate display. The host can set
+`checked`; a user change updates that local property, clears indeterminate, and emits a typed change.
+The host decides what to retain or persist.
 
 ## When to use it
 
@@ -73,6 +75,4 @@ Let the label wrap beside the control without shrinking its target. Keep the tex
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

@@ -1,13 +1,12 @@
 {
   "name": "aeliqo",
   "private": true,
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Open-source TypeScript framework for semantic, adaptive interfaces",
   "scripts": {
     "site:verify": "pnpm --dir apps/site typecheck",
     "site:build": "pnpm --dir apps/site build",
     "site:test": "pnpm --dir apps/site check",
-    "playground:local": "pnpm site:build && pnpm --dir apps/site start",
     "check": "python3 scripts/quality.py",
     "test:release-tooling": "node --test tests/release/*.test.mjs",
     "test:release:public-live": "node scripts/release/public-live-smoke.mjs",
@@ -39,7 +38,7 @@
     "build:runtime": "pnpm build:core && node scripts/reuse-build.mjs runtime packages/runtime/dist -- pnpm --filter @aeliqo/runtime build",
     "test:data-stream": "pnpm test:data",
     "test:design": "node design/generate-web-tokens.mjs --check && vitest run design/styles.test.ts",
-    "test:design:browser": "pnpm build:platform && playwright test --config tests/design/playwright.config.mjs",
+    "test:design:browser": "pnpm build:platform && playwright test --config tests/design/playwright.config.mjs && playwright test --config tests/design/controls.playwright.config.mjs && playwright test --config tests/design/visualization-containers.playwright.config.mjs",
     "test:data": "pnpm build:runtime && vitest run --config tests/runtime-data/vitest.config.mjs && tsc -p tests/runtime-data/tsconfig.json",
     "test:runtime:consumers": "node tests/consumers/runtime-tarballs.mjs",
     "test:data:auth-retention": "pnpm build:runtime && node tests/runtime-data/auth-timeout-probe.mjs",
@@ -81,7 +80,7 @@
     "test:visualization:consumers": "node tests/consumers/visualization-tarballs.mjs",
     "test:visualization:browser": "playwright test --config tests/visualization/temporal.playwright.config.mjs && playwright test --config tests/visualization/cartesian.playwright.config.mjs && playwright test --config tests/visualization/playwright.config.mjs",
     "test:presentation-adaptation": "pnpm build:runtime && pnpm build:platform && vitest run --config tests/runtime-presentation/vitest.config.mjs && tsc -p tests/runtime-presentation/tsconfig.json && tsc -p tests/adaptation-semantic/tsconfig.json",
-    "test:presentation-adaptation:browser": "playwright test --config tests/adaptation-semantic/playwright.config.mjs",
+    "test:presentation-adaptation:browser": "playwright test --config tests/adaptation-semantic/playwright.config.mjs && playwright test --config tests/runtime-presentation/browser/playwright.config.mjs && playwright test --config tests/runtime-presentation/browser/app-draft-exit.playwright.config.mjs && playwright test --config tests/runtime-presentation/browser/app-transaction.playwright.config.mjs && playwright test --config tests/runtime-presentation/browser/app-continuity.playwright.config.mjs && playwright test --config tests/runtime-presentation/browser/atomic-review.playwright.config.mjs && playwright test --config tests/runtime-presentation/browser/layout-review.playwright.config.mjs",
     "test:visualization-semantic": "pnpm build:platform && vitest run --config tests/visualization-semantic/vitest.config.mjs && tsc -p tests/visualization-semantic/tsconfig.json && node tests/visualization-semantic/ssr.mjs",
     "test:visualization-semantic:browser": "playwright test --config tests/visualization-semantic/playwright.config.mjs",
     "test:presentation-adaptation:consumers": "node tests/consumers/adaptation-tarballs.mjs",
@@ -121,7 +120,12 @@
     "test:performance:heap-lifecycle": "playwright test --config tests/performance/heap-lifecycle.playwright.config.mjs",
     "test:performance:adverse-runtime": "pnpm build:runtime && node --test tests/performance/adverse-runtime.test.mjs",
     "test:performance:adverse-visualization": "playwright test --config tests/performance/adverse-visualization.playwright.config.mjs",
-    "test:agent-evaluation:ui": "pnpm build:platform && pnpm build:agent && playwright test --config tests/agent-evaluation/ui-development/playwright.config.mjs"
+    "test:agent-evaluation:ui": "pnpm build:platform && pnpm build:agent && playwright test --config tests/agent-evaluation/ui-development/playwright.config.mjs",
+    "test:local-agent": "pnpm build:platform && pnpm build:agent && node --test tests/local-agent/standalone.test.mjs && node tests/local-agent/consumer.mjs",
+    "test:visual:tooling": "node --test tests/visual/regression.test.mjs tests/visual/regression-comparator.test.mjs tests/visual/regression-workflow.test.mjs tests/visual/regression-shards.test.mjs tests/visual/regression-families.test.mjs",
+    "test:visual:regression": "node scripts/visual/run.mjs --full",
+    "test:performance:paired:tooling": "pnpm build:platform && node --test tests/performance/paired-runner.test.mjs tests/performance/workloads.test.mjs",
+    "test:performance:paired": "node scripts/performance/compare.mjs"
   },
   "devDependencies": {
     "@aeliqo/agent": "workspace:*",

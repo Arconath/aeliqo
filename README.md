@@ -1,6 +1,7 @@
 # Aeliqo
 
-Aeliqo turns a typed application intent into a registered interface. The host
+Aeliqo adapts registered components, workspaces, and pages to a user intent
+and the space available on screen. The host
 application owns identity, permissions, data access, routes, and business
 effects. Aeliqo validates the request, evaluates the permitted data, selects a
 registered view, and reports the outcome.
@@ -12,14 +13,17 @@ cannot supply HTML, executable code, permissions, or an unregistered view.
 
 ## Quick start
 
-The stable `0.5.2` packages are available on npm. For a browser app using
-Aeliqo's Web Components, install these packages at the same exact version:
+This checkout targets **0.6.0**. Published versions and installation status are
+shown in the [package guide](https://docs.aeliqo.com/reference/packages/).
+For the React example below, use React 19.2 or a newer 19.x release and install matching
+Aeliqo package versions:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.5.2 \
-  @aeliqo/runtime@0.5.2 \
-  @aeliqo/web@0.5.2
+  @aeliqo/core@0.6.0 \
+  @aeliqo/runtime@0.6.0 \
+  @aeliqo/web@0.6.0 \
+  @aeliqo/react@0.6.0
 ```
 
 The [local React quickstart](https://docs.aeliqo.com/start/) renders and filters
@@ -27,8 +31,7 @@ an array without a model or backend. The
 [registered app tutorial](https://docs.aeliqo.com/start/registered-app/)
 connects application-owned data and authority to a Region.
 
-The breaking `0.5` line is the current release (`0.5.2`). `0.4.2` remains available
-for older applications. Never mix package versions in one application.
+Never mix Aeliqo package versions in one application.
 
 For React, the local surface API renders a complete application-owned array:
 
@@ -56,6 +59,7 @@ import { AeliqoProvider, AeliqoRegion } from '@aeliqo/react';
 import { createAppToolEndpoint } from '@aeliqo/agent';
 ```
 
+The optional agent entry point additionally requires `@aeliqo/agent@0.6.0`.
 Each package root contains its primary API. Component families, query planning,
 transport adapters, and other advanced APIs use explicit package subpaths.
 
@@ -72,10 +76,27 @@ transport adapters, and other advanced APIs use explicit package subpaths.
 The public component library supports host token customization. The Aeliqo site
 uses the same canonical token source and provides system, light, and dark themes.
 
+## Try it
+
+- [Playground](https://docs.aeliqo.com/playground/): choose an intent manually or
+  connect a browser agent through experimental WebMCP. Try a component, an
+  analytical workspace, and a page with a registered header and sidebar.
+- [MCP and BYOK locally](https://docs.aeliqo.com/agents/mcp/): clone the standalone
+  [`examples/local-agent`](examples/local-agent/) app. It exposes HTTP and stdio
+  tools; an optional host model uses the same bounded loop. Startup makes no
+  model calls, and credentials stay in the Node process.
+
+Agent transports and model ports are independent of the rendering runtime.
+Your app can use Aeliqo without an agent or supply a compatible agent/model
+adapter without changing its data and permission rules.
+
 ## Examples
 
 - [`examples/quickstart`](examples/quickstart/src/app.ts) is the complete
   resource-to-Region integration used by the documentation.
+- [`examples/vnext/page-goal`](examples/vnext/page-goal/main.ts) grows one
+  mounted Region from a component to a workspace and a registered page. Follow
+  the [step-by-step tutorial](https://docs.aeliqo.com/guides/workspace/).
 - [Framework examples](docs/examples/platform.md) cover Vanilla, React, and
   Vue hosts.
 - [The vertical slice](docs/examples/vertical-slice.md) follows a

@@ -54,7 +54,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     fixture: 'One labelled display-name field with an initial value.',
     props: ['label', 'name', 'value', 'defaultValue', 'required', 'disabled', 'validationState', 'description'],
     propsNotes:
-      'Use value for controlled drafts or defaultValue for an uncontrolled initial draft; the host owns validation authority.',
+      'Set value for the current draft or defaultValue for its initial value; user input updates the local value and the host owns validation and persistence.',
     states: ['ready', 'disabled', 'read-only', 'invalid', 'pending'],
     keyboard: ['Tab', 'Type and edit', 'Enter commits where configured', 'IME composition'],
     events: ['aeliqo-input-change', 'aeliqo-input-commit', 'aeliqo-validation'],
@@ -64,7 +64,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
     fixture: 'One labelled multi-line notes field with four visible rows.',
     props: ['label', 'name', 'value', 'defaultValue', 'rows', 'required', 'disabled', 'validationState'],
     propsNotes:
-      'The host selects controlled or default draft behavior and keeps multiline content intact during IME composition.',
+      'Set the current or initial draft and observe changes; multiline input stays intact during IME composition.',
     states: ['ready', 'disabled', 'read-only', 'invalid', 'pending'],
     keyboard: ['Tab', 'Arrow keys', 'Enter creates a line', 'IME composition'],
     events: ['aeliqo-input-change', 'aeliqo-input-commit', 'aeliqo-validation'],
@@ -92,7 +92,7 @@ const componentNotes: Record<string, Partial<MetadataNotes>> = {
   'radio-group': {
     fixture: 'One vertical owner choice with one disabled option.',
     props: ['label', 'name', 'options', 'value', 'orientation', 'required', 'disabled'],
-    propsNotes: 'Option IDs remain stable and the selected value is controlled by the host when needed.',
+    propsNotes: 'Option IDs remain stable; user selection updates the local value and emits a change for the host.',
     states: ['ready', 'disabled', 'invalid', 'pending'],
     keyboard: ['Tab', 'Arrow keys', 'Space'],
     events: ['aeliqo-input-change', 'aeliqo-validation'],

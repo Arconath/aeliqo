@@ -6,24 +6,43 @@ title: 'WebMCP (experimental)'
 description: 'Detect native browser support and register bounded tools only when the current browser exposes the required capability.'
 ---
 
-<p class="lead">WebMCP is a Chrome experiment. It lets an agent built into the browser call your tools without a separate client. Aeliqo reports <em>available</em>, <em>unavailable</em>, or <em>connected</em>; it never shows a mock connection as real.</p>
+<p class="lead">WebMCP lets a browser agent call Aeliqo's registered tools on the page. The agent proposes an intent; the same application validates it and renders the result. The public Playground needs no API key.</p>
 
-<h2>Enable support in Chrome</h2>
+## 1. Enable the browser experiment
 
-You need Chrome 146 or newer. Then do one of the following:
+Aeliqo's native journey was tested with Chromium **153.0.8010.12** and the
+`WebMCPTesting` flag. Browser support is experimental; a version number alone
+does not mean the API is enabled.
 
-1. Open `chrome://flags/#enable-webmcp-testing`, set the flag to **Enabled**,
-   and restart Chrome; or
-2. Serve your site with a WebMCP origin-trial token.
+1. Open `chrome://flags/#enable-webmcp-testing` in Chrome.
+2. Set **WebMCP for testing** to **Enabled**, then relaunch.
+3. Open the [Playground](/playground/) and choose **Browser agent**.
 
-<h2>Try it in the playground</h2>
+The setup status should say **Browser API available**. If it says unavailable,
+check the flag, browser policy, and the document's permissions. Manual tasks
+remain available in every supported browser.
 
-1. Open the [playground](/playground/) in that Chrome.
-2. Choose **Connect AI**, select **WebMCP (experimental)**, then choose
-   **Check connection**.
-   You should see “Native WebMCP registered _n_ tools (experimental)”.
-3. If the browser lacks support, the status says WebMCP is unavailable. The
-   demo agent and the manual controls still work.
+Production sites can instead enroll for a domain-specific origin-trial token.
+Enrollment and deployment are owned by the site maintainer; this guide does
+not imply that an origin trial is enabled on every Aeliqo domain. See
+[Chrome's setup instructions](https://developer.chrome.com/docs/ai/webmcp).
+
+## 2. Register and call the tools
+
+1. Choose **Enable WebMCP**. The status should report **registered 3 tools**.
+2. Copy the example prompt and give it to your browser agent. It must be able
+   to discover and invoke WebMCP tools in the current tab. Enabling the flag
+   alone does not install an agent.
+3. Ask the agent to show Engineering employees. The result changes on the page;
+   **Inspect** shows the accepted request, result, and chosen presentation.
+4. Try the workspace and entire-page demos. The connection stays active while
+   the same endpoint targets the current registered demo.
+5. Choose **Disconnect** or **Reset playground** to unregister the tools and
+   cancel work owned by that connection.
+
+The website does not call a model. Your browser agent owns its model,
+credentials, and any model charges. For a desktop MCP client or server-side
+BYOK, [run the local example](/agents/mcp/).
 
 <h2>Detect support in your app</h2>
 

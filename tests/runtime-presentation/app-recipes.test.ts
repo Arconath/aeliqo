@@ -7,7 +7,11 @@ import {
   type PresentationEnvironment,
   type ValidatedPresentation,
 } from '../../packages/core/src/presentation/index.js';
-import type { AeliqoRuntime, RuntimeCommittedReceipt } from '../../packages/runtime/src/app/index.js';
+import type {
+  AeliqoRuntime,
+  RuntimeCommittedReceipt,
+  RuntimePresentationInput,
+} from '../../packages/runtime/src/app/index.js';
 import { html } from 'lit';
 import * as z from 'zod';
 import {
@@ -511,6 +515,35 @@ describe('0.3 standard recipes', () => {
     }
   });
 
+  it('refreshes both comparison children with explicit identity transfers and current Result references', () => {
+    const initial = input('compare', 800);
+    const first = standardDataRecipe.build(initial);
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    const nextResult = { ...initial.result, ref: { ...initial.result.ref, id: 'next-result' } };
+    for (const width of [800, 320]) {
+      const next = standardDataRecipe.build({
+        ...initial,
+        result: nextResult,
+        results: [nextResult],
+        current: { ...current, results: [nextResult.ref] },
+        environment: environment(width),
+        incumbent: first.value,
+      });
+      expect(next.ok).toBe(true);
+      if (!next.ok) continue;
+      expect(next.value.nodes.slice(1).map((node) => node.result)).toEqual([nextResult.ref, nextResult.ref]);
+      expect(next.value.preconditions.results).toEqual([nextResult.ref]);
+      expect(next.value.stateTransfer).toEqual(
+        first.value.nodes.map((node) => ({
+          fromNode: node.id,
+          toNode: node.id,
+          mapping: { id: 'aeliqo.state.identity', revision: '1' },
+        })),
+      );
+    }
+  });
+
   it('reaches a registered categorical bar and preserves trend clarification when bar is unavailable', () => {
     const barContext = barInput();
     const registry = registryFor(
@@ -553,6 +586,22 @@ describe('0.3 standard recipes', () => {
       status: 'needs-input',
       diagnostic: { code: 'web.recipe.needs-input.measure' },
     });
+  });
+
+  it('answers an analyze intent without a view preference with an eligible chart before a table', () => {
+    const withoutPreference = <T extends { intent: Intent; task: Task }>(context: T): T => {
+      const { preferredView: _intentPreference, ...intent } = context.intent as Intent & { preferredView?: string };
+      const { viewPreference: _taskPreference, ...task } = context.task;
+      return { ...context, intent: intent as Intent, task: task as Task };
+    };
+    const categorical = resolveStandard(withoutPreference(barInput()));
+    expect(categorical.status === 'ready' && categorical.plan.plan.nodes[0]?.representation.id).toBe(
+      'visualization.bar',
+    );
+    const temporal = resolveStandard(withoutPreference(trendInput(['headcount'])));
+    expect(temporal.status === 'ready' && temporal.plan.plan.nodes[0]?.representation.id).toMatch(/trend/u);
+    const pinnedTable = resolveStandard(barInput(800, 'table'));
+    expect(pinnedTable.status === 'ready' && pinnedTable.plan.plan.nodes[0]?.representation.id).toBe('data.table');
   });
 
   it('keeps a narrow browse in the only representation permitted by resource policy', () => {
@@ -641,6 +690,65 @@ describe('0.3 standard recipes', () => {
     expect(checked.ok).toBe(false);
     if (checked.ok) return;
     expect(checked.diagnostics).toMatchObject([{ code: 'presentation.restricted' }]);
+  });
+
+  it('supplies every output to a recipe while retaining the primary result', async () => {
+    const fixture = input('browse', 800);
+    const descriptors = [
+      fixture.result,
+      {
+        ...fixture.result,
+        ref: { ...fixture.result.ref, id: 'result-secondary', outputId: 'secondary' },
+      },
+    ];
+    const resource = defineResource({
+      id: 'people',
+      revision: 'catalog-1',
+      label: 'People',
+      identity: ['id'],
+      presentation: { allowedViews: ['table'] },
+      schema: z.object({ id: z.string(), name: z.string() }),
+    });
+    let observed: Parameters<typeof standardDataRecipe.build>[0] | undefined;
+    const context = {
+      runtime: { snapshot: () => ({ region: { readSet: current } }) },
+      resources: new Map([['people', resource]]),
+      recipes: [
+        {
+          ...standardDataRecipe,
+          build(value: Parameters<typeof standardDataRecipe.build>[0]) {
+            observed = value;
+            return { ok: false, diagnostics: [{ code: 'fixture.stop', message: 'Observed.', retryable: false }] };
+          },
+        },
+      ],
+      views: [],
+    } as unknown as WebAppContext;
+    const region = {
+      id: 'main',
+      resourceId: 'people',
+      sequence: 1,
+      target: {
+        lang: 'en-US',
+        ownerDocument: { defaultView: null },
+        getBoundingClientRect: () => ({ width: 800, height: 600 }),
+      },
+      element: {},
+    } as unknown as WebRegion;
+    const receipt = {
+      status: 'committed',
+      regionId: 'main',
+      requestId: 'request',
+      intent: fixture.intent,
+      task: fixture.task,
+      region: { readSet: current },
+    } as unknown as RuntimeCommittedReceipt;
+    const outcome = await present(context, region, receipt, [], descriptors, 'present', 1);
+    expect(outcome).toMatchObject({ status: 'unsupported', diagnostics: [{ code: 'fixture.stop' }] });
+    expect(observed?.results).toEqual(descriptors);
+    expect(observed?.result).toBe(descriptors[0]);
+    expect(Object.isFrozen(observed?.results)).toBe(true);
+    expect(observed?.results).not.toBe(descriptors);
   });
 
   it('preserves the prior rendered result when a custom recipe violates resource policy', async () => {
@@ -773,7 +881,9 @@ describe('0.3 standard recipes', () => {
       presentation: undefined as ValidatedPresentation | undefined,
       results: [] as readonly (typeof bindings)[number][],
       interaction: undefined,
-      updateComplete: Promise.resolve(),
+      preparePublication() {
+        return { apply() {}, rollback() {}, complete() {} };
+      },
     };
     const target = {
       lang: '',
@@ -799,18 +909,14 @@ describe('0.3 standard recipes', () => {
     const published: string[] = [];
     const runtime = {
       snapshot: () => ({ region: { readSet: { ...current, dataRevision: 1 } } }),
-      commitPresentation: async (request: {
-        readonly requestId: string;
-        readonly signal?: AbortSignal;
-        readonly task: Task;
-        readonly presentation: unknown;
-      }) => {
+      commitPresentation: async (request: RuntimePresentationInput) => {
         if (request.requestId === 'stale') {
           delayedStarted();
           await new Promise<void>((resolve) => {
             if (request.signal?.aborted) resolve();
             else request.signal?.addEventListener('abort', () => resolve(), { once: true });
           });
+          request.projection?.rollback();
           return {
             ok: false as const,
             diagnostics: [
@@ -818,20 +924,18 @@ describe('0.3 standard recipes', () => {
             ],
           };
         }
-        published.push(request.requestId);
-        return {
-          ok: true as const,
-          value: { state: { task: request.task, presentation: request.presentation } },
-        };
+        const result = commitTestProjection(request);
+        if (result.ok) published.push(request.requestId);
+        return result;
       },
     } as unknown as AeliqoRuntime;
     const context = {
-      options: {},
+      options: { authority: testAuthority },
       runtime,
       resources: new Map([[resource.id, resource]]),
       recipes: [standardDataRecipe],
       views: [],
-      regions: new Map(),
+      regions: new Map([['main', region]]),
       stateListeners: new Map(),
       disposed: false,
     } as unknown as WebAppContext;
@@ -865,7 +969,7 @@ describe('0.3 standard recipes', () => {
     );
   });
 
-  it('restores the previous UI when cancellation arrives during the renderer update', async () => {
+  it('restores the previous UI when cancellation occurs synchronously during publication', async () => {
     const fixture = input('browse', 800);
     if (fixture.result === undefined) throw new Error('The browse fixture must materialize a Result.');
     const initial = resolveStandard(fixture);
@@ -883,22 +987,25 @@ describe('0.3 standard recipes', () => {
     });
     const priorBindings = [{ ref: fixture.result.ref, rows: [{ id: 'prior', name: 'Prior' }] }];
     const bindings = [{ ref: fixture.result.ref, rows: [{ id: 'next', name: 'Next' }] }];
-    let finishUpdate!: () => void;
-    const updateComplete = new Promise<void>((resolve) => (finishUpdate = resolve));
-    let applied!: () => void;
-    const presentationApplied = new Promise<void>((resolve) => (applied = resolve));
-    let activePresentation: ValidatedPresentation | undefined = initial.plan;
+    const controller = new AbortController();
+    let publicationCalls = 0;
+    let rollbackCalls = 0;
     const elementState = {
-      get presentation() {
-        return activePresentation;
-      },
-      set presentation(value: ValidatedPresentation | undefined) {
-        activePresentation = value;
-        if (value !== initial.plan) applied();
-      },
+      presentation: initial.plan,
       results: priorBindings as readonly (typeof bindings)[number][],
       interaction: undefined,
-      updateComplete,
+      preparePublication() {
+        return {
+          apply() {
+            publicationCalls++;
+            controller.abort();
+          },
+          rollback() {
+            rollbackCalls++;
+          },
+          complete() {},
+        };
+      },
     };
     const target = {
       lang: '',
@@ -921,18 +1028,15 @@ describe('0.3 standard recipes', () => {
     } as unknown as WebRegion;
     const runtime = {
       snapshot: () => ({ region: { readSet: { ...current, dataRevision: 1 } } }),
-      commitPresentation: async (request: { readonly task: Task; readonly presentation: unknown }) => ({
-        ok: true as const,
-        value: { state: { task: request.task, presentation: request.presentation } },
-      }),
+      commitPresentation: async (request: RuntimePresentationInput) => commitTestProjection(request),
     } as unknown as AeliqoRuntime;
     const context = {
-      options: {},
+      options: { authority: testAuthority },
       runtime,
       resources: new Map([[resource.id, resource]]),
       recipes: [standardDataRecipe],
       views: [],
-      regions: new Map(),
+      regions: new Map([['main', region]]),
       stateListeners: new Map(),
       disposed: false,
     } as unknown as WebAppContext;
@@ -946,8 +1050,6 @@ describe('0.3 standard recipes', () => {
       region: { id: 'main', readSet: { ...current, dataRevision: 1 } },
       diagnostics: [],
     } as unknown as RuntimeCommittedReceipt;
-    const controller = new AbortController();
-
     const pending = present(
       context,
       region,
@@ -959,14 +1061,13 @@ describe('0.3 standard recipes', () => {
       undefined,
       controller.signal,
     );
-    await presentationApplied;
-    controller.abort();
-    finishUpdate();
     const outcome = await pending;
 
     expect(outcome).toMatchObject({ status: 'cancelled', requestId: 'cancel-after-apply' });
     expect(elementState.presentation).toBe(initial.plan);
     expect(elementState.results).toBe(priorBindings);
+    expect(publicationCalls).toBe(1);
+    expect(rollbackCalls).toBe(1);
   });
 
   it('treats an incompatible preferred view as a preference and falls back safely', () => {
@@ -1152,3 +1253,42 @@ describe('0.3 standard recipes', () => {
     ]);
   });
 });
+
+const testAuthority = {
+  read: () => ({
+    ok: true as const,
+    value: {
+      principalKey: 'alice',
+      scopeDigest: current.scopeDigest,
+      policyRevision: current.policyRevision,
+      experienceRevision: current.experienceRevision,
+      grants: ['task.evaluate'],
+      readContext: { principal: 'alice' },
+    },
+  }),
+};
+
+function commitTestProjection(request: RuntimePresentationInput) {
+  const next = {
+    id: request.regionId,
+    status: 'active' as const,
+    taskRevision: '2',
+    regionRevision: '2',
+    dataRevision: 1,
+    readSet: { ...current, taskRevision: '2', regionRevision: '2', dataRevision: 1 },
+    state: {
+      task: { ...request.task, revision: '2' },
+      presentation: {
+        ...request.presentation,
+        preconditions: { ...request.presentation.preconditions, taskRevision: '2', regionRevision: '2' },
+      },
+      ...(request.interaction === undefined ? {} : { interaction: request.interaction }),
+    },
+  };
+  const applied = request.projection?.apply(next);
+  if (applied !== undefined && !applied.ok) {
+    request.projection?.rollback();
+    return applied;
+  }
+  return { ok: true as const, value: next };
+}

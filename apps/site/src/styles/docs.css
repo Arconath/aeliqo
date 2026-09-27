@@ -1,6 +1,7 @@
 .docs-layout {
   display: grid;
-  grid-template-columns: minmax(13.5rem, 15.5rem) minmax(0, 47rem) minmax(10rem, 12rem);
+  container: docs-layout / inline-size;
+  grid-template-columns: minmax(0, 15.5rem) minmax(0, 47rem) minmax(0, 12rem);
   grid-template-areas: 'sidebar reading toc';
   align-items: start;
   gap: clamp(var(--space-8), 4vw, 4rem);
@@ -311,6 +312,10 @@
 .reading > .lead,
 .reading > .docs-landing-hero {
   margin-top: 0;
+}
+.reading h2,
+.reading h3 {
+  overflow-wrap: anywhere;
 }
 .reading h2 {
   position: relative;

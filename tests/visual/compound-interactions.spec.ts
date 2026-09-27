@@ -214,6 +214,7 @@ for (const variant of REVIEW_VARIANTS) {
     test('investigation forwards evidence selection with result lineage', async ({ page }, info) => {
       const session = await openCompound(page, 'investigation', variant);
       const trend = session.host.locator('aeliqo-trend');
+      await trend.getByText('View data table', { exact: true }).click();
       await expect(trend.locator('[part="data"] button').first()).toBeVisible();
       const select = trend.locator('[part="data"] button').first();
       await select.click();
@@ -246,7 +247,8 @@ for (const variant of REVIEW_VARIANTS) {
         await host.updateComplete;
       });
       await expect(session.host.locator('aeliqo-card-collection')).toBeAttached();
-      await session.host.locator('aeliqo-card-collection [part="card-button"]').first().click();
+      const selected = session.host.locator('aeliqo-card-collection [part="card-button"]').first();
+      await selected.click();
       await expect
         .poll(() => lastEvent(page, 'aeliqo-search-results-selection'))
         .toMatchObject({
@@ -256,6 +258,11 @@ for (const variant of REVIEW_VARIANTS) {
           result: { id: 'aeliqo-catalog-example' },
           scope: { label: 'Authorized people' },
         });
+      // Capture selection independently of the pointer left by the click.
+      await page.mouse.move(0, 0);
+      await expect(selected).toHaveAttribute('aria-pressed', 'true');
+      await expect(selected).toHaveText('Selected');
+      expect(await selected.evaluate((element) => element.matches(':hover'))).toBe(false);
       await capture(session, page, info, 'search-results-selection');
     });
 

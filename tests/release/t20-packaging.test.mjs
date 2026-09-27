@@ -315,32 +315,12 @@ async function assertNoAgentGraph(consumer, lock) {
   return { positive, negative: detected };
 }
 
-async function readQualificationInputs() {
-  const metadata = JSON.parse(await readFile(join(root, 'release-metadata.json'), 'utf8'));
-  const matrix = JSON.parse(await readFile(join(root, 'docs/support-matrix.json'), 'utf8'));
+async function assertHistoricalMigration(releaseNotes, packagePage) {
+  const historical = JSON.parse(await readFile(join(root, 'docs/releases/0.5.2/support-matrix.json'), 'utf8'));
   const migration = await readFile(join(root, 'docs/site/pages/migration-0.4.md'), 'utf8');
-  const releaseNotes = await readFile(join(root, 'docs/site/pages/release-notes.md'), 'utf8');
-  const packagePage = await readFile(join(root, 'docs/site/pages/packages.md'), 'utf8');
-  assert.equal(metadata.version, RELEASE_VERSION);
-  assert.equal(metadata.previousVersion, '0.4.2');
-  assert.equal(metadata.status, 'candidate');
-  const candidateMetadata = metadata.next ?? matrix.candidate;
-  assert.equal(candidateMetadata.version, matrix.candidate.version);
-  assert.equal(candidateMetadata.status, matrix.candidate.status);
-  assert.equal(candidateMetadata.baseVersion, matrix.candidate.baseVersion);
-  assert.equal(candidateMetadata.compatibility, 'breaking');
-  assert.match(
-    candidateMetadata.line ?? `${candidateMetadata.version.split('.').slice(0, 2).join('.')}`,
-    /^\d+\.\d+$/u,
-  );
-  assert.equal(
-    `${candidateMetadata.version.split('.').slice(0, 2).join('.')}`,
-    candidateMetadata.line ?? `${candidateMetadata.version.split('.').slice(0, 2).join('.')}`,
-  );
-  assert.equal(matrix.claims.unlimitedScale, false);
-  assert.equal(matrix.claims.everyFramework, false);
-  assert.equal(matrix.claims.everyProvider, false);
-  assert.equal(matrix.claims.stablePublished, false);
+  assert.equal(historical.candidate.version, '0.5.2');
+  assert.equal(historical.candidate.baseVersion, '0.4.2');
+  assert.equal(historical.candidate.compatibility, 'breaking');
   assert.match(migration, /0\.4\.2/u);
   assert.match(migration, /0\.5\.0/u);
   assert.match(releaseNotes, /## Aeliqo 0\.5\.0/u);
@@ -354,13 +334,49 @@ async function readQualificationInputs() {
     '@aeliqo/react/surface',
     '@aeliqo/agent/browser',
   ])
-    assert.match(migration, new RegExp(entry.replaceAll('/', '\\/'), 'u'));
+    assert.ok(migration.includes(entry), `Historical migration must retain ${entry}`);
+}
+
+async function readQualificationInputs() {
+  const metadata = JSON.parse(await readFile(join(root, 'release-metadata.json'), 'utf8'));
+  const matrix = JSON.parse(await readFile(join(root, 'docs/support-matrix.json'), 'utf8'));
+  const previousLine = metadata.previousVersion.split('.').slice(0, 2).join('.');
+  const migrationPath = `migration-${previousLine}`;
+  const migration = await readFile(join(root, 'docs/site/pages', `${migrationPath}.md`), 'utf8');
+  const releaseNotes = await readFile(join(root, 'docs/site/pages/release-notes.md'), 'utf8');
+  const packagePage = await readFile(join(root, 'docs/site/pages/packages.md'), 'utf8');
+  assert.equal(metadata.version, RELEASE_VERSION);
+  assert.match(metadata.previousVersion, /^\d+\.\d+\.\d+$/u);
+  assert.notEqual(metadata.previousVersion, metadata.version);
+  assert.equal(metadata.status, 'candidate');
+  assert.equal(matrix.candidate.version, metadata.version);
+  assert.equal(matrix.candidate.baseVersion, metadata.previousVersion);
+  assert.equal(matrix.candidate.status, metadata.status);
+  assert.equal(matrix.candidate.compatibility, 'additive');
+  assert.equal(metadata.line, metadata.version.split('.').slice(0, 2).join('.'));
+  for (const claim of ['unlimitedScale', 'everyFramework', 'everyProvider', 'stablePublished'])
+    assert.equal(matrix.claims[claim], false);
+  assert.ok(migration.includes(`Migrate from ${previousLine} to ${metadata.line}`));
+  assert.ok(migration.includes(metadata.version));
+  assert.ok(releaseNotes.includes(`## Aeliqo ${metadata.version}`));
+  assert.ok(releaseNotes.includes(`/ship/${migrationPath}/`));
+  assert.ok(packagePage.includes(`@aeliqo/core@${metadata.version}`));
+  for (const contract of [
+    'onDraftExit',
+    'needs-input',
+    'renderer-ready',
+    'onPresentation',
+    'stateMappings',
+    'context.incumbent',
+  ])
+    assert.ok(migration.includes(contract), `Current migration must explain ${contract}`);
+  await assertHistoricalMigration(releaseNotes, packagePage);
   return { metadata, matrix };
 }
 
 test('T20 packages, migrates, and qualifies support from packed artifacts', async () => {
   const { metadata, matrix } = await readQualificationInputs();
-  const candidateVersion = (metadata.next ?? matrix.candidate).version;
+  const candidateVersion = matrix.candidate.version;
   const evidenceRoot = join(root, 'artifacts/t20-qualification');
   await mkdir(evidenceRoot, { recursive: true });
   const runDirectory = await mkdtemp(join(evidenceRoot, 'run-'));

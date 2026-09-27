@@ -8,6 +8,11 @@ import { pathParts, type SummaryScope, type WireFrame, type WirePath, type WireS
 type VisitFrame = Extract<WireFrame, { readonly kind: 'visit' }>;
 type LeaveFrame = Extract<WireFrame, { readonly kind: 'leave' }>;
 
+// Internal success signals carry no per-inspection state; public outcomes stay fresh.
+const WALK_OK = Object.freeze({ ok: true, value: undefined });
+const WALK_TRUE = Object.freeze({ ok: true, value: true });
+const WALK_FALSE = Object.freeze({ ok: true, value: false });
+
 class WireWalker {
   private readonly frames: WireFrame[];
   private readonly ancestors = new Set<object>();
@@ -47,7 +52,7 @@ class WireWalker {
       maxRelativeDepth: scope.maxRelativeDepth,
     });
     this.propagateRelativeDepth(scope);
-    return { ok: true, value: undefined };
+    return WALK_OK;
   }
 
   private propagateRelativeDepth(scope: SummaryScope): void {
@@ -68,7 +73,7 @@ class WireWalker {
 
     const reused = this.reuseSummary(frame.value, depth, frame.scope, frame.path);
     if (!reused.ok) return reused;
-    if (reused.value) return { ok: true, value: undefined };
+    if (reused.value) return WALK_OK;
 
     const counted = this.countNode(frame.path);
     if (!counted.ok) return counted;
@@ -86,7 +91,7 @@ class WireWalker {
     parentScope: SummaryScope | undefined,
     path: WirePath | undefined,
   ): Outcome<boolean> {
-    if (value === null || typeof value !== 'object') return { ok: true, value: false };
+    if (value === null || typeof value !== 'object') return WALK_FALSE;
     if (this.ancestors.has(value)) {
       const counted = this.countNode(path);
       if (!counted.ok) return counted;
@@ -94,12 +99,12 @@ class WireWalker {
     }
 
     const cached = this.summaries.get(value);
-    if (cached === undefined) return { ok: true, value: false };
-    if (this.nodes + cached.nodes > L.nodes) return { ok: true, value: false };
-    if (this.encodedBytes + cached.bytes > L.bytes) return { ok: true, value: false };
-    if (depth + cached.maxRelativeDepth > L.depth) return { ok: true, value: false };
+    if (cached === undefined) return WALK_FALSE;
+    if (this.nodes + cached.nodes > L.nodes) return WALK_FALSE;
+    if (this.encodedBytes + cached.bytes > L.bytes) return WALK_FALSE;
+    if (depth + cached.maxRelativeDepth > L.depth) return WALK_FALSE;
     this.applySummary(cached, depth, parentScope);
-    return { ok: true, value: true };
+    return WALK_TRUE;
   }
 
   private applySummary(summary: WireSummary, depth: number, parentScope: SummaryScope | undefined): void {
@@ -116,13 +121,13 @@ class WireWalker {
     this.nodes++;
     if (this.nodes > L.nodes)
       return wireFailure('wire.nodes', 'The wire document exceeds its node limit.', pathParts(path));
-    return { ok: true, value: undefined };
+    return WALK_OK;
   }
 
   private inspectValue(frame: VisitFrame): Outcome<undefined> {
     const primitive = this.inspectPrimitive(frame.value, frame.path);
     if (!primitive.ok) return primitive;
-    if (primitive.value) return { ok: true, value: undefined };
+    if (primitive.value) return WALK_OK;
     return this.enterContainer(frame);
   }
 
@@ -138,12 +143,12 @@ class WireWalker {
       return this.countPrimitive(cachedJSONBytes(current, this.stringByteCache));
     }
     if (typeof current !== 'object') return wireFailure('wire.type', 'Only JSON values are accepted.', pathParts(path));
-    return { ok: true, value: false };
+    return WALK_FALSE;
   }
 
   private countPrimitive(bytes: number): Outcome<boolean> {
     if (!this.addEncodedBytes(bytes)) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
-    return { ok: true, value: true };
+    return WALK_TRUE;
   }
 
   private enterContainer(frame: VisitFrame): Outcome<undefined> {
@@ -177,7 +182,8 @@ class WireWalker {
       if (!property.ok) return property;
       if (property.value === undefined) continue;
 
-      const bytes = this.propertySyntaxBytes(shape.isArray, property.value.key, propertyIndex);
+      const key = shape.keys[index] as string; // inspectProperty rejects non-string keys.
+      const bytes = this.propertySyntaxBytes(shape.isArray, key, propertyIndex);
       if (!this.addEncodedBytes(bytes)) return wireFailure('wire.bytes', 'The wire document exceeds its byte limit.');
       propertyIndex++;
       this.frames.push({
@@ -186,12 +192,12 @@ class WireWalker {
         scope,
         path: {
           parent: path,
-          key: shape.isArray ? Number(property.value.key) : property.value.key,
+          key: shape.isArray ? Number(key) : key,
           depth: depth + 1,
         },
       });
     }
-    return { ok: true, value: undefined };
+    return WALK_OK;
   }
 
   private propertySyntaxBytes(isArray: boolean, key: string, propertyIndex: number): number {

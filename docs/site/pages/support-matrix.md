@@ -2,45 +2,63 @@
 id: 'support-matrix'
 path: '/ship/support-matrix/'
 section: 'Releases'
-title: 'Aeliqo 0.5 support matrix'
-description: 'Bounded framework, browser, provider, and workload evidence for the Aeliqo 0.5 line.'
+title: 'Support matrix and release acceptance'
+description: 'Aeliqo 0.6 maintained profiles, tested source revisions, and release qualification boundaries.'
 ---
 
-<p class="lead">Check what the 0.5 line has actually been tested against. Rows marked unverified or unsupported are not promises.</p>
+<p class="lead">Aeliqo 0.6 supports the maintained profiles below. Recorded source checks cover framework consumers, browser behavior, and bounded workloads. Release qualification, package publication, and production deployment are verified separately.</p>
+<aeliqo-release-status></aeliqo-release-status>
 
-The current 0.5 line keeps one source-bound contract across the five packages,
-the documentation site, and the playground. The patch release carries the
-same 0.5 API and runtime boundaries. It makes the getting-started routes,
-registered-app tutorial, and public journeys easier to follow.
+The [machine-readable source record](https://github.com/Arconath/aeliqo/blob/main/docs/support-matrix.json)
+identifies the revisions and checks that were tested. It is prepared before
+publication, so its candidate identity and publication flags describe that
+source snapshot. They are not a live registry or deployment inventory.
 
-This matrix describes bounded evidence for the 0.5 line. It is not a
-promise that every framework, provider, or application size is supported.
+A successful full main-push quality run is required before publication. See the
+[0.6.0 release record](https://github.com/Arconath/aeliqo/releases/tag/v0.6.0)
+for the published version, exact source and acceptance receipts when available.
+The publication banner above follows registry verification. The public
+[`/version`](https://aeliqo.com/version) endpoint identifies the deployed site.
 
-The machine-readable source is [`docs/support-matrix.json`](https://github.com/Arconath/aeliqo/blob/main/docs/support-matrix.json).
-Its candidate and publication flags record source qualification and are not
-live registry-status lookups. Use the release run and the public `/version`
-route for the package and site identity that is currently deployed.
-`qualified` means the named fixture and version passed. `qualified-bounded`
-means the result is limited to the stated synthetic or integration profile.
-`protocol-only`, `unverified`, and `unsupported-claim` are intentionally not
-release guarantees.
+## Maintained profiles
 
-## Qualified profiles
+| Area              | Profile                                                                                                     | Tested boundary                                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Toolchain         | Node 24.20.0, pnpm 11.24.0, TypeScript 7.0.2, Vite 8.2.2, Playwright 1.63.0                                 | The repository pins these versions for its acceptance checks.                                                                                                           |
+| Frameworks        | Vanilla DOM, Lit 3.3.3, React 19.2.8, Vue 3.5.42, Next 16.3.4                                               | Installed package consumers and SSR/hydration checks. Svelte and Angular are unverified.                                                                                |
+| Browsers          | Chromium, Firefox, WebKit                                                                                   | Browser behavior, accessibility, responsive geometry and visual captures. Approved pixel comparisons are an additional release gate.                                    |
+| Native WebMCP     | Chromium 153.0.8010.12 with `WebMCPTesting` enabled                                                         | Native discovery, invocation, component/workspace/page rendering, cancellation, disposal and reset checks. The browser capability is experimental and must be detected. |
+| Agent integration | No-model operation, local protocol fixtures, standalone MCP HTTP/stdio, optional server-owned model adapter | Protocol and deterministic fixtures do not establish hosted-model quality. No current live-provider profile is qualified.                                               |
+| Composition       | Components, multi-result workspaces and registered pages with application-owned header/sidebar views        | Installed consumers, state continuity, guarded draft exits, cancellation and revocation. [Run the composition tutorial](/guides/workspace/).                            |
+| Workloads         | Synthetic reference journeys, paged data, and 1,000 declarations with five active surfaces                  | Bounded workloads under recorded conditions; they do not establish production database throughput or unlimited scale.                                                   |
 
-| Area       | Qualified profile                                                                                                                      | Boundary                                                                                                         |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Frameworks | Vanilla DOM, Lit 3.3.3, React 19.2.8, Vue 3.5.42, Next 16.3.4                                                                          | Only the listed versions and tested fixtures are qualified.                                                      |
-| Browsers   | Chromium, Firefox, WebKit through Playwright 1.63.0                                                                                    | Native WebMCP remains unverified; simulated capability tests are separate.                                       |
-| Providers  | No-AI paths; local synthetic protocol fixture; DeepSeek `deepseek-flash` on the 12-case J1–J3 corpus                                   | The live result is limited to that model and synthetic browser journey; other hosted profiles remain unverified. |
-| Workloads  | Four reference journeys plus J1–J3 playground journeys; bounded paged synthetic data; 1,000 declared modules with five active surfaces | Production database throughput and unlimited application size are unverified or unsupported claims.              |
+## Recorded source checks
 
-Use the JSON file and its evidence paths when reporting a profile. Do not turn
-an untested row into a blanket support statement. Do not treat a mock model or
-synthetic server as live provider or production-backend evidence.
+The [source-check record](https://github.com/Arconath/aeliqo/blob/main/docs/testing/0.6.0-source-checks.md)
+distinguishes the complete local matrix from later targeted checks. It names
+the exact revisions and preserves the limits of each observation. The
+[performance reference review](https://github.com/Arconath/aeliqo/blob/main/docs/testing/0.6.0-performance-reference.md)
+records the unchanged budgets and complete three-pair measurement evidence.
+These records support review; final release receipts bind acceptance to the
+source that actually published the packages and image.
 
-The bounded DeepSeek run passed 12/12 cases on tree-equivalent PR head
-`21afcca` (tree `955a7d1`), as recorded in the
+Follow [WebMCP setup](/agents/webmcp/) for the tested experimental flag path.
+Native, simulated and unavailable-browser results are separate evidence.
+Provider independence means agents can submit bounded requests through common
+contracts; it does not mean every provider uses the same wire format or has
+passed a quality evaluation. Read the [shipping guide](/ship/) for application checks.
+
+## Historical 0.5.2 record
+
+The former matrix is preserved byte for byte in
+[`docs/releases/0.5.2/support-matrix.json`](https://github.com/Arconath/aeliqo/blob/main/docs/releases/0.5.2/support-matrix.json).
+Its original candidate metadata and qualified profiles describe that historical
+record. They are not acceptance for 0.6.0.
+
+That record includes a bounded DeepSeek `deepseek-flash` run: 12/12 synthetic
+J1–J3 browser/provider/renderer cases on tree-equivalent PR head `21afcca`
+(tree `955a7d1`), recorded in the
 [sanitized case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json).
-It exercised the browser, provider, and renderer. It does not establish general
-model quality, production backend behavior, or human assistive-technology use.
-No further paid model requests are authorized.
+It qualifies only that recorded model, corpus and source context. It does not
+establish other model quality, production workloads, human assistive-technology
+use, or current-release acceptance.

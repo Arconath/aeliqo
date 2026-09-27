@@ -26,6 +26,7 @@ export const LARGE_TRANSFERRED_ROW_COUNT = 100;
 const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
 const FIRST_SAMPLE_COUNT = 10;
 const SUBSEQUENT_SAMPLE_COUNT = 30;
+let plannerObservation = 0;
 
 export function percentile(values, percentileValue) {
   if (!Number.isFinite(percentileValue) || percentileValue <= 0 || percentileValue > 1)
@@ -82,10 +83,14 @@ export async function firstSubsequent(label, operation, options = {}) {
 
 export function makeRows(count, fieldCount = 4) {
   const rows = [];
+  // Share field names within setup; every row and cell value is still created anew.
+  const fieldKeys = [];
+  if (count > 0) {
+    for (let field = 1; field < fieldCount; field += 1) fieldKeys[field] = `field-${String(field).padStart(3, '0')}`;
+  }
   for (let index = 0; index < count; index += 1) {
     const row = { id: `row-${index + 1}`, label: `Row ${index + 1}`, value: index };
-    for (let field = 1; field < fieldCount; field += 1)
-      row[`field-${String(field).padStart(3, '0')}`] = `v-${index}-${field}`;
+    for (let field = 1; field < fieldCount; field += 1) row[fieldKeys[field]] = `v-${index}-${field}`;
     rows.push(row);
   }
   return rows;
@@ -271,7 +276,15 @@ export function runMediumPlanner(options = {}) {
     },
     workload.registry,
   );
-  const timing = timed ? { durationMs: now() - started } : {};
+  const finished = timed ? now() : undefined;
+  const timing = timed ? { durationMs: finished - started } : {};
+  // Record the captured interval after timing it; tracing work is outside durationMs.
+  if (timed && typeof globalThis.performance?.measure === 'function')
+    globalThis.performance.measure('aeliqo.presentation.compose', {
+      start: started,
+      end: finished,
+      detail: { observation: ++plannerObservation },
+    });
   if (!composed.ok) throw new Error(`medium composition failed: ${JSON.stringify(composed.diagnostics)}`);
   return {
     ...timing,

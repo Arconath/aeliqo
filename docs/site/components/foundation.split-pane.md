@@ -54,7 +54,7 @@ Exposed semantics:
 
 ## Responsive behavior
 
-Set pane limits so each side stays useful. On phones, use vertical orientation if two side-by-side panes become too narrow.
+`position` is the primary pane’s percentage of the available pane area, excluding the resize handle. The handle reserves its own space and is at least 44 CSS pixels wide (horizontal layout) or tall (vertical layout) for coarse pointers, including compact density. Ordinary text wraps within each pane; children can override wrapping for preformatted or intentionally scrollable content. Set pane limits so each side stays useful. On phones, use vertical orientation if two side-by-side panes become too narrow.
 
 ## Style hooks
 
@@ -73,6 +73,4 @@ Set pane limits so each side stays useful. On phones, use vertical orientation i
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

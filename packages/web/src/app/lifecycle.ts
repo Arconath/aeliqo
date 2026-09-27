@@ -19,6 +19,16 @@ function notifyListeners(context: WebAppContext, regionId: string, state: Runtim
 export function bridgeRuntimeState(context: WebAppContext, region: WebRegion): void {
   if (region.runtimeSubscription !== undefined) return;
   region.runtimeSubscription = context.runtime.subscribe(region.id, (state) => {
+    if (state.phase === 'denied' || state.phase === 'disposed') {
+      region.renderAbort?.abort();
+      cancelPendingPresentation(region);
+      cancelActiveAction(region);
+      region.values.clear();
+      region.drafts.clear();
+      delete region.last;
+      delete region.renderedAuthority;
+      region.element.revoke();
+    }
     notifyListeners(context, region.id, state);
   });
   const current = context.runtime.snapshot(region.id);
@@ -43,6 +53,8 @@ export function subscribeRegion(context: WebAppContext, regionId: string, listen
 
 function releaseRegion(context: WebAppContext, region: WebRegion): void {
   region.sequence++;
+  region.renderAbort?.abort();
+  delete region.renderAbort;
   cancelPendingPresentation(region);
   cancelActiveAction(region);
   if (region.adaptFrame !== undefined) {

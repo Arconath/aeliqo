@@ -54,7 +54,9 @@ Exposed semantics:
 
 ## Responsive behavior
 
-The temporal data view adapts at narrow widths. Preserve calendar meaning and keep dates available with each row.
+At container widths of 30rem or less, exact-data rows become stacked records so labels remain readable inside narrow desktop panels as well as mobile pages. The graphic keeps its declared dimensions inside a focusable scroll region instead of shrinking its text to fit. Tab to the region to access its overflow; exact values remain available below.
+
+At 7rem or less, each selection label moves above its button. The button text stays on one line, including when text is enlarged.
 
 ## Style hooks
 
@@ -73,6 +75,4 @@ The temporal data view adapts at narrow widths. Preserve calendar meaning and ke
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

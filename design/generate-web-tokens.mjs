@@ -34,6 +34,8 @@ function cssValue(token) {
   if (typeof value === 'string' || typeof value === 'number') return String(value);
   if (Array.isArray(value)) {
     if (value.every((item) => typeof item === 'number')) return `cubic-bezier(${value.join(', ')})`;
+    if (value.every((item) => item && typeof item === 'object' && item.offsetX !== undefined))
+      return value.map(shadow).join(', ');
     return value.join(', ');
   }
   if (value?.hex !== undefined) return value.hex;

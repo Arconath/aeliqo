@@ -82,7 +82,13 @@ test('quality dispatch retains the workflow trust and release boundaries', () =>
   assert.match(workflow, /ref: \$\{\{ env\.SOURCE_SHA \}\}/);
   assert.match(workflow, /persist-credentials: false/);
   assert.doesNotMatch(workflow, /secrets\./);
-  assert.match(workflow, /run: pnpm check/);
+  assert.match(workflow, /run: python3 scripts\/quality\.py --shard \$\{\{ matrix\.shard \}\} --shards 4/);
+  assert.match(workflow, /shard: \[0, 1, 2, 3\]/);
+  assert.match(
+    workflow,
+    /- name: Run required functional, security, browser, and package checks\n\s+if: needs\.scope\.outputs\.mode == 'full'\n\s+run: python3 scripts\/quality\.py --merge 4/,
+  );
+  assert.match(workflow, /name: aeliqo-quality-evidence-\$\{\{ env\.SOURCE_SHA \}\}/);
   assert.match(workflow, /artifacts\/product-ci/);
   assert.match(workflow, /artifacts\/performance-bundles/);
   assert.ok(

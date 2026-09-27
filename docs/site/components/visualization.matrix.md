@@ -13,7 +13,8 @@ contract: 'Entity-feature comparison preserving row/column association and usefu
 
 ## Purpose
 
-Compare records across features in a table grid. Exact values and row identity stay readable at narrow widths.
+Compare records across the declared feature columns in a native table. Exact cell values remain
+available; include an identity field in the columns when readers need it visible.
 
 ## When to use it
 
@@ -54,7 +55,7 @@ Exposed semantics:
 
 ## Responsive behavior
 
-Temporal columns may need horizontal scrolling. Keep row identity visible and let the host provide the width for readable values.
+At container widths of 30rem or less, the matrix keeps readable minimum column widths and scrolls horizontally inside its exact-data region. The surrounding page does not need to scroll sideways.
 
 ## Style hooks
 
@@ -73,6 +74,4 @@ Temporal columns may need horizontal scrolling. Keep row identity visible and le
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

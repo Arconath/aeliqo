@@ -31,6 +31,11 @@ export interface WebRegion {
   adaptFrame?: number;
   /** Cancels an in-flight presentation before it can publish after a newer render. */
   presentationAbort?: AbortController;
+  /** Blocks reentrant renderer emissions until the canonical publication settles. */
+  presentationTransaction?: symbol;
+  renderAbort?: AbortController;
+  draftRevision?: number;
+  renderedAuthority?: string;
   sequence: number;
   category: 'wide' | 'narrow' | 'unknown';
   composing: boolean;
@@ -67,6 +72,8 @@ export interface WebAppContext {
   readonly resources: ReadonlyMap<string, import('@aeliqo/core').ResourceDefinition>;
   readonly recipes: readonly RecipeDefinition[];
   readonly views: readonly AeliqoViewDefinition[];
+  readonly patterns?: NonNullable<PresentationRegistry['patterns']>;
+  readonly stateMappings?: NonNullable<PresentationRegistry['stateMappings']>;
   readonly regions: Map<string, WebRegion>;
   readonly stateListeners: Map<string, Set<(state: RuntimeRegionState) => void>>;
   disposed: boolean;
@@ -205,6 +212,7 @@ export function registryFor(
   views: readonly AeliqoViewDefinition[],
   resourceId: string,
   inputs?: AeliqoInputBindings,
+  registrations: Pick<AeliqoAppOptions, 'patterns' | 'stateMappings'> = {},
 ): PresentationRegistry | undefined {
   const byRef = new Map(descriptors.map((descriptor) => [refKey(descriptor.ref), descriptor]));
   const visualizations = results.flatMap((binding) => {
@@ -236,8 +244,8 @@ export function registryFor(
   const combined = createPresentationRegistry(
     [...base.value.manifests, ...views.map((view) => view.manifest)],
     mappings,
-    base.value.patterns,
-    [...(base.value.stateMappings ?? []), ...STANDARD_STATE_MAPPINGS],
+    [...(base.value.patterns ?? []), ...(registrations.patterns ?? [])],
+    [...(base.value.stateMappings ?? []), ...STANDARD_STATE_MAPPINGS, ...(registrations.stateMappings ?? [])],
   );
   return combined.ok ? combined.value : undefined;
 }
@@ -252,6 +260,7 @@ export function experience(
   registry: PresentationRegistry,
   revision: string,
   policy?: RecipePresentationPolicy,
+  requirePattern = false,
 ): Experience {
   const permitted = new Set(policy?.allowedRepresentations ?? registry.manifests.map((manifest) => manifest.ref.id));
   const permittedByResourceOrStructure = (manifest: PresentationRegistry['manifests'][number]): boolean =>
@@ -261,17 +270,17 @@ export function experience(
     version: '1',
     id: 'aeliqo.web.app',
     revision,
-    mode: 'adaptive',
+    mode: (registry.patterns?.length ?? 0) > 0 ? 'composable' : 'adaptive',
     agentAllowed: true,
     allowedRepresentations: registry.manifests
       .filter(permittedByResourceOrStructure)
       .map((manifest) => manifest.ref.id),
-    allowedPatterns: [],
-    composition: { allowWithoutPreset: true, maxNodes: 32, maxExpansions: 64 },
+    allowedPatterns: registry.patterns?.map((pattern) => pattern.ref.id) ?? [],
+    composition: { allowWithoutPreset: !requirePattern, maxNodes: 32, maxExpansions: 64 },
     requiredOperations: [],
     tokenProfile: { id: 'tokens.default', revision: '1' },
     extensionAllowlist: registry.manifests
-      .filter((manifest) => manifest.extension && permitted.has(manifest.ref.id))
+      .filter((manifest) => manifest.extension && permittedByResourceOrStructure(manifest))
       .map((manifest) => manifest.ref),
     transitionPolicy: 'stable',
   };

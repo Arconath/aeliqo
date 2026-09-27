@@ -10,7 +10,7 @@ body:
     id: version
     attributes:
       label: Aeliqo version
-      placeholder: 0.4.2
+      placeholder: 0.6.0
     validations:
       required: true
   - type: dropdown
@@ -51,7 +51,7 @@ body:
     id: environment
     attributes:
       label: Browser, framework, and operating system
-      placeholder: Chromium 140, React 19.2, macOS 16
+      placeholder: Include exact versions and WebMCP flag status if relevant
     validations:
       required: true
   - type: checkboxes

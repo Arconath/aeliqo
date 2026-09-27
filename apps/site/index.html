@@ -6,13 +6,13 @@
     <title>Aeliqo — adaptive interfaces, with or without AI</title>
     <meta
       name="description"
-      content="Register your data, permissions, and allowed views once. Aeliqo renders each request as the fitting view — a table, cards, or a chart — with or without an agent."
+      content="Adapt components, workspaces, and whole-page layouts to intent and available space, using application-owned data, permissions, and registered views."
     />
     <link rel="canonical" href="https://aeliqo.com/" />
     <meta property="og:title" content="Aeliqo — adaptive interfaces, with or without AI" />
     <meta
       property="og:description"
-      content="Register data, permissions, and allowed views once. Aeliqo renders each request as the view that fits — a table, cards, or a chart."
+      content="Adapt components, workspaces, and whole-page layouts using the data, permissions, and views your application registers."
     />
     <meta property="og:url" content="https://aeliqo.com/" />
     <meta property="og:type" content="website" />
@@ -22,7 +22,7 @@
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="shell topbar">
-      <a class="brand" href="/" aria-label="Aeliqo home" aria-current="page"
+      <a class="brand" href="https://aeliqo.com/" aria-label="Aeliqo home" aria-current="page"
         ><img src="/aeliqo.png" width="52" height="52" alt="" /><span>Aeliqo</span></a
       >
       <nav class="primary-nav" id="site-nav" aria-label="Main">
@@ -96,8 +96,8 @@
           <p class="eyebrow hero-status">OPEN-SOURCE TYPESCRIPT UI RUNTIME</p>
           <h1>Say what to show. <em>Aeliqo picks the view that fits.</em></h1>
           <p class="lead">
-            A UI runtime that picks the right registered view for each request — a table, cards, or a chart — with or
-            without an AI agent.
+            Adapt components, workspaces, and whole-page layouts to intent and available space. Your application
+            registers the views; buttons or AI agents can request them.
           </p>
           <div class="actions">
             <a class="primary" href="https://docs.aeliqo.com/playground/"
@@ -161,10 +161,10 @@
                   <option value="Operations">Operations</option>
                 </select>
               </label>
-              <div class="demo-view" role="group" aria-label="Rendered view">
-                <button type="button" data-demo-view="table" aria-pressed="true">Table</button>
-                <button type="button" data-demo-view="cards" aria-pressed="false">Cards</button>
-                <button type="button" data-demo-view="chart" aria-pressed="false">Chart</button>
+              <div class="demo-view" role="group" aria-label="Ask a question or change the space">
+                <button type="button" data-demo-view="table" aria-pressed="true">List people</button>
+                <button type="button" data-demo-view="cards" aria-pressed="false">On a phone</button>
+                <button type="button" data-demo-view="chart" aria-pressed="false">Headcount trend</button>
               </div>
             </div>
           </header>
@@ -242,10 +242,12 @@
             <div>
               <h3>Aeliqo renders.</h3>
               <p>
-                Each request is checked against your rules, evaluated on your data, and shown through a view you
-                registered — with open items and drafts preserved.
+                Render one component, combine results in a workspace, or compose a registered page with a header and
+                sidebar. Validated state mappings preserve compatible state; draft exits stay under application control.
               </p>
-              <a href="https://docs.aeliqo.com/concepts/">Understand the pipeline <span aria-hidden="true">→</span></a>
+              <a href="https://docs.aeliqo.com/guides/workspace/"
+                >Build a workspace or page <span aria-hidden="true">→</span></a
+              >
             </div>
           </article>
           <article>
@@ -346,7 +348,7 @@
       </div>
     </div>
     <footer class="shell">
-      <a class="footer-brand" href="/"
+      <a class="footer-brand" href="https://aeliqo.com/"
         ><img src="/aeliqo.png" width="36" height="36" alt="" /><span>Aeliqo · Apache-2.0</span></a
       >
       <nav aria-label="Footer">

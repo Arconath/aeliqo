@@ -13,11 +13,13 @@ contract: 'One selected option; native semantics or APG-equivalent keyboard beha
 
 ## Purpose
 
-A bounded set of native radio options under one legend that submits one chosen value. Disabled options stay visible, and change events are proposals the host accepts.
+A bounded set of native radio options under one legend. The host can set `value` to the selected
+option; choosing an enabled option updates it locally and emits a typed change. Its selected value is
+available to form submission. Disabled options stay visible, and the host decides what to persist.
 
 ## When to use it
 
-- People must pick exactly one of a few named options.
+- People must select exactly one of a few named options.
 - Every option should stay visible without opening a list.
 - Some options can appear disabled without being removed.
 
@@ -73,6 +75,4 @@ Vertical orientation suits narrow forms. Let long option labels wrap without cha
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

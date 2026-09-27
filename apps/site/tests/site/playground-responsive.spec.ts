@@ -15,6 +15,78 @@ async function openTaskRail(page: Page): Promise<void> {
   });
 }
 
+async function expectToolbarTouchTargets(page: Page): Promise<void> {
+  expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches)).toBe(true);
+  const controls = await page.locator('.pg-toolbar :is(button, select, summary):visible').evaluateAll((elements) =>
+    elements.map((element) => ({
+      name: element.id || element.textContent?.trim(),
+      height: element.getBoundingClientRect().height,
+      width: element.getBoundingClientRect().width,
+    })),
+  );
+  for (const control of controls) {
+    expect(control.height, `${control.name} touch height`).toBeGreaterThanOrEqual(44);
+    expect(control.width, `${control.name} touch width`).toBeGreaterThanOrEqual(44);
+  }
+}
+
+test('toolbar menu aligns with Inspect across responsive widths and pointer modes', async ({ browser, baseURL }) => {
+  if (baseURL === undefined) throw new Error('The site test base URL is required.');
+  for (const hasTouch of [false, true]) {
+    const context = await browser.newContext({ hasTouch, baseURL });
+    const page = await context.newPage();
+    try {
+      await page.goto('/playground/');
+      await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+      for (const width of [360, 768, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        for (const direction of ['ltr', 'rtl']) {
+          await page.locator('html').evaluate((element, dir) => {
+            element.setAttribute('dir', dir);
+          }, direction);
+          const inspect = page.locator('#pg-inspect');
+          const summary = page.locator('#pg-menu > summary');
+          const inspectBox = await inspect.boundingBox();
+          const menuBox = await summary.boundingBox();
+          const selectBox = await page.locator('#pg-scenario').boundingBox();
+          if (direction === 'rtl') {
+            const chevron = await page.locator('#pg-scenario').evaluate((element) => {
+              const style = getComputedStyle(element);
+              return { position: style.backgroundPositionX, padding: Number.parseFloat(style.paddingLeft) };
+            });
+            expect(Number.parseFloat(chevron.position)).toBeGreaterThan(0);
+            expect(Number.parseFloat(chevron.position)).toBeLessThan(chevron.padding);
+          }
+          expect(inspectBox).not.toBeNull();
+          expect(menuBox).not.toBeNull();
+          expect(
+            Math.abs(inspectBox!.y + inspectBox!.height / 2 - menuBox!.y - menuBox!.height / 2),
+          ).toBeLessThanOrEqual(1);
+          if (hasTouch) await expectToolbarTouchTargets(page);
+          await summary.focus();
+          await page.keyboard.press('Enter');
+          await expect(page.locator('#pg-menu')).toHaveAttribute('open', '');
+          await expect(page.getByRole('button', { name: 'Reset playground' })).toBeVisible();
+          const openSelectBox = await page.locator('#pg-scenario').boundingBox();
+          expect(Math.abs(openSelectBox!.width - selectBox!.width)).toBeLessThanOrEqual(1);
+          const popup = await page.locator('.pg-menu-body').boundingBox();
+          expect(popup!.x).toBeGreaterThanOrEqual(0);
+          expect(popup!.x + popup!.width).toBeLessThanOrEqual(width);
+          if (hasTouch) await expectToolbarTouchTargets(page);
+          await summary.focus();
+          await page.keyboard.press('Enter');
+          await expect(page.locator('#pg-menu')).not.toHaveAttribute('open', '');
+          await page.locator('.pg-toolbar').screenshot({
+            path: test.info().outputPath(`toolbar-${hasTouch ? 'touch' : 'fine'}-${width}-${direction}.png`),
+          });
+        }
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
+
 test('guided intents render real adaptive views without a model', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -47,11 +119,16 @@ test('guided demos remain legible at mobile, tablet, and desktop widths', async 
     await page.setViewportSize({ width, height: 900 });
     await openTaskRail(page);
     await page.locator('[data-journey="attendance"]').click();
-    await expect(page.locator('[data-testid="attendance-status"]')).toContainText('renderer-ready');
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    await expect(page.locator('#pg-region aeliqo-chart')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await openTaskRail(page);
     await page.locator('[data-journey="workspace"]').click();
-    await expect(page.locator('[data-testid="goal-status"]')).toHaveText('renderer-ready');
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    await expect(page.locator('#pg-region [data-aeliqo-node-id="breakdown"]')).toContainText('Ada');
+    await openTaskRail(page);
+    await page.locator('[data-journey="page"]').click();
+    await expect(page.getByRole('navigation', { name: 'Registered page navigation' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).include('.pg-app').analyze()).violations).toEqual([]);
   }
@@ -233,12 +310,11 @@ test('mobile controls, disconnected agent state, and accessibility remain honest
   page.on('request', (request) => requests.push(request.url()));
   await page.setViewportSize({ width: 320, height: 850 });
   await page.goto('/playground/');
-  await page.getByRole('button', { name: 'Connect AI' }).click();
-  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
-  await page.locator('#pg-connection-kind').selectOption('detect');
-  await page.getByRole('button', { name: 'Check connection' }).click();
+  await page.getByRole('button', { name: 'Browser agent', exact: true }).click();
+  await expect(page.locator('#pg-prompt')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Enable WebMCP' }).click();
   await expect(page.locator('#pg-connect-status')).not.toContainText('Checking capability');
-  await expect(page.getByRole('textbox', { name: 'Prompt' })).toBeDisabled();
+  await expect(page.locator('#pg-prompt')).toHaveCount(0);
   await expect(page.locator('#pg-model-calls')).toHaveText('0');
   await page.getByRole('button', { name: 'Inspect', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Inspector' })).toBeVisible();
@@ -248,6 +324,6 @@ test('mobile controls, disconnected agent state, and accessibility remain honest
   await expect(page.getByRole('dialog', { name: 'Inspector' })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Inspect', exact: true })).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  expect(requests.some((url) => url.includes('/api/aeliqo/session'))).toBe(true);
+  expect(requests.some((url) => url.includes('/api/aeliqo/'))).toBe(false);
   expect(requests.every((url) => new URL(url).hostname === '127.0.0.1')).toBe(true);
 });

@@ -152,6 +152,9 @@ select {
   background-position: right 0.6rem center;
   background-size: 0.625rem;
 }
+select:dir(rtl) {
+  background-position: left 0.6rem center;
+}
 button {
   cursor: pointer;
   font-weight: var(--weight-medium);

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { AeliqoRegionElement } from '../../../packages/web/src/region/aeliqo-region.js';
 import {
   resetJourneyThroughHostControl,
   runFixtureAgentCompareJourney,
@@ -32,10 +33,23 @@ test('public content is useful without JavaScript and its optional detail hydrat
 test('manual comparison and fixture-agent comparison commit the same intent', async ({ page }) => {
   await page.goto('/journeys/');
   const manual = await runManualCompareJourney(page);
+  const region = page.locator('#catalog-view aeliqo-region');
+  const previous = await region.evaluate((element: AeliqoRegionElement) => element.presentation?.plan);
+  const children = await page.locator('#catalog-view aeliqo-detail').elementHandles();
+  expect(children).toHaveLength(2);
   await resetJourneyThroughHostControl(page);
   const assisted = await runFixtureAgentCompareJourney(page);
   expect(assisted.normalizedIntent).toEqual(manual.normalizedIntent);
   expect(assisted.selectedIds).toEqual(manual.selectedIds);
+  const next = await region.evaluate((element: AeliqoRegionElement) => element.presentation?.plan);
+  expect(next?.nodes.map((node) => node.id)).toEqual(previous?.nodes.map((node) => node.id));
+  expect(next?.preconditions.results).toHaveLength(1);
+  expect(next?.preconditions.results[0]?.id).not.toBe(previous?.preconditions.results[0]?.id);
+  expect(next?.nodes.flatMap((node) => (node.result === undefined ? [] : [node.result]))).toEqual([
+    next?.preconditions.results[0],
+    next?.preconditions.results[0],
+  ]);
+  for (const child of children) expect(await child.evaluate((element) => element.isConnected)).toBe(true);
 });
 
 test('enterprise windows stay independent and host approval plus revocation are explicit', async ({ page }) => {

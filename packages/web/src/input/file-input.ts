@@ -124,6 +124,10 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
   static readonly styles = [
     ...aeliqoInputStyles,
     css`
+      input::file-selector-button {
+        max-inline-size: 100%;
+        white-space: normal;
+      }
       [part='files'] {
         margin: 0;
         padding-inline-start: 1.25rem;

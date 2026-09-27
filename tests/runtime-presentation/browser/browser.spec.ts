@@ -135,3 +135,73 @@ test('re-resolves live when media preferences change under auto observation', as
     settled,
   );
 });
+
+type ResizeFixtureWindow = typeof window & {
+  resizeFixture: {
+    snapshot(): {
+      environment: {
+        inlineSize: { state: string; value?: number };
+        blockSize: { state: string; value?: number };
+      };
+      queries: number;
+      recipeCalls: number;
+      renderedWidths: number[];
+    };
+    dispose(): void;
+  };
+};
+
+test('app reevaluates host layouts within one width category and on height changes without data requests', async ({
+  page,
+}) => {
+  await page.goto('/tests/runtime-presentation/browser/app-resize.html');
+  await expect(page.locator('aeliqo-table')).toContainText('Ada');
+  const snapshot = () => page.evaluate(() => (window as ResizeFixtureWindow).resizeFixture.snapshot());
+  await expect.poll(async () => (await snapshot()).environment.inlineSize.value).toBe(1440);
+  await page.locator('#target').evaluate((target) => {
+    target.style.width = '900px';
+  });
+  await expect.poll(async () => (await snapshot()).environment.inlineSize.value).toBe(900);
+  await page.locator('#target').evaluate((target) => {
+    target.style.height = '420px';
+  });
+  await expect.poll(async () => (await snapshot()).environment.blockSize.value).toBe(420);
+  expect((await snapshot()).queries).toBe(1);
+  expect((await snapshot()).renderedWidths).toContain(900);
+  await expect(page.locator('aeliqo-table')).toContainText('Ada');
+  const settled = (await snapshot()).recipeCalls;
+  await page.waitForTimeout(100);
+  expect((await snapshot()).recipeCalls).toBe(settled);
+  await page.evaluate(() => (window as ResizeFixtureWindow).resizeFixture.dispose());
+  await page.locator('#target').evaluate((target) => {
+    target.style.width = '1100px';
+  });
+  await page.waitForTimeout(100);
+  expect((await snapshot()).recipeCalls).toBe(settled);
+});
+
+test('app defers same-category resize during IME and focus ownership then uses the latest size', async ({ page }) => {
+  await page.goto('/tests/runtime-presentation/browser/app-resize.html');
+  const editor = page.locator('aeliqo-region').locator('#editor');
+  await editor.fill('draft');
+  await editor.evaluate((input) => {
+    input.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true, composed: true }));
+  });
+  await page.locator('#target').evaluate((target) => {
+    target.style.width = '900px';
+    target.style.height = '420px';
+  });
+  await page.waitForTimeout(100);
+  const snapshot = () => page.evaluate(() => (window as ResizeFixtureWindow).resizeFixture.snapshot());
+  expect((await snapshot()).environment.inlineSize.value).toBe(1440);
+  await editor.evaluate((input) => {
+    input.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, composed: true }));
+  });
+  await page.waitForTimeout(100);
+  expect((await snapshot()).environment.inlineSize.value).toBe(1440);
+  await editor.evaluate((input) => input.blur());
+  await expect.poll(async () => (await snapshot()).environment.inlineSize.value).toBe(900);
+  expect((await snapshot()).environment.blockSize.value).toBe(420);
+  expect((await snapshot()).queries).toBe(1);
+  await expect(editor).toHaveValue('draft');
+});

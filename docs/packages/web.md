@@ -78,10 +78,53 @@ authorized result. Narrow layouts retain the simultaneous table comparison. The
 split is not an implicit permission grant: the resource's allowed views, renderer
 registry, operation and result bindings must all permit it.
 
+Standard data views use a 24px hysteresis band around the 640px container
+breakpoint during automatic resize: a wide view changes below 616px, and a
+narrow view changes above 664px. An explicit render evaluates the current size
+immediately. Registered workspace/page patterns receive every measured size;
+the standard breakpoint band does not constrain their layouts.
+
+Repeating a comparison evaluates a fresh result and transfers each existing
+child to its same registered identity. A custom recipe must likewise declare
+`stateTransfer` entries when it replaces result references or changes a layout.
+For unchanged node IDs, roles, and representations, use the registered
+`aeliqo.state.identity` mapping at revision `1`. Other transitions require an
+appropriate registered mapping; omitting one rejects the update and keeps the
+previous valid presentation.
+
 An explicit view pin is a hard gate and never falls through to another recipe
 candidate. A preferred view remains a ranking input and may fall back only to a
 fully eligible candidate. Direct `RecipeDefinition.build` calls remain a
 source-compatible candidate-authoring API; they are not a commit decision.
+
+## Registered workspaces and pages
+
+Use `createAeliqoApp({ resources, authority, patterns, stateMappings, views })`
+when a registered intent needs more than one result or a whole page layout.
+`patterns` uses `PresentationPatternManifest` and `stateMappings` uses
+`PresentationStateMappingManifest`, both exported by `@aeliqo/core/presentation`.
+These trusted registrations are validated and copied when the app is created.
+Duplicate IDs and mappings to unknown views are rejected.
+
+A recipe receives `context.results`, the complete array of authorized output
+descriptors. `context.result` remains the primary descriptor for existing recipes.
+The `results` property is optional in the type so direct recipe callers remain
+compatible; the app always supplies a frozen array.
+
+For a custom intent without a matching recipe, the resolver requires a matching
+registered pattern. Every child must satisfy the resource's `allowedViews`,
+result bindings, and required operations. Register data views explicitly, such
+as `data.metric` for a summary. A structural custom view can provide host-owned
+header or sidebar content; it must declare no data result or operations and the
+`structure` role. That registration does not authorize reading additional data.
+
+Mount and render these layouts using the same `app.mount` and `app.render` calls
+as a single component. Container changes run the existing presentation resolver
+without another data request or model call. A missing required output or invalid
+pattern leaves the previous presentation visible and returns a diagnostic.
+
+The [workspace guide](https://docs.aeliqo.com/guides/workspace/) explains host
+ownership and the registered attendance example.
 
 ## Component entry points
 
@@ -96,7 +139,13 @@ import { AeliqoBarElement, AeliqoTrendElement } from '@aeliqo/web/visualization/
 Family exports include `foundation`, `inputs`, `navigation`, `feedback`, `data`,
 `plot`, `visualization`, and `compound`. Region registration and low-level
 rendering live under `@aeliqo/web/region`; server rendering lives under
-`@aeliqo/web/server`.
+`@aeliqo/web/server`. Utility subpaths cover `@aeliqo/web/register`
+(`registerAeliqoElements`, `AELIQO_WEB_VERSION`), `@aeliqo/web/events` (typed
+selection events), `@aeliqo/web/styles` (theme styles and locale context),
+`@aeliqo/web/table` and `@aeliqo/web/chart` (element classes and stable row
+keys), `@aeliqo/web/region/adaptation` (region adaptation internals), and the
+`@aeliqo/web/foundation/manifest` and `@aeliqo/web/inputs/manifest` family
+manifests.
 
 `<aeliqo-chart>` is the low-level series chart. It renders a responsive SVG
 with labeled axes and grid lines, plus a collapsible table with the exact
@@ -111,6 +160,11 @@ registered resources and meanings.
 
 ## Styling and browser behavior
 
+Plot and Cartesian marks use `--aeliqo-visualization-series1` through `series6`.
+Quantitative marks and their keys share `--aeliqo-visualization-quantitative-start`
+and `--aeliqo-visualization-quantitative-end`. Canvas repaints after component or
+inherited theme changes and system color changes, using the same colors as SVG.
+
 Components use the library's public design tokens and exposed shadow parts.
 Applications can set those tokens on a host to match their own design system.
 The public Aeliqo site and the component package are generated from the same
@@ -121,3 +175,34 @@ the public tokens on a host for their own theme.
 The shared elements emit typed, cancelable interaction events where an action is
 user initiated. Treat event detail as input and recheck application authority
 before performing a business effect.
+
+### Draft exits and presentation updates
+
+`onDraftExit` is the host's Save/Discard/Stay boundary for a dirty form. It
+receives immutable drafts, the next intent, a revision, and an `AbortSignal`.
+Without a decision, replacement returns `needs-input`. Revocation and stale
+work cannot override this boundary. See the [application API](https://docs.aeliqo.com/reference/app-api/)
+for the decision shape.
+
+`onPresentation` observes a `RendererReadyReceipt` after the DOM update,
+including adaptation caused by container or media changes. Use it for visible
+view labels and diagnostics. It does not grant permissions or trigger models.
+
+The app prepares the next presentation before publishing its task. Unsupported
+targets and synchronous root-renderer failures preserve the prior authorized
+state and UI; revoked content is cleared. `renderer-ready` covers the Region
+root update, not asynchronous descendant work or browser paint.
+
+### Host renderer contract
+
+A custom view and any nested Lit directive callbacks must be synchronous,
+deterministic, and free of business effects. Capture immutable inputs in the
+returned template; do not make a previous template depend on changing external
+state. This lets a rejected update replay the last authorized template while
+retaining its keyed children. Perform effects through registered actions.
+
+A directive that mutates the DOM independently or throws while replaying a
+previous template is outside this contract. The candidate remains unpublished,
+but the renderer clears the affected region if restoration also fails. Fix the
+host callback and remount the region before retrying. Aeliqo cannot roll back
+arbitrary effects performed by application code.

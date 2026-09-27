@@ -1,6 +1,6 @@
 import { svg } from 'lit';
 import type { PlotGeometry } from './geometry.js';
-const colors = ['#4338ca', '#047857', '#b45309', '#be123c', '#0369a1', '#7e22ce'];
+import { SERIES_COLORS as colors } from './palette.js';
 export const seriesColor = (g: PlotGeometry, series: string): string =>
   colors[g.series.indexOf(series) % colors.length] ?? colors[0]!;
 export const seriesSymbol = (g: PlotGeometry, s: string): string =>
@@ -34,10 +34,14 @@ export function svgPlotMarks(geometry: PlotGeometry) {
   });
 }
 /** Canvas consumes the same bounded shapes and coordinates as SVG. It never prepares or aggregates data. */
-export function paintPlotCanvas(context: CanvasRenderingContext2D, geometry: PlotGeometry): void {
+export function paintPlotCanvas(
+  context: CanvasRenderingContext2D,
+  geometry: PlotGeometry,
+  resolveColor: (color: string) => string,
+): void {
   context.clearRect(0, 0, geometry.width, geometry.height);
   for (const mark of geometry.marks) {
-    context.fillStyle = mark.color ?? seriesColor(geometry, mark.series);
+    context.fillStyle = resolveColor(mark.color ?? seriesColor(geometry, mark.series));
     context.strokeStyle = context.fillStyle;
     context.lineWidth = 2;
     context.setLineDash(dash(geometry, mark.series));

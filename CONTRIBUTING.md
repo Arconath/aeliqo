@@ -21,13 +21,29 @@ and pnpm `11.24.0` (the `packageManager` field in [package.json](package.json)).
 corepack enable
 corepack prepare pnpm@11.24.0 --activate
 pnpm install --frozen-lockfile
+pnpm exec playwright install --with-deps chromium firefox webkit
 ```
 
-For the optional local Playground model connection, copy
-`apps/site/.env.example` to `apps/site/.env.local` and edit only the local
-copy. Never put a provider key in an issue, test fixture, screenshot, URL, or
-committed file. Browser BYOK uses the user's key in page memory and does not
-use this file.
+Browser suites need the Playwright browsers installed once (`--with-deps`
+installs the system libraries on Linux; on macOS plain `playwright install`
+is enough). `pnpm site:test` and `pnpm check` also run the production server
+contract in Go, so install Go `1.27.0` before those commands.
+
+## Preview the docs and Playground
+
+```sh
+pnpm --dir apps/site dev
+```
+
+Open the printed URL for the landing page; append `/start/` for the docs or
+`/playground/` for the interactive demos. Edit Markdown under `docs/site/`.
+The dev server regenerates pages from that source.
+
+For MCP or optional BYOK, follow [the standalone local example](examples/local-agent/).
+It has its own install and `pnpm dev` command. Optional model credentials belong
+only in `examples/local-agent/.env.local` and the Node host process. The public
+Playground exposes manual controls and experimental WebMCP; it has no model key
+input. Never include keys in issues, screenshots, URLs, fixtures, or commits.
 
 ## Running checks
 
@@ -51,6 +67,7 @@ Common focused commands by area:
 | Framework/SSR integrations     | `pnpm test:framework:consumers`, `pnpm test:next-platform`                                             |
 | Component docs or examples     | `pnpm test:catalog-examples`, `pnpm test:docs-artifact`, `pnpm test:docs-inventory`                    |
 | `apps/site` (site, playground) | `pnpm site:build`, `pnpm site:test`                                                                    |
+| Standalone MCP/BYOK example | `pnpm test:local-agent` |
 | Visual changes                 | `pnpm test:visual` (Chromium, Firefox, WebKit at 360/768/1440 px)                                      |
 
 `pnpm` scripts in [package.json](package.json) are the source of truth for the
@@ -98,6 +115,20 @@ Public API changes require all of the following in the same change:
 - a release note in `docs/site/pages/release-notes.md`, and for breaking
   changes an entry in the current migration guide under `docs/site/pages/`.
 
+### Update application composition
+
+The application facade lives in `packages/web/src/app/`; Region publication and
+trusted render preparation live in `packages/runtime/src/app/`. Keep the runtime
+free of DOM access and use the existing Region transaction for publication.
+The runnable component/workspace/page entry is `examples/vnext/page-goal/`, with
+shared registered goals and page patterns in `examples/vnext/workspace/`.
+
+Run `pnpm test:presentation-adaptation`, `pnpm test:presentation-adaptation:browser`,
+and `pnpm test:presentation-adaptation:consumers` for changes to this contract.
+These exercise semantic projection, actual browser publication/lifecycle, and
+clean package entry points. The complete acceptance matrix still applies before
+release.
+
 ### Update documentation
 
 Authored public documentation lives in Markdown under `docs/site/`; edit the
@@ -136,3 +167,16 @@ Participation is covered by [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Do not
 open a public issue for a vulnerability — follow [SECURITY.md](SECURITY.md)
 and use GitHub private vulnerability reporting. For non-sensitive defects,
 see [SUPPORT.md](SUPPORT.md).
+
+## Release boundary
+
+Contributions are reviewed and verified before maintainers publish packages or
+deploy the site. Package publication requires a successful **full matrix from a
+push to main at the exact source SHA**. A manual diagnostic run does not replace
+that push evidence. Keep package versions aligned and never reuse a published
+version for changed package source. Maintainers then verify registry consumers,
+publish the immutable image, promote the GitOps digest, and check public routes.
+
+The public docs are the project's user-facing wiki. Propose documentation changes
+through the same review flow as code; avoid maintaining a separate copy in a
+personal wiki or tool-specific instruction file.

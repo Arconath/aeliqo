@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import components from '../../catalog/components.json' with { type: 'json' };
 import { REVIEW_VARIANTS, reviewColorScheme, reviewViewport } from './review-variants.js';
@@ -109,6 +109,8 @@ for (const component of components.components)
           const trendPanel = root.querySelector<HTMLElement>('[part="trend"]')!;
           const trend = root.querySelector('aeliqo-trend')!;
           const trendRoot = trend.shadowRoot!;
+          // Measure the exact-values table in its expanded state.
+          trendRoot.querySelector<HTMLDetailsElement>('[part="data-details"]')!.open = true;
           const data = trendRoot.querySelector<HTMLElement>('[part="data"]')!;
           const dataBox = data.getBoundingClientRect();
           const caption = trendRoot.querySelector('caption')!.getBoundingClientRect();
@@ -274,29 +276,33 @@ for (const component of components.components)
           .evaluate((element) => getComputedStyle(element.shadowRoot!.querySelector('dl')!).gridTemplateColumns);
         expect(columns.trim().split(/\s+/)).toHaveLength(1);
       }
+      if (variant === 'narrow-dark-rtl' && ['tree', 'treemap', 'relationship', 'timeline'].includes(id)) {
+        const host = page.locator(`aeliqo-${id}`);
+        await verifyScrollableGraphic(host);
+        for (const width of [240, 320]) {
+          await host.evaluate((element, width) => ((element as HTMLElement).style.width = `${width}px`), width);
+          await verifyScrollableGraphic(host);
+        }
+        await host.evaluate((element) => ((element as HTMLElement).style.width = ''));
+      }
       if (variant === 'narrow-dark-rtl' && id === 'timeline') {
         const layout = await page.locator(`aeliqo-${id}`).evaluate((element) => {
           const root = element.shadowRoot!;
           const viewport = root.querySelector<HTMLElement>('[part="viewport"]')!;
           const data = root.querySelector<HTMLElement>('[part="data"]')!;
-          const graphic = viewport.querySelector('svg')!.getBoundingClientRect();
-          const viewportBox = viewport.getBoundingClientRect();
           return {
             direction: getComputedStyle(viewport).direction,
             dataOverflow: data.scrollWidth - data.clientWidth,
-            graphicStart: graphic.left - viewportBox.left,
-            graphicEnd: viewportBox.right - graphic.right,
           };
         });
         expect(layout.direction).toBe('ltr');
         expect(layout.dataOverflow).toBeLessThanOrEqual(1);
-        expect(layout.graphicStart).toBeGreaterThanOrEqual(-1);
-        expect(layout.graphicEnd).toBeGreaterThanOrEqual(-1);
       }
       if (variant === 'narrow-dark-rtl' && id === 'investigation') {
         const layout = await page.locator('aeliqo-investigation').evaluate((element) => {
           const trend = element.shadowRoot!.querySelector('aeliqo-trend')!;
           const root = trend.shadowRoot!;
+          root.querySelector<HTMLDetailsElement>('[part="data-details"]')!.open = true;
           const viewport = root.querySelector<HTMLElement>('[part="viewport"]')!;
           const data = root.querySelector<HTMLElement>('[part="data"]')!;
           const graphic = viewport.querySelector('svg')!.getBoundingClientRect();
@@ -318,8 +324,6 @@ for (const component of components.components)
           const root = element.shadowRoot!;
           const host = element.getBoundingClientRect();
           const viewport = root.querySelector<HTMLElement>('[part="viewport"]')!;
-          const viewportBox = viewport.getBoundingClientRect();
-          const graphic = viewport.querySelector('svg')!.getBoundingClientRect();
           const data = root.querySelector<HTMLElement>('[part="data"]')!;
           const caption = root.querySelector('caption')!.getBoundingClientRect();
           const cells = [...root.querySelectorAll<HTMLElement>('tbody tr:first-child td')].map((cell) => ({
@@ -330,8 +334,6 @@ for (const component of components.components)
             hostStart: host.left,
             hostEnd: host.right,
             direction: getComputedStyle(viewport).direction,
-            graphicStart: graphic.left - viewportBox.left,
-            graphicEnd: viewportBox.right - graphic.right,
             dataOverflow: data.scrollWidth - data.clientWidth,
             captionStart: caption.left,
             captionEnd: caption.right,
@@ -339,8 +341,6 @@ for (const component of components.components)
           };
         });
         expect(layout.direction).toBe('ltr');
-        expect(layout.graphicStart).toBeGreaterThanOrEqual(-1);
-        expect(layout.graphicEnd).toBeGreaterThanOrEqual(-1);
         expect(layout.dataOverflow).toBeLessThanOrEqual(1);
         expect(layout.captionStart).toBeGreaterThanOrEqual(layout.hostStart - 1);
         expect(layout.captionEnd).toBeLessThanOrEqual(layout.hostEnd + 1);
@@ -501,3 +501,72 @@ for (const component of components.components)
       }
     });
   }
+
+async function verifyScrollableGraphic(host: Locator): Promise<void> {
+  const viewport = host.locator('[part="viewport"]');
+  await expect(viewport).toHaveAttribute('role', 'region');
+  await expect(viewport).toHaveAttribute('aria-label', /.+/);
+  await expect(viewport).toHaveAttribute('tabindex', '0');
+  await viewport.focus();
+  await expect(viewport).toBeFocused();
+  const layout = await host.evaluate((element) => {
+    const viewport = element.shadowRoot!.querySelector<HTMLElement>('[part="viewport"]')!;
+    const svg = viewport.querySelector<SVGSVGElement>('svg')!;
+    const host = element.getBoundingClientRect();
+    const box = viewport.getBoundingClientRect();
+    const initialScroll = viewport.scrollLeft;
+    const clipStart = box.left + viewport.clientLeft;
+    const clipEnd = clipStart + viewport.clientWidth;
+    viewport.scrollLeft = 0;
+    const graphic = svg.getBoundingClientRect();
+    const labels = [...svg.querySelectorAll<SVGTextElement>('text:not(.sr-only)')].map((label) => {
+      const bounds = label.getBoundingClientRect();
+      const node = label.matches('.tree-label,.treemap-label')
+        ? label.previousElementSibling!.getBoundingClientRect()
+        : undefined;
+      return {
+        text: label.textContent,
+        top: bounds.top - box.top,
+        bottom: box.bottom - bounds.bottom,
+        nodeTop: node === undefined ? undefined : bounds.top - node.top,
+        nodeBottom: node === undefined ? undefined : node.bottom - bounds.bottom,
+      };
+    });
+    viewport.scrollLeft = viewport.scrollWidth;
+    const farEnd = svg.getBoundingClientRect().right;
+    const scrolled = viewport.scrollLeft;
+    viewport.scrollLeft = initialScroll;
+    return {
+      viewportStart: box.left - host.left,
+      viewportEnd: host.right - box.right,
+      overflow: getComputedStyle(viewport).overflowX,
+      graphicWidth: graphic.width,
+      intrinsicWidth: Number(svg.getAttribute('width')),
+      viewportWidth: viewport.clientWidth,
+      graphicStart: graphic.left - clipStart,
+      farEnd: clipEnd - farEnd,
+      scrolled,
+      pageOverflow: document.documentElement.scrollWidth - innerWidth,
+      labels,
+    };
+  });
+  expect(layout.viewportStart).toBeGreaterThanOrEqual(-1);
+  expect(layout.viewportEnd).toBeGreaterThanOrEqual(-1);
+  expect(layout.overflow).toBe('auto');
+  expect(layout.intrinsicWidth).toBeGreaterThan(0);
+  expect(layout.graphicWidth).toBeGreaterThanOrEqual(layout.intrinsicWidth);
+  expect(layout.graphicWidth).toBeGreaterThan(layout.viewportWidth);
+  expect(Math.abs(layout.graphicStart)).toBeLessThanOrEqual(1);
+  expect(layout.scrolled).toBeGreaterThan(0);
+  expect(Math.abs(layout.farEnd)).toBeLessThanOrEqual(1);
+  expect(layout.pageOverflow).toBeLessThanOrEqual(0);
+  expect(layout.labels.length).toBeGreaterThan(0);
+  for (const label of layout.labels) {
+    expect(label.top, `${label.text} is clipped above the graphic viewport`).toBeGreaterThanOrEqual(-1);
+    expect(label.bottom, `${label.text} is clipped below the graphic viewport`).toBeGreaterThanOrEqual(-1);
+    if (label.nodeTop !== undefined && label.nodeBottom !== undefined) {
+      expect(label.nodeTop, `${label.text} must stay on its contrast background`).toBeGreaterThanOrEqual(0);
+      expect(label.nodeBottom, `${label.text} must fit inside its node`).toBeGreaterThanOrEqual(0);
+    }
+  }
+}

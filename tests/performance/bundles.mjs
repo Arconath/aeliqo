@@ -82,7 +82,13 @@ const workloads = [
   {
     id: 'region-table',
     code: "import {AeliqoRegionElement,createAeliqoPresentationRegistry} from '@aeliqo/web/region'; import {createLocalDataService} from '@aeliqo/runtime/data'; import {createResultStore} from '@aeliqo/runtime/results'; import {parseTask} from '@aeliqo/core'; import {createStandardFunctionRegistry} from '@aeliqo/core/expressions'; import {AeliqoTableElement} from '@aeliqo/web/table'; import {createRegionStore} from '@aeliqo/runtime/regions'; import {createTaskEvaluator} from '@aeliqo/runtime/evaluation'; customElements.define('perf-region',AeliqoRegionElement); customElements.define('aeliqo-table',AeliqoTableElement); globalThis.aeliqoPerformance={createRegionStore,createTaskEvaluator,createLocalDataService,createResultStore,createAeliqoPresentationRegistry,parseTask,createStandardFunctionRegistry};",
-    budget: 160 * 1024,
+    // Raised from 160 KiB in 0.6.0 (owner decision): workspace layouts, chart-first analysis, and
+    // fitted chart widths grew the mounted region; it had stayed within 160 KiB since 0.3.
+    budget: 168 * 1024,
+    absentStyleRules: [
+      ":is(button, input, select, [part='number'])",
+      ":where([data-aeliqo-theme]:not([data-aeliqo-theme='inherit']))",
+    ],
   },
 ];
 const rows = [];
@@ -121,11 +127,15 @@ for (const workload of workloads) {
     const outputs = Array.isArray(bundled) ? bundled.flatMap((x) => x.output) : bundled.output;
     const chunks = [];
     const moduleSet = new Set();
+    const unusedStyleRules = new Set();
     for (const chunk of outputs) {
       const bytes = Buffer.from(chunk.type === 'chunk' ? chunk.code : chunk.source);
       const path = `${workload.id}-${mode}-${chunk.fileName.replaceAll('/', '_')}`;
       await writeFile(join(output, path), bytes);
-      if (chunk.type === 'chunk') Object.keys(chunk.modules).forEach((id) => moduleSet.add(id));
+      if (chunk.type === 'chunk') {
+        Object.keys(chunk.modules).forEach((id) => moduleSet.add(id));
+        for (const rule of workload.absentStyleRules ?? []) if (chunk.code.includes(rule)) unusedStyleRules.add(rule);
+      }
       chunks.push({
         path,
         kind: chunk.type,
@@ -151,6 +161,7 @@ for (const workload of workloads) {
       chunks,
       modules,
       forbidden,
+      unusedStyleRules: [...unusedStyleRules],
       jsGzipBytes: chunks.filter((c) => c.kind === 'chunk').reduce((sum, c) => sum + c.gzipBytes, 0),
       cssBytes: chunks.filter((c) => c.path.endsWith('.css')).reduce((sum, c) => sum + c.bytes, 0),
     });
@@ -161,13 +172,17 @@ for (const workload of workloads) {
     entry: workload.code,
     budgetBytes: workload.budget,
     budgetMetric: workload.incremental ? 'JS gzip with only Lit packages external' : 'total JS gzip',
-    passed: measured.jsGzipBytes <= workload.budget && measurements.every((m) => m.forbidden.length === 0),
+    passed:
+      measured.jsGzipBytes <= workload.budget &&
+      measurements.every((m) => m.forbidden.length === 0 && m.unusedStyleRules.length === 0),
     measurements,
   });
 }
 const deferred = process.env.AELIQO_DEFER_PERFORMANCE === '1';
 const functionalPassed = rows.every((row) =>
-  row.measurements.every((measurement) => measurement.forbidden.length === 0),
+  row.measurements.every(
+    (measurement) => measurement.forbidden.length === 0 && measurement.unusedStyleRules.length === 0,
+  ),
 );
 if (deferred)
   for (const row of rows) {

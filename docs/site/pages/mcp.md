@@ -6,123 +6,136 @@ title: 'MCP'
 description: 'Connect an MCP client to the bounded Aeliqo endpoint through a trusted local host.'
 ---
 
-MCP connects an agent client to one bounded Aeliqo endpoint. Your application
-still reads current authority, compiles the same intent as the interface, and
-commits only through the paired Region. MCP never selects a browser tab or
-grants access by itself.
+MCP lets an external client request a UI change through your application's
+registered resources and views. The standalone local example renders a People
+directory and connects that browser session to a loopback Node host. Both
+Streamable HTTP and stdio use the same three public Aeliqo tools. A successful
+render returns `renderer-ready` after the browser commits it.
 
-## Start the local runner
+## Install a standalone copy
 
-1. From the repository root, run:
+Use Node.js **24.20.0**, pnpm **11.24.0**, and Git. These commands copy only the
+example out of the source checkout; its dependencies are published packages,
+not workspace links:
 
-   ```bash
-   pnpm playground:local
-   ```
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/Arconath/aeliqo.git aeliqo-source
+git -C aeliqo-source sparse-checkout set examples/local-agent
+cp -R aeliqo-source/examples/local-agent ./aeliqo-local-agent
+cd aeliqo-local-agent
+corepack enable
+corepack prepare pnpm@11.24.0 --activate
+pnpm install
+pnpm dev
+```
 
-   You should see three printed lines: the playground address
-   (`http://127.0.0.1:4174/playground/`), the MCP endpoint
-   (`http://127.0.0.1:4174/mcp`) with a bearer token, and the stdio launch
-   command. Copy the token.
+`pnpm dev` typechecks and builds the Vanilla/Vite UI, then starts the Node
+host. The example pins `@aeliqo/core`, `runtime`, `web`, and `agent` to **0.6.0**.
+Keep its `pnpm-workspace.yaml` when copying it: this gives the independent
+installation its own workspace boundary.
 
-2. Open `http://127.0.0.1:4174/playground/` — the runner's own copy of the
-   playground.
+The terminal prints the browser URL, HTTP endpoint with a bearer token, and
+stdio command. Open **http://127.0.0.1:4174/**. You should see Ada Lovelace,
+Grace Hopper, and Margaret Hamilton, plus **Connected — MCP is ready**.
+Keep this page open while the client works. Startup makes no model request;
+the optional model prompt remains disabled until server configuration exists.
 
-   Use this local copy. The hosted site cannot pair with your runner; the
-   browser blocks cross-site pairing for security reasons.
+The public [Playground](/playground/) supports manual controls and WebMCP.
+Use this standalone example for local MCP and server model connections.
 
-## Pair the browser session
+## Connect an MCP client
 
-1. On the local playground page, choose **Connect AI**.
-2. Keep **Local Playground host** selected and choose **Check connection**.
-   You should see “Local runner connected — MCP endpoint is ready”, plus two
-   copyable client configs.
-3. Keep the bearer token private. It authorizes MCP calls against your paired
-   Region.
-
-The session lasts 15 minutes, stays paired to one Region, and ends on
-disconnect or expiry. The endpoint reports `renderer-ready` only after the
-browser acknowledges a committed render.
-
-## Connect your MCP client
-
-For Cursor or another client that accepts a remote URL, add a Streamable HTTP
-server:
+For a client that accepts Streamable HTTP, use the printed token:
 
 ```json
 {
   "mcpServers": {
-    "aeliqo-playground": {
+    "aeliqo-local": {
       "type": "streamable-http",
       "url": "http://127.0.0.1:4174/mcp",
-      "headers": { "Authorization": "Bearer <token>" }
+      "headers": { "Authorization": "Bearer <printed-token>" }
     }
   }
 }
 ```
 
-For Claude Desktop or another client that launches a child process, add the
-stdio bridge:
+For a client that launches a stdio child process, use an **absolute path** to
+your copied example. `node` must resolve to the pinned Node installation:
 
 ```json
 {
   "mcpServers": {
-    "aeliqo-playground": {
-      "command": "pnpm",
-      "args": ["--dir", "apps/site", "mcp:stdio"],
+    "aeliqo-local": {
+      "command": "node",
+      "args": ["/absolute/path/aeliqo-local-agent/runner/mcp-stdio.mjs"],
       "env": {
         "AELIQO_LOCAL_URL": "http://127.0.0.1:4174",
-        "AELIQO_MCP_TOKEN": "<token>"
+        "AELIQO_MCP_TOKEN": "<printed-token>"
       }
     }
   }
 }
 ```
 
-Replace `<token>` with the printed bearer token. The `--dir apps/site` path is
-relative to the repository root; use an absolute path if your client launches
-elsewhere. The bridge keeps stdout for MCP frames and forwards calls to the
-loopback runner. Both transports refuse calls until a browser session is
-paired, and the endpoint binds to loopback only. This is a development
-integration, not a network deployment template.
+The stdio bridge uses stdout only for MCP frames. Leave the Node host running;
+the child connects to it over loopback. The token stays in the terminal and
+client configuration, never the page. Use `AELIQO_LOCAL_PORT=4175 pnpm dev`
+if port 4174 is occupied, and update the client URL to the printed address.
 
-## Know the three tools
+## Render a different view
 
-| Tool             | What it accepts                                                | What proves success                                                                            |
-| ---------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `aeliqo_context` | No authority claims from the caller                            | Current host-approved resources, fields, meanings, actions, and views                          |
-| `aeliqo_render`  | A bounded structured intent using discovered IDs and revisions | A trusted receipt, ending in `renderer-ready` only after browser acknowledgement               |
-| `aeliqo_act`     | A proposal for a registered action                             | A staged receipt; consequential effects still require application policy and user confirmation |
+Ask your client: **Show People as cards.** It should discover these tools,
+call `aeliqo_context`, then call `aeliqo_render` with a bounded intent:
 
-Call `aeliqo_context` first. If the requested field, meaning, action, or view
-is absent or ambiguous, stop and ask for a choice. Never substitute another
-metric or claim the UI changed without a renderer receipt.
+```json
+{
+  "version": "1",
+  "id": "people-cards",
+  "kind": "browse",
+  "resource": "people",
+  "fields": ["name", "team"],
+  "preferredView": "cards"
+}
+```
 
-## Keep the session bounded
+| Tool             | Purpose                                                                     | Evidence                                      |
+| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
+| `aeliqo_context` | Discover current registered resources, fields, meanings, actions, and views | An `accepted` context receipt                 |
+| `aeliqo_render`  | Validate and render a structured intent                                     | `renderer-ready` after browser acknowledgment |
+| `aeliqo_act`     | Propose a registered application action                                     | A staged receipt subject to host policy       |
 
-- Pair one session with one task identity and Region.
-- Reject unknown origins, expired credentials, cross-Region calls, and replay.
-- Bound pending calls, elapsed time, request and response bytes, and tool loops.
-- Propagate cancellation through evaluation and rendering.
-- Keep credentials, private rows, and confirmation callbacks out of discovery.
-- Close the endpoint on disconnect and reject late discovery or invocation.
+The People example registers no business actions. Discovering `aeliqo_act`
+does not grant permission to execute an action. Unknown fields and views fail validation and
+leave the last valid UI intact. No agent HTML or code is executed.
 
-## Deploy a remote server
+## Understand the example files
 
-For a remote HTTP server, use HTTPS and an application-owned OAuth resource
-server. Follow the
-[MCP 2025-11-25 authorization specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization):
-publish protected-resource metadata, discover the authorization server, use
-PKCE, bind the token to the canonical MCP resource, send the token in the
-`Authorization` header, validate audience and expiry, and return `401` or `403`
-challenges as specified. The OAuth flow applies to HTTP transports; stdio
-receives credentials from its launch environment.
+- `src/app.ts` registers People and monthly workforce data through public
+  resource, data-service, and app APIs, starting from the quickstart example.
+- `src/session.ts` creates the bounded `createAppToolEndpoint` pairing.
+- `src/local-host.ts` carries calls and acknowledgments over a same-origin event
+  stream; `runner/broker.mjs` owns the expiring host pairing.
+- `runner/server.mjs` serves the built UI and uses `@aeliqo/agent/mcp` for HTTP.
+  `runner/mcp-stdio.mjs` adapts stdio to that same session.
 
-## Test your integration
+The host binds only to loopback, validates Host and Origin, requires a
+same-origin bootstrap header, and issues a 15-minute HttpOnly SameSite cookie.
+It limits pending calls to two, individual calls to 15 seconds, and validates
+bounded acknowledgments. Disconnect and expiry reject late results and close
+the pairing. Choose **Start a new session** and reconnect the client after
+expiry. Restarting the host generates a new bearer token.
 
-Test initialization and protocol negotiation, the exact three-tool list, a
-valid render with browser acknowledgement, an unknown field, expired
-authentication, cancellation during pending work, disconnect, and a late call
-after closure. See [agent recovery](/agents/recovery/) for expiry and
-uncertain action outcomes.
+## Recover from connection problems
 
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/agents/byok/"><span>BYOK model loop</span><small>Add a provider model to the same paired session.</small><b aria-hidden="true">→</b></a><a href="/agents/recovery/"><span>Agent recovery</span><small>Handle expiry, failure, and uncertain outcomes.</small><b aria-hidden="true">→</b></a></nav>
+If a client gets `401`, open the local UI, confirm it says Connected, and use
+the current terminal token. If the UI says Disconnected, start a new session.
+If the build reports missing dependencies, run `pnpm install` inside the
+copied example with the pinned toolchain. Do not connect the public hosted
+Playground to this local host; the browser session and host must share an origin.
+
+A remote deployment needs its own HTTPS, user authentication, scoped sessions,
+rate limits and MCP authorization implementation. The loopback development
+host is not a shared deployment template. See the public
+`@aeliqo/agent/mcp` APIs in the [package map](/reference/packages/).
+
+<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/agents/byok/"><span>Bring your own model</span><small>Add an optional bounded server model loop.</small><b aria-hidden="true">→</b></a><a href="/agents/recovery/"><span>Agent recovery</span><small>Handle expiry, failure, and uncertain outcomes.</small><b aria-hidden="true">→</b></a></nav>

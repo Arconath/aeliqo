@@ -432,8 +432,24 @@ function authoredCandidates(
   }
   return {
     ok: true,
-    value: { candidates, ...(clarification === undefined ? {} : { clarification }) },
+    value: {
+      candidates: chartsBeforeTable(context, preferred, candidates),
+      ...(clarification === undefined ? {} : { clarification }),
+    },
   };
+}
+
+/** An analysis answers with an eligible chart; the table stays the fallback unless the request names it. */
+function chartsBeforeTable(
+  context: RecipeContext,
+  preferred: keyof typeof aliases | undefined,
+  candidates: PresentationResolverCandidate[],
+): PresentationResolverCandidate[] {
+  const charted =
+    context.intent.kind === 'analyze' &&
+    preferred !== 'table' &&
+    candidates.some((candidate) => candidate.id === 'standard.bar' || candidate.id === 'standard.trend');
+  return charted ? candidates.filter((candidate) => candidate.id !== 'standard.table') : candidates;
 }
 
 /** Author deterministic standard candidates; core remains the sole eligibility and ranking authority. */

@@ -78,15 +78,16 @@ function scheduleAdapt(region: WebRegion, view: Window, adapt: AdaptRegion): voi
 function observeSize(region: WebRegion, view: Window, adapt: AdaptRegion): void {
   const Observer = (view as WindowWithResizeObserver).ResizeObserver;
   if (Observer === undefined) return;
-  const resize = new Observer((entries) => {
-    const width = entries[0]?.contentRect.width ?? region.target.getBoundingClientRect().width;
-    const next = category(width, region.category);
-    if (next === region.category) return;
-    region.category = next;
+  let previous = region.target.getBoundingClientRect();
+  const resize = new Observer(() => {
+    const bounds = region.target.getBoundingClientRect();
+    if (bounds.width === previous.width && bounds.height === previous.height) return;
+    previous = bounds;
+    region.category = category(bounds.width, region.category);
     scheduleAdapt(region, view, adapt);
   });
   region.resize = resize;
-  resize.observe(region.target);
+  resize.observe(region.target, { box: 'border-box' });
 }
 
 function observeMedia(region: WebRegion, view: Window, adapt: AdaptRegion): void {

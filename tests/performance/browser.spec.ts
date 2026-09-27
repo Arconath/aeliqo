@@ -1,13 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
-import { execFileSync } from 'node:child_process';
+import { createSourceGuard } from '../../scripts/performance/provenance.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { dirname } from 'node:path';
-
-const repositoryRoot = process.cwd();
-const sourceCommit =
-  process.env.AELIQO_SOURCE_COMMIT ??
-  execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repositoryRoot, encoding: 'utf8' }).trim();
 
 type TraceEvent = {
   readonly name?: unknown;
@@ -187,6 +182,8 @@ test('runs small, medium, large-window, reducer and teardown workloads', async (
 });
 
 test('records first/subsequent observations with a Chromium layout/paint trace', async ({ page }, testInfo) => {
+  const sourceGuard = await createSourceGuard(process.cwd());
+  const sourceCommit = sourceGuard.commit;
   test.skip(
     process.env.AELIQO_RUN_PERFORMANCE !== '1',
     'Set AELIQO_RUN_PERFORMANCE=1 to run timing workloads in isolation.',
@@ -258,8 +255,7 @@ test('records first/subsequent observations with a Chromium layout/paint trace',
     tracePhasesAvailable,
     enforced: process.env.AELIQO_ENFORCE_PERFORMANCE_BUDGETS !== '0',
   };
-  const sourceChangedDuringRun =
-    execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repositoryRoot, encoding: 'utf8' }).trim() !== sourceCommit;
+  const sourceChangedDuringRun = !(await sourceGuard.current());
   const output = testInfo.outputPath('performance-report.json');
   await mkdir(dirname(output), { recursive: true });
   await writeFile(

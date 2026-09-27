@@ -13,13 +13,13 @@ contract: 'Declared edges/cardinality only; deterministic bounded layout with ac
 
 ## Purpose
 
-Draw declared edges between entities as a graph. An adjacency-style data view keeps labels and selection reachable.
+Draw declared edges between entities as a graph, with an edge table that keeps endpoint fields and selection reachable.
 
 ## When to use it
 
 - Show declared connections such as reports-to or depends-on.
 - Preserve edge direction and count from the supplied data.
-- Reach the same edges through an adjacency view when the graph is crowded.
+- Use the edge table to inspect endpoint fields when the graph is crowded.
 
 ## When to use a different component
 
@@ -54,7 +54,7 @@ Exposed semantics:
 
 ## Responsive behavior
 
-The graph viewport can scroll inside its host. Keep labels and keyboard targets available when many nodes are present.
+At container widths of 30rem or less, exact-data rows become stacked records so labels remain readable inside narrow desktop panels as well as mobile pages. The graphic keeps its declared dimensions inside a focusable scroll region instead of shrinking its text to fit. Tab to the region to access its overflow; exact values remain available below.
 
 ## Style hooks
 
@@ -73,6 +73,4 @@ The graph viewport can scroll inside its host. Keep labels and keyboard targets 
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

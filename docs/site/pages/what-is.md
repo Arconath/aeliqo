@@ -1,16 +1,65 @@
 ---
-id: "what-is"
-path: "/start/what-is-aeliqo/"
-section: "Get started"
-title: "What is Aeliqo?"
-description: "A framework that compiles bounded application intent into registered UI, with evidence and authority checked at every boundary."
+id: 'what-is'
+path: '/start/what-is-aeliqo/'
+section: 'Get started'
+title: 'What is Aeliqo?'
+description: 'Understand how application requests, registered data, and available space determine a view.'
 ---
 
-<p class="lead">Aeliqo is a TypeScript framework that renders application UI from typed requests. Your app owns the data, the permissions, and the actions. Aeliqo owns the pipeline that turns a request into a validated view.</p>
-<div class="docs-proof"><header><div><span class="product-mark" aria-hidden="true">A</span><strong>The short version</strong></div><span>same request · different view</span></header><div class="docs-proof-grid"><div><small>You register</small><strong>Data + meaning + permissions</strong><p>What the resource is and what this signed-in user may see or change.</p></div><span aria-hidden="true">→</span><div><small>Aeliqo returns</small><strong>Table on wide · cards on narrow</strong><p>The same records, identity, and state — presented for the container.</p></div></div></div>
-<h2>The problem it solves</h2><p>Every app rebuilds the same CRUD screens. Each one rewires filters, detail views, forms, empty states, errors, and responsive layouts by hand.</p><p>Separately, teams want AI agents to drive UI. A model that emits HTML, SQL, or scripts is unsafe. A model that sends a typed, validated request is not.</p>
-<h2>What it does</h2><p>You declare a resource once: its fields, identity, meaning, and allowed views. Any caller then sends a request such as "browse people" or "edit ticket 42". Aeliqo validates it, evaluates your data, and picks a registered view. The view commits to an adaptive region (a mounted view slot). The caller gets a status back: ready, denied, needs input, and so on.</p><p>No AI is required. A button, route, test, or cron job sends the same request an agent would.</p>
-<h2>What it is not</h2><div class="doc-checklist"><ul><li>Not a component library. It ships components, but the contract is the request pipeline.</li><li>Not a model or AI product. Agents are optional clients of the same contract.</li><li>Not a low-code tool. You write real TypeScript and keep your architecture.</li></ul></div>
-<h2>How it is built</h2><p>Five packages split the work. <code>@aeliqo/core</code> holds the schemas and compiles each request into a bounded task. <code>@aeliqo/runtime</code> evaluates your data adapters and tracks results. <code>@aeliqo/web</code> renders registered views into the region. <code>@aeliqo/react</code> wraps the same pieces for React. <code>@aeliqo/agent</code> exposes the request path to agents over MCP or your own model. None of them trusts caller input, and the framework works without the last one.</p>
-<h2>Who owns what</h2><div class="ownership-grid"><article><span>Your app owns</span><ul><li>Data, identity, and meaning</li><li>Permissions and server authorization</li><li>Actions, routes, and custom views</li></ul></article><article><span>Aeliqo owns</span><ul><li>Request validation and compilation</li><li>Bounded evaluation and evidence</li><li>View selection, adaptation, and cleanup</li></ul></article><article><span>An agent may</span><ul><li>Discover what this session allows</li><li>Propose a request, never markup or code</li><li>Ask to run a registered action</li></ul></article></div>
-<nav class="doc-next" aria-label="Continue reading"><p>Continue reading</p><a href="/start/"><span>Quickstart</span><small>Render a real adaptive view in about ten minutes.</small><b aria-hidden="true">→</b></a><a href="/concepts/"><span>System concepts</span><small>Follow one request through the full pipeline.</small><b aria-hidden="true">→</b></a></nav>
+## Follow a People request
+
+Suppose your application has people with an ID, a name, and a team. A user wants
+to browse the Engineering team. Your code submits a typed request containing
+that resource and filter. Aeliqo checks the fields and current permissions,
+reads a bounded result through your adapter, and selects an allowed view.
+
+In a wide container that view can be a table. In a narrow container it can be
+cards. The records still have the same identity. Resizing changes presentation;
+it does not grant access or require a model call.
+
+A button, a route, or an agent can submit the request. An agent is optional.
+The [quickstart](/start/) starts with an even smaller local data surface so you
+can see this adaptation before registering an application.
+
+## The pieces you will use
+
+| Piece | Its job | People example |
+| --- | --- | --- |
+| Resource | Declare fields, identity, meanings, and allowed presentation | A person has a stable `id`; `team` is a dimension |
+| Data service | Evaluate a bounded request using application data | Read the permitted employees |
+| Authority | Supply the current trusted application context | Identify the user and their allowed operations |
+| Intent | Describe the requested task | Browse people filtered to Engineering |
+| Region | Mount and manage one current presentation | The People panel in your existing page |
+| View or recipe | Render approved results using registered UI | Choose a table or cards for the available space |
+
+Start with one region. A [workspace](/guides/workspace/) can compose several
+results and host-registered layouts as the application grows. State ownership,
+draft exits, and scope changes must remain explicit across those transitions.
+
+## Decide what to register
+
+Use a local surface when the host already owns a read-only array. Register an
+application when you need named resources, real authorization, actions, or
+shared agent access. Register custom views when your domain requires a specific
+presentation. The [component catalog](/components/) shows which built-in
+components support standalone use, semantic binding, or automatic adaptation.
+
+Your application continues to authenticate users, authorize server requests,
+execute business commands, and own navigation. Aeliqo validates proposals and
+coordinates its registered runtime and rendering paths. A model output remains
+untrusted even if its JSON has the right shape.
+
+## Recognize a successful request
+
+A mounted request reports `renderer-ready` when its result has rendered.
+Other outcomes can ask for input, deny access, reject an unsupported view,
+report a failure, or cancel superseded work. Handle those outcomes in the host;
+do not replace a valid authorized result with a blank screen after a failed
+update. Forced revocation has a separate duty to remove access.
+
+## Choose the first step
+
+Run the [React quickstart](/start/) to filter five people and change the
+presentation by resizing. If you already have an application, follow
+[the adoption guide](/start/existing-app/). For the package boundaries and
+request lifecycle, continue to [system concepts](/concepts/) afterward.

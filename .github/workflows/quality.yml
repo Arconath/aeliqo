@@ -10,6 +10,17 @@ on:
         description: Exact source commit; required for release/* candidates and optional on main
         required: false
         type: string
+      visual_probe:
+        description: Also capture a full diagnostic visual probe (advisory)
+        required: false
+        type: boolean
+        default: false
+
+      performance_probe:
+        description: Also measure same-source paired performance (advisory)
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -67,10 +78,11 @@ jobs:
               ;;
           esac
 
-  functional:
+  scope:
     needs: policy
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    outputs:
+      mode: ${{ steps.scope.outputs.mode }}
     env:
       NEXT_TELEMETRY_DISABLED: '1'
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -81,20 +93,6 @@ jobs:
         with:
           ref: ${{ env.SOURCE_SHA }}
           persist-credentials: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with:
-          node-version: '24.20.0'
-          package-manager-cache: false
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
-        with:
-          go-version: '1.27.0'
-          cache: false
-      - name: Install the locked framework and site toolchains
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.24.0 --activate
-          pnpm install --frozen-lockfile
-          pnpm exec playwright install --with-deps chromium firefox webkit
       # Pull requests and pushes to main take the lane matching their changed
       # paths; owner dispatches always run the full matrix because package
       # publication requires a same-SHA full-quality success. Site redeploys
@@ -123,26 +121,100 @@ jobs:
           fi
           echo "mode=$mode"
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
-      - name: Run required functional, security, browser, and package checks
-        if: steps.scope.outputs.mode == 'full'
-        run: pnpm check
-      - name: Run the site-surface checks
-        if: steps.scope.outputs.mode == 'site'
+
+  # The full matrix runs as four parallel shards; `functional` merges their evidence into one
+  # source-bound report, so the required check and package publication contract are unchanged.
+  functional-shards:
+    needs: scope
+    if: needs.scope.outputs.mode == 'full'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SITE_BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Install the locked framework and site toolchains
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Build the packages shared by quality commands
         run: |
           pnpm build:platform
           pnpm build:agent
-          pnpm format:check
-          pnpm lint
-          pnpm site:test
-      - name: Build and consume the five exact package candidates
-        if: steps.scope.outputs.mode == 'full'
+      - name: Run quality shard ${{ matrix.shard }} of 4
+        run: python3 scripts/quality.py --shard ${{ matrix.shard }} --shards 4
+      - name: Upload shard evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-quality-shard-${{ env.SOURCE_SHA }}-${{ matrix.shard }}
+          path: |
+            artifacts/product-ci
+            artifacts/performance-bundles
+            artifacts/feedback-browser
+            artifacts/visual-catalog
+            artifacts/vnext-visual
+          if-no-files-found: warn
+          retention-days: 7
+
+  release-contract:
+    needs: scope
+    if: needs.scope.outputs.mode == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SITE_BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Install the locked framework and site toolchains
         run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Build and consume the five exact package candidates
+        run: |
+          pnpm build:platform
+          pnpm build:agent
           pnpm test:release-tooling
           node scripts/release/candidate.mjs
       - name: Verify the public documentation artifact
         run: pnpm test:docs-artifact
       - name: Verify the web, docs, playground, and static server contract
-        if: steps.scope.outputs.mode == 'full'
         run: pnpm site:test
       - name: Require unchanged exact source
         run: |
@@ -150,6 +222,98 @@ jobs:
           git diff --quiet
           git diff --cached --quiet
       - name: Build and smoke the production image contract
+        run: |
+          sdk_revision="$SOURCE_SHA"
+          release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
+          sdk_version="$(jq -er --arg version "$release_version" '.version | select(. == $version)' packages/core/package.json)"
+          image="aeliqo-web-quality:$SOURCE_SHA"
+          DOCKER_BUILDKIT=1 docker build \
+            --file apps/site/Dockerfile \
+            --build-arg "SOURCE_REVISION=$SOURCE_SHA" \
+            --build-arg "SDK_SOURCE_REVISION=$sdk_revision" \
+            --build-arg "SDK_VERSION=$sdk_version" \
+            --tag "$image" \
+            .
+          apps/site/scripts/ci/check-static-image.sh "$image" "$SOURCE_SHA" "$sdk_revision" "$sdk_version"
+          mkdir -p apps/site/artifacts/image-contract
+          docker image inspect "$image" > apps/site/artifacts/image-contract/inspect.json
+          sha256sum \
+            apps/site/Dockerfile \
+            apps/site/deploy/server.go \
+            apps/site/scripts/ci/check-static-image.sh \
+            packages/core/package.json \
+            release-metadata.json \
+            docs/public-site/routes.mjs \
+            catalog/components.json \
+            > apps/site/artifacts/image-contract/source-sha256.txt
+      - name: Upload release contract evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-release-contract-${{ env.SOURCE_SHA }}
+          path: |
+            artifacts/release-candidate
+            apps/site/artifacts
+          if-no-files-found: warn
+          retention-days: 7
+
+  functional:
+    needs: [scope, functional-shards, release-contract]
+    if: always() && needs.scope.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_SITE_BUILD_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - name: Require every quality shard and the release contract
+        if: needs.scope.outputs.mode == 'full'
+        env:
+          SHARDS_RESULT: ${{ needs.functional-shards.result }}
+          CONTRACT_RESULT: ${{ needs.release-contract.result }}
+        run: |
+          test "$SHARDS_RESULT" = success
+          test "$CONTRACT_RESULT" = success
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        if: needs.scope.outputs.mode == 'full'
+        with:
+          pattern: aeliqo-quality-shard-${{ env.SOURCE_SHA }}-*
+          path: artifacts
+          merge-multiple: true
+      - name: Run required functional, security, browser, and package checks
+        if: needs.scope.outputs.mode == 'full'
+        run: python3 scripts/quality.py --merge 4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        if: needs.scope.outputs.mode == 'site'
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        if: needs.scope.outputs.mode == 'site'
+        with:
+          go-version: '1.27.0'
+          cache: false
+      - name: Run the site-surface checks
+        if: needs.scope.outputs.mode == 'site'
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium firefox webkit
+          pnpm build:platform
+          pnpm build:agent
+          pnpm format:check
+          pnpm lint
+          pnpm site:test
+          pnpm test:docs-artifact
+      - name: Build and smoke the site-lane production image contract
+        if: needs.scope.outputs.mode == 'site'
         run: |
           sdk_revision="$SOURCE_SHA"
           release_version="$(jq -er '.version | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' release-metadata.json)"
@@ -182,9 +346,307 @@ jobs:
           path: |
             artifacts/product-ci
             artifacts/performance-bundles
+            artifacts/feedback-browser
             artifacts/visual-catalog
             artifacts/vnext-visual
-            artifacts/release-candidate
             apps/site/artifacts
+          if-no-files-found: warn
+          retention-days: 7
+
+  visual-shards:
+    needs: policy
+    # Advisory until the reference is stable: evidence is kept, but it never blocks merge or publication.
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          chown "$(id -u):$(id -g)" "$HOME"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Require approved source pixel comparison
+        run: node scripts/visual/run.mjs --shard ${{ matrix.browser }}
+      - name: Preserve visual source, environment, repeated captures, and diffs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
+          path: artifacts/visual-regression
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Preserve compact browser shard report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-shard-report-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
+          path: artifacts/visual-shard-report/report.json
+          if-no-files-found: error
+          retention-days: 7
+
+  visual:
+    needs: [policy, visual-shards]
+    # Advisory: see visual-shards.
+    if: always() && github.event_name != 'pull_request'
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VISUAL_SHARD_RESULT: ${{ needs.visual-shards.result }}
+    steps:
+      - name: Require authorized source policy
+        env:
+          POLICY_RESULT: ${{ needs.policy.result }}
+        run: test "$POLICY_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Install exact inventory tooling
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: aeliqo-visual-shard-report-${{ env.SOURCE_SHA }}-*
+          path: artifacts/visual-shard-reports
+          merge-multiple: false
+      - name: Require all browser evidence and complete inventory
+        if: always()
+        run: node scripts/visual/aggregate.mjs
+      - name: Preserve full aggregate decision
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-${{ env.SOURCE_SHA }}
+          path: artifacts/visual-aggregate
+          if-no-files-found: error
+          retention-days: 7
+
+  visual-probe-shards:
+    needs: policy
+    if: github.event_name == 'workflow_dispatch' && inputs.visual_probe
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          chown "$(id -u):$(id -g)" "$HOME"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Capture unapproved diagnostic evidence
+        run: node scripts/visual/run.mjs --probe --shard ${{ matrix.browser }}
+      - name: Preserve visual source, environment, repeated captures, and diffs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-probe-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
+          path: artifacts/visual-regression
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Preserve compact browser shard report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-probe-shard-report-${{ env.SOURCE_SHA }}-${{ matrix.browser }}
+          path: artifacts/visual-shard-report/report.json
+          if-no-files-found: error
+          retention-days: 7
+
+  visual-probe:
+    needs: [policy, visual-probe-shards]
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.visual_probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      VISUAL_SHARD_RESULT: ${{ needs.visual-probe-shards.result }}
+    steps:
+      - name: Require authorized source policy
+        env:
+          POLICY_RESULT: ${{ needs.policy.result }}
+        run: test "$POLICY_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Install exact inventory tooling
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+          pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: aeliqo-visual-probe-shard-report-${{ env.SOURCE_SHA }}-*
+          path: artifacts/visual-shard-reports
+          merge-multiple: false
+      - name: Require all browser evidence and complete inventory
+        if: always()
+        run: node scripts/visual/aggregate.mjs --probe
+      - name: Preserve full aggregate decision
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-visual-probe-${{ env.SOURCE_SHA }}
+          path: artifacts/visual-aggregate
+          if-no-files-found: error
+          retention-days: 7
+
+  performance:
+    needs: policy
+    # Advisory until the reference is stable: evidence is kept, but it never blocks merge or publication.
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          chown "$(id -u):$(id -g)" "$HOME"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Require approved paired performance comparison
+        run: node scripts/performance/compare.mjs
+      - name: Preserve paired source, environment, samples, and traces
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-performance-${{ env.SOURCE_SHA }}
+          path: artifacts/performance-paired
+          if-no-files-found: warn
+          retention-days: 7
+
+  performance-probe:
+    needs: policy
+    if: github.event_name == 'workflow_dispatch' && inputs.performance_probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    container:
+      image: mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      AELIQO_VISUAL_CONTAINER_DIGEST: sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
+      AELIQO_VISUAL_FONT_DIRS: /usr/share/fonts:/usr/local/share/fonts
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      TZ: UTC
+      LANG: C.UTF-8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.20.0'
+          package-manager-cache: false
+      - name: Select the pinned package manager without changing image fonts or browsers
+        run: |
+          chown "$(id -u):$(id -g)" "$HOME"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          corepack enable
+          corepack prepare pnpm@11.24.0 --activate
+      - name: Measure unapproved same-source stability
+        run: node scripts/performance/compare.mjs --probe --source "$SOURCE_SHA"
+      - name: Preserve paired source, environment, samples, and traces
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aeliqo-performance-probe-${{ env.SOURCE_SHA }}
+          path: artifacts/performance-paired
           if-no-files-found: warn
           retention-days: 7

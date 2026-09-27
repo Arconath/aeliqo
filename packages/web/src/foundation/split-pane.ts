@@ -50,7 +50,7 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
   separatorLabel = 'Resize panes';
 
   private internalPosition = 50;
-  private activePointer: { readonly id: number; readonly target: HTMLElement } | undefined;
+  private activePointer: { readonly id: number; readonly target: HTMLElement; readonly offset: number } | undefined;
 
   protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('defaultPosition') && this.position === undefined)
@@ -118,17 +118,27 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
     if (this.disabled || !(event.currentTarget instanceof HTMLElement)) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
-    this.activePointer = { id: event.pointerId, target: event.currentTarget };
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const offset =
+      this.orientation === 'vertical'
+        ? event.clientY - bounds.top - bounds.height / 2
+        : event.clientX - bounds.left - bounds.width / 2;
+    this.activePointer = { id: event.pointerId, target: event.currentTarget, offset };
   };
 
   private readonly handlePointerMove = (event: PointerEvent): void => {
     if (this.disabled || this.activePointer?.id !== event.pointerId) return;
-    const bounds = this.getBoundingClientRect();
+    const splitter = this.activePointer.target;
+    const split = splitter.parentElement;
+    if (split === null) return;
+    const bounds = split.getBoundingClientRect();
+    const handleBounds = splitter.getBoundingClientRect();
     const orientation = this.orientation === 'vertical' ? 'vertical' : 'horizontal';
-    const size = orientation === 'vertical' ? bounds.height : bounds.width;
+    const handleSize = orientation === 'vertical' ? handleBounds.height : handleBounds.width;
+    const size = (orientation === 'vertical' ? bounds.height : bounds.width) - handleSize;
     if (size <= 0) return;
     const offset = orientation === 'vertical' ? event.clientY - bounds.top : event.clientX - bounds.left;
-    let next = (offset / size) * 100;
+    let next = ((offset - handleSize / 2 - this.activePointer.offset) / size) * 100;
     if (orientation === 'horizontal' && getComputedStyle(this).direction === 'rtl') next = 100 - next;
     this.commitPosition(next);
   };
@@ -193,44 +203,50 @@ export class AeliqoSplitPaneElement extends AeliqoFoundationElement {
         min-block-size: 0;
         min-inline-size: 0;
         overflow: auto;
+        overflow-wrap: anywhere;
       }
       .orientation-horizontal [part='start'] {
-        flex: 0 1 calc(var(--aeliqo-split-position) * 1%);
+        flex: var(--aeliqo-split-position) 1 0;
       }
       .orientation-horizontal [part='end'] {
-        flex: 1 1 0;
+        flex: calc(100 - var(--aeliqo-split-position)) 1 0;
       }
       .orientation-vertical [part='start'] {
-        flex: 0 1 calc(var(--aeliqo-split-position) * 1%);
+        flex: var(--aeliqo-split-position) 1 0;
       }
       .orientation-vertical [part='end'] {
-        flex: 1 1 0;
+        flex: calc(100 - var(--aeliqo-split-position)) 1 0;
       }
       [part='splitter'] {
-        background: var(--aeliqo-color-border, #64748b);
-        flex: 0 0 var(--aeliqo-control-border-width, 0.0625rem);
+        flex: 0 0 max(0.5rem, var(--_aeliqo-coarse-target, 0px));
+        min-block-size: var(--_aeliqo-coarse-target, 0px);
+        min-inline-size: var(--_aeliqo-coarse-target, 0px);
         position: relative;
         touch-action: none;
         z-index: 1;
       }
       .orientation-horizontal [part='splitter'] {
         cursor: col-resize;
-        inline-size: 0.5rem;
-        margin-inline: -0.25rem;
       }
       .orientation-vertical [part='splitter'] {
-        block-size: 0.5rem;
         cursor: row-resize;
-        margin-block: -0.25rem;
       }
       [part='splitter']::after {
+        background: var(--aeliqo-color-border, #64748b);
         content: '';
-        inset: 0.125rem;
+        inset: 0;
         position: absolute;
+      }
+      .orientation-horizontal [part='splitter']::after {
+        inset-inline: calc((100% - var(--aeliqo-control-border-width, 0.0625rem)) / 2);
+      }
+      .orientation-vertical [part='splitter']::after {
+        inset-block: calc((100% - var(--aeliqo-control-border-width, 0.0625rem)) / 2);
       }
       [part='splitter']:focus-visible {
         outline: var(--aeliqo-focus-width, 0.1875rem) solid var(--aeliqo-color-focus, #4338ca);
-        outline-offset: var(--aeliqo-focus-offset, 0.125rem);
+        outline-offset: calc(-1 * var(--aeliqo-focus-width, 0.1875rem));
+        box-shadow: none;
       }
       :host([disabled]) [part='splitter'] {
         cursor: not-allowed;

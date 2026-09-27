@@ -54,7 +54,7 @@ Exposed semantics:
 
 ## Responsive behavior
 
-The treemap viewport can scroll inside its host. Keep its accessible data view reachable when labels no longer fit inside marks.
+At container widths of 30rem or less, exact-data rows become stacked records so labels remain readable inside narrow desktop panels as well as mobile pages. The graphic keeps its declared dimensions inside a focusable scroll region instead of shrinking its text to fit. Tab to the region to access its overflow; exact values remain available below.
 
 ## Style hooks
 
@@ -73,6 +73,4 @@ The treemap viewport can scroll inside its host. Keep its accessible data view r
 
 ## Version
 
-This page documents the Aeliqo 0.5 component contract. Keep every installed
-Aeliqo package on the same exact version and check the release status
-before installing from the registry.
+This page documents the Aeliqo 0.6 component contract.

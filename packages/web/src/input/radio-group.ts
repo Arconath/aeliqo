@@ -127,7 +127,7 @@ export class AeliqoRadioGroupElement extends AeliqoFieldElement<string> {
         align-items: center;
         display: inline-flex;
         gap: var(--aeliqo-space-8, 0.5rem);
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: max(var(--_aeliqo-coarse-target, 0px), var(--aeliqo-control-min-target, 2.75rem));
       }
       [part='option'].disabled {
         color: var(--aeliqo-color-muted, #4b5563);

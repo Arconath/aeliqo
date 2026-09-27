@@ -437,6 +437,53 @@ describe('registered presentation feasibility', () => {
       },
     });
   });
+  it('supplies patterns an owned, current incumbent for explicit state transfers', () => {
+    const previous = plan();
+    let seen: PresentationPlan | undefined;
+    const preset: PresentationPatternManifest = {
+      ref: { id: 'preset.incumbent', revision: '1' },
+      expand(request) {
+        seen = request.context.incumbent;
+        return { ok: true, value: plan() };
+      },
+      matches: () => true,
+    };
+    const installed = createPresentationRegistry([table, stack], [], [preset]);
+    if (!installed.ok) throw new Error('fixture');
+    const c = {
+      ...context(),
+      incumbent: previous,
+      experience: { ...context().experience, allowedPatterns: [preset.ref.id] },
+    };
+    const composed = composePresentation(
+      {
+        id: 'owned-incumbent',
+        revision: '1',
+        context: c,
+        preconditions: c.current,
+        candidates: [{ source: 'pattern', pattern: preset.ref, plan: plan() }],
+      },
+      installed.value,
+    );
+    expect(composed.ok).toBe(true);
+    expect(seen).toEqual(previous);
+    expect(seen).not.toBe(previous);
+    expect(Object.isFrozen(seen?.nodes)).toBe(true);
+    seen = undefined;
+    const stale = { ...previous, preconditions: { ...previous.preconditions, scopeDigest: 'another-scope' } };
+    const rejected = composePresentation(
+      {
+        id: 'stale-incumbent',
+        revision: '1',
+        context: { ...c, incumbent: stale },
+        preconditions: c.current,
+        candidates: [{ source: 'pattern', pattern: preset.ref, plan: plan() }],
+      },
+      installed.value,
+    );
+    expect(rejected.ok).toBe(false);
+    expect(seen).toBeUndefined();
+  });
   it('rejects asynchronous or invalid assessors and ranks bounded measured quality deterministically', () => {
     const badQuality = {
       ...table,
@@ -1087,4 +1134,48 @@ describe('presentation plan replay', () => {
     };
     expect(checked(forged, context(), r).ok).toBe(false);
   });
+});
+
+it('mutating caller incumbent cannot erase required state transfers after snapshot', () => {
+  const previous = structuredClone(plan());
+  const candidate: PresentationPlan = {
+    ...plan(),
+    rootId: 'replacement',
+    nodes: [{ ...plan().nodes[0]!, id: 'replacement' }],
+    coverage: [{ needId: 'browse', nodeIds: ['replacement'], operations: [read] }],
+    stateTransfer: [],
+  };
+  let seen: PresentationPlan | undefined;
+  const preset: PresentationPatternManifest = {
+    ref: { id: 'preset.review', revision: '1' },
+    expand(request) {
+      seen = request.context.incumbent;
+      Object.assign(previous, candidate);
+      return { ok: true, value: candidate };
+    },
+    matches: (value) => value.rootId === 'replacement',
+  };
+  const installed = createPresentationRegistry([table, stack], [], [preset]);
+  if (!installed.ok) throw Error('fixture');
+  const c = {
+    ...context(),
+    incumbent: previous,
+    experience: {
+      ...context().experience,
+      allowedPatterns: [preset.ref.id],
+      composition: { ...context().experience.composition, allowWithoutPreset: false },
+    },
+  };
+  const result = composePresentation(
+    {
+      id: 'review',
+      revision: '1',
+      context: c,
+      preconditions: c.current,
+      candidates: [{ source: 'pattern', pattern: preset.ref, plan: candidate }],
+    },
+    installed.value,
+  );
+  expect(seen?.rootId).toBe('table-1');
+  expect(result).toMatchObject({ ok: true, value: { status: 'conflict' } });
 });

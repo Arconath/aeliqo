@@ -142,6 +142,10 @@ const registered = createIntentCompilerRegistry([
   },
 ]);
 if (!registered.ok) throw new Error(registered.diagnostics[0]!.message);
+function childStateTransfers(role: Role, existing: boolean) {
+  return existing ? [{ fromNode: role, toNode: role, mapping: { id: 'aeliqo.state.identity', revision: '1' } }] : [];
+}
+
 const recipe = defineRecipe({
   ref: { id: 'attendance.workspace-region', revision: '1' },
   intents: [GOAL],
@@ -190,7 +194,7 @@ const recipe = defineRecipe({
         ],
         links: [],
         coverage: [{ needId: need.id, nodeIds: [role], operations: [need.operation] }],
-        stateTransfer: [],
+        stateTransfer: childStateTransfers(role, context.incumbent !== undefined),
         diagnostics: [],
       },
     };

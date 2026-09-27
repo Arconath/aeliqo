@@ -12,6 +12,7 @@ import type { AeliqoVisualizationSelectionDetail, VisualizationDataset, Visualiz
 import { renderCartesian } from './render.js';
 import type { CartesianState, CartesianView } from './types.js';
 import type { CartesianRenderContext } from './types.js';
+import { fitAxisTickRows } from './tick-rows.js';
 
 export type { CartesianView } from './types.js';
 
@@ -39,6 +40,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     datasets: { attribute: false },
     label: { type: String },
     width: { type: Number },
+    fitWidth: { type: Boolean, attribute: 'fit-width' },
     height: { type: Number },
     maxMarks: { type: Number, attribute: 'max-marks' },
     selectionEnabled: { type: Boolean, attribute: false },
@@ -136,6 +138,12 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
         margin: var(--aeliqo-space-8, 0.5rem) 0 0;
         padding: 0;
       }
+      [part='color-key-ticks'] {
+        direction: ltr;
+        inline-size: min(24rem, 100%);
+        justify-content: space-between;
+        unicode-bidi: isolate;
+      }
       [part='legend'] li {
         align-items: center;
         display: inline-flex;
@@ -183,6 +191,12 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       }
       [part='layer'] > div {
         grid-area: 1 / 1;
+      }
+      [part='viewport'] svg[data-single-row-ticks] :is(.axis-x-tick-offset, .axis-title-x) {
+        transform: translateY(-44px);
+      }
+      [part='data-details'] > summary {
+        cursor: pointer;
       }
       @media (max-width: 30rem) {
         [part='viewport'] svg {
@@ -261,6 +275,8 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   datasets: readonly VisualizationDataset[] = [];
   label = 'Data visualization';
   width = 640;
+  /** Follow the host's inline size instead of the fixed `width`. */
+  fitWidth = false;
   height = 320;
   maxMarks = 20_000;
   selectionEnabled = true;
@@ -273,6 +289,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   private focusedIdentity: string | undefined;
   private focusedResult: string | undefined;
   private focusedElement: HTMLElement | undefined;
+  private tickRows: ResizeObserver | undefined;
 
   protected abstract readonly expectedView: CartesianView;
 
@@ -354,7 +371,31 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     return { ok: true, value: datasets };
   }
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    // Text size changes resize the figure without a Lit update; re-measure the axis labels then.
+    this.tickRows ??=
+      typeof ResizeObserver === 'function'
+        ? new ResizeObserver(() => requestAnimationFrame(() => this.fitTickRows()))
+        : undefined;
+    this.tickRows?.observe(this);
+  }
+
+  override disconnectedCallback(): void {
+    this.tickRows?.disconnect();
+    super.disconnectedCallback();
+  }
+
+  private fitTickRows(): void {
+    if (this.fitWidth) {
+      const measured = Math.min(1600, Math.max(320, Math.floor(this.clientWidth)));
+      if (this.clientWidth > 0 && measured !== this.width) this.width = measured;
+    }
+    if (this.shadowRoot !== null) fitAxisTickRows(this.shadowRoot);
+  }
+
   protected override updated(changed: Map<string, unknown>): void {
+    this.fitTickRows();
     if (!inputChanged(changed) || this.focusedIdentity === undefined || this.focusedResult === undefined) return;
     const identity = this.focusedIdentity;
     const result = this.focusedResult;

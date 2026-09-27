@@ -17,11 +17,9 @@ export function comparisonSplitPlan(context: RecipeContext): Outcome<Presentatio
   if (
     context.intent.kind !== 'compare' ||
     context.result === undefined ||
-    context.environment.inlineSize.state !== 'known' ||
-    context.environment.inlineSize.value < 640 ||
+    !comparisonFits(context) ||
     context.intent.identities.length !== 2 ||
-    context.task.viewPreference !== undefined ||
-    context.incumbent !== undefined
+    context.task.viewPreference !== undefined
   )
     return undefined;
   const need = context.task.needs[0];
@@ -46,6 +44,8 @@ export function comparisonSplitPlan(context: RecipeContext): Outcome<Presentatio
     },
     children: [],
   }));
+  const stateTransfer = comparisonTransfers(context.incumbent);
+  if (stateTransfer === undefined) return undefined;
   return {
     ok: true,
     value: {
@@ -75,8 +75,33 @@ export function comparisonSplitPlan(context: RecipeContext): Outcome<Presentatio
       ],
       links: [],
       coverage: [{ needId: need.id, nodeIds: [children[0]!.id, children[1]!.id], operations: [need.operation] }],
-      stateTransfer: [],
+      stateTransfer,
       diagnostics: [],
     },
   };
+}
+
+function comparisonTransfers(incumbent: PresentationPlan | undefined): PresentationPlan['stateTransfer'] | undefined {
+  if (incumbent === undefined) return [];
+  const expected = new Map([
+    ['comparison', { role: 'structure', ref: AELIQO_FOUNDATION_REFS.splitPane }],
+    ['comparison.left', { role: 'detail', ref: AELIQO_DATA_REFS.detail }],
+    ['comparison.right', { role: 'detail', ref: AELIQO_DATA_REFS.detail }],
+  ]);
+  if (incumbent.rootId !== 'comparison' || incumbent.nodes.length !== expected.size) return undefined;
+  for (const node of incumbent.nodes) {
+    const target = expected.get(node.id);
+    if (target === undefined || node.role !== target.role || !sameRef(node.representation, target.ref))
+      return undefined;
+  }
+  return incumbent.nodes.map((node) => ({
+    fromNode: node.id,
+    toNode: node.id,
+    mapping: { id: 'aeliqo.state.identity', revision: '1' },
+  }));
+}
+
+function comparisonFits(context: RecipeContext): boolean {
+  const size = context.environment.inlineSize;
+  return size.state === 'known' && (size.value >= 640 || context.incumbent?.rootId === 'comparison');
 }

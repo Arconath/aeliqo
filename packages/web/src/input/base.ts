@@ -59,23 +59,26 @@ export const aeliqoInputStyles = [
     }
 
     .label-text {
-      font-weight: var(--aeliqo-typography-font-weight-semibold, 600);
+      font-weight: var(--aeliqo-typography-font-weight-medium, 500);
+    }
+
+    [part='description'],
+    [part='error'],
+    [part='pending'] {
+      font-size: var(--aeliqo-typography-font-size-sm, 0.875rem);
+      line-height: var(--aeliqo-typography-line-height-normal, 1.5);
     }
 
     [part='description'] {
       color: var(--aeliqo-input-description, var(--aeliqo-color-muted, #4b5563));
-      font-size: var(--aeliqo-typography-font-size-caption, 0.75rem);
-      line-height: var(--aeliqo-typography-line-height-normal, 1.5);
     }
 
     [part='error'] {
       color: var(--aeliqo-input-error, var(--aeliqo-color-danger, #b91c1c));
-      font-size: 0.9em;
     }
 
     [part='pending'] {
       color: var(--aeliqo-color-muted, #4b5563);
-      font-size: 0.9em;
     }
 
     :is(input, textarea, select, button, [role='combobox']):focus-visible {
@@ -90,13 +93,15 @@ export const aeliqoInputStyles = [
       border: var(--aeliqo-control-border-width, 0.0625rem) solid
         var(--aeliqo-input-border, var(--_aeliqo-border-subtle, var(--aeliqo-color-border, #64748b)));
       border-radius: var(--aeliqo-radius-medium, 0.625rem);
+      box-shadow: var(--aeliqo-elevation-xs, 0 1px 2px rgb(15 23 42 / 0.05));
       box-sizing: border-box;
       color: inherit;
       font: inherit;
+      font-size: var(--aeliqo-typography-font-size-sm, 0.875rem);
       inline-size: 100%;
-      min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+      min-block-size: max(var(--_aeliqo-coarse-target, 0px), var(--aeliqo-control-min-target, 2.75rem));
       min-inline-size: 0;
-      padding: var(--aeliqo-space-8, 0.5rem) var(--aeliqo-control-inline-padding, 0.75rem);
+      padding: var(--aeliqo-space-6, 0.375rem) var(--aeliqo-control-inline-padding, 0.75rem);
     }
 
     :is(input, textarea, select):not(:disabled):hover:not([aria-invalid='true']) {
@@ -108,6 +113,7 @@ export const aeliqoInputStyles = [
     }
 
     :is(input[type='checkbox'], input[type='radio']) {
+      box-shadow: none;
       accent-color: var(--aeliqo-color-accent, #4338ca);
       cursor: pointer;
       min-block-size: 0;

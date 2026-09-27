@@ -37,7 +37,7 @@ export class AeliqoSwitchElement extends AeliqoCheckboxElement {
         align-items: center;
         display: inline-flex;
         gap: var(--aeliqo-space-8, 0.5rem);
-        min-block-size: var(--aeliqo-control-min-target, 2.75rem);
+        min-block-size: max(var(--_aeliqo-coarse-target, 0px), var(--aeliqo-control-min-target, 2.75rem));
       }
       .switch-track {
         background: var(--aeliqo-color-muted, #4b5563);
@@ -66,6 +66,9 @@ export class AeliqoSwitchElement extends AeliqoCheckboxElement {
       }
       input:checked + .switch-track .switch-thumb {
         transform: translateX(1.25rem);
+      }
+      :host(:dir(rtl)) input:checked + .switch-track .switch-thumb {
+        transform: translateX(-1.25rem);
       }
       @media (prefers-reduced-motion: reduce) {
         .switch-track,

@@ -104,8 +104,14 @@ test.describe('public app presentation paths', () => {
     await expect(page.locator('#people-host aeliqo-card-collection')).toHaveCount(1);
     await setRegionWidth(page, 640);
     await expect(page.locator('#people-host aeliqo-card-collection')).toHaveCount(1);
+    await setRegionWidth(page, 664);
+    await expect(page.locator('#people-host aeliqo-card-collection')).toHaveCount(1);
     await setRegionWidth(page, 680);
     await expect(page.locator('#people-host aeliqo-table')).toHaveCount(1);
+    await setRegionWidth(page, 616);
+    await expect(page.locator('#people-host aeliqo-table')).toHaveCount(1);
+    await setRegionWidth(page, 600);
+    await expect(page.locator('#people-host aeliqo-card-collection')).toHaveCount(1);
     await expect(page.locator('#compare-host aeliqo-detail')).toHaveCount(2);
   });
 });

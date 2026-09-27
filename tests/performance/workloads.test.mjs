@@ -45,6 +45,62 @@ test('medium records contain every declared semantic field', () => {
   for (const row of rows) for (const field of semanticFields(100)) assert.ok(Object.hasOwn(row, field.id), field.id);
 });
 
+function originalRows(count, fieldCount = 4) {
+  const rows = [];
+  for (let index = 0; index < count; index += 1) {
+    const row = { id: `row-${index + 1}`, label: `Row ${index + 1}`, value: index };
+    for (let field = 1; field < fieldCount; field += 1)
+      row[`field-${String(field).padStart(3, '0')}`] = `v-${index}-${field}`;
+    rows.push(row);
+  }
+  return rows;
+}
+
+test('field-name setup preserves every row value, property order and descriptor', () => {
+  for (const [count, fields] of [
+    [0, 100],
+    [1, 0],
+    [1, 1],
+    [3, 4],
+    [100, 4],
+    [3, 100],
+    [10_000, 100],
+  ]) {
+    const expected = originalRows(count, fields);
+    const actual = makeRows(count, fields);
+    assert.deepEqual(actual, expected);
+    assert.equal(JSON.stringify(actual), JSON.stringify(expected));
+    for (let index = 0; index < count; index += 1) {
+      assert.deepEqual(Reflect.ownKeys(actual[index]), Reflect.ownKeys(expected[index]));
+      assert.deepEqual(
+        Object.getOwnPropertyDescriptors(actual[index]),
+        Object.getOwnPropertyDescriptors(expected[index]),
+      );
+    }
+  }
+  assert.deepEqual(makeRows(3), originalRows(3));
+});
+
+test('medium setup creates fresh rows within and across every invocation', () => {
+  const first = makeRows(10_000, 100);
+  const second = makeRows(10_000, 100);
+  assert.notEqual(first, second);
+  assert.equal(first.length, 10_000);
+  assert.equal(second.length, 10_000);
+  assert.equal(new Set(first).size, 10_000);
+  assert.equal(new Set(second).size, 10_000);
+  for (let index = 0; index < first.length; index += 1) {
+    assert.notEqual(first[index], second[index]);
+    assert.equal(Reflect.ownKeys(first[index]).length, 102);
+    assert.equal(Reflect.ownKeys(second[index]).length, 102);
+  }
+  first[0].label = 'Changed';
+  first[0]['field-001'] = 'Changed';
+  assert.equal(second[0].label, 'Row 1');
+  assert.equal(second[0]['field-001'], 'v-0-1');
+  assert.equal(first[1]['field-001'], 'v-1-1');
+});
+
 test('the planner workload exercises 64 distinct complete candidates', () => {
   const { candidates } = mediumPlan();
   assert.equal(candidates.length, 64);

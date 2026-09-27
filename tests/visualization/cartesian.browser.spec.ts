@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/tests/visualization/cartesian.html');
-  await page.locator('aeliqo-trend table').waitFor();
+  await page.locator('aeliqo-trend table').waitFor({ state: 'attached' });
 });
 
 test('renders six families with exact tables, histogram scope and heatmap color key', async ({ page }) => {
@@ -15,7 +15,57 @@ test('renders six families with exact tables, histogram scope and heatmap color 
   await expect(page.locator('aeliqo-heatmap [part="color-key"]')).toContainText('Intensity');
   await expect(page.locator('aeliqo-histogram [part="scope"]')).toContainText('Source observation coverage');
   await expect(page.locator('aeliqo-area svg path')).toHaveCount(3);
-  await expect(page.locator('aeliqo-scatter').getByRole('cell', { name: '5', exact: true }).first()).toBeVisible();
+  const scatter = page.locator('aeliqo-scatter');
+  await expect(scatter.getByRole('cell', { name: '5', exact: true }).first()).toBeHidden();
+  await scatter.getByText('View data table', { exact: true }).click();
+  await expect(scatter.getByRole('cell', { name: '5', exact: true }).first()).toBeVisible();
+});
+
+test('keeps x-axis labels on one row when they fit and staggers them when text grows', async ({ page }) => {
+  const bar = page.locator('aeliqo-bar');
+  const rows = () =>
+    bar.evaluate((host) => {
+      const svg = host.shadowRoot?.querySelector('svg');
+      const boxes = [...(svg?.querySelectorAll('text.axis-x-tick') ?? [])]
+        .map((label) => label.getBoundingClientRect())
+        .sort((left, right) => left.left - right.left);
+      return {
+        single: svg?.hasAttribute('data-single-row-ticks') ?? false,
+        tops: new Set(boxes.map((box) => Math.round(box.top))).size,
+        overlaps: boxes.some((box, index) => index > 0 && boxes[index - 1]!.right > box.left),
+        titleGap: Math.round(
+          (svg?.querySelector('text.axis-title-x')?.getBoundingClientRect().top ?? 0) -
+            Math.max(...boxes.map((box) => box.bottom)),
+        ),
+      };
+    });
+  await expect.poll(rows).toMatchObject({ single: true, tops: 1, overlaps: false });
+  expect((await rows()).titleGap).toBeLessThan(40);
+  await expect
+    .poll(() => bar.evaluate((host) => host.shadowRoot?.querySelector('svg')?.style.marginBlockEnd))
+    .toMatch(/^-/u);
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '64px';
+  });
+  await expect.poll(async () => (await rows()).overlaps).toBe(false);
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '';
+  });
+  await expect.poll(async () => (await rows()).single).toBe(true);
+});
+
+test('fit-width charts follow their container instead of the fixed width', async ({ page }) => {
+  const bar = page.locator('aeliqo-bar');
+  const svgWidth = () => bar.evaluate((host) => Number(host.shadowRoot?.querySelector('svg')?.getAttribute('width')));
+  await bar.evaluate((host) => {
+    host.style.inlineSize = '900px';
+    (host as HTMLElement & { fitWidth: boolean }).fitWidth = true;
+  });
+  await expect.poll(svgWidth).toBe(900);
+  await bar.evaluate((host) => {
+    host.style.inlineSize = '480px';
+  });
+  await expect.poll(svgWidth).toBe(480);
 });
 
 test('keeps edge x-axis labels inside the chart viewport', async ({ page }) => {
@@ -143,6 +193,7 @@ test('selection is keyboard reachable and an over-budget graphic retains exact d
       (window as any).selection = (event as CustomEvent).detail;
     });
   });
+  await page.locator('aeliqo-trend').getByText('View data table', { exact: true }).click();
   await page.locator('aeliqo-trend button').first().focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('aeliqo-trend button').first()).toHaveAttribute('aria-pressed', 'true');
