@@ -341,7 +341,11 @@ for (const id of ['trend', 'timeline', 'tree'] as const) {
       expect(pageOne.at(-1)?.[1]).toBe(id === 'tree' ? 'node-24' : 'row-24');
       await expect(session.host.locator('[role="status"]')).toContainText(/budget|density/i);
       expect(session.errors).toEqual([]);
-      // Capture the keyboard pagination result independently of the earlier pointer click.
+      // Capture the keyboard pagination result independently of the earlier pointer click, after the
+      // element finishes its update so a late render cannot replace the captured focus target.
+      await session.host.evaluate(
+        (element) => (element as HTMLElement & { updateComplete?: Promise<unknown> }).updateComplete,
+      );
       const focus = await session.host.evaluateHandle((element) => element.shadowRoot?.activeElement);
       await page.mouse.move(0, 0);
       await expect(session.host.locator('button:hover, tbody tr:hover')).toHaveCount(0);
