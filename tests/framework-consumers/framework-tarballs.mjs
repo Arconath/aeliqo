@@ -711,10 +711,19 @@ try {
   await expect(region.getByText('Ada Chen', { exact: true })).toHaveCount(0, { timeout: 15_000 });
   await ask('Hires per month');
   await region.locator('svg').first().waitFor({ timeout: 15_000 });
+  await region.getByText('New hires', { exact: true }).first().waitFor({ timeout: 15_000 });
   await page.screenshot({ path: join(runDirectory, 'quickstart-hires-per-month.png'), fullPage: true });
   await ask('Hires per team');
   await shows('Product');
   await region.locator('svg').first().waitFor({ timeout: 15_000 });
+  await shows('New hires by Team');
+  await expect
+    .poll(async () => {
+      const chart = await region.locator('aeliqo-bar svg').first().boundingBox();
+      const host = await region.boundingBox();
+      return chart !== null && host !== null && chart.width >= host.width - 40;
+    })
+    .toBe(true);
   await page.screenshot({ path: join(runDirectory, 'quickstart-hires-per-team.png'), fullPage: true });
   await ask('Everyone');
   await shows('Ada Chen');

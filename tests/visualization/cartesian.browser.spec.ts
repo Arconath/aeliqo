@@ -54,6 +54,20 @@ test('keeps x-axis labels on one row when they fit and staggers them when text g
   await expect.poll(async () => (await rows()).single).toBe(true);
 });
 
+test('fit-width charts follow their container instead of the fixed width', async ({ page }) => {
+  const bar = page.locator('aeliqo-bar');
+  const svgWidth = () => bar.evaluate((host) => Number(host.shadowRoot?.querySelector('svg')?.getAttribute('width')));
+  await bar.evaluate((host) => {
+    host.style.inlineSize = '900px';
+    (host as HTMLElement & { fitWidth: boolean }).fitWidth = true;
+  });
+  await expect.poll(svgWidth).toBe(900);
+  await bar.evaluate((host) => {
+    host.style.inlineSize = '480px';
+  });
+  await expect.poll(svgWidth).toBe(480);
+});
+
 test('keeps edge x-axis labels inside the chart viewport', async ({ page }) => {
   const bounds = await page.locator('aeliqo-trend').evaluate((host) => {
     const svg = host.shadowRoot?.querySelector<SVGSVGElement>('svg');

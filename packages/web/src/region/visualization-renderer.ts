@@ -120,7 +120,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -133,7 +133,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -146,7 +146,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -159,7 +159,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -172,7 +172,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}
@@ -185,7 +185,7 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
       .context=${props.context}
       .datasets=${props.datasets}
       .label=${props.label}
-      .width=${640}
+      fit-width
       .height=${360}
       .maxMarks=${20_000}
       .selectedIdentity=${props.selected ?? ''}

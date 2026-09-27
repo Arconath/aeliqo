@@ -27,6 +27,12 @@ views, header/sidebar structure, and business actions.
   as "New hires by Team".
 - The quickstart shows one resource answering browse, filtered, monthly trend,
   and per-team intents. The playground shows the exact intent behind each view.
+- Cartesian charts fold their exact-values table into "View data table", keep
+  x-axis labels on one row when they fit, follow the width of their region, and
+  never label a fractional midpoint on an integer axis. Region trends are titled
+  after their measure, such as "New hires".
+- The mounted region bundle budget is 168 KiB gzip (previously 160 KiB since
+  0.3) to cover workspace layouts and the chart improvements above.
 - Visual comparison and paired performance CI jobs are advisory; the functional
   matrix remains required for merges and publication.
 

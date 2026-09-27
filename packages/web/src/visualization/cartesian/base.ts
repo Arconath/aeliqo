@@ -40,6 +40,7 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
     datasets: { attribute: false },
     label: { type: String },
     width: { type: Number },
+    fitWidth: { type: Boolean, attribute: 'fit-width' },
     height: { type: Number },
     maxMarks: { type: Number, attribute: 'max-marks' },
     selectionEnabled: { type: Boolean, attribute: false },
@@ -274,6 +275,8 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   datasets: readonly VisualizationDataset[] = [];
   label = 'Data visualization';
   width = 640;
+  /** Follow the host's inline size instead of the fixed `width`. */
+  fitWidth = false;
   height = 320;
   maxMarks = 20_000;
   selectionEnabled = true;
@@ -384,6 +387,10 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
   }
 
   private fitTickRows(): void {
+    if (this.fitWidth) {
+      const measured = Math.min(1600, Math.max(320, Math.floor(this.clientWidth)));
+      if (this.clientWidth > 0 && measured !== this.width) this.width = measured;
+    }
     if (this.shadowRoot !== null) fitAxisTickRows(this.shadowRoot);
   }
 

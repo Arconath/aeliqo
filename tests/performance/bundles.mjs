@@ -82,7 +82,9 @@ const workloads = [
   {
     id: 'region-table',
     code: "import {AeliqoRegionElement,createAeliqoPresentationRegistry} from '@aeliqo/web/region'; import {createLocalDataService} from '@aeliqo/runtime/data'; import {createResultStore} from '@aeliqo/runtime/results'; import {parseTask} from '@aeliqo/core'; import {createStandardFunctionRegistry} from '@aeliqo/core/expressions'; import {AeliqoTableElement} from '@aeliqo/web/table'; import {createRegionStore} from '@aeliqo/runtime/regions'; import {createTaskEvaluator} from '@aeliqo/runtime/evaluation'; customElements.define('perf-region',AeliqoRegionElement); customElements.define('aeliqo-table',AeliqoTableElement); globalThis.aeliqoPerformance={createRegionStore,createTaskEvaluator,createLocalDataService,createResultStore,createAeliqoPresentationRegistry,parseTask,createStandardFunctionRegistry};",
-    budget: 160 * 1024,
+    // Raised from 160 KiB in 0.6.0 (owner decision): workspace layouts, chart-first analysis, and
+    // fitted chart widths grew the mounted region; it had stayed within 160 KiB since 0.3.
+    budget: 168 * 1024,
     absentStyleRules: [
       ":is(button, input, select, [part='number'])",
       ":where([data-aeliqo-theme]:not([data-aeliqo-theme='inherit']))",
