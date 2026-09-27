@@ -1,12 +1,12 @@
 import * as z from 'zod/mini';
-import { idSchema, jsonSchema, versionRefSchema } from '../../contracts/schemas.js';
-import { WIRE_LIMITS } from '../../contracts/limits.js';
+import { jsonSchema, versionRefSchema } from '../../contracts/schemas.js';
+import { canonicalIds, canonicalRefs } from '../../contracts/schema-primitives.js';
 import type { Outcome, VersionRef } from '../../contracts/types.js';
 import type { PresentationQuality, PresentationValues, ResolvedPresentationConfig } from '../types.js';
 import {
   freezePresentation,
   isThenable,
-  ownsRegisteredOperations,
+  ownsPresentationRegistration,
   presentationFailure as fail,
   versionKey,
 } from '../registry.js';
@@ -17,9 +17,9 @@ const MAX_MEASURED_MICROSECONDS = 1_000_000_000_000;
 const EMPTY_RESOLVED_LIST = Object.freeze([]) as readonly never[];
 const resolvedSchema = z.strictObject({
   values: z.record(z.string(), jsonSchema),
-  fields: z.array(idSchema).check(z.maxLength(WIRE_LIMITS.array)),
+  fields: canonicalIds,
   ports: z.array(z.unknown()).check(z.maxLength(128)),
-  operations: z.optional(z.array(versionRefSchema).check(z.maxLength(WIRE_LIMITS.array))),
+  operations: z.optional(canonicalRefs),
 });
 const ordinalSchema = z.int().check(z.minimum(0), z.maximum(100));
 const qualitySchema = z.strictObject({
@@ -64,7 +64,11 @@ function hasExactEmptyConfig(config: unknown, values: PresentationValues): boole
     !descriptors.values.enumerable
   )
     return false;
-  return (['fields', 'ports', 'operations'] as const).every((key) => isEmptyArrayDescriptor(descriptors[key]));
+  return (
+    isEmptyArrayDescriptor(descriptors.fields) &&
+    isEmptyArrayDescriptor(descriptors.ports) &&
+    isEmptyArrayDescriptor(descriptors.operations)
+  );
 }
 
 /** Fast path only for the exact accessor-free empty layout shape owned by the supplied values. */
@@ -168,7 +172,7 @@ export function validateResolvedConfig(
     return fail('restricted', 'The representation exposes an operation restricted by the active experience.');
   if (config.fields.some((field) => !resultFields?.has(field)))
     return fail('field', 'A representation refers to a field absent from its result.');
-  if (entries && ownsRegisteredOperations(operations)) entries.push([operations, resultFields, enabled]);
+  if (entries && ownsPresentationRegistration(operations)) entries.push([operations, resultFields, enabled]);
   return { ok: true, value: enabled };
 }
 

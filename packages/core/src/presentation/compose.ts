@@ -161,27 +161,25 @@ function requiredNeeds(state: CompositionState): Outcome<readonly Task['needs'][
   return { ok: true, value: required };
 }
 
-function suggestionFor() {
-  return (
-    manifest: PresentationManifest,
-    needs: readonly Task['needs'][number][],
-    result: Result | undefined,
-  ): Outcome<PresentationValues> => {
-    if (manifest.suggestConfig === undefined)
-      return fail('suggestion', 'The representation has no trusted bounded suggestion.');
-    let raw: unknown;
-    try {
-      raw = manifest.suggestConfig(needs, result);
-    } catch {
-      return fail('suggestion', 'The registered configuration suggestion failed.');
-    }
-    const outcome = callbackOutcome(raw, 'suggestion', 'The registered configuration suggestion failed.');
-    if (!outcome.ok) return outcome;
-    const parsed = z.safeParse(suggestionSchema, outcome.value);
-    if (!parsed.success)
-      return fail('suggestion', 'The registered configuration suggestion is not bounded JSON configuration.');
-    return { ok: true, value: freezePresentation(parsed.data as PresentationValues) };
-  };
+function suggestConfig(
+  manifest: PresentationManifest,
+  needs: readonly Task['needs'][number][],
+  result: Result | undefined,
+): Outcome<PresentationValues> {
+  if (manifest.suggestConfig === undefined)
+    return fail('suggestion', 'The representation has no trusted bounded suggestion.');
+  let raw: unknown;
+  try {
+    raw = manifest.suggestConfig(needs, result);
+  } catch {
+    return fail('suggestion', 'The registered configuration suggestion failed.');
+  }
+  const outcome = callbackOutcome(raw, 'suggestion', 'The registered configuration suggestion failed.');
+  if (!outcome.ok) return outcome;
+  const parsed = z.safeParse(suggestionSchema, outcome.value);
+  if (!parsed.success)
+    return fail('suggestion', 'The registered configuration suggestion is not bounded JSON configuration.');
+  return { ok: true, value: freezePresentation(parsed.data as PresentationValues) };
 }
 
 function registeredChoices(state: CompositionState, required: readonly Task['needs'][number][]): RegisteredChoices {
@@ -219,10 +217,9 @@ function tryBuild(
   layout: PresentationManifest | undefined,
   selected: readonly PresentationManifest[],
   label: string,
-  suggest: ReturnType<typeof suggestionFor>,
 ): boolean {
   if (!spend(state)) return false;
-  const built = buildPlan(state.request, state.prepared, state.registry, layout, selected, suggest);
+  const built = buildPlan(state.request, state.prepared, state.registry, layout, selected, suggestConfig);
   if (!built.ok) {
     reject(state, label, built.diagnostics);
     return false;
@@ -230,16 +227,12 @@ function tryBuild(
   return validateCandidate(state, built.value, label, {}, false, true, true);
 }
 
-function searchQuerylessNeeds(
-  state: CompositionState,
-  choices: RegisteredChoices,
-  suggest: ReturnType<typeof suggestionFor>,
-): void {
+function searchQuerylessNeeds(state: CompositionState, choices: RegisteredChoices): void {
   const emptyRoots = choices.allowed.filter(
     (manifest) => manifest.result !== 'required' && manifest.children.min === 0,
   );
   for (const root of emptyRoots) {
-    tryBuild(state, root, [], 'registered.queryless.' + root.ref.id, suggest);
+    tryBuild(state, root, [], 'registered.queryless.' + root.ref.id);
     if (state.budgetBlocked) break;
   }
   if (emptyRoots.length === 0)
@@ -252,28 +245,20 @@ function searchQuerylessNeeds(
     ]);
 }
 
-function searchSingleNeed(
-  state: CompositionState,
-  choices: RegisteredChoices,
-  suggest: ReturnType<typeof suggestionFor>,
-): void {
+function searchSingleNeed(state: CompositionState, choices: RegisteredChoices): void {
   for (const leaf of choices.leavesByNeed[0]!) {
-    tryBuild(state, undefined, [leaf], 'registered.leaf.' + leaf.ref.id, suggest);
+    tryBuild(state, undefined, [leaf], 'registered.leaf.' + leaf.ref.id);
     if (state.budgetBlocked) break;
   }
 }
 
-function searchMultipleNeeds(
-  state: CompositionState,
-  choices: RegisteredChoices,
-  suggest: ReturnType<typeof suggestionFor>,
-): void {
+function searchMultipleNeeds(state: CompositionState, choices: RegisteredChoices): void {
   const indices = choices.leavesByNeed.map(() => 0);
   let layoutIndex = 0;
   let candidateIndex = 0;
   while (layoutIndex < choices.layouts.length) {
     const selected = choices.leavesByNeed.map((list, index) => list[indices[index]!]!);
-    tryBuild(state, choices.layouts[layoutIndex]!, selected, 'registered.' + candidateIndex, suggest);
+    tryBuild(state, choices.layouts[layoutIndex]!, selected, 'registered.' + candidateIndex);
     candidateIndex += 1;
     if (state.budgetBlocked) break;
     let position = indices.length - 1;
@@ -300,12 +285,11 @@ function searchRegisteredChoices(
   state: CompositionState,
   required: readonly Task['needs'][number][],
   choices: RegisteredChoices,
-  suggest: ReturnType<typeof suggestionFor>,
 ): void {
-  if (required.length === 0) searchQuerylessNeeds(state, choices, suggest);
-  else if (required.length === 1 && choices.leavesByNeed[0]!.length > 0) searchSingleNeed(state, choices, suggest);
+  if (required.length === 0) searchQuerylessNeeds(state, choices);
+  else if (required.length === 1 && choices.leavesByNeed[0]!.length > 0) searchSingleNeed(state, choices);
   else if (required.length > 1 && choices.layouts.length > 0 && choices.leavesByNeed.every((list) => list.length > 0))
-    searchMultipleNeeds(state, choices, suggest);
+    searchMultipleNeeds(state, choices);
   else rejectMissingRegisteredComposition(state);
 }
 
@@ -318,8 +302,7 @@ function searchRegistered(state: CompositionState, required: readonly Task['need
   if (state.budgetBlocked) return;
   if (state.best !== undefined && !state.prepared.constraints.allowWithoutPreset) return;
   const choices = registeredChoices(state, required);
-  const suggest = suggestionFor();
-  searchRegisteredChoices(state, required, choices, suggest);
+  searchRegisteredChoices(state, required, choices);
 }
 
 function finishComposition(state: CompositionState): Outcome<PresentationComposition> {

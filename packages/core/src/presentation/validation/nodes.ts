@@ -10,6 +10,7 @@ import type {
 import {
   freezePresentation,
   freezePresentationContainer,
+  ownsPresentationRegistration,
   presentationFailure as fail,
   versionKey,
 } from '../registry.js';
@@ -133,7 +134,16 @@ function validateNodePorts(
   config: ResolvedPresentationConfig,
   input: PresentationNodeResolutionInput,
 ): Outcome<readonly InteractionPort[]> {
-  const graphInput = { nodes: [{ id: node.id, ports: config.ports }], links: [] };
+  // This private, link-free graph returns only ports. Preserve ID wire byte costs.
+  const graphInput = {
+    nodes: [
+      {
+        id: ownsPresentationRegistration(input.registry) ? node.id.replace(/\w/g, 'x') : node.id,
+        ports: config.ports,
+      },
+    ],
+    links: [],
+  };
   const key = canonicalJSON(graphInput);
   let graph = input.cache.nodeGraphs.get(key);
   if (graph === undefined) {

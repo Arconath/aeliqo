@@ -127,7 +127,187 @@ function request(
   };
 }
 
+function twoLeafPlan(first: string, second: string): PresentationPlan {
+  const plan = basePlan('layout', first);
+  return {
+    ...plan,
+    nodes: [{ ...plan.nodes[0]!, children: [first, second] }, plan.nodes[1]!, { ...plan.nodes[1]!, id: second }],
+  };
+}
+
+function portRegistry(
+  leaf: PresentationManifest = tableManifest((values) => ({
+    ok: true,
+    value: {
+      values,
+      fields: [field.id],
+      operations: [read],
+      ports: [{ id: 'filter', direction: 'input', payload: 'filter' }],
+    },
+  })),
+): PresentationRegistry {
+  return registry([
+    leaf,
+    layoutManifest((values) => ({ ok: true, value: { values, fields: [], ports: [], operations: [] } })),
+  ]);
+}
+
 describe('presentation validation memoization', () => {
+  it.each(['owned', 'structural', 'frozen structural', 'inherited', 'proxy'] as const)(
+    'shares ID-independent port validation only for an %s registry',
+    (ownership) => {
+      const leaf = tableManifest((values) => ({
+        ok: true,
+        value: {
+          values,
+          fields: [field.id],
+          operations: [read],
+          ports: [{ id: 'filter', direction: 'input', payload: 'filter' }],
+        },
+      }));
+      const layout = layoutManifest((values) => ({
+        ok: true,
+        value: { values, fields: [], ports: [], operations: [] },
+      }));
+      const owned = registry([leaf, layout]);
+      const active: PresentationRegistry = {
+        owned,
+        structural: { ...owned },
+        'frozen structural': Object.freeze({ ...owned }),
+        inherited: Object.create(owned) as PresentationRegistry,
+        proxy: new Proxy(owned, {}),
+      }[ownership];
+      const plan = basePlan('layout', 'leaf-a');
+      const checked = validatePresentationPlan(
+        {
+          ...plan,
+          nodes: [
+            { ...plan.nodes[0]!, children: ['leaf-a', 'leaf-b'] },
+            plan.nodes[1]!,
+            { ...plan.nodes[1]!, id: 'leaf-b' },
+          ],
+        },
+        context(),
+        active,
+      );
+      expect(checked.ok).toBe(true);
+      if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+      const first = checked.value.nodes.find((node) => node.node.id === 'leaf-a')!;
+      const second = checked.value.nodes.find((node) => node.node.id === 'leaf-b')!;
+      expect(first.config.ports).toEqual(second.config.ports);
+      expect(first.config.ports === second.config.ports).toBe(ownership === 'owned');
+      expect(checked.value.graph.nodes.map((node) => node.id)).toEqual(['layout', 'leaf-a', 'leaf-b']);
+    },
+  );
+
+  it.each([
+    { ids: ['quote"A', 'quote"B'], shared: true },
+    { ids: ['back\\A', 'back\\B'], shared: true },
+    { ids: ['éA', 'éB'], shared: true },
+    { ids: ['😀A', '😀B'], shared: true },
+    { ids: ['A'.repeat(160), 'B'.repeat(160)], shared: true },
+    { ids: ['a', 'bb'], shared: false },
+    { ids: ['a', 'é'], shared: false },
+    { ids: ['a"', 'ab'], shared: false },
+    { ids: ['a\\', 'ab'], shared: false },
+  ])('preserves public IDs and port-cache byte distinctions for $ids', ({ ids, shared }) => {
+    const checked = validatePresentationPlan(twoLeafPlan(ids[0]!, ids[1]!), context(), portRegistry());
+    expect(checked.ok).toBe(true);
+    if (!checked.ok) throw new Error(JSON.stringify(checked.diagnostics));
+    const [first, second] = checked.value.nodes.slice(1);
+    expect(first!.config.ports).toEqual(second!.config.ports);
+    expect(first!.config.ports === second!.config.ports).toBe(shared);
+    expect(checked.value.plan.nodes.map((node) => node.id)).toEqual(['layout', ...ids]);
+    expect(checked.value.graph.nodes.map((node) => node.id)).toEqual(['layout', ...ids]);
+    const byteCounts = ids.map((id) => new TextEncoder().encode(JSON.stringify(id)).length);
+    expect(byteCounts[0] === byteCounts[1]).toBe(shared);
+  });
+
+  it('rejects a structural mapping swap before assessing a second equivalent node', () => {
+    let calls = 0;
+    let assessments = 0;
+    const mapping = {
+      ref: { id: 'filter.identity', revision: '1' },
+      source: { payload: 'filter' as const },
+      target: { payload: 'filter' as const },
+      kind: 'identity' as const,
+    };
+    const leaf: PresentationManifest = {
+      ...tableManifest((values) => {
+        calls++;
+        if (calls === 2) active.mappings = [mapping, mapping];
+        return {
+          ok: true,
+          value: {
+            values,
+            fields: [field.id],
+            operations: [read],
+            ports: [{ id: 'filter', direction: 'input', payload: 'filter' }],
+          },
+        };
+      }),
+      assess: () => {
+        assessments++;
+        // If a stale port cache bypassed validation, this would hide the invalid mappings from the final graph.
+        active.mappings = installed.mappings;
+        return { ok: true, value: { taskFit: 100, informationDensity: 0, interactionEffort: 0, legibilityPenalty: 0 } };
+      },
+    };
+    const installed = portRegistry(leaf);
+    const active = { ...installed };
+    const checked = validatePresentationPlan(twoLeafPlan('leaf-a', 'leaf-b'), context(), active);
+    expect(checked).toEqual({
+      ok: false,
+      diagnostics: [
+        {
+          code: 'interaction.duplicate-mapping',
+          message: 'A mapping version can be registered only once.',
+          retryable: false,
+        },
+      ],
+    });
+    expect(calls).toBe(2);
+    expect(assessments).toBe(1);
+  });
+
+  it('keeps port validation and parsed port objects local to each composition', () => {
+    let duplicate = false;
+    const leaf = tableManifest((values) => {
+      const port = { id: 'filter', direction: 'input' as const, payload: 'filter' as const };
+      return {
+        ok: true,
+        value: { values, fields: [field.id], operations: [read], ports: duplicate ? [port, port] : [port] },
+      };
+    });
+    const installed = portRegistry(leaf);
+    const plan = twoLeafPlan('leaf-a', 'leaf-b');
+    const active = context();
+    const compose = () =>
+      composePresentation(
+        {
+          ...request(plan, active, [{ source: 'explicit', plan }]),
+          searchRegistered: false,
+        },
+        installed,
+      );
+    const first = compose();
+    const second = compose();
+    if (!first.ok || !second.ok || !first.value.presentation || !second.value.presentation)
+      throw new Error('Both initial compositions must produce a presentation.');
+    const firstPorts = first.value.presentation.nodes[1]!.config.ports;
+    const secondPorts = second.value.presentation.nodes[1]!.config.ports;
+    expect(firstPorts).toEqual(secondPorts);
+    expect(firstPorts).not.toBe(secondPorts);
+    duplicate = true;
+    const rejected = compose();
+    expect(rejected).toMatchObject({
+      ok: true,
+      value: { rejected: [{ diagnostics: [{ code: 'interaction.duplicate-port' }] }] },
+    });
+    if (rejected.ok) expect(rejected.value.presentation).toBeUndefined();
+    expect(firstPorts).toHaveLength(1);
+  });
+
   it('keeps structurally memoized nodes bound to their exact result source lineage', () => {
     const nextRef = { ...ref, sourceLineage: 'source-r2' };
     const nextResult = { ...result, ref: nextRef };

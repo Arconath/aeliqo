@@ -1,7 +1,6 @@
 import * as z from 'zod/mini';
 import { inspectWire } from '../../contracts/ingress.js';
-import { WIRE_LIMITS } from '../../contracts/limits.js';
-import { versionRefSchema } from '../../contracts/schemas.js';
+import { canonicalRefs } from '../../contracts/schema-primitives.js';
 import type { Outcome, VersionRef } from '../../contracts/types.js';
 export { resultRefKey as refKey } from '../../contracts/stable.js';
 import { freezePresentation, isThenable, presentationFailure as fail } from '../registry.js';
@@ -20,7 +19,7 @@ export function callbackOutcome(raw: unknown, failureCode: string, failureMessag
 export function parseRendererCapabilities(input: readonly VersionRef[]): Outcome<readonly VersionRef[]> {
   const wire = inspectWire(input);
   if (!wire.ok) return wire;
-  const parsed = z.safeParse(z.array(versionRefSchema).check(z.maxLength(WIRE_LIMITS.array)), wire.value);
+  const parsed = z.safeParse(canonicalRefs, wire.value);
   if (!parsed.success) return fail('renderer', 'Renderer capability references are malformed or exceed their limit.');
   return { ok: true, value: freezePresentation(parsed.data) };
 }
