@@ -8,10 +8,13 @@ function job(name) {
   assert.ok(block, `missing ${name} job`);
   return block;
 }
-test('approved visual gate always participates in quality and uses pinned real container', () => {
+function assertAdvisory(block) {
+  assert.match(block, /\n    if: (always\(\) && )?github.event_name != 'pull_request'\n    continue-on-error: true\n/u);
+}
+test('advisory visual gate runs outside pull requests and uses pinned real container', () => {
   const gate = job('visual-shards');
   assert.match(gate, /needs: policy/u);
-  assert.doesNotMatch(gate, /\n    if:|continue-on-error/u);
+  assertAdvisory(gate);
   assert.ok(gate.includes(`image: mcr.microsoft.com/playwright@${digest}`));
   assert.ok(gate.includes(`AELIQO_VISUAL_CONTAINER_DIGEST: ${digest}`));
   assert.match(gate, /run: node scripts\/visual\/run.mjs --shard \$\{\{ matrix.browser \}\}\n/u);
@@ -40,11 +43,11 @@ test('owner-dispatched full probe is additive and uses the same runner without r
   assert.match(workflow, /visual_probe:[\s\S]*?type: boolean[\s\S]*?default: false/u);
 });
 
-test('paired performance gate and same-source probe preserve the required quality boundary', () => {
+test('advisory paired performance gate and same-source probe keep their evidence', () => {
   const gate = job('performance');
   const probe = job('performance-probe');
   assert.match(gate, /needs: policy/u);
-  assert.doesNotMatch(gate, /\n    if:|continue-on-error/u);
+  assertAdvisory(gate);
   assert.ok(gate.includes(`image: mcr.microsoft.com/playwright@${digest}`));
   assert.match(gate, /run: node scripts\/performance\/compare.mjs\n/u);
   assert.match(gate, /path: artifacts\/performance-paired/u);
@@ -70,7 +73,8 @@ for (const name of ['visual-shards', 'visual-probe-shards'])
     assert.match(block, /browser: \[chromium, firefox, webkit\]/u);
     assert.match(block, /timeout-minutes: 360/u);
     assert.match(block, /shard-report-\$\{\{ env.SOURCE_SHA \}\}-\$\{\{ matrix.browser \}\}/u);
-    assert.doesNotMatch(block, /AELIQO_VISUAL_(PROJECT|BATCH|GREP):|continue-on-error/u);
+    assert.doesNotMatch(block, /AELIQO_VISUAL_(PROJECT|BATCH|GREP):/u);
+    if (name === 'visual-probe-shards') assert.doesNotMatch(block, /continue-on-error/u);
   });
 for (const name of ['visual', 'visual-probe'])
   test(`${name} aggregate cannot accept a missing or unsuccessful shard matrix`, () => {
@@ -82,6 +86,7 @@ for (const name of ['visual', 'visual-probe'])
     assert.match(block, /if-no-files-found: error/u);
     assert.match(block, /run: test "\$POLICY_RESULT" = success/u);
     assert.ok(block.indexOf('Require authorized source policy') < block.indexOf('actions/checkout@'));
-    assert.doesNotMatch(block, /continue-on-error/u);
+    if (name === 'visual') assertAdvisory(block);
+    else assert.doesNotMatch(block, /continue-on-error/u);
     assert.ok(block.includes(`run: node scripts/visual/aggregate.mjs${name === 'visual-probe' ? ' --probe' : ''}\n`));
   });

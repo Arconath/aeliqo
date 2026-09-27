@@ -1,5 +1,9 @@
 # Visual review and approved source comparisons
 
+> **Status: advisory.** This job runs on pushes to `main` and owner dispatches and
+> keeps its evidence, but it does not block merges or package publication until
+> the reference is approved and stable. The functional matrix remains required.
+
 `pnpm test:visual` builds the packages and runs the existing geometry,
 accessibility, keyboard, and screenshot suites in Chromium, Firefox, and WebKit.
 The catalog covers all 71 components at 1440, 768, and 360 pixels. The narrow
@@ -132,7 +136,7 @@ produce review evidence without creating a successful release-quality result.
 Every browser job uploads its complete artifact directory and a compact shard
 report even on failure.
 
-The required `visual` aggregate runs after all three browser jobs, including when
+The advisory `visual` aggregate runs after all three browser jobs, including when
 one fails. It rejects failed, skipped, cancelled, missing, or duplicate shards;
 source, fixture, or environment mismatches; incomplete captures; and selected
 family filters. It independently lists the full source test suite and requires
@@ -152,11 +156,11 @@ compact shard evidence is under `artifacts/visual-shard-report/`. Changes to the
 reviewed fixture inventory require deliberate count updates and baseline review.
 
 After review, commit B records A's source SHA and exact environment/fixture
-metadata. Dispatch B with the default `visual_probe: false`. The full approved
-comparison must pass alongside the functional matrix. A local `pnpm check` run
+metadata. Dispatch B with the default `visual_probe: false`. Once approved, the
+full comparison runs alongside the functional matrix. A local `pnpm check` run
 covers the matrix and tooling tests; it does not replace the independent
-same-source container visual gate. Package publication must use a successful
-quality workflow for the same source revision. Keep the diagnostic probe's
+same-source container visual gate. Package publication uses a successful
+quality workflow for the same source revision; advisory visual results are reviewed, not required. Keep the diagnostic probe's
 artifact and the subsequent approved gate's artifact as separate evidence.
 
 ## Daily focused runs

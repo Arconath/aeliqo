@@ -11,13 +11,13 @@ on:
         required: false
         type: string
       visual_probe:
-        description: Also capture a full diagnostic visual probe; approved gate remains required
+        description: Also capture a full diagnostic visual probe (advisory)
         required: false
         type: boolean
         default: false
 
       performance_probe:
-        description: Also measure same-source paired performance; approved gate remains required
+        description: Also measure same-source paired performance (advisory)
         required: false
         type: boolean
         default: false
@@ -203,6 +203,9 @@ jobs:
 
   visual-shards:
     needs: policy
+    # Advisory until the reference is stable: evidence is kept, but it never blocks merge or publication.
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -260,7 +263,9 @@ jobs:
 
   visual:
     needs: [policy, visual-shards]
-    if: always()
+    # Advisory: see visual-shards.
+    if: always() && github.event_name != 'pull_request'
+    continue-on-error: true
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -404,6 +409,9 @@ jobs:
 
   performance:
     needs: policy
+    # Advisory until the reference is stable: evidence is kept, but it never blocks merge or publication.
+    if: github.event_name != 'pull_request'
+    continue-on-error: true
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     container:

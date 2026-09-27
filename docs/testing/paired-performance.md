@@ -1,5 +1,9 @@
 # Paired layout and visualization performance
 
+> **Status: advisory.** This job runs on pushes to `main` and owner dispatches and
+> keeps its evidence, but it does not block merges or package publication until
+> the reference is approved and stable. The functional matrix remains required.
+
 `node scripts/performance/compare.mjs` compares two explicit source revisions on
 one runner. It recreates the reviewed baseline from `git archive`, installs the
 frozen lockfile, and builds both sources. It never changes the budget file or
