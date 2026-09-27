@@ -110,6 +110,15 @@ and timezone remain explicitly fixed in the capture configuration. The runner
 records actual browser executable and font hashes as well as the container
 identity; changing the image requires reviewed metadata.
 
+Chromium visual captures also set `--disable-gpu` and
+`--disable-skia-runtime-opts`. The latter selects the baseline CPU raster path
+documented in [Chromium's test switches](https://chromium.googlesource.com/chromium/src/+/lkgr/content/public/common/content_switches.cc).
+This configuration is part of the fixture hash. It applies only to visual
+captures; performance workloads and ordinary browser behavior tests retain
+their own configurations. It neither masks pixels nor changes comparison
+thresholds. Local emulated amd64 checks cannot establish native CI stability:
+the complete repeated captures must still pass on the pinned Linux runner.
+
 For bootstrap commit A, the repository owner dispatches the existing quality
 workflow with `visual_probe: true` and its exact source SHA. That adds a separate
 `visual-probe-shards` matrix running `--probe --shard <browser>` in the same image.

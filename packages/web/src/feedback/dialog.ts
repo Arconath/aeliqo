@@ -35,14 +35,15 @@ export class AeliqoDialogElement extends AeliqoFoundationElement {
         flex-wrap: wrap;
         gap: var(--aeliqo-space-8, 0.5rem);
         justify-content: space-between;
-        padding: var(--aeliqo-space-12, 0.75rem) var(--aeliqo-space-16, 1rem);
+        padding: var(--aeliqo-space-12, 0.75rem) min(var(--aeliqo-space-16, 1rem), 5vw);
       }
       [part='content'] {
         overflow: auto;
-        padding: var(--aeliqo-space-16, 1rem);
+        padding: var(--aeliqo-space-16, 1rem) min(var(--aeliqo-space-16, 1rem), 5vw);
       }
       [part='header'] h2 {
         flex: 1 1 auto;
+        margin: 0;
         min-inline-size: 0;
         overflow-wrap: anywhere;
       }

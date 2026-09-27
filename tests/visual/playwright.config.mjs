@@ -34,8 +34,8 @@ export default defineConfig({
       fullyParallel: false,
       use: {
         browserName: name,
-        // Keep Chromium's rounded-border rasterization stable across captures.
-        ...(name === 'chromium' ? { launchOptions: { args: ['--disable-gpu'] } } : {}),
+        // Use Chromium's baseline software/CPU raster path for exact visual comparisons.
+        ...(name === 'chromium' ? { launchOptions: { args: ['--disable-gpu', '--disable-skia-runtime-opts'] } } : {}),
       },
     })),
   use: {

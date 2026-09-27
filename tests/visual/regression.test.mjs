@@ -18,7 +18,9 @@ test('Chromium visual captures use a fixed software raster path without changing
     config.projects.map(({ name }) => name),
     ['chromium', 'firefox', 'webkit'],
   );
-  assert.deepEqual(config.projects[0].use.launchOptions, { args: ['--disable-gpu'] });
+  assert.deepEqual(config.projects[0].use.launchOptions, {
+    args: ['--disable-gpu', '--disable-skia-runtime-opts'],
+  });
   assert.equal(config.projects[1].use.launchOptions, undefined);
   assert.equal(config.projects[2].use.launchOptions, undefined);
 });

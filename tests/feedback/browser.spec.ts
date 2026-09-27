@@ -364,7 +364,7 @@ test.describe('enlarged narrow feedback controls', () => {
         expect(geometry.right).toBeLessThanOrEqual(geometry.surfaceRight);
         expect(geometry.top).toBeGreaterThanOrEqual(geometry.surfaceTop);
         expect(geometry.bottom).toBeLessThanOrEqual(geometry.surfaceBottom);
-        const headingWordLines = await host.locator('h2').evaluate((heading) => {
+        const headingWord = await host.locator('h2').evaluate((heading) => {
           const range = document.createRange();
           const text = Array.from(heading.childNodes).find(
             (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.includes('Confirm'),
@@ -372,9 +372,21 @@ test.describe('enlarged narrow feedback controls', () => {
           if (text === undefined) throw new Error('Heading text is missing.');
           range.setStart(text, 0);
           range.setEnd(text, 'Confirm'.length);
-          return range.getClientRects().length;
+          return {
+            rects: Array.from(range.getClientRects(), (rect) => rect.toJSON()),
+            font: getComputedStyle(heading).font,
+            heading: heading.getBoundingClientRect().toJSON(),
+          };
         });
-        expect(headingWordLines).toBe(1);
+        expect(headingWord.rects, JSON.stringify({ width, direction, ...headingWord })).toHaveLength(1);
+        const action = host.getByRole('button', { name: 'Continue' });
+        const actionBox = await action.boundingBox();
+        expect(actionBox).not.toBeNull();
+        expect(actionBox!.x).toBeGreaterThanOrEqual(geometry.surfaceLeft);
+        expect(actionBox!.x + actionBox!.width).toBeLessThanOrEqual(geometry.surfaceRight);
+        expect(actionBox!.y + actionBox!.height).toBeLessThanOrEqual(geometry.surfaceBottom);
+        expect(actionBox!.width).toBeGreaterThanOrEqual(44);
+        expect(actionBox!.height).toBeGreaterThanOrEqual(44);
         await page.screenshot({ path: info.outputPath(`dialog-${width}-${direction}.png`) });
         await close.press('Enter');
         await expect(host.locator('dialog')).toBeHidden();

@@ -193,6 +193,7 @@ jobs:
           path: |
             artifacts/product-ci
             artifacts/performance-bundles
+            artifacts/feedback-browser
             artifacts/visual-catalog
             artifacts/vnext-visual
             artifacts/release-candidate
