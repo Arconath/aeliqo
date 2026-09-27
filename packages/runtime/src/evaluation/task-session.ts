@@ -281,10 +281,12 @@ export class TaskEvaluationSession {
     );
     if (!planned.ok) return planned;
     const accepted = planned.value;
-    if (!this.acceptedPlanMatches(accepted, output))
+    const mismatch = this.acceptedPlanMismatch(accepted, output);
+    if (mismatch !== undefined)
       return failure(
         'runtime.evaluation-stale',
-        'The data service plan does not match the fresh trusted task authority.',
+        `The data service plan does not match the fresh trusted task authority (${mismatch}). ` +
+          'Return the same scopeDigest and policyRevision from the data service authorize() and the app authority.',
       );
     const handle = this.allocateHandle(accepted, request.requestId);
     if (!handle.ok) return handle;
@@ -308,16 +310,17 @@ export class TaskEvaluationSession {
     };
   }
 
-  private acceptedPlanMatches(accepted: PlanAcceptance, output: QueryOutput): boolean {
+  /** Names the first accepted-plan field that differs from the trusted task context. */
+  private acceptedPlanMismatch(accepted: PlanAcceptance, output: QueryOutput): string | undefined {
     const context = this.contextValue();
-    return (
-      accepted.catalogRevision === context.catalogRevision &&
-      accepted.scopeDigest === context.scopeDigest &&
-      accepted.functionRegistryDigest === context.functionRegistryDigest &&
-      accepted.policyRevision === context.policyRevision &&
-      accepted.target.taskId === this.input.task.id &&
-      accepted.target.outputId === output.id
-    );
+    const checks: readonly (readonly [string, boolean])[] = [
+      ['catalogRevision', accepted.catalogRevision === context.catalogRevision],
+      ['scopeDigest', accepted.scopeDigest === context.scopeDigest],
+      ['functionRegistryDigest', accepted.functionRegistryDigest === context.functionRegistryDigest],
+      ['policyRevision', accepted.policyRevision === context.policyRevision],
+      ['target', accepted.target.taskId === this.input.task.id && accepted.target.outputId === output.id],
+    ];
+    return checks.find(([, matches]) => !matches)?.[0];
   }
 
   private allocateHandle(accepted: PlanAcceptance, requestId: string): Outcome<ResultHandle> {

@@ -1,7 +1,7 @@
 import { failure } from './shared.js';
 import type { Catalog, Expression, Outcome, QuerySpec } from '@aeliqo/core';
 import type { CatalogEntity } from '@aeliqo/core/semantics';
-import { createStandardFunctionRegistry } from '@aeliqo/core/expressions';
+import { createQueryFunctionRegistry, createStandardFunctionRegistry } from '@aeliqo/core/expressions';
 import type { FunctionRegistry } from '@aeliqo/core/expressions';
 import { createQueryPlanner, type LogicalPlan } from '@aeliqo/core/query';
 import type { PlanNode, PredicateSpec, QueryField, QueryLimits, QueryPlanner, QuerySchema } from '@aeliqo/core/query';
@@ -76,10 +76,22 @@ function validateHostRegistry(registry: FunctionRegistry, catalog: Catalog): Out
   );
 }
 
+const BUILT_IN_REGISTRIES: Readonly<Record<string, () => Outcome<FunctionRegistry>>> = Object.freeze({
+  'core-standard-1': () => createStandardFunctionRegistry(),
+  'core-query-1': () => createQueryFunctionRegistry('core-query-1'),
+  'core-query-2': () => createQueryFunctionRegistry({ version: '2' }),
+});
+
+/** Resolves only the built-in registries named by their canonical digests; custom digests need a host registry. */
 function defaultRegistry(catalog: Catalog): Outcome<FunctionRegistry> {
-  const standard = createStandardFunctionRegistry();
-  if (!standard.ok) return failure('data.unsupported', 'The default function registry could not be initialized.');
-  if (standard.value.digest === catalog.functionRegistryDigest) return standard;
+  const create = Object.hasOwn(BUILT_IN_REGISTRIES, catalog.functionRegistryDigest)
+    ? BUILT_IN_REGISTRIES[catalog.functionRegistryDigest]
+    : undefined;
+  if (create !== undefined) {
+    const registry = create();
+    if (registry.ok && registry.value.digest === catalog.functionRegistryDigest) return registry;
+    return failure('data.unsupported', 'The default function registry could not be initialized.');
+  }
   return failure(
     'data.unsupported',
     'The catalog requires a host function registry that was not supplied.',

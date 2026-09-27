@@ -1,4 +1,3 @@
-import { createQueryFunctionRegistry } from '@aeliqo/core/expressions';
 import { defineResource } from '@aeliqo/core';
 import { createLocalDataService, type AuthorizeRead, type DataRecord } from '@aeliqo/runtime/data';
 import { createAeliqoApp } from '@aeliqo/web/app';
@@ -26,32 +25,15 @@ export const workforceHeadcount = defineResource({
     month: { label: 'Month', role: 'time' },
     headcount: { label: 'Month end headcount', role: 'measure' },
   },
-  meanings: [
-    {
-      id: 'month-end-headcount',
-      revision: '1',
+  measures: {
+    'month-end-headcount': {
       label: 'Month end headcount',
       explanation: 'Employees active at the end of each month. Compare across months; never sum across time.',
-      output: { value: 'integer', nullable: false, grain: ['month'] },
-      implementation: {
-        kind: 'expression',
-        expression: {
-          kind: 'call',
-          function: { id: 'core.aggregate.sum', revision: '1' },
-          arguments: [{ kind: 'field', ref: 'headcount' }],
-        },
-      },
-      dependencies: [],
-      functionRegistryDigest: 'core-query-2',
-      origin: 'manual',
-      lifecycle: 'active',
-      scope: 'workspace',
-      authority: 'approved',
-      aggregation: 'semi-additive',
-      aggregationDimensions: ['month'],
-      missingPolicy: 'reject',
+      aggregate: 'sum',
+      field: 'headcount',
+      semiAdditiveOver: ['month'],
     },
-  ],
+  },
   presentation: { allowedViews: ['table', 'trend'], preferred: { analyze: 'trend' } },
 });
 
@@ -79,8 +61,6 @@ function currentAuthority() {
 }
 
 export function createTutorialApp(records: readonly DataRecord[]) {
-  const functions = createQueryFunctionRegistry({ version: '2' });
-  if (!functions.ok) throw new Error(functions.diagnostics[0].message);
   const authorize: AuthorizeRead = ({ context }) =>
     context.principal === 'current-user'
       ? { ok: true as const, value: { scopeDigest: 'permitted-people', policyRevision: 'policy-1' } }
@@ -90,7 +70,6 @@ export function createTutorialApp(records: readonly DataRecord[]) {
         };
   const peopleData = createLocalDataService({
     snapshot: { catalog: people.catalog, sourceRevision: 'people-data-1', records: { people: [...records] } },
-    functionRegistry: functions.value,
     sourceLimits: { rows: 1_000, bytes: 1_000_000 },
     authorize,
   });
@@ -100,7 +79,6 @@ export function createTutorialApp(records: readonly DataRecord[]) {
       sourceRevision: 'headcount-data-1',
       records: { 'workforce-headcount': HEADCOUNT },
     },
-    functionRegistry: functions.value,
     sourceLimits: { rows: 1_000, bytes: 1_000_000 },
     authorize,
   });
