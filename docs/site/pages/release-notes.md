@@ -29,6 +29,10 @@ views, header/sidebar structure, and business actions.
 - Result bindings retain their complete identity, including `sourceLineage`,
   when candidates share otherwise identical nodes. Unavailable lineages remain
   rejected before a representation callback runs.
+- The planner reuses successful field and operation checks within one
+  composition for owned immutable configurations and validated registry
+  declarations. Host-created structural registries and changes to data or
+  permissions still require validation.
 - The public Playground offers manual tasks and experimental native WebMCP.
   Component, workspace, and page demos share the connection. Hosted MCP relay
   and in-page model setup are removed from this public surface.

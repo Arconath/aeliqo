@@ -2,7 +2,7 @@ import * as z from 'zod/mini';
 import { inspectWire } from '../contracts/ingress.js';
 import { idSchema, versionRefSchema } from '../contracts/schemas.js';
 import { WIRE_LIMITS } from '../contracts/limits.js';
-import type { Outcome } from '../contracts/types.js';
+import type { Outcome, VersionRef } from '../contracts/types.js';
 import { stableJson, versionRefKey as versionKey } from '../contracts/stable.js';
 export { versionRefKey as versionKey } from '../contracts/stable.js';
 import { validateInteractionGraph, interactionMappingManifestSchema } from '../interaction/graph.js';
@@ -30,6 +30,10 @@ export const isThenable = (value: unknown): value is { then: (...args: readonly 
 };
 // Cache only graphs recursively frozen by this function, never arbitrary shallow-frozen input.
 const ownedFrozenGraphs = new WeakSet<object>();
+const registeredOperations = new WeakSet<readonly VersionRef[]>();
+/** Only parsed, owned registration arrays qualify for validation reuse. */
+export const ownsRegisteredOperations = (operations: readonly VersionRef[]): boolean =>
+  registeredOperations.has(operations);
 export function freezePresentation<T>(value: T): T {
   if (value !== null && typeof value === 'object' && !ownedFrozenGraphs.has(value)) {
     for (const child of Object.values(value)) {
@@ -119,6 +123,7 @@ function registerManifest(manifest: PresentationManifest, seen: Set<string>): Ou
   const consistent = validateManifestIdentity(parsed.value, seen);
   if (consistent !== undefined) return consistent;
   seen.add(versionKey(parsed.value.ref));
+  registeredOperations.add(parsed.value.operations);
   return {
     ok: true,
     value: freezePresentation({

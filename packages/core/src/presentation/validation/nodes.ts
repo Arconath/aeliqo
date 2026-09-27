@@ -121,9 +121,8 @@ function checkedConfig(
   const valid = validateResolvedConfig(
     parsed.value,
     manifest.operations,
-    input.cache.allowedOperations,
     result === undefined ? undefined : input.cache.resultFields.get(result),
-    result !== undefined,
+    input.cache,
   );
   if (!valid.ok) return valid;
   return { ok: true, value: { config: parsed.value, operations: valid.value } };

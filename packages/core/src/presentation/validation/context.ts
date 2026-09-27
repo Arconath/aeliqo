@@ -69,6 +69,7 @@ export function preparePresentationValidationCache(
       coverageAnalyses: new WeakMap(),
       readSetOutcomes: new WeakMap(),
       resolvedConfigs: new WeakMap(),
+      checkedConfigs: new WeakMap(),
       treeEntries: [],
     },
   };
