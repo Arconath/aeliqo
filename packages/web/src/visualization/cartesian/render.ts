@@ -322,7 +322,7 @@ function renderDataTable(
       </caption>
       <thead>
         <tr>
-          <th scope="col">Select</th>
+          ${context.selectionEnabled ? html`<th scope="col">Select</th>` : nothing}
           ${geometry.result.fields.map((field) => fieldHeader(field))}
         </tr>
       </thead>
@@ -332,19 +332,7 @@ function renderDataTable(
           (row) => row.identity,
           (row) =>
             html`<tr>
-              <td data-label="Select">
-                <button
-                  type="button"
-                  ?disabled=${!context.selectionEnabled}
-                  data-aeliqo-row-identity=${row.identity}
-                  data-aeliqo-result=${resultKey(geometry.result.ref)}
-                  aria-pressed=${context.isSelected(row.identity, geometry.result.ref) ? 'true' : 'false'}
-                  aria-label=${'Select ' + identityLabel(row, geometry.result)}
-                  @click=${() => context.select(row.identity, geometry.result.ref)}
-                >
-                  Select
-                </button>
-              </td>
+              ${context.selectionEnabled ? renderSelectCell(row, geometry, context) : nothing}
               ${geometry.result.fields.map(
                 (field) => html`<td data-label=${field.label}>${exactLabel(row.values[field.id]!)}</td>`,
               )}
@@ -353,6 +341,25 @@ function renderDataTable(
       </tbody>
     </table>
   </div>`;
+}
+
+function renderSelectCell(
+  row: PlotGeometry['rows'][number],
+  geometry: PlotGeometry,
+  context: CartesianRenderContext,
+): unknown {
+  return html`<td data-label="Select">
+    <button
+      type="button"
+      data-aeliqo-row-identity=${row.identity}
+      data-aeliqo-result=${resultKey(geometry.result.ref)}
+      aria-pressed=${context.isSelected(row.identity, geometry.result.ref) ? 'true' : 'false'}
+      aria-label=${'Select ' + identityLabel(row, geometry.result)}
+      @click=${() => context.select(row.identity, geometry.result.ref)}
+    >
+      Select
+    </button>
+  </td>`;
 }
 
 function renderPagination(

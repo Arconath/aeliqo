@@ -272,6 +272,15 @@ const VISUALIZATION_ELEMENT_RENDERERS: Record<VisualizationSpec['view'], Visuali
     ></aeliqo-relationship>`,
 };
 
+/** Names the chart from the result it answers, for example "New hires by Team". */
+function visualizationLabel(result: Result, view: VisualizationView): string {
+  const labels = (role: string) => result.fields.filter((field) => field.role === role).map((field) => field.label);
+  const measures = labels('measure');
+  const groups = [...labels('dimension'), ...labels('time')];
+  if (measures.length === 0) return `${view.charAt(0).toUpperCase()}${view.slice(1)} chart`;
+  return groups.length === 0 ? measures.join(', ') : `${measures.join(', ')} by ${groups.join(', ')}`;
+}
+
 function renderElement(
   spec: VisualizationSpec,
   binding: AeliqoVisualizationBinding,
@@ -463,7 +472,7 @@ function renderWith(
     ? selectedIdentity(context.interaction, node.node.id, result.ref, owner)
     : undefined;
   const handler = selectionHandler(node, current, validated.bound, context);
-  return renderElement(validated.spec, current, `Data visualization: ${view}`, selected, selectionEnabled, handler);
+  return renderElement(validated.spec, current, visualizationLabel(result, view), selected, selectionEnabled, handler);
 }
 
 export function renderAeliqoVisualizationPresentationNode(
