@@ -110,9 +110,14 @@ and timezone remain explicitly fixed in the capture configuration. The runner
 records actual browser executable and font hashes as well as the container
 identity; changing the image requires reviewed metadata.
 
-Chromium visual captures also set `--disable-gpu` and
-`--disable-skia-runtime-opts`. The latter selects the baseline CPU raster path
+Chromium visual captures also set `--disable-gpu`,
+`--disable-skia-runtime-opts`, and `--disable-partial-raster`. The second selects the baseline CPU raster path
 documented in [Chromium's test switches](https://chromium.googlesource.com/chromium/src/+/lkgr/content/public/common/content_switches.cc).
+The third repaints complete tiles: a controlled native-button reproduction showed
+that reusing partially painted tiles changed rounded-edge antialiasing despite
+identical final geometry and styles. Disabling partial raster removed that
+variation across ten fresh browser processes per state. See the
+[pinned Chromium setting](https://github.com/chromium/chromium/blob/153.0.8010.12/third_party/blink/renderer/platform/widget/compositing/layer_tree_settings.cc#L326).
 This configuration is part of the fixture hash. It applies only to visual
 captures; performance workloads and ordinary browser behavior tests retain
 their own configurations. It neither masks pixels nor changes comparison

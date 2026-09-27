@@ -34,8 +34,10 @@ export default defineConfig({
       fullyParallel: false,
       use: {
         browserName: name,
-        // Use Chromium's baseline software/CPU raster path for exact visual comparisons.
-        ...(name === 'chromium' ? { launchOptions: { args: ['--disable-gpu', '--disable-skia-runtime-opts'] } } : {}),
+        // Repaint complete tiles to avoid history-dependent rounded-edge antialiasing.
+        ...(name === 'chromium'
+          ? { launchOptions: { args: ['--disable-gpu', '--disable-skia-runtime-opts', '--disable-partial-raster'] } }
+          : {}),
       },
     })),
   use: {
