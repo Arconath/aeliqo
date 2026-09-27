@@ -41,21 +41,45 @@ attendance example verifies a proposed period, lowers it to a civil-day
 filter, and rejects alternate filters or periods; the agent package does not
 apply those rules automatically.
 
+## Designed for model tool use
+
+The tools are shaped so a model can succeed on its first call:
+
+- `aeliqo_context` returns each resource's fields, meanings (measures), views,
+  a `viewGuide` that explains what each view is for, the supported
+  `timeGrains`, and `examples`: ready-to-send intents derived from the resource
+  metadata, such as a list, a filter, a monthly trend, and a per-category
+  breakdown.
+- `aeliqo_render` documents every intent property. The model may omit
+  `version`, `id`, and a measure `revision` that has only one value; the
+  endpoint fills them before the strict intent parser runs. A trend's calendar
+  and timezone default to the time field's declared policy.
+- An unknown measure is rejected with a diagnostic that names it, and
+  diagnostics use the tool's own property names.
+
+`AELIQO_AGENT_INSTRUCTIONS` is a recommended system prompt for model hosts.
+Append product guidance when needed; the tool boundary enforces the rules
+either way.
+
+```ts
+import { AELIQO_AGENT_INSTRUCTIONS } from '@aeliqo/agent';
+```
+
 ## Optional integrations
 
-| Subpath | Responsibility |
-| --- | --- |
-| `@aeliqo/agent/app` | Application tool endpoint; identical to the root entry |
-| `@aeliqo/agent/mcp` | MCP client and server adapters |
-| `@aeliqo/agent/webmcp` | Browser WebMCP capability adapter |
-| `@aeliqo/agent/model` | Provider-neutral model tool loop |
-| `@aeliqo/agent/model/openai` | OpenAI model adapter |
-| `@aeliqo/agent/model/responses` | Responses transport integration |
-| `@aeliqo/agent/protocol` | Lower-level Aeliqo agent protocol endpoint |
-| `@aeliqo/agent/capabilities` | Host-owned capability registry and dispatch |
-| `@aeliqo/agent/session` | Session scope, expiry, and lifecycle |
-| `@aeliqo/agent/meaning` | Meaning-related agent capabilities |
-| `@aeliqo/agent/browser` | Optional scoped bridge for explicit surface targets |
+| Subpath                         | Responsibility                                         |
+| ------------------------------- | ------------------------------------------------------ |
+| `@aeliqo/agent/app`             | Application tool endpoint; identical to the root entry |
+| `@aeliqo/agent/mcp`             | MCP client and server adapters                         |
+| `@aeliqo/agent/webmcp`          | Browser WebMCP capability adapter                      |
+| `@aeliqo/agent/model`           | Provider-neutral model tool loop                       |
+| `@aeliqo/agent/model/openai`    | OpenAI model adapter                                   |
+| `@aeliqo/agent/model/responses` | Responses transport integration                        |
+| `@aeliqo/agent/protocol`        | Lower-level Aeliqo agent protocol endpoint             |
+| `@aeliqo/agent/capabilities`    | Host-owned capability registry and dispatch            |
+| `@aeliqo/agent/session`         | Session scope, expiry, and lifecycle                   |
+| `@aeliqo/agent/meaning`         | Meaning-related agent capabilities                     |
+| `@aeliqo/agent/browser`         | Optional scoped bridge for explicit surface targets    |
 
 ## Scoped browser bridge (0.5)
 

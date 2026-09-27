@@ -6,7 +6,11 @@ import type {
   AgentJsonValue,
 } from '../capabilities/types.js';
 import type { RuntimeRenderReceipt } from '@aeliqo/runtime/app';
+import { currentContexts } from './context-capability.js';
+import { normalizeAgentIntent, unknownMeasure } from './intent-guide.js';
+import { RENDER_TOOL_DESCRIPTION } from './intent-schema.js';
 import type { AppRenderPort, AppToolEndpointOptions } from './types.js';
+import { failure } from './values.js';
 
 type RenderReceipt = Awaited<ReturnType<AppRenderPort['render']>>;
 
@@ -33,10 +37,16 @@ function renderValue(receipt: RenderReceipt): AgentJsonValue {
         }),
     diagnostics: receipt.diagnostics.map((item) => ({
       code: item.code,
-      message: item.message,
+      message: toolTerms(item.message),
       retryable: item.retryable,
+      ...(item.path === undefined ? {} : { path: item.path.map((part) => (part === 'timeBucket' ? 'time' : part)) }),
     })),
   };
+}
+
+/** Diagnostics name the tool input the agent wrote, not the compiled query it produced. */
+function toolTerms(message: string): string {
+  return message.replaceAll('timeBucket', 'time').replaceAll('Time buckets', 'Time grouping');
 }
 
 function summarizeOutput(output: Extract<RuntimeRenderReceipt, { status: 'committed' }>['outputs'][number]) {
@@ -84,6 +94,9 @@ function renderOutcome(receipt: RenderReceipt): AgentCapabilityHandlerResult<Age
   }
 }
 
+let intentSequence = 0;
+const nextIntentId = (): string => `agent-intent-${Date.now().toString(36)}-${++intentSequence}`;
+
 type IntentInput = Extract<ReturnType<typeof parseIntent>, { readonly ok: true }>['value'];
 
 export function createRenderCapability(
@@ -94,9 +107,19 @@ export function createRenderCapability(
     ref: { id: 'aeliqo.app.render', revision: '1' },
     operation: 'task.evaluate',
     label: 'Render a registered Aeliqo intent',
-    description:
-      'Validates and renders an intent through the same compiler, data, authority, adaptive policy, and Region lifecycle used by application code.',
-    parse: parseIntent,
+    description: RENDER_TOOL_DESCRIPTION,
+    parse(input) {
+      const active = options.runtime.context(options.regionId);
+      const read = active.ok ? currentContexts(options, active.value) : undefined;
+      const contexts = read?.ok ? read.value : [];
+      const unknown = contexts.length > 0 ? unknownMeasure(input, contexts) : undefined;
+      if (unknown !== undefined)
+        return failure(
+          'agent.app.unknown-measure',
+          `Measure ${unknown} is not declared for this resource. Use a meaning id from aeliqo_context.`,
+        );
+      return parseIntent(normalizeAgentIntent(input, contexts, nextIntentId));
+    },
     async invoke(intent, context): Promise<AgentCapabilityHandlerResult<AgentJsonValue>> {
       if (!canRender(context)) return denied();
       const receipt = await renderPort.render({ regionId: options.regionId, intent, signal: context.signal });

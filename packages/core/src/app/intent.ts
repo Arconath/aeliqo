@@ -238,13 +238,17 @@ function validateAnalysisMeasures(intent: AnalysisIntent, resource: ResourceDefi
   return { ok: true, value: undefined };
 }
 
-function timeBucket(intent: AnalysisIntent): QuerySpec['timeBucket'] {
+/** Calendar and timezone default to the time field's declared temporal policy; the week start never does. */
+function timeBucket(intent: AnalysisIntent, resource: ResourceDefinition): QuerySpec['timeBucket'] {
   if (intent.time === undefined) return undefined;
+  const temporal = resource.entity.fields.find((field) => field.id === intent.time?.field)?.type.temporal;
+  const calendar = intent.time.calendar ?? temporal?.calendar;
+  const timezone = intent.time.timezone ?? temporal?.timezone;
   return {
     field: intent.time.field,
     grain: intent.time.grain,
-    ...(intent.time.calendar === undefined ? {} : { calendar: intent.time.calendar }),
-    ...(intent.time.timezone === undefined ? {} : { timezone: intent.time.timezone }),
+    ...(calendar === undefined ? {} : { calendar }),
+    ...(timezone === undefined ? {} : { timezone }),
     ...(intent.time.weekStartsOn === undefined ? {} : { weekStartsOn: intent.time.weekStartsOn }),
   };
 }
@@ -271,7 +275,7 @@ function compileAnalyze(intent: AnalysisIntent, context: IntentCompilerContext):
   if (!dimensions.ok) return dimensions;
   const measures = validateAnalysisMeasures(intent, resource);
   if (!measures.ok) return measures;
-  const bucket = timeBucket(intent);
+  const bucket = timeBucket(intent, resource);
   const query: QuerySpec = {
     entity: resource.entity.id,
     fields: dimensions.value,

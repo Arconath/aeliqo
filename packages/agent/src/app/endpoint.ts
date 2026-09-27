@@ -1,4 +1,4 @@
-import { contractJsonSchema, type Outcome } from '@aeliqo/core';
+import type { Outcome } from '@aeliqo/core';
 import type {
   AgentCapabilityHost,
   AgentCapabilityHostContext,
@@ -15,6 +15,7 @@ import {
   createActionCapabilityState,
 } from './action-capability.js';
 import { createContextCapability } from './context-capability.js';
+import { agentIntentSchema } from './intent-schema.js';
 import { createRenderCapability } from './render-capability.js';
 import type { AeliqoAppToolEndpoint, AppToolEndpointOptions } from './types.js';
 import { bounded, failure, grants, toolSchema } from './values.js';
@@ -73,7 +74,7 @@ function standardTools(): readonly AgentToolBinding[] {
       name: 'aeliqo_render',
       capability: refs.render,
       operation: 'task.evaluate',
-      inputSchema: toolSchema({ ...contractJsonSchema('intent'), type: 'object' }),
+      inputSchema: toolSchema(agentIntentSchema()),
     },
     { name: 'aeliqo_act', capability: refs.action, operation: 'action.propose', inputSchema: actionSchema },
   ];

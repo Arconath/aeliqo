@@ -9,6 +9,15 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
+## Next release
+
+- Agent tools are easier for models to use: `aeliqo_context` returns ready-to-send
+  `examples`, a `viewGuide`, and `timeGrains`; `aeliqo_render` documents every
+  property and fills `version`, `id`, and a unique measure `revision` when omitted.
+  `AELIQO_AGENT_INSTRUCTIONS` exports a recommended model prompt.
+- Analyze intents take a trend's calendar and timezone from the time field's
+  declared policy when the intent omits them. A week start is never assumed.
+
 ## Aeliqo 0.6.0
 
 Aeliqo 0.6.0 adds registered workspace and page layouts to the same
