@@ -87,9 +87,12 @@ test('documentation search keeps keyboard, query, no-result, and fallback paths'
   const searchTrigger = page.locator('.docs-sidebar .search-trigger');
   await expect(searchTrigger).toBeVisible();
   await expect(searchTrigger).toHaveAttribute('href', '/search/');
-  await page.keyboard.press('Control+K');
   const searchDialog = page.locator('#docs-search-dialog');
-  await expect(searchDialog.getByRole('dialog')).toBeVisible();
+  // The trigger is static HTML; the shortcut listener attaches when the docs module runs.
+  await expect(async () => {
+    await page.keyboard.press('Control+K');
+    await expect(searchDialog.getByRole('dialog')).toBeVisible({ timeout: 1_000 });
+  }).toPass();
   const field = page.locator('#docs-search-dialog input.docs-search-field');
   await field.fill('table');
   const rankedLinks = page.locator('#docs-search-dialog .search-results a');
