@@ -2,13 +2,16 @@
 
 The public website at [docs.aeliqo.com](https://docs.aeliqo.com/) is the primary adoption guide and generated component reference. The files here explain implementation details for contributors and teams integrating advanced Aeliqo boundaries.
 
+[Project status](STATUS.md) records the goal, the published versions, and open items.
+
 ## Start integrating
 
 - [Package guides](packages/README.md): canonical usage, root APIs, and subpaths for the five published packages.
 - [Framework integration](framework-integration.md): Vanilla, React, Vue, SSR, hydration, and package boundaries.
 - [Meaning authoring](meaning-authoring.md): define, register, review, and activate versioned business meaning.
 - [Presentation adaptation](presentation-adaptation.md): bind Results to responsive presentations without changing their claim.
-- [Migration from 0.3 to 0.4](site/pages/migration-0.3.md): update package imports, component names, and MCP requests for the breaking release.
+- [Migration from 0.5 to 0.6](site/pages/migration-0.5.md): the current upgrade guide.
+- [OSS boundary](business/oss-commercial-boundary.md): what ships under Apache-2.0 and runs without a hosted service.
 
 ## Components and composition
 

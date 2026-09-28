@@ -58,7 +58,7 @@ record. They are not acceptance for 0.6.0.
 That record includes a bounded DeepSeek `deepseek-flash` run: 12/12 synthetic
 J1–J3 browser/provider/renderer cases on tree-equivalent PR head `21afcca`
 (tree `955a7d1`), recorded in the
-[sanitized case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json).
+[sanitized case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/releases/0.5.0/evidence/deepseek-flash-j1-j3-21afcca.json).
 It qualifies only that recorded model, corpus and source context. It does not
 establish other model quality, production workloads, human assistive-technology
 use, or current-release acceptance.

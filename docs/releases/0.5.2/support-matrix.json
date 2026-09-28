@@ -100,7 +100,7 @@
       "evidence": [
         "tests/agent-evaluation/j1-j3-corpus.json",
         "tests/agent-evaluation/live-journey-runner.mjs",
-        "docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json"
+        "docs/releases/0.5.0/evidence/deepseek-flash-j1-j3-21afcca.json"
       ]
     },
     {

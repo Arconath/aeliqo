@@ -28,6 +28,7 @@ instead of inventing alternatives.
 - `examples/local-agent` owns the standalone MCP HTTP/stdio and optional BYOK host, runner, and browser UI. It uses public package exports and must work outside the monorepo.
 - `catalog/components.json` defines the public component catalog. `examples/catalog` supplies runnable component examples.
 - `docs/site/` is the authored public documentation source, including all 71 component pages and the other public routes.
+- `docs/STATUS.md` is the single maintained status record: goal, published versions and site image, progress, and open items. Update it in the same change as a release or a closed item.
 - `docs/packages/` is the canonical source for the five npm package guides. Release staging copies these guides into each tarball as `README.md`.
 - `tests` contains contract, clean tarball consumer, browser, accessibility, and performance checks, organized by area (`tests/<area>/` with vitest and Playwright configs).
 - `quality/commands.json` is the machine-readable acceptance matrix executed by `pnpm check`.

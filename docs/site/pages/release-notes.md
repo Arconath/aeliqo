@@ -161,14 +161,14 @@ described below. Do not use that RC as evidence for this source.
 
 DeepSeek `deepseek-flash` passed the bounded 12-case synthetic J1–J3 live
 browser/provider/renderer corpus on tree-equivalent PR head `21afcca` (tree
-`955a7d1`). The [sanitized 12-case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/deepseek-flash-j1-j3-21afcca.json)
+`955a7d1`). The [sanitized 12-case receipt](https://github.com/Arconath/aeliqo/blob/main/docs/releases/0.5.0/evidence/deepseek-flash-j1-j3-21afcca.json)
 records each result. This is model- and corpus-specific evidence; it does not qualify
 other hosted models or production workloads.
 
-The [public 0.5.0 browser receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/public-acceptance-4e8b039.json)
+The [public 0.5.0 browser receipt](https://github.com/Arconath/aeliqo/blob/main/docs/releases/0.5.0/evidence/public-acceptance-4e8b039.json)
 records docs navigation/search, the no-AI People Jakarta, Daily attendance,
 and Analytical workspace journeys, and a downloadable ZIP. The separate
-[clean consumer receipt](https://github.com/Arconath/aeliqo/blob/main/docs/plans/aeliqo-vnext/evidence/live-export-consumer-4e8b039.json)
+[clean consumer receipt](https://github.com/Arconath/aeliqo/blob/main/docs/releases/0.5.0/evidence/live-export-consumer-4e8b039.json)
 records installation of the exact 0.5.0 packages from npm. It also records a
 successful build and browser rendering of the ZIP's synthetic products.
 

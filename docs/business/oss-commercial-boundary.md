@@ -26,23 +26,3 @@ records, identity fields, URLs, and unknown properties, and discloses when its
 count or byte ceiling evicts older records. The application owns collector
 scoping, persistence, transport, access control, and any longer retention. The
 runtime performs no audit network or filesystem I/O.
-
-## Separate commercial hypothesis
-
-A future commercial service may operate cross-organization collaboration,
-catalog and profile rollout, approval workflows, management SSO/SCIM, retained
-audit search, fleet diagnostics, managed infrastructure, private deployment,
-and support/SLA. It would consume the same public contracts and live in a
-separate service and license boundary.
-
-No hosted commercial service, price, SLA, customer demand, recurring revenue,
-or product-market fit is claimed for 0.4.0. Those are hypotheses to validate in
-paid pilots. Any future pricing should separate inference, storage, egress, and
-support costs; BYOK must not be charged again as bundled inference, and ordinary
-rendering must not be metered.
-
-## Release evidence
-
-Source builds and clean tarball consumers demonstrate offline framework use.
-Registry publication and website deployment must be verified against the same
-release revision. See the [0.3 to 0.4 migration guide](../site/pages/migration-0.3.md).

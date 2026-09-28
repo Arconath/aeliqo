@@ -117,6 +117,7 @@ pnpm check
 
 See [AGENTS.md](AGENTS.md) for repository boundaries and the verification
 matrix. Technical guides are maintained under [`docs/`](docs/README.md).
+Current published versions and open work are in [docs/STATUS.md](docs/STATUS.md).
 
 ## Security and license
 
