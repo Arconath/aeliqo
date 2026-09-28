@@ -12,7 +12,7 @@ test('renders exact matrix, overlap lanes and declared-zone calendar with honest
     await page.locator('aeliqo-timeline line').evaluateAll((nodes) => nodes.map((n) => n.getAttribute('y1'))),
   ).toEqual(['24', '52']);
   await expect(page.locator('aeliqo-calendar-grid strong')).toHaveText('2026-09-07');
-  await expect(page.locator('aeliqo-calendar-grid')).toContainText('2 loaded rows');
+  await expect(page.locator('aeliqo-calendar-grid')).toContainText('2 rows');
   await expect(page.locator('aeliqo-timeline [part=scope]')).toContainText('Partial result');
   await expect(page.locator('aeliqo-timeline')).toContainText('Rows beyond this page are unavailable.');
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);

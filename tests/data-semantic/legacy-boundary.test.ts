@@ -100,7 +100,7 @@ describe('legacy region materialization boundary', () => {
           html`<aeliqo-region .presentation=${scoped.value} .results=${[good]}></aeliqo-region>`,
         );
         expect(rendered).toContain('2026-01-01');
-        expect(rendered).toContain('1 of 2 population records loaded');
+        expect(rendered).toContain('Showing 1 of 2 records');
         if (coverage.kind === 'unknown') expect(rendered).toContain('Scope unknown');
         if (coverage.kind === 'sample') expect(rendered).toContain('Bounded sample');
         if (coverage.kind !== 'unknown') expect(rendered).toContain('Showing a partial result.');

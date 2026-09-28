@@ -267,7 +267,11 @@ async function mountComponentPreview(componentMount: HTMLElement): Promise<void>
   const cleanup = definition.mount(preview);
   window.addEventListener('pagehide', cleanup, { once: true });
   const previewStatus = preview.querySelector<HTMLElement>('[data-preview-status]');
-  if (previewStatus) previewStatus.textContent = 'Interactive preview loaded.';
+  if (previewStatus) {
+    // Keep the loaded state for assistive technology without a visible engineering note.
+    previewStatus.textContent = 'Interactive preview loaded.';
+    previewStatus.classList.add('visually-hidden');
+  }
   if (!location.hash) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
   installExampleCopy(componentMount, requested.id);
 }

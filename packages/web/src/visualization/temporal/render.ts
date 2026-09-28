@@ -1,4 +1,5 @@
 import { html, nothing, svg } from 'lit';
+import { resultCaption } from '../scope-caption.js';
 import { repeat } from 'lit/directives/repeat.js';
 import type { Result } from '@aeliqo/core';
 import type { VisualizationSpec } from '@aeliqo/core/visualization';
@@ -19,19 +20,6 @@ interface TemporalRenderState {
 }
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
-
-function scopeText(result: Result): string {
-  switch (result.coverage.kind) {
-    case 'complete':
-      return 'Complete result';
-    case 'sample':
-      return `Sample: ${result.coverage.method}`;
-    case 'partial':
-      return `Partial result: ${result.coverage.reason}`;
-    default:
-      return `Scope unknown: ${result.coverage.reason}`;
-  }
-}
 
 function rowLabel(row: VisualizationRow, result: Result): string {
   return result.identity.map((id) => exactLabel(row.values[id]!)).join(', ');
@@ -59,7 +47,7 @@ function renderMetadata(geometry: TemporalGeometry, scope: string) {
   const result = geometry.result;
   const precision = precisionText(result);
   return html`
-    <p part="scope">${scope}. ${geometry.rows.length} loaded rows.</p>
+    <p part="scope">${scope}.</p>
     ${result.period ? html`<p>${result.period.interpretation} (${result.period.timezone})</p>` : nothing}
     ${result.filters.length ? html`<p>Filtered result (${result.filters.length} applied conditions).</p>` : nothing}
     ${precision === undefined ? nothing : html`<p>${precision}</p>`}
@@ -139,7 +127,7 @@ function renderCalendarDay(
   const soleRow = day.rows.length === 1 ? day.rows[0] : undefined;
   return html`<section class="day" style=${startColumn}>
     <strong>${day.date}</strong>
-    <span>${day.rows.length} loaded rows</span>
+    <span>${day.rows.length} rows</span>
     ${day.rows.slice(0, 3).map((row) => renderCalendarRow(row, state))}
     ${day.rows.length > 3 ? html`<span>${day.rows.length - 3} additional rows in the data table.</span>` : nothing}
     ${soleRow === undefined ? nothing : renderSelectionButton(soleRow, rowLabel(soleRow, geometry.result), state)}
@@ -153,7 +141,7 @@ function renderCalendar(state: TemporalRenderState, field: Result['fields'][numb
   const weekday = WEEKDAYS[geometry.weekStartsOn!];
   return html`<p>
       Gregorian calendar; timezone: ${timezone}. Weeks start on ${weekday}. Missing dates appear only in the data table.
-      Counts below are loaded rows per day.
+      Counts below are rows per day.
     </p>
     <div part="viewport" tabindex="0" role="region" aria-label=${`${label}: scrollable graphic`}>
       <div class="days">${geometry.days.map((day, index) => renderCalendarDay(day, index, state))}</div>
@@ -240,7 +228,7 @@ function renderPagination(state: TemporalRenderState) {
 export function renderTemporalGeometry(state: TemporalRenderState) {
   const { geometry, label, view } = state;
   const result = geometry.result;
-  const scope = scopeText(result);
+  const scope = resultCaption(result, geometry.rows.length);
   const field = temporalField(result, state.visualization);
   const fields = geometry.columns.map((id) => result.fields.find((candidate) => candidate.id === id)!);
   return html`<figure class=${view}>

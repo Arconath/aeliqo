@@ -38,7 +38,7 @@ const output = await renderAeliqo(
 );
 assert(output.includes('9007199254740993.001'));
 assert(output.includes('<circle'));
-assert(output.includes('Scope unknown: Bounded supplied rows'));
+assert(output.includes('Coverage unknown (Bounded supplied rows)'));
 const next = await renderAeliqo(html`<aeliqo-plot></aeliqo-plot>`);
 assert(next.includes('No result is available'));
 assert(!next.includes('9007199254740993.001'));

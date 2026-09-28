@@ -222,6 +222,7 @@ async function setupHomeDemo(peopleRoot: HTMLElement, trendRoot: HTMLElement): P
   const teamControl = document.querySelector<HTMLSelectElement>('#team');
   const status = document.querySelector<HTMLElement>('#demo-status');
   const intentLine = document.querySelector<HTMLElement>('#demo-intent');
+  const intentInline = document.querySelector<HTMLElement>('#demo-intent-inline');
   const viewButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-demo-view]')];
   let view: HomeDemoView = 'table';
   let totalPeople: number | undefined;
@@ -245,7 +246,9 @@ async function setupHomeDemo(peopleRoot: HTMLElement, trendRoot: HTMLElement): P
   };
   async function renderIntent(): Promise<void> {
     const team = teamControl?.value ?? 'all';
-    if (intentLine) intentLine.textContent = view === 'chart' ? chartIntentLabel : browseIntentLabel(team);
+    const intentText = view === 'chart' ? chartIntentLabel : browseIntentLabel(team);
+    if (intentLine) intentLine.textContent = intentText;
+    if (intentInline) intentInline.textContent = intentText;
     setDemoStatus('Checking the request against registered data and views…');
     try {
       const receipt = await example.render(team, view);
@@ -280,6 +283,12 @@ async function setupHomeDemo(peopleRoot: HTMLElement, trendRoot: HTMLElement): P
         : 'Copy unavailable. Select the source above to copy it manually.';
   });
   window.addEventListener('pagehide', () => example.dispose(), { once: true });
+  document.querySelector('#copy-quickstart')?.addEventListener('click', async () => {
+    const snippet = document.querySelector<HTMLElement>('#quickstart-snippet')?.textContent ?? '';
+    const copyStatus = document.querySelector<HTMLElement>('#copy-quickstart-status');
+    const copied = await copyText(snippet);
+    if (copyStatus) copyStatus.textContent = copied ? 'Snippet copied.' : 'Select the snippet above to copy it.';
+  });
 }
 
 const bootFailure = (selector: string, message: string): void => {

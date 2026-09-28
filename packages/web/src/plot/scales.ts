@@ -201,6 +201,55 @@ function tickValues(values: readonly Scalar[]): Scalar[] {
   );
 }
 
+const NICE_MULTIPLIERS = [1n, 2n, 5n, 10n] as const;
+const MAX_NICE_TICKS = 7n;
+
+function niceStep(span: bigint): bigint {
+  let power = 1n;
+  while (power * 10n <= span / 5n) power *= 10n;
+  return (
+    NICE_MULTIPLIERS.map((multiplier) => multiplier * power).find((step) => span / step < MAX_NICE_TICKS) ?? power * 10n
+  );
+}
+
+function ceilToStep(value: bigint, step: bigint): bigint {
+  const remainder = ((value % step) + step) % step;
+  return remainder === 0n ? value : value + step - remainder;
+}
+
+function integerLabel(value: bigint, decimalPlaces: number): string {
+  if (decimalPlaces === 0) return value.toString();
+  const digits = (value < 0n ? -value : value).toString().padStart(decimalPlaces + 1, '0');
+  const whole = digits.slice(0, -decimalPlaces);
+  const fraction = digits.slice(-decimalPlaces).replace(/0+$/u, '');
+  return `${value < 0n ? '-' : ''}${whole}${fraction === '' ? '' : `.${fraction}`}`;
+}
+
+/** Round 1-2-5 steps inside the exact domain, so a zero baseline is labeled and marks keep their positions. */
+function niceTickValues(values: readonly Scalar[], type: SemanticType, includeZero: boolean): Scalar[] | undefined {
+  const exact = values.map((value) => decimalExact(value));
+  if (includeZero) exact.push({ coefficient: 0n, scale: 0 });
+  const decimalPlaces = Math.max(0, ...exact.map((value) => value.scale));
+  const [minimum, maximum] = integerExtent(
+    exact.map((value) => value.coefficient * 10n ** BigInt(decimalPlaces - value.scale)),
+  );
+  if (maximum === minimum) return undefined;
+  const step = niceStep(maximum - minimum);
+  const ticks: Scalar[] = [];
+  for (let value = ceilToStep(minimum, step); value <= maximum; value += step) {
+    const label = integerLabel(value, decimalPlaces);
+    ticks.push(type.value === 'decimal' ? { decimal: label } : Number(label));
+  }
+  return ticks.length >= 2 ? ticks : undefined;
+}
+
+function axisTicks(values: readonly Scalar[], encoding: PlotEncoding, type: SemanticType): Scalar[] {
+  const numeric = ['integer', 'float', 'decimal'].includes(type.value);
+  const nice =
+    numeric && encoding.scale === 'linear' ? niceTickValues(values, type, encoding.zero === true) : undefined;
+  return nice ?? tickValues(values as Scalar[]);
+}
+
 /** Offset exact values before floating geometry conversion, preserving small differences on large baselines. */
 export function makePlotScale(
   encoding: PlotEncoding,
@@ -208,9 +257,33 @@ export function makePlotScale(
   input: readonly Scalar[],
   range: readonly [number, number],
 ): PlotScale {
+  return buildScale(encoding, type, input, range, (values) => tickValues(values as Scalar[]));
+}
+
+/** A positional x/y scale whose linear numeric ticks use rounded 1-2-5 steps instead of data values. */
+export function makeAxisScale(
+  encoding: PlotEncoding,
+  type: SemanticType,
+  input: readonly Scalar[],
+  range: readonly [number, number],
+): PlotScale {
+  return buildScale(encoding, type, input, range, (values) => axisTicks(values, encoding, type));
+}
+
+function buildScale(
+  encoding: PlotEncoding,
+  type: SemanticType,
+  input: readonly Scalar[],
+  range: readonly [number, number],
+  pickTicks: (values: readonly Scalar[]) => Scalar[],
+): PlotScale {
   const values = collectValues(input, type);
   const at =
     encoding.scale === 'ordinal' ? ordinalScale(values, type, range) : numericScale(values, encoding, type, range);
-  const ticks = tickValues(values).map((value) => ({ position: at(value)!, value, label: exactLabel(value) }));
+  const ticks = pickTicks(values).map((value) => ({
+    position: at(value)!,
+    value,
+    label: exactLabel(value),
+  }));
   return { at, ticks };
 }

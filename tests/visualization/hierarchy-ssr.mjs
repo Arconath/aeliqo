@@ -15,7 +15,7 @@ for (const template of templates) {
   const output = await renderAeliqo(template);
   assert.match(output, /<svg/);
   assert.match(output, /<table/);
-  assert.match(output, /Partial result: Loaded branch only/);
+  assert.match(output, /Partial result \(Loaded branch only\)/);
   assert.doesNotMatch(output, /NaN|Infinity/);
 }
 const empty = await renderAeliqo(html`<aeliqo-tree></aeliqo-tree>`);

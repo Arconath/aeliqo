@@ -9,7 +9,7 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
-## Next release
+## Aeliqo 0.6.1
 
 - Agent tools are easier for models to use: `aeliqo_context` returns ready-to-send
   `examples`, a `viewGuide`, and `timeGrains`; `aeliqo_render` documents every
@@ -17,6 +17,14 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
   `AELIQO_AGENT_INSTRUCTIONS` exports a recommended model prompt.
 - Analyze intents take a trend's calendar and timezone from the time field's
   declared policy when the intent omits them. A week start is never assumed.
+- Linear chart axes are labeled with round steps from a zero baseline, cartesian
+  charts draw the same gridlines as trend charts, and a single-series legend
+  shows only the value.
+- Counts use plain language: "4 records", "Showing 4 of 120 records", and "3 rows"
+  for charts. Partial, sampled, and unknown coverage is still stated explicitly.
+- The playground offers three copyable WebMCP prompts that each produce a
+  different view, and the landing page is redesigned around asking a question
+  and getting a fitting view.
 
 ## Aeliqo 0.6.0
 

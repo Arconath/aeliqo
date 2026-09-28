@@ -276,7 +276,7 @@ test('observes adverse dense and null-heavy visualization behavior with exact da
   expect(structure.bar.firstPageButtons).toBe(PAGE_SIZE);
   expect(structure.bar.svgRectCount).toBeLessThanOrEqual(MAX_MARKS);
   expect(structure.bar.tableText).toContain('Beschäftigtenverteilung für die internationale Produktgruppe');
-  expect(structure.bar.scopeText).toContain('Complete result.');
+  expect(structure.bar.scopeText).toMatch(/\d+ rows\./u);
   expect(structure.bar.tableCaption).toContain('Exact loaded values');
 
   expect(structure.trend.rowCount).toBe(1_000);
@@ -287,7 +287,7 @@ test('observes adverse dense and null-heavy visualization behavior with exact da
   expect(structure.trend.firstPageButtons).toBe(PAGE_SIZE);
   expect(structure.trend.markPathSegmentCount).toBe(250);
   expect(structure.trend.tableText).toContain('Missing');
-  expect(structure.trend.scopeText).toContain('Complete result.');
+  expect(structure.trend.scopeText).toMatch(/\d+ rows\./u);
   expect(structure.trend.tableCaption).toContain('Exact loaded values');
 
   expect(structure.selectedSetCount).toBe(1_000);

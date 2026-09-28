@@ -354,14 +354,15 @@ for (const button of inspectorButtons)
     renderInspector();
   });
 connectButton.addEventListener('click', () => void connectionFlow.connect());
-required<HTMLButtonElement>('#pg-copy-prompt').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(required<HTMLElement>('#pg-agent-prompt').textContent ?? '');
-    copyStatus.textContent = 'Prompt copied. Paste it into your browser agent.';
-  } catch {
-    copyStatus.textContent = 'Select and copy the prompt above.';
-  }
-});
+for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-prompt]'))
+  button.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(button.textContent?.trim() ?? '');
+      copyStatus.textContent = 'Prompt copied. Paste it into your browser agent.';
+    } catch {
+      copyStatus.textContent = 'Select and copy the prompt text.';
+    }
+  });
 
 const narrowRail = window.matchMedia('(max-width: 800px)');
 const syncRequestRail = () => {

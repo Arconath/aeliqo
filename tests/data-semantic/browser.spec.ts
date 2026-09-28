@@ -18,7 +18,7 @@ test('renders metric, delta and detail from one validated semantic region', asyn
   await expect(region.locator('aeliqo-detail [part=fact][data-field=name] dd')).toHaveText('Ada');
   await expect(region.locator('aeliqo-key-value')).toHaveCount(1);
   await expect(region.locator('aeliqo-selection-summary')).toHaveCount(1);
-  await expect(region.locator('aeliqo-record-list [part=scope]')).toContainText('2 of 3 population records loaded');
+  await expect(region.locator('aeliqo-record-list [part=scope]')).toContainText('Showing 2 of 3 records');
 });
 
 test('filter typing stays draft-only and Apply emits a typed semantic payload', async ({ page }) => {

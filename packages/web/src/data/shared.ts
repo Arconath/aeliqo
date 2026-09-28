@@ -65,18 +65,28 @@ export function dataStatusMessage(status: AeliqoDataStatus, message?: string, lo
   return statusCopy[status][/^id(?:-|$)/i.test(locale ?? '') ? 1 : 0];
 }
 
+/** Plain-language counts: all rows as a count, a partial load as "Showing N of M". */
+function shownOfTotal(loaded: number, total: number, population: string, indonesian: boolean): string {
+  const matching = population === 'matching';
+  if (indonesian) {
+    const noun = matching ? 'rekaman yang cocok' : 'rekaman';
+    return loaded === total
+      ? `${total.toLocaleString('id-ID')} ${noun}`
+      : `Menampilkan ${loaded.toLocaleString('id-ID')} dari ${total.toLocaleString('id-ID')} ${noun}`;
+  }
+  const noun = matching ? 'matching records' : 'records';
+  return loaded === total
+    ? `${total.toLocaleString()} ${noun}`
+    : `Showing ${loaded.toLocaleString()} of ${total.toLocaleString()} ${noun}`;
+}
+
 function scopeCountText(scope: AeliqoDataScope, indonesian: boolean): string | undefined {
   const total = scope.filteredTotal ?? scope.populationTotal;
   const population = scope.filteredTotal === undefined ? 'population' : 'matching';
-  if (scope.loaded !== undefined && total !== undefined) {
-    if (indonesian)
-      return `${scope.loaded.toLocaleString('id-ID')} dari ${total.toLocaleString('id-ID')} rekaman ${scope.filteredTotal === undefined ? 'populasi' : 'yang cocok'} dimuat`;
-    return `${scope.loaded.toLocaleString()} of ${total.toLocaleString()} ${population} records loaded`;
-  }
+  if (scope.loaded !== undefined && total !== undefined)
+    return shownOfTotal(scope.loaded, total, population, indonesian);
   if (scope.loaded !== undefined)
-    return indonesian
-      ? `${scope.loaded.toLocaleString('id-ID')} rekaman dimuat`
-      : `${scope.loaded.toLocaleString()} loaded records`;
+    return indonesian ? `${scope.loaded.toLocaleString('id-ID')} rekaman` : `${scope.loaded.toLocaleString()} records`;
   if (total === undefined) return undefined;
   return indonesian
     ? `${total.toLocaleString('id-ID')} rekaman ${scope.filteredTotal === undefined ? 'populasi' : 'yang cocok'}`

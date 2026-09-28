@@ -25,10 +25,8 @@
   color: var(--accent);
   background: var(--accent-soft);
   font:
-    700 0.56rem ui-monospace,
+    600 0.72rem ui-monospace,
     monospace;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

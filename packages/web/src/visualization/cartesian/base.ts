@@ -192,6 +192,12 @@ export abstract class AeliqoCartesianElement extends AeliqoFoundationElement {
       [part='layer'] > div {
         grid-area: 1 / 1;
       }
+      [part='viewport'] svg .gridline {
+        opacity: 0.45;
+        stroke: var(--aeliqo-chart-rule, var(--aeliqo-color-border, #8d98a5));
+        stroke-dasharray: 2 4;
+        stroke-width: 1;
+      }
       [part='viewport'] svg[data-single-row-ticks] :is(.axis-x-tick-offset, .axis-title-x) {
         transform: translateY(-44px);
       }

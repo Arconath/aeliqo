@@ -1,4 +1,5 @@
 import { html, nothing, svg } from 'lit';
+import { resultCaption } from '../scope-caption.js';
 import { repeat } from 'lit/directives/repeat.js';
 import type { Result, ResultRef, Scalar } from '@aeliqo/core';
 import { exactLabel } from '../../plot/scales.js';
@@ -24,19 +25,6 @@ function diagnosticMessage(diagnostics: readonly { readonly message: string }[])
   return diagnostics[0]?.message ?? 'The visualization is unavailable.';
 }
 
-function coverageText(result: Result): string {
-  switch (result.coverage.kind) {
-    case 'complete':
-      return 'Complete result.';
-    case 'partial':
-      return 'Partial result: ' + result.coverage.reason + '.';
-    case 'sample':
-      return 'Sample: ' + result.coverage.method + '.';
-    case 'unknown':
-      return 'Scope unknown: ' + result.coverage.reason + '.';
-  }
-}
-
 function histogramScopeText(result: Result): string {
   switch (result.coverage.kind) {
     case 'complete':
@@ -50,9 +38,14 @@ function histogramScopeText(result: Result): string {
   }
 }
 
-function scopeText(result: Result, histogram: boolean): string {
-  if (!histogram) return coverageText(result);
-  return histogramScopeText(result) + '. Source observation coverage and missing/outside-bin counts are unknown.';
+function scopeText(result: Result, histogram: boolean, count: number): string {
+  if (!histogram) return resultCaption(result, count) + '.';
+  return (
+    histogramScopeText(result) +
+    '. Source observation coverage and missing/outside-bin counts are unknown. ' +
+    count +
+    ' bins.'
+  );
 }
 
 function uncertaintyText(result: Result): string {
@@ -182,12 +175,10 @@ function renderCaption(
   displayedCount: number,
 ): unknown {
   if (!data) return nothing;
-  const partition =
-    displayedCount === geometry.rows.length ? nothing : ' ' + displayedCount + ' rows in this display partition.';
+  const partition = displayedCount === geometry.rows.length ? nothing : ' ' + displayedCount + ' rows in this view.';
   return html`<figcaption>${label}</figcaption>
     <p part="scope">
-      ${scopeText(geometry.result, context.expectedView === 'histogram')} ${geometry.rows.length} loaded
-      rows.${partition}
+      ${scopeText(geometry.result, context.expectedView === 'histogram', geometry.rows.length)}${partition}
     </p>`;
 }
 
@@ -235,6 +226,15 @@ function renderGeometryError(geometry: PlotGeometry): unknown {
   return html`<p part="error" role="status">${geometry.reason ?? 'The chart geometry is unavailable.'}</p>`;
 }
 
+/** Horizontal guides for a quantitative y axis; categorical axes stay unruled. */
+function renderGridlines(ticks: NonNullable<PlotGeometry['axes']>['y']['ticks'], left: number, right: number): unknown {
+  if (!ticks.every((tick) => typeof tick.value === 'number' || (typeof tick.value === 'object' && tick.value !== null)))
+    return nothing;
+  return ticks.map(
+    (tick) => svg`<line class="gridline" x1=${left} x2=${right} y1=${tick.position} y2=${tick.position}></line>`,
+  );
+}
+
 function renderChart(
   geometry: PlotGeometry,
   label: string,
@@ -260,9 +260,9 @@ function renderChart(
       width=${geometry.width}
       height=${svgHeight}
       role="img"
-      aria-label=${label + '. ' + scopeText(geometry.result, context.expectedView === 'histogram') + ' Values and selection are available in the data table below.'}
+      aria-label=${label + '. ' + scopeText(geometry.result, context.expectedView === 'histogram', geometry.rows.length) + ' Values and selection are available in the data table below.'}
     >
-      ${svgPlotMarks(geometry)}
+      ${renderGridlines(axes.y.ticks, left, geometry.width - 24)} ${svgPlotMarks(geometry)}
       <path
         d=${'M' + left + ',24V' + (geometry.height - 48) + 'H' + (geometry.width - 24)}
         fill="none"

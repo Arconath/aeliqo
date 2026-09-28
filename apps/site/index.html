@@ -94,10 +94,10 @@
       <section class="shell hero">
         <div class="hero-copy">
           <p class="eyebrow hero-status">OPEN-SOURCE TYPESCRIPT UI RUNTIME</p>
-          <h1>Say what to show. <em>Aeliqo picks the view that fits.</em></h1>
+          <h1>Ask a question. <em>Aeliqo picks the view.</em></h1>
           <p class="lead">
-            Adapt components, workspaces, and whole-page layouts to intent and available space. Your application
-            registers the views; buttons or AI agents can request them.
+            Describe your data once. A button, your code, or an AI agent asks for a list, a trend, or a breakdown, and
+            Aeliqo renders a view that fits the answer and the space. No table or chart code per question.
           </p>
           <div class="actions">
             <a class="primary" href="https://docs.aeliqo.com/playground/"
@@ -168,6 +168,7 @@
               </div>
             </div>
           </header>
+          <p class="demo-intent-line"><span>Intent</span><code id="demo-intent-inline"></code></p>
           <div class="demo-tabs" role="tablist" aria-label="Demo output">
             <button
               class="demo-tab"
@@ -219,112 +220,141 @@
         </aside>
       </section>
 
-      <section class="shell approach" aria-labelledby="approach-title">
-        <div class="approach-intro">
-          <p class="eyebrow">CLEAR OWNERSHIP</p>
-          <h2 id="approach-title">You define the product.<br />Aeliqo adapts the interface.</h2>
-          <p>You keep the data, the rules, and the views. Aeliqo only does the adapting.</p>
-        </div>
-        <div class="approach-list">
-          <article>
-            <span>01</span>
-            <div>
-              <h3>You declare.</h3>
-              <p>
-                Describe what your data means, connect the permitted records, register actions, and pick the views that
-                may appear.
-              </p>
-              <a href="https://docs.aeliqo.com/start/">See the full setup <span aria-hidden="true">→</span></a>
-            </div>
-          </article>
-          <article>
-            <span>02</span>
-            <div>
-              <h3>Aeliqo renders.</h3>
-              <p>
-                Render one component, combine results in a workspace, or compose a registered page with a header and
-                sidebar. Validated state mappings preserve compatible state; draft exits stay under application control.
-              </p>
-              <a href="https://docs.aeliqo.com/guides/workspace/"
-                >Build a workspace or page <span aria-hidden="true">→</span></a
-              >
-            </div>
-          </article>
-          <article>
-            <span>03</span>
-            <div>
-              <h3>An agent asks.</h3>
-              <p>
-                MCP, WebMCP, or your own model host can submit the same bounded request. The agent never supplies HTML,
-                code, or permissions.
-              </p>
-              <a href="https://docs.aeliqo.com/agents/">Connect an agent <span aria-hidden="true">→</span></a>
-            </div>
-          </article>
+      <section class="shell how" aria-labelledby="how-title">
+        <p class="eyebrow">HOW IT WORKS</p>
+        <h2 id="how-title">Describe once. Ask anything the data can answer.</h2>
+        <ol class="how-steps">
+          <li>
+            <span class="how-step">1 · Describe</span>
+            <h3>Your data and what it means</h3>
+            <p>Fields, a measure, and the views you allow. Your app keeps the records and permissions.</p>
+            <pre tabindex="0"><code>defineResource({
+  id: 'people',
+  fields: { team: { role: 'dimension' },
+            joined: { role: 'time' } },
+  measures: { hires: { aggregate: 'count' } },
+  presentation: {
+    allowedViews: ['table', 'cards', 'trend', 'bar'],
+  },
+});</code></pre>
+          </li>
+          <li>
+            <span class="how-step">2 · Ask</span>
+            <h3>A small typed intent</h3>
+            <p>From a button, your code, a URL, or an AI agent. It never contains HTML, code, or permissions.</p>
+            <pre tabindex="0"><code>{
+  "kind": "analyze",
+  "resource": "people",
+  "measures": [{ "id": "hires" }],
+  "time": { "field": "joined", "grain": "month" }
+}</code></pre>
+          </li>
+          <li>
+            <span class="how-step">3 · Adapt</span>
+            <h3>A view that fits</h3>
+            <p>Aeliqo validates the intent, evaluates the permitted data, and picks an allowed view.</p>
+            <ul class="how-map" aria-label="Which view answers which intent">
+              <li><code>browse</code><span>Table, or cards on a phone</span></li>
+              <li><code>analyze + time</code><span>Trend chart</span></li>
+              <li><code>analyze + dimensions</code><span>Bar chart</span></li>
+              <li><code>detail</code><span>One record</span></li>
+            </ul>
+          </li>
+        </ol>
+      </section>
+
+      <section class="shell scenarios" aria-labelledby="scenarios-title">
+        <p class="eyebrow">WORKING EXAMPLES</p>
+        <h2 id="scenarios-title">The same runtime for four kinds of work.</h2>
+        <div class="scenario-grid">
+          <a href="https://docs.aeliqo.com/examples/people/">
+            <span class="mini mini-table" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <strong>People</strong>
+            <p>Browse, filter, and chart workforce data.</p>
+            <b>Table · cards · trend</b>
+          </a>
+          <a href="https://docs.aeliqo.com/examples/products/">
+            <span class="mini mini-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <strong>Products</strong>
+            <p>Explore a catalog, compare items, and open validated forms.</p>
+            <b>Grid · detail · form</b>
+          </a>
+          <a href="https://docs.aeliqo.com/examples/support/">
+            <span class="mini mini-queue" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>Support</strong>
+            <p>Search tickets, edit state, and confirm business actions.</p>
+            <b>Queue · editor</b>
+          </a>
+          <a href="https://docs.aeliqo.com/examples/knowledge/">
+            <span class="mini mini-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            <strong>Knowledge</strong>
+            <p>Search content and move into focused reading layouts.</p>
+            <b>Results · article</b>
+          </a>
         </div>
       </section>
 
-      <section class="shell use-cases" aria-labelledby="use-cases-title">
-        <div class="section-intro">
-          <p class="eyebrow">FOUR WORKING SCENARIOS</p>
-          <h2 id="use-cases-title">The same runtime across four kinds of work.</h2>
-          <p>Each example runs on synthetic records and registered views. Open one to inspect its runnable flow.</p>
+      <section class="shell developers" aria-labelledby="developers-title">
+        <div class="developers-copy">
+          <p class="eyebrow">FOR DEVELOPERS</p>
+          <h2 id="developers-title">Four questions, four views, one file.</h2>
+          <p>
+            The quickstart renders a table, a filtered table, a monthly trend, and a per-team bar chart from one People
+            resource in about ten minutes. No account, backend, or model key.
+          </p>
+          <div class="start-paths">
+            <a href="https://docs.aeliqo.com/start/"><strong>React quickstart</strong><span>Vite + React 19</span></a>
+            <a href="https://docs.aeliqo.com/start/standalone-components/"
+              ><strong>Web Components</strong><span>Any framework or none</span></a
+            >
+            <a href="https://docs.aeliqo.com/agents/"
+              ><strong>AI agents</strong><span>MCP, WebMCP, or your model</span></a
+            >
+          </div>
         </div>
-        <div class="use-case-list">
-          <a href="https://docs.aeliqo.com/examples/people/"
-            ><span>01</span><strong>People</strong>
-            <p>Browse, filter, inspect, and analyze workforce data.</p>
-            <b>Table ↔ cards</b></a
-          >
-          <a href="https://docs.aeliqo.com/examples/products/"
-            ><span>02</span><strong>Products</strong>
-            <p>Explore a catalog, compare items, and open validated forms.</p>
-            <b>Grid ↔ detail</b></a
-          >
-          <a href="https://docs.aeliqo.com/examples/support/"
-            ><span>03</span><strong>Support</strong>
-            <p>Search tickets, edit state, and confirm business actions.</p>
-            <b>Queue ↔ editor</b></a
-          >
-          <a href="https://docs.aeliqo.com/examples/knowledge/"
-            ><span>04</span><strong>Knowledge</strong>
-            <p>Search content and move into focused reading layouts.</p>
-            <b>Results ↔ article</b></a
-          >
-        </div>
+        <figure class="developers-code">
+          <figcaption>src/main.tsx</figcaption>
+          <pre tabindex="0"><code id="quickstart-snippet">const questions = {
+  Everyone: { kind: 'browse', resource: 'people' },
+  'Hires per month': {
+    kind: 'analyze', resource: 'people',
+    measures: [{ id: 'hires', revision: '1' }],
+    time: { field: 'joined', grain: 'month' },
+  },
+};
+
+&lt;AeliqoRegion regionId="people" resourceId="people"
+  intent={questions[question]} /&gt;</code></pre>
+          <button type="button" id="copy-quickstart">Copy snippet</button>
+          <span class="caption" id="copy-quickstart-status" role="status"></span>
+        </figure>
       </section>
 
       <section class="boundary-section">
         <div class="shell boundary-grid">
           <div>
-            <p class="eyebrow">THE BOUNDARY, IN ONE SENTENCE</p>
+            <p class="eyebrow">THE BOUNDARY</p>
             <h2>Agents propose. Your app decides.</h2>
           </div>
-          <div class="boundary-copy">
-            <p>
-              An agent may submit a typed intent — it can never provide HTML, JavaScript, SQL, credentials, permissions,
-              or an unregistered view.
-            </p>
-            <ul>
-              <li>Your app keeps its data, identity, routes, and actions.</li>
-              <li>Manual authoring and controls work with no AI at all.</li>
-              <li>Invalid or stale proposals are rejected before anything renders.</li>
-            </ul>
-            <a class="text-action" href="https://docs.aeliqo.com/ship/"
-              >Read the production boundary <span aria-hidden="true">→</span></a
-            >
-          </div>
+          <ul class="boundary-points">
+            <li>
+              <strong>No generated UI.</strong> An agent sends a typed intent, never HTML, code, SQL, or permissions.
+            </li>
+            <li><strong>Your rules.</strong> Data, identity, routes, and actions stay in your application.</li>
+            <li>
+              <strong>Works without AI.</strong> Buttons and code use the same path; invalid requests never render.
+            </li>
+          </ul>
         </div>
       </section>
 
       <section class="shell closing">
-        <p class="eyebrow">START WITH ONE REGION</p>
-        <h2>Render one real view before adding an agent.</h2>
+        <h2>See it adapt in your browser.</h2>
         <div class="closing-actions">
           <a class="primary" href="https://docs.aeliqo.com/playground/"
-            >Try the playground <span aria-hidden="true">↗</span></a
-          ><a class="text-action" href="https://github.com/Arconath/aeliqo"
-            >Explore the source <span aria-hidden="true">↗</span></a
+            >Open the playground <span aria-hidden="true">→</span></a
+          ><a class="secondary-action" href="https://github.com/Arconath/aeliqo"
+            >Star on GitHub <span aria-hidden="true">↗</span></a
           >
         </div>
       </section>
