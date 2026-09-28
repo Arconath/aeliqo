@@ -356,7 +356,7 @@ jobs:
   visual-shards:
     needs: policy
     # Advisory until the reference is stable: evidence is kept, but it never blocks merge or publication.
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && !(github.event_name == 'workflow_dispatch' && inputs.visual_probe)
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -393,8 +393,13 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
-      - name: Require approved source pixel comparison
-        run: node scripts/visual/run.mjs --shard ${{ matrix.browser }}
+      - name: Capture reproducibility or compare an approved source
+        run: |
+          if [ "$(node -p "require('./scripts/visual/baseline.json').status")" = unapproved ]; then
+            node scripts/visual/run.mjs --probe --shard ${{ matrix.browser }}
+          else
+            node scripts/visual/run.mjs --shard ${{ matrix.browser }}
+          fi
       - name: Preserve visual source, environment, repeated captures, and diffs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -416,7 +421,7 @@ jobs:
   visual:
     needs: [policy, visual-shards]
     # Advisory: see visual-shards.
-    if: always() && github.event_name != 'pull_request'
+    if: always() && github.event_name != 'pull_request' && !(github.event_name == 'workflow_dispatch' && inputs.visual_probe)
     continue-on-error: true
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -448,7 +453,12 @@ jobs:
           merge-multiple: false
       - name: Require all browser evidence and complete inventory
         if: always()
-        run: node scripts/visual/aggregate.mjs
+        run: |
+          if [ "$(node -p "require('./scripts/visual/baseline.json').status")" = unapproved ]; then
+            node scripts/visual/aggregate.mjs --probe
+          else
+            node scripts/visual/aggregate.mjs
+          fi
       - name: Preserve full aggregate decision
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

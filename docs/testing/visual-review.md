@@ -92,16 +92,19 @@ selected coverage and distinguish an unapproved probe from an approved pass.
 
 The initial tracked record is deliberately **unapproved**. Local engine probes
 are not release acceptance, container reproducibility, or design approval.
-CI must not report the pixel gate as enabled until the full double capture and
-reviewed metadata process has completed. Keep the existing behavioral visual
-suite in the quality matrix throughout.
+While it remains unapproved, the advisory CI jobs run the full pinned-container
+reproducibility probe and report `probe-reproducible-unapproved`, never a pixel
+comparison pass. The direct `--full` command still rejects the unapproved
+record. Keep the existing behavioral visual suite in the quality matrix throughout.
 
 ## Required CI gate and diagnostic bootstrap
 
-The required `visual-shards` matrix in `.github/workflows/quality.yml` runs one
-job for each of Chromium, Firefox, and WebKit. Each job performs its baseline,
-baseline repeat, candidate, candidate repeat, and pixel comparison sequentially
-on the same runner in the immutable amd64 Playwright image:
+The `visual-shards` matrix in `.github/workflows/quality.yml` runs one job for
+each of Chromium, Firefox, and WebKit. With an approved baseline, each job
+performs its baseline, baseline repeat, candidate, candidate repeat, and pixel
+comparison sequentially on the same runner in the immutable amd64 Playwright image.
+With the exact `unapproved` status, it captures and compares two candidate
+runs instead; any other status enters the strict gate and fails without approval:
 
 ```text
 mcr.microsoft.com/playwright@sha256:bc6ab0d6d44ff4826e4cb8c1e6d801e185bfc42bb0753f8e2a30efc70db054c7
@@ -128,11 +131,16 @@ their own configurations. It neither masks pixels nor changes comparison
 thresholds. Local emulated amd64 checks cannot establish native CI stability:
 the complete repeated captures must still pass on the pinned Linux runner.
 
-For bootstrap commit A, the repository owner dispatches the existing quality
+For bootstrap commit A, the repository owner can dispatch the existing quality
 workflow with `visual_probe: true` and its exact source SHA. That adds a separate
 `visual-probe-shards` matrix running `--probe --shard <browser>` in the same image.
-The normal approved gate still runs and rejects an unapproved baseline. The probe can therefore
-produce review evidence without creating a successful release-quality result.
+That explicit dispatch skips the normal advisory matrix, so the same source is
+not captured twice. On default dispatches and pushes, the normal advisory
+matrix probes while the baseline is unapproved; every probe report remains
+explicitly unapproved rather than claiming a pixel pass. Even after a baseline
+is approved, `visual_probe: true` stays diagnostic and skips the strict
+comparison; it cannot qualify as pixel acceptance or release evidence. A main
+push or default dispatch runs the strict comparison once approval exists.
 Every browser job uploads its complete artifact directory and a compact shard
 report even on failure.
 

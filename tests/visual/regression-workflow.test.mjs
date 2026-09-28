@@ -9,21 +9,33 @@ function job(name) {
   return block;
 }
 function assertAdvisory(block) {
-  assert.match(block, /\n    if: (always\(\) && )?github.event_name != 'pull_request'\n    continue-on-error: true\n/u);
+  assert.match(
+    block,
+    /\n    if: (always\(\) && )?github.event_name != 'pull_request'( && !\(github.event_name == 'workflow_dispatch' && inputs.visual_probe\))?\n    continue-on-error: true\n/u,
+  );
 }
-test('advisory visual gate runs outside pull requests and uses pinned real container', () => {
+test('advisory visual job probes only an unapproved baseline and otherwise keeps the strict gate', () => {
   const gate = job('visual-shards');
   assert.match(gate, /needs: policy/u);
   assertAdvisory(gate);
+  assert.match(
+    gate,
+    /if: github.event_name != 'pull_request' && !\(github.event_name == 'workflow_dispatch' && inputs.visual_probe\)/u,
+  );
   assert.ok(gate.includes(`image: mcr.microsoft.com/playwright@${digest}`));
   assert.ok(gate.includes(`AELIQO_VISUAL_CONTAINER_DIGEST: ${digest}`));
-  assert.match(gate, /run: node scripts\/visual\/run.mjs --shard \$\{\{ matrix.browser \}\}\n/u);
+  assert.match(
+    gate,
+    /if \[ "\$\(node -p "require\('\.\/scripts\/visual\/baseline\.json'\)\.status"\)" = unapproved \]; then/u,
+  );
+  assert.match(gate, /node scripts\/visual\/run.mjs --probe --shard \$\{\{ matrix.browser \}\}/u);
+  assert.match(gate, /else\n\s+node scripts\/visual\/run.mjs --shard \$\{\{ matrix.browser \}\}/u);
   assert.match(gate, /fetch-depth: 0/u);
   assert.match(gate, /if: always\(\)/u);
   assert.match(gate, /path: artifacts\/visual-regression/u);
   assert.doesNotMatch(gate, /playwright install|apt-get|update-snapshots/u);
 });
-test('owner-dispatched full probe is additive and uses the same runner without replacing approved gate', () => {
+test('owner-dispatched full probe uses one matrix and the same runner', () => {
   const probe = job('visual-probe-shards');
   assert.match(probe, /needs: policy/u);
   assert.match(probe, /if:.*github.event_name == 'workflow_dispatch'.*inputs.visual_probe/u);
@@ -88,5 +100,18 @@ for (const name of ['visual', 'visual-probe'])
     assert.ok(block.indexOf('Require authorized source policy') < block.indexOf('actions/checkout@'));
     if (name === 'visual') assertAdvisory(block);
     else assert.doesNotMatch(block, /continue-on-error/u);
-    assert.ok(block.includes(`run: node scripts/visual/aggregate.mjs${name === 'visual-probe' ? ' --probe' : ''}\n`));
+    if (name === 'visual') {
+      assert.match(
+        block,
+        /if: always\(\) && github.event_name != 'pull_request' && !\(github.event_name == 'workflow_dispatch' && inputs.visual_probe\)/u,
+      );
+      assert.match(
+        block,
+        /if \[ "\$\(node -p "require\('\.\/scripts\/visual\/baseline\.json'\)\.status"\)" = unapproved \]; then/u,
+      );
+      assert.match(block, /node scripts\/visual\/aggregate.mjs --probe/u);
+      assert.match(block, /else\n\s+node scripts\/visual\/aggregate.mjs\n/u);
+    } else {
+      assert.ok(block.includes('run: node scripts/visual/aggregate.mjs --probe\n'));
+    }
   });
