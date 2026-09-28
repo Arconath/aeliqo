@@ -9,7 +9,7 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
-## Next release
+## Aeliqo 0.6.1
 
 - Agent tools are easier for models to use: `aeliqo_context` returns ready-to-send
   `examples`, a `viewGuide`, and `timeGrains`; `aeliqo_render` documents every
