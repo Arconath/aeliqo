@@ -1,4 +1,4 @@
-import { makePlotScale } from '../scales.js';
+import { makeAxisScale, makePlotScale } from '../scales.js';
 import type { PlotScale, PlotTick } from '../scales.js';
 import { quantitativeColor } from '../palette.js';
 import type { GeometryCheck, PlotProjection, PlotSource } from './types.js';
@@ -30,7 +30,7 @@ export function createPrimaryScales(source: PlotSource, projection: PlotProjecti
   const encodingError = validateMarkEncodings(unit);
   if (encodingError !== undefined) return { kind: 'data-only', reason: encodingError };
   const { encoding } = unit;
-  const x = makePlotScale(
+  const x = makeAxisScale(
     encoding.x,
     fields.get(encoding.x.field)!.type,
     projection.domains?.x ?? displayed.flatMap((datum) => xValues(datum, encoding)),
@@ -149,7 +149,7 @@ export function createVerticalLayout(
       ? displayed.flatMap((datum) => yValues(datum, encoding))
       : [...projection.domains.y];
   domain.push(...stackValues);
-  const y = makePlotScale(encoding.y, yType, domain, [height - 48, 24]);
+  const y = makeAxisScale(encoding.y, yType, domain, [height - 48, 24]);
   const needsZero = ZERO_BASED_FAMILIES.has(family ?? '') || unit.mark === 'bar' || unit.mark === 'area';
   const zeroY = needsZero ? y.at(quantitativeZero(yType)) : undefined;
   if (needsZero && zeroY === undefined)

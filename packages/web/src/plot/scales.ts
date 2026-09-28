@@ -243,7 +243,7 @@ function niceTickValues(values: readonly Scalar[], type: SemanticType, includeZe
   return ticks.length >= 2 ? ticks : undefined;
 }
 
-function scaleTicks(values: readonly Scalar[], encoding: PlotEncoding, type: SemanticType): Scalar[] {
+function axisTicks(values: readonly Scalar[], encoding: PlotEncoding, type: SemanticType): Scalar[] {
   const numeric = ['integer', 'float', 'decimal'].includes(type.value);
   const nice =
     numeric && encoding.scale === 'linear' ? niceTickValues(values, type, encoding.zero === true) : undefined;
@@ -257,10 +257,30 @@ export function makePlotScale(
   input: readonly Scalar[],
   range: readonly [number, number],
 ): PlotScale {
+  return buildScale(encoding, type, input, range, (values) => tickValues(values as Scalar[]));
+}
+
+/** A positional x/y scale whose linear numeric ticks use rounded 1-2-5 steps instead of data values. */
+export function makeAxisScale(
+  encoding: PlotEncoding,
+  type: SemanticType,
+  input: readonly Scalar[],
+  range: readonly [number, number],
+): PlotScale {
+  return buildScale(encoding, type, input, range, (values) => axisTicks(values, encoding, type));
+}
+
+function buildScale(
+  encoding: PlotEncoding,
+  type: SemanticType,
+  input: readonly Scalar[],
+  range: readonly [number, number],
+  pickTicks: (values: readonly Scalar[]) => Scalar[],
+): PlotScale {
   const values = collectValues(input, type);
   const at =
     encoding.scale === 'ordinal' ? ordinalScale(values, type, range) : numericScale(values, encoding, type, range);
-  const ticks = scaleTicks(values, encoding, type).map((value) => ({
+  const ticks = pickTicks(values).map((value) => ({
     position: at(value)!,
     value,
     label: exactLabel(value),

@@ -1,5 +1,5 @@
 import { it, expect } from 'vitest';
-import { makePlotScale } from '../../packages/web/src/plot/scales.js';
+import { makeAxisScale, makePlotScale } from '../../packages/web/src/plot/scales.js';
 it('retains tiny exact differences on an enormous decimal baseline', () => {
   const values = [
     '9007199254740993123456789.0001',
@@ -34,7 +34,7 @@ it('rejects nonpositive log observations and centers equal values', () => {
   expect(scale.at(2)).toBe(50);
 });
 it('labels a zero-based linear axis with round steps instead of raw data values', () => {
-  const scale = makePlotScale(
+  const scale = makeAxisScale(
     { field: 'amount', scale: 'linear', zero: true },
     { value: 'integer', nullable: false },
     [96, 120, 144],
@@ -43,16 +43,23 @@ it('labels a zero-based linear axis with round steps instead of raw data values'
   expect(scale.ticks.map((tick) => tick.label)).toEqual(['0', '50', '100']);
   expect(scale.ticks[0]!.position).toBe(300);
   expect(scale.at(144)).toBe(0);
+  const colorKey = makePlotScale(
+    { field: 'amount', scale: 'linear', zero: true },
+    { value: 'integer', nullable: false },
+    [96, 120, 144],
+    [0, 1],
+  );
+  expect(colorKey.ticks.map((tick) => tick.label)).toEqual(['96', '120', '144']);
 });
 it('keeps whole-number steps for small counts and exact decimal labels', () => {
-  const counts = makePlotScale(
+  const counts = makeAxisScale(
     { field: 'hires', scale: 'linear', zero: true },
     { value: 'integer', nullable: false },
     [1, 2],
     [100, 0],
   );
   expect(counts.ticks.map((tick) => tick.label)).toEqual(['0', '1', '2']);
-  const decimals = makePlotScale(
+  const decimals = makeAxisScale(
     { field: 'rate', scale: 'linear' },
     { value: 'decimal', nullable: false },
     [{ decimal: '0.5' }, { decimal: '1.0' }],
