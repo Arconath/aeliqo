@@ -149,7 +149,7 @@ const compositionFixture = {
   environment: fixture.environment,
 };
 const probe = `
-import { createAppToolEndpoint } from '@aeliqo/agent';
+import { AELIQO_AGENT_INSTRUCTIONS, createAppToolEndpoint } from '@aeliqo/agent';
 import {
   createAgentCapabilityDispatcher,
   createAgentCapabilityRegistry,
@@ -249,6 +249,11 @@ export async function probe() {
   check(JSON.stringify(context.value.value.resources[0].patterns) === JSON.stringify(contextMetadata.patterns), 'installed pattern metadata');
   check(JSON.stringify(context.value.value.resources[0].queryConstraint) === JSON.stringify(contextMetadata.queryConstraint), 'installed query-constraint metadata');
   check(!JSON.stringify(context).includes('principalKey'), 'private authority stays out of context');
+  check(Array.isArray(context.value.value.resources[0].examples) && context.value.value.resources[0].examples[0].kind === 'browse', 'installed context examples');
+  check(JSON.stringify(context.value.value.timeGrains) === JSON.stringify(['day', 'week', 'month', 'quarter', 'year']), 'installed time grains');
+  const renderTool = tools.value.find((tool) => tool.name === 'aeliqo_render');
+  check(renderTool.description.includes('aeliqo_context') && !JSON.stringify(renderTool.inputSchema.oneOf[0].required).includes('version'), 'installed agent-friendly render tool');
+  check(AELIQO_AGENT_INSTRUCTIONS.includes('aeliqo_context'), 'installed recommended agent instructions');
   endpoint.value.close();
   runtime.dispose();
 

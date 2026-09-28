@@ -125,7 +125,7 @@ const questions = {
     kind: 'analyze',
     resource: 'people',
     measures: [{ id: 'hires', revision: '1' }],
-    time: { field: 'joined', grain: 'month', calendar: 'gregorian', timezone: 'UTC' },
+    time: { field: 'joined', grain: 'month' },
   },
   'Hires per team': {
     version: '1',

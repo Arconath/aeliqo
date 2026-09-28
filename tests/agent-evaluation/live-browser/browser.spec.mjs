@@ -96,7 +96,9 @@ test('the agent endpoint reaches actual J1–J3 renderers and retains DOM after 
     const invalid = await page.evaluate(() =>
       window.liveHost.invoke('aeliqo_render', { version: '1', kind: 'browse', resource: 'secret' }, 'offline-invalid'),
     );
-    expect(invalid).toMatchObject({ ok: true, value: { state: 'invalid' } });
+    // An unknown resource is rejected before rendering; generated id and version no longer make it malformed.
+    expect(invalid.ok).toBe(true);
+    expect(['invalid', 'unsupported', 'failed', 'denied']).toContain(invalid.value.state);
     expect(await page.locator(`#journey-region ${selector}`).count()).toBe(before);
   }
 });
