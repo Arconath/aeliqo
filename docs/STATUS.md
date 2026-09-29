@@ -18,7 +18,7 @@ hosted backend, license server, or model call.
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.1` (`latest`), from source `fec91ad5`                                                                                  |
 | Site     | aeliqo.com, www, and docs.aeliqo.com report source `e6cb4e58667da997100888b2cc94cc6c74186e5b` (`e6cb4e5`) with SDK `0.6.1`                                                         |
-| Image    | GitOps-pinned desired image `ghcr.io/arconath/aeliqo-web@sha256:904aa3c23451e06906ba6a2a734f32539abe2d90284e871aec01adc347dcd379`; live pod image ID remains unverified. |
+| Image    | GitOps, deployment and both ready production pods match `ghcr.io/arconath/aeliqo-web@sha256:904aa3c23451e06906ba6a2a734f32539abe2d90284e871aec01adc347dcd379` (fresh readback on 2026-09-29). |
 | Delivery | Promoted by platform-apps commit `a3615eff`; acceptance recorded by `132e8d7a` at `2026-09-29T01:53:40Z` (public version, health/readiness, and apex/www HTTPS verified). Rollback: revert the promotion commit (application only). |
 
 **Public live QA (2026-09-29):** `scripts/release/public-live-smoke.mjs` passed
