@@ -206,6 +206,7 @@ test('observes adverse dense and null-heavy visualization behavior with exact da
       return fixture.oscillate(40);
     });
     const bar = page.locator('aeliqo-bar');
+    await bar.locator('details[part="data-details"] > summary').click();
     const next = bar.getByRole('button', { name: 'Next', exact: true });
     const previous = bar.getByRole('button', { name: 'Previous', exact: true });
     await expect(next).toBeEnabled();
