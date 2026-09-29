@@ -1,6 +1,6 @@
 # Aeliqo status
 
-Last updated: 2026-09-29. This is the single maintained status record. Release
+Last updated: 2026-09-30. This is the single maintained status record. Release
 history lives in the [release notes](site/pages/release-notes.md) and on
 [GitHub releases](https://github.com/Arconath/aeliqo/releases).
 
@@ -14,18 +14,22 @@ hosted backend, license server, or model call.
 
 ## Published
 
-| Surface  | Current                                                                                                                                                                           |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.1` (`latest`), from source `fec91ad5`                                                                                  |
-| Site     | aeliqo.com, www, and docs.aeliqo.com report source `e6cb4e58667da997100888b2cc94cc6c74186e5b` (`e6cb4e5`) with SDK `0.6.1`                                                         |
-| Image    | GitOps, deployment and both ready production pods match `ghcr.io/arconath/aeliqo-web@sha256:904aa3c23451e06906ba6a2a734f32539abe2d90284e871aec01adc347dcd379` (fresh readback on 2026-09-29). |
-| Delivery | Promoted by platform-apps commit `a3615eff`; acceptance recorded by `132e8d7a` at `2026-09-29T01:53:40Z` (public version, health/readiness, and apex/www HTTPS verified). Rollback: revert the promotion commit (application only). |
+| Surface  | Current                                                                                                                                                                                  |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.2` (`latest`), published source `e86a6e2f8d7808d1a580a2d3c63ff33e7fa3b89b`                                                    |
+| Site     | Site/embedded SDK source `dbd7dcde686575896464c06f1be03e99d2761c56`, SDK `0.6.2`; anonymous OSS, no persistent staging                                                                   |
+| Image    | `ghcr.io/arconath/aeliqo-web@sha256:e8d5d62539ee8bdef08c219752b4a3b566c9ec4cfb38aa5008bb32ee8ef3dab6`; two exact-image ready production replicas                                         |
+| Delivery | Quality `36632473766`, site-only owner build `36636757260`, GitOps pin `1429fdfb81e57c181bbbb01a5a8e3c930868be5f`, runtime receipt `34d6e06`; same immutable image, no package republish |
 
-**Public live QA (2026-09-29):** `scripts/release/public-live-smoke.mjs` passed
-against source `e6cb4e58667da997100888b2cc94cc6c74186e5b` on Node.js `24.20.0`.
-It verified health and version endpoints, docs search and 71 component links,
-synthetic playground journeys at 360, 768, and 1440 pixels, WebMCP discovery,
-render, and reset, and a ZIP export pinned to `0.6.1`; it made zero model calls.
+**Current live evidence (2026-09-30):** Flux Ready/Healthy; twelve apex/www version,
+health/readiness and public route checks passed against exact `dbd7dcd`. Chrome
+rendered the synthetic homepage demo with no console errors. Google Analytics
+property `556602732` realtime received an Aeliqo homepage view and `page_view`,
+`first_visit`, `session_start`; the tag remains consent-gated. Registry consumer
+checks verified all five packages, provenance and 166 exports for published
+`0.6.2`. This is separate from approval of a visual baseline. Rollback uses the
+previous qualified `996fb10e` image recorded in the existing GitOps receipt;
+application rollback does not change npm packages.
 
 ## Progress against the goal
 
@@ -42,24 +46,17 @@ render, and reset, and a ZIP export pinned to `0.6.1`; it made zero model calls.
   no external adopters yet, and WebMCP still needs an experimental browser
   flag.
 
-Field and data-status messages now resolve direction from their own content
-while controls retain their host direction. The current pushed source
-`95c98d48` passed the full required matrix in
-[CI run 36588758963](https://github.com/Arconath/aeliqo/actions/runs/36588758963).
-Its advisory paired-performance job did not qualify, and the reproducible
-visual probe remains unapproved; neither result approves a pixel baseline.
-Context-aware agent diagnostic hints and truthful render-status guidance are
-being verified in the current local change and still need exact-source CI.
-Published versions and the visual approval record are unchanged.
+Field/data-status direction and context-aware diagnostic hints are included in
+the published `0.6.2` source. The site-only factual JSON-LD and gtag queue fixes
+have passed their exact-source required quality/build checks and are live.
 
 ## Open items
 
-| Item                                                                                                                                          | Next step                                                                                 |
-| --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Container visual comparison has no approved baseline; advisory CI captures reproducibility evidence labeled unapproved.                       | Approve a reviewed baseline; explicit probe dispatch is never pixel acceptance.           |
-| Paired performance reports a changed workload hash after 0.6.1; the current-SHA comparison gate failed and the probe was skipped.               | Deferred by the owner; keep unaccepted. If reopened, review the workload and record a new reference in `docs/testing/`. |
-| Production promotion is a manual GitHub API commit; `promote.yml` in platform-apps does not list Aeliqo.                                      | Add Aeliqo to the platform promote workflow.                                              |
-| No evidence of value against a plain "model tool + own component" integration.                                                                | Build one use case both ways and compare code size, safety, and behavior on model errors. |
+| Item                                                                                                          | Next step                                                                                           |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Container visual comparison has no approved baseline; advisory CI captures are reproducibility evidence only. | Review and approve the maintained baseline; do not accept all changes automatically.                |
+| Paired performance workload changed after `0.6.1` and remains unqualified.                                    | Deferred by the owner; retain that state without expanding this release into a performance project. |
 
-Visual and performance jobs are advisory; the functional matrix in
-`quality/commands.json` is the required gate.
+Visual and paired-performance jobs are advisory; the functional matrix in
+`quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS
+and site-release workflows; hosted-product auth, billing and staging do not apply.
