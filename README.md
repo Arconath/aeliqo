@@ -13,17 +13,17 @@ cannot supply HTML, executable code, permissions, or an unregistered view.
 
 ## Quick start
 
-This checkout targets **0.6.1**. Published versions and installation status are
+This checkout targets **0.6.2**. Published versions and installation status are
 shown in the [package guide](https://docs.aeliqo.com/reference/packages/).
 For the React example below, use React 19.2 or a newer 19.x release and install matching
 Aeliqo package versions:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.6.1 \
-  @aeliqo/runtime@0.6.1 \
-  @aeliqo/web@0.6.1 \
-  @aeliqo/react@0.6.1
+  @aeliqo/core@0.6.2 \
+  @aeliqo/runtime@0.6.2 \
+  @aeliqo/web@0.6.2 \
+  @aeliqo/react@0.6.2
 ```
 
 The [local React quickstart](https://docs.aeliqo.com/start/) renders and filters
@@ -59,7 +59,7 @@ import { AeliqoProvider, AeliqoRegion } from '@aeliqo/react';
 import { createAppToolEndpoint } from '@aeliqo/agent';
 ```
 
-The optional agent entry point additionally requires `@aeliqo/agent@0.6.1`.
+The optional agent entry point additionally requires `@aeliqo/agent@0.6.2`.
 Each package root contains its primary API. Component families, query planning,
 transport adapters, and other advanced APIs use explicit package subpaths.
 

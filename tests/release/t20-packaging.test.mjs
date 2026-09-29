@@ -341,7 +341,11 @@ async function readQualificationInputs() {
   const metadata = JSON.parse(await readFile(join(root, 'release-metadata.json'), 'utf8'));
   const matrix = JSON.parse(await readFile(join(root, 'docs/support-matrix.json'), 'utf8'));
   const previousLine = metadata.previousVersion.split('.').slice(0, 2).join('.');
-  const migrationPath = `migration-${previousLine}`;
+  const migrationLine =
+    previousLine === metadata.line
+      ? `${metadata.line.split('.')[0]}.${Number(metadata.line.split('.')[1]) - 1}`
+      : previousLine;
+  const migrationPath = `migration-${migrationLine}`;
   const migration = await readFile(join(root, 'docs/site/pages', `${migrationPath}.md`), 'utf8');
   const releaseNotes = await readFile(join(root, 'docs/site/pages/release-notes.md'), 'utf8');
   const packagePage = await readFile(join(root, 'docs/site/pages/packages.md'), 'utf8');
@@ -356,7 +360,7 @@ async function readQualificationInputs() {
   assert.equal(metadata.line, metadata.version.split('.').slice(0, 2).join('.'));
   for (const claim of ['unlimitedScale', 'everyFramework', 'everyProvider', 'stablePublished'])
     assert.equal(matrix.claims[claim], false);
-  assert.ok(migration.includes(`Migrate from ${previousLine} to ${metadata.line}`));
+  assert.ok(migration.includes(`Migrate from ${migrationLine} to ${metadata.line}`));
   assert.ok(migration.includes(metadata.version));
   assert.ok(releaseNotes.includes(`## Aeliqo ${metadata.version}`));
   assert.ok(releaseNotes.includes(`/ship/${migrationPath}/`));

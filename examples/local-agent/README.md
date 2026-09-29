@@ -13,7 +13,7 @@ pnpm dev
 ```
 
 Open http://127.0.0.1:4174/ and follow the terminal output. Startup makes no
-model request. Requires Node.js 24.20.0 and the published `0.6.1` packages.
+model request. Requires Node.js 24.20.0 and the published `0.6.2` packages.
 
 - [MCP guide](https://docs.aeliqo.com/agents/mcp/): install a standalone copy
   and connect an MCP client over HTTP or stdio.

@@ -431,6 +431,7 @@ describe('in-process ADC data service', () => {
     const service = createLocalDataService({
       snapshot: snapshot(),
       hostBudget: tinyBudget,
+      workNow: () => 0,
       authorize: () =>
         ok({
           scopeDigest: 'scope-timeout',

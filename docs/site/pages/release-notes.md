@@ -9,6 +9,13 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
+## Aeliqo 0.6.2
+
+- Tightens source-bound agent diagnostics and fixes the stalled row-policy test
+  fixture so its real timeout is checked independently of CI planning load.
+- Keeps package, examples, and public installation guidance on one exact
+  version. Runtime and wire contracts remain compatible with 0.6.1.
+
 ## Aeliqo 0.6.1
 
 - Agent tools are easier for models to use: `aeliqo_context` returns ready-to-send

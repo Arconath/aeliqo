@@ -3,9 +3,9 @@
   "schemaVersion": 1,
   "product": "aeliqo",
   "candidate": {
-    "version": "0.6.1",
+    "version": "0.6.2",
     "status": "candidate",
-    "baseVersion": "0.5.2",
+    "baseVersion": "0.6.1",
     "compatibility": "additive"
   },
   "testedToolchain": {

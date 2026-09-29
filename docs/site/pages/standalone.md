@@ -14,7 +14,7 @@ Use Node.js 24 and create a Vite TypeScript project:
 ```bash
 npm create vite@latest people-list -- --template vanilla-ts
 cd people-list
-npm install --save-exact @aeliqo/web@0.6.1
+npm install --save-exact @aeliqo/web@0.6.2
 ```
 
 Keep Vite's `#app` container. Replace `src/main.ts` with:

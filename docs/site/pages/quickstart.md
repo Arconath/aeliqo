@@ -26,10 +26,10 @@ This creates a `people` project and moves you into it.
 Keep every Aeliqo package on the same exact version:
 
 ```bash
-npm install --save-exact @aeliqo/core@0.6.1 @aeliqo/runtime@0.6.1 @aeliqo/web@0.6.1 @aeliqo/react@0.6.1 zod@4.5.4
+npm install --save-exact @aeliqo/core@0.6.2 @aeliqo/runtime@0.6.2 @aeliqo/web@0.6.2 @aeliqo/react@0.6.2 zod@4.5.4
 ```
 
-You should see: all four Aeliqo packages at `0.6.1` in `package.json`.
+You should see: all four Aeliqo packages at `0.6.2` in `package.json`.
 
 ## 3. Describe your data
 
