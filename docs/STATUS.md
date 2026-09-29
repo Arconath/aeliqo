@@ -1,6 +1,6 @@
 # Aeliqo status
 
-Last updated: 2026-09-28. This is the single maintained status record. Release
+Last updated: 2026-09-29. This is the single maintained status record. Release
 history lives in the [release notes](site/pages/release-notes.md) and on
 [GitHub releases](https://github.com/Arconath/aeliqo/releases).
 
@@ -17,9 +17,15 @@ hosted backend, license server, or model call.
 | Surface  | Current                                                                                                                                                                           |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.1` (`latest`), from source `fec91ad5`                                                                                  |
-| Site     | aeliqo.com, www, and docs.aeliqo.com serve source `7fa5a0ba` with SDK `0.6.1`                                                                                                     |
-| Image    | `ghcr.io/arconath/aeliqo-web@sha256:4b0779ee9b21706068e265e27de38a3c95ed4fa3c9a9807b2a2ae4667b448f25`                                                                             |
-| Delivery | Promoted by platform-apps commit `60f8c44f`; health, readiness, and exact version accepted in `25422813` on 2026-09-28. Rollback: revert the promotion commit (application only). |
+| Site     | aeliqo.com, www, and docs.aeliqo.com report source `e6cb4e58667da997100888b2cc94cc6c74186e5b` (`e6cb4e5`) with SDK `0.6.1`                                                         |
+| Image    | GitOps-pinned desired image `ghcr.io/arconath/aeliqo-web@sha256:904aa3c23451e06906ba6a2a734f32539abe2d90284e871aec01adc347dcd379`; live pod image ID remains unverified. |
+| Delivery | Promoted by platform-apps commit `a3615eff`; acceptance recorded by `132e8d7a` at `2026-09-29T01:53:40Z` (public version, health/readiness, and apex/www HTTPS verified). Rollback: revert the promotion commit (application only). |
+
+**Public live QA (2026-09-29):** `scripts/release/public-live-smoke.mjs` passed
+against source `e6cb4e58667da997100888b2cc94cc6c74186e5b` on Node.js `24.20.0`.
+It verified health and version endpoints, docs search and 71 component links,
+synthetic playground journeys at 360, 768, and 1440 pixels, WebMCP discovery,
+render, and reset, and a ZIP export pinned to `0.6.1`; it made zero model calls.
 
 ## Progress against the goal
 
@@ -42,7 +48,7 @@ hosted backend, license server, or model call.
 | Diagnostics for an unknown grain, field, view, filter value, or missing measure do not list the valid values; one shows a raw schema message. | List the allowed values in each diagnostic.                                               |
 | The render tool describes success as `renderer-ready`; hosts without a render port return `plan-committed`.                                   | Describe both success states.                                                             |
 | Container visual comparison has no approved baseline; advisory CI captures reproducibility evidence labeled unapproved.                       | Approve a reviewed baseline; explicit probe dispatch is never pixel acceptance.           |
-| Paired performance reports a changed workload hash after 0.6.1.                                                                               | Review the workload and record a new reference in `docs/testing/`.                        |
+| Paired performance reports a changed workload hash after 0.6.1; the current-SHA comparison gate failed and the probe was skipped.               | Deferred by the owner; keep unaccepted. If reopened, review the workload and record a new reference in `docs/testing/`. |
 | Production promotion is a manual GitHub API commit; `promote.yml` in platform-apps does not list Aeliqo.                                      | Add Aeliqo to the platform promote workflow.                                              |
 | No evidence of value against a plain "model tool + own component" integration.                                                                | Build one use case both ways and compare code size, safety, and behavior on model errors. |
 
