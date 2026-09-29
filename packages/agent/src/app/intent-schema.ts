@@ -32,7 +32,7 @@ export const RENDER_TOOL_DESCRIPTION = [
   'Show data in the paired Region by sending one intent. Aeliqo validates it against the registered resources and picks an allowed view: records become a table or cards, a measure over time becomes a trend, a measure per category becomes a bar chart.',
   'Call aeliqo_context first and use only the resource, field, meaning (measure), and view ids it returns; its examples are ready-to-send intents.',
   'Examples: list everyone {"kind":"browse","resource":"people"}; filter {"kind":"browse","resource":"people","filter":{"op":"compare","field":"team","comparison":"eq","value":"Design"}}; trend {"kind":"analyze","resource":"people","measures":[{"id":"hires"}],"time":{"field":"joined","grain":"month"}}; breakdown {"kind":"analyze","resource":"people","measures":[{"id":"hires"}],"dimensions":["team"]}.',
-  'A result with status "renderer-ready" is shown to the user. Otherwise read the diagnostics, correct the named field, and try once more.',
+  '"renderer-ready" confirms the host showed the view. "plan-committed" confirms only that the plan committed; do not claim that it is visible. Other results are not success; follow their diagnostics and retry only when they identify a correctable input and authorization remains valid.',
 ].join(' ');
 
 function isObject(value: unknown): value is JsonObject {

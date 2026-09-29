@@ -1,16 +1,18 @@
 import { parseIntent } from '@aeliqo/core';
+import type { Diagnostic, Intent } from '@aeliqo/core';
 import type {
   AgentCapabilityContext,
   AgentCapabilityHandlerResult,
   AgentCapabilityManifest,
   AgentJsonValue,
 } from '../capabilities/types.js';
-import type { RuntimeRenderReceipt } from '@aeliqo/runtime/app';
+import type { RuntimeRenderReceipt, RuntimeResourceContext } from '@aeliqo/runtime/app';
+import { agentDiagnosticValue, guideDiagnostic } from './diagnostics.js';
 import { currentContexts } from './context-capability.js';
-import { normalizeAgentIntent, unknownMeasure } from './intent-guide.js';
+import { measureShapeProblem, meaningHint, normalizeAgentIntent, unknownMeasure } from './intent-guide.js';
 import { RENDER_TOOL_DESCRIPTION } from './intent-schema.js';
 import type { AppRenderPort, AppToolEndpointOptions } from './types.js';
-import { failure } from './values.js';
+import { failure, record } from './values.js';
 
 type RenderReceipt = Awaited<ReturnType<AppRenderPort['render']>>;
 
@@ -22,7 +24,7 @@ function committedReceipt(
   return undefined;
 }
 
-function renderValue(receipt: RenderReceipt): AgentJsonValue {
+function renderValue(receipt: RenderReceipt, diagnostics: readonly Diagnostic[]): AgentJsonValue {
   const committed = committedReceipt(receipt);
   return {
     status: receipt.status,
@@ -35,12 +37,7 @@ function renderValue(receipt: RenderReceipt): AgentJsonValue {
           task: { id: committed.task.id, revision: committed.task.revision, kind: committed.task.kind },
           results: committed.outputs.map((output) => summarizeOutput(output)),
         }),
-    diagnostics: receipt.diagnostics.map((item) => ({
-      code: item.code,
-      message: toolTerms(item.message),
-      retryable: item.retryable,
-      ...(item.path === undefined ? {} : { path: item.path.map((part) => (part === 'timeBucket' ? 'time' : part)) }),
-    })),
+    diagnostics: diagnostics.map(agentDiagnosticValue),
   };
 }
 
@@ -80,8 +77,23 @@ function denied(): AgentCapabilityHandlerResult<AgentJsonValue> {
   };
 }
 
-function renderOutcome(receipt: RenderReceipt): AgentCapabilityHandlerResult<AgentJsonValue> {
-  const value = renderValue(receipt);
+function renderOutcome(
+  receipt: RenderReceipt,
+  intent: Intent,
+  contexts: readonly RuntimeResourceContext[],
+): AgentCapabilityHandlerResult<AgentJsonValue> {
+  const diagnostics = receipt.diagnostics.map((item) => {
+    const guided = guideDiagnostic(item, intent, contexts);
+    return {
+      ...guided,
+      message: toolTerms(guided.message),
+      ...(guided.remedies === undefined ? {} : { remedies: guided.remedies.map(toolTerms) }),
+      ...(guided.path === undefined
+        ? {}
+        : { path: guided.path.map((part) => (part === 'timeBucket' ? 'time' : part)) }),
+    };
+  });
+  const value = renderValue(receipt, diagnostics);
   switch (receipt.status) {
     case 'renderer-ready':
       return { state: 'renderer-ready', value, regionRevision: receipt.runtime.region.regionRevision };
@@ -89,7 +101,7 @@ function renderOutcome(receipt: RenderReceipt): AgentCapabilityHandlerResult<Age
       return { state: 'plan-committed', value, regionRevision: receipt.region.regionRevision };
     default: {
       const state = receipt.status === 'needs-input' ? 'needs-choice' : receipt.status;
-      return { state, value, diagnostics: receipt.diagnostics };
+      return { state, value, diagnostics };
     }
   }
 }
@@ -112,18 +124,23 @@ export function createRenderCapability(
       const active = options.runtime.context(options.regionId);
       const read = active.ok ? currentContexts(options, active.value) : undefined;
       const contexts = read?.ok ? read.value : [];
+      const malformedMeasure = measureShapeProblem(input);
+      if (malformedMeasure !== undefined) return failure('agent.app.measure-shape', malformedMeasure);
       const unknown = contexts.length > 0 ? unknownMeasure(input, contexts) : undefined;
       if (unknown !== undefined)
         return failure(
           'agent.app.unknown-measure',
-          `Measure ${unknown} is not declared for this resource. Use a meaning id from aeliqo_context.`,
+          `Measure ${unknown} is not declared for this resource. ${meaningHint(record(input) ? input.resource : undefined, contexts)}`,
         );
       return parseIntent(normalizeAgentIntent(input, contexts, nextIntentId));
     },
     async invoke(intent, context): Promise<AgentCapabilityHandlerResult<AgentJsonValue>> {
       if (!canRender(context)) return denied();
       const receipt = await renderPort.render({ regionId: options.regionId, intent, signal: context.signal });
-      return renderOutcome(receipt);
+      const active = options.runtime.context(options.regionId);
+      const read = active.ok ? currentContexts(options, active.value) : undefined;
+      const contexts = read?.ok ? read.value : [];
+      return renderOutcome(receipt, intent, contexts);
     },
   };
 }

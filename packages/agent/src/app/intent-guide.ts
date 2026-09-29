@@ -14,7 +14,7 @@ export const AELIQO_AGENT_INSTRUCTIONS = [
   'Use browse to list records, detail for one record, compare for two or more records, and analyze for totals, trends, and breakdowns.',
   'For analyze, use only measure ids from the resource meanings; add time for a trend or dimensions for a per-category breakdown.',
   'If the request needs a field, measure, or resource that the context does not list, say that it is not available instead of substituting other data.',
-  'Never invent HTML, code, permissions, endpoints, or data. Report success only after a renderer-ready result.',
+  'Never invent HTML, code, permissions, endpoints, or data. A renderer-ready result confirms the host showed the view; plan-committed confirms only that the plan committed, so do not claim that it is visible.',
 ].join(' ');
 
 /** What each standard view is for, so an agent can explain or hint a view. */
@@ -97,13 +97,46 @@ export function normalizeAgentIntent(
   };
 }
 
+/** Distinguishes a malformed measure reference from an unknown declared meaning. */
+export function measureShapeProblem(input: unknown): string | undefined {
+  if (!record(input) || !Array.isArray(input.measures)) return undefined;
+  const malformed = input.measures.find(
+    (measure) =>
+      !record(measure) ||
+      typeof measure.id !== 'string' ||
+      (measure.revision !== undefined && typeof measure.revision !== 'string'),
+  );
+  return malformed === undefined
+    ? undefined
+    : 'Each measures entry must be an object with an id, for example {"id":"hires"}; a string such as "hires" is not accepted.';
+}
+
 /** Names the first measure the resource does not declare, so the agent can correct it. */
 export function unknownMeasure(input: unknown, contexts: readonly RuntimeResourceContext[]): string | undefined {
   if (!record(input) || !Array.isArray(input.measures)) return undefined;
-  const meanings = contexts
-    .filter((context) => context.resource.id === input.resource)
-    .flatMap((context) => context.meanings.map((meaning) => meaning.id));
-  const missing = input.measures.find((measure) => !record(measure) || !meanings.includes(String(measure.id)));
+  const matching = contexts.filter((context) => context.resource.id === input.resource);
+  if (matching.length === 0) return undefined;
+  const meanings = matching.flatMap((context) => context.meanings);
+  const missing = input.measures.find(
+    (measure) =>
+      !record(measure) ||
+      !meanings.some(
+        (meaning) =>
+          meaning.id === measure.id && (measure.revision === undefined || meaning.revision === measure.revision),
+      ),
+  );
   if (missing === undefined) return undefined;
-  return record(missing) ? String(missing.id) : JSON.stringify(missing);
+  return record(missing)
+    ? `${String(missing.id)}${missing.revision === undefined ? '' : `@${String(missing.revision)}`}`
+    : JSON.stringify(missing);
+}
+
+/** Shows valid meanings when a requested measure cannot be resolved in this context. */
+export function meaningHint(resource: unknown, contexts: readonly RuntimeResourceContext[]): string {
+  const meanings = contexts
+    .filter((context) => context.resource.id === resource)
+    .flatMap((context) => context.meanings.map((meaning) => `${meaning.id}@${meaning.revision}`));
+  return meanings.length === 0
+    ? 'No meaning ids are available for this resource.'
+    : `Valid meaning references: ${meanings.join(', ')}.`;
 }

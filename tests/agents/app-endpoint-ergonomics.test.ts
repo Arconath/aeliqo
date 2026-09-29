@@ -78,6 +78,9 @@ describe('agent-friendly app tools', () => {
     const renderTool = tools.value.find((tool) => tool.name === 'aeliqo_render')!;
     expect(renderTool.description).toContain('aeliqo_context');
     expect(renderTool.description).toContain('"kind":"analyze"');
+    expect(renderTool.description).toContain('"renderer-ready" confirms the host showed the view');
+    expect(renderTool.description).toContain('"plan-committed" confirms only that the plan committed');
+    expect(renderTool.description).toContain('retry only when they identify a correctable input');
     expect(renderTool.description.length).toBeLessThanOrEqual(4096);
     const branches = (renderTool.inputSchema as { oneOf: Json[] }).oneOf;
     const analyze = branches.find(
@@ -134,7 +137,62 @@ describe('agent-friendly app tools', () => {
       { requestId: 'invented-1' },
     );
     expect(JSON.stringify(result)).toContain('salary');
+    expect(JSON.stringify(result)).toContain('hires@1');
     expect(result.ok && result.value.state).not.toBe('plan-committed');
+    endpoint.close();
+    runtime.dispose();
+  });
+
+  it('explains the expected object shape when measures are sent as strings', async () => {
+    const { runtime, endpoint } = setup();
+    const result = await endpoint.invoke(
+      'aeliqo_render',
+      { kind: 'analyze', resource: 'people', measures: ['hires'] },
+      { requestId: 'measure-shape-1' },
+    );
+    if (!result.ok) throw new Error(JSON.stringify(result));
+    expect(result.value.diagnostics[0]?.message).toContain('must be an object with an id');
+    expect(result.value.diagnostics[0]?.message).toContain('{"id":"hires"}');
+    expect(result.value.diagnostics[0]?.message).not.toContain('Measure hires is not declared');
+    endpoint.close();
+    runtime.dispose();
+  });
+
+  it('lists valid context values when a field, view, filter value, or time grain is rejected', async () => {
+    const { runtime, endpoint } = setup();
+    const cases = [
+      {
+        input: { kind: 'browse', resource: 'people', fields: ['squad'] },
+        expected: '"id", "name", "team", "joined"',
+      },
+      {
+        input: { kind: 'browse', resource: 'people', preferredView: 'donut' },
+        expected: '"table", "cards", "trend", "bar"',
+      },
+      {
+        input: {
+          kind: 'browse',
+          resource: 'people',
+          filter: { op: 'compare', field: 'team', comparison: 'eq', value: 'Platform' },
+        },
+        expected: '"Design", "Engineering"',
+      },
+      {
+        input: {
+          kind: 'analyze',
+          resource: 'people',
+          measures: [{ id: 'hires' }],
+          time: { field: 'joined', grain: 'fortnight' },
+        },
+        expected: 'day, week, month, quarter, year',
+      },
+    ];
+
+    for (const [index, item] of cases.entries()) {
+      const result = await endpoint.invoke('aeliqo_render', item.input, { requestId: `invalid-${index}` });
+      if (!result.ok) throw new Error(JSON.stringify(result));
+      expect(result.value.diagnostics[0]?.message, JSON.stringify(result.value.diagnostics)).toContain(item.expected);
+    }
     endpoint.close();
     runtime.dispose();
   });

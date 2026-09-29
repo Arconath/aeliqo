@@ -34,26 +34,28 @@ render, and reset, and a ZIP export pinned to `0.6.1`; it made zero model calls.
   tools that accept a minimal intent and return ready-to-send examples; a
   standalone local MCP/BYOK example; a public playground with manual controls
   and native WebMCP.
-- **Partly done:** agent diagnostics name the rejected field but often not the
-  valid values, so a model may not recover after one mistake.
+- **Partly done:** render-tool diagnostics now include valid context choices
+  for common field, view, measure, filter-value, and time-grain errors, and
+  distinguish a malformed measure object from an unknown meaning. A
+  `renderer-ready` result confirms visibility; `plan-committed` does not.
 - **Not proven:** no measured success rate with a real model on the 0.6 tools,
   no external adopters yet, and WebMCP still needs an experimental browser
   flag.
 
-The shared field-message RTL correction is source ready: description, error,
-and pending text now resolve direction from their own content while the control
-retains its host direction. Independent review, the pinned web build, and one
-Chromium regression covering English, Arabic, and Hebrew passed; the post-fix
-screenshot was reviewed. Full matrix qualification and publication are pending.
-This focused fix does not approve the visual baseline or change published versions.
+Field and data-status messages now resolve direction from their own content
+while controls retain their host direction. The current pushed source
+`95c98d48` passed the full required matrix in
+[CI run 36588758963](https://github.com/Arconath/aeliqo/actions/runs/36588758963).
+Its advisory paired-performance job did not qualify, and the reproducible
+visual probe remains unapproved; neither result approves a pixel baseline.
+Context-aware agent diagnostic hints and truthful render-status guidance are
+being verified in the current local change and still need exact-source CI.
+Published versions and the visual approval record are unchanged.
 
 ## Open items
 
 | Item                                                                                                                                          | Next step                                                                                 |
 | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `measures: ["hires"]` (strings instead of objects) is reported as an undeclared measure.                                                      | Report the expected `{ "id": … }` shape.                                                  |
-| Diagnostics for an unknown grain, field, view, filter value, or missing measure do not list the valid values; one shows a raw schema message. | List the allowed values in each diagnostic.                                               |
-| The render tool describes success as `renderer-ready`; hosts without a render port return `plan-committed`.                                   | Describe both success states.                                                             |
 | Container visual comparison has no approved baseline; advisory CI captures reproducibility evidence labeled unapproved.                       | Approve a reviewed baseline; explicit probe dispatch is never pixel acceptance.           |
 | Paired performance reports a changed workload hash after 0.6.1; the current-SHA comparison gate failed and the probe was skipped.               | Deferred by the owner; keep unaccepted. If reopened, review the workload and record a new reference in `docs/testing/`. |
 | Production promotion is a manual GitHub API commit; `promote.yml` in platform-apps does not list Aeliqo.                                      | Add Aeliqo to the platform promote workflow.                                              |

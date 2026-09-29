@@ -54,8 +54,14 @@ The tools are shaped so a model can succeed on its first call:
   `version`, `id`, and a measure `revision` that has only one value; the
   endpoint fills them before the strict intent parser runs. A trend's calendar
   and timezone default to the time field's declared policy.
-- An unknown measure is rejected with a diagnostic that names it, and
-  diagnostics use the tool's own property names.
+- When an input names an unknown field, view, measure, filter value, or time
+  grain, the diagnostic includes the valid choices available in the paired
+  context when they are known. A measure entry must be an object such as
+  `{"id":"hires"}`; a string entry is a shape error, not an unknown measure.
+  Diagnostics use the tool's own property names.
+- `renderer-ready` confirms that the host showed the view. `plan-committed`
+  confirms only that the plan committed; do not say it is visible without a
+  `renderer-ready` result.
 
 `AELIQO_AGENT_INSTRUCTIONS` is a recommended system prompt for model hosts.
 Append product guidance when needed; the tool boundary enforces the rules
