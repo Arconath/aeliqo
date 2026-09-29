@@ -156,7 +156,7 @@ export function statusTemplate(status: AeliqoDataStatus, message?: string): Temp
   const text = dataStatusMessage(status, message);
   if (text === undefined) return nothing;
   const kind = status === 'error' || status === 'unavailable' ? 'error' : status;
-  return html`<p part="status" class=${kind} role=${status === 'loading' ? 'status' : 'alert'}>${text}</p>`;
+  return html`<p part="status" class=${kind} role=${status === 'loading' ? 'status' : 'alert'} dir="auto">${text}</p>`;
 }
 
 export const dataStyles = /* @__PURE__ */ (() => css`

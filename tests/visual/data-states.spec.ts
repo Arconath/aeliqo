@@ -203,6 +203,11 @@ for (const id of DATA_COMPONENTS) {
       for (const state of states) {
         await mutateDataState(page, id, state);
         await assertDataState(page, id, state);
+        if (id === 'card-collection' && state === 'stale' && variant === 'narrow-dark-rtl') {
+          const banner = page.locator(`#fixture aeliqo-${id} [part=status]`);
+          await expect(banner).toHaveAttribute('dir', 'auto');
+          expect(await banner.evaluate((element) => getComputedStyle(element).direction)).toBe('ltr');
+        }
         await auditAndCapture(page, info, id, state);
       }
       expect(errors).toEqual([]);
