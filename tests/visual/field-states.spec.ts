@@ -60,6 +60,40 @@ for (const id of fields)
           await expect(field.locator('[part="error"]')).toHaveText(
             'This value needs review. Check the supplied value.',
           );
+          if (id === 'text-field' && variant === 'narrow-dark-rtl') {
+            const messageDirection = (part: 'description' | 'error' | 'pending') =>
+              field.locator(`[part="${part}"]`).evaluate((element) => ({
+                dir: element.getAttribute('dir'),
+                direction: getComputedStyle(element).direction,
+              }));
+            expect(await field.evaluate((element) => getComputedStyle(element).direction)).toBe('rtl');
+            expect(await messageDirection('description')).toEqual({ dir: 'auto', direction: 'ltr' });
+            expect(await messageDirection('error')).toEqual({ dir: 'auto', direction: 'ltr' });
+            await field.evaluate(async (node) => {
+              const element = node as AeliqoFieldElement;
+              element.description = 'تظهر هذه المساعدة في التقرير.';
+              element.error = 'יש לבדוק את הערך שסופק.';
+              await element.updateComplete;
+            });
+            expect(await messageDirection('description')).toEqual({ dir: 'auto', direction: 'rtl' });
+            expect(await messageDirection('error')).toEqual({ dir: 'auto', direction: 'rtl' });
+            await field.evaluate(async (node) => {
+              const element = node as AeliqoFieldElement;
+              element.description = 'تظهر هذه المساعدة في التقرير.';
+              element.error = '';
+              element.validationState = 'pending';
+              await element.updateComplete;
+            });
+            expect(await messageDirection('description')).toEqual({ dir: 'auto', direction: 'rtl' });
+            expect(await messageDirection('pending')).toEqual({ dir: 'auto', direction: 'ltr' });
+            await field.evaluate(async (node) => {
+              const element = node as AeliqoFieldElement;
+              element.description = 'Used in the report header.';
+              element.error = 'This value needs review. Check the supplied value.';
+              element.validationState = 'invalid';
+              await element.updateComplete;
+            });
+          }
           // Some composite fields carry invalid semantics on the host/fieldset.
           expect(
             await field.evaluate(

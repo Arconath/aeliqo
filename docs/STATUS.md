@@ -40,6 +40,13 @@ render, and reset, and a ZIP export pinned to `0.6.1`; it made zero model calls.
   no external adopters yet, and WebMCP still needs an experimental browser
   flag.
 
+The shared field-message RTL correction is source ready: description, error,
+and pending text now resolve direction from their own content while the control
+retains its host direction. Independent review, the pinned web build, and one
+Chromium regression covering English, Arabic, and Hebrew passed; the post-fix
+screenshot was reviewed. Full matrix qualification and publication are pending.
+This focused fix does not approve the visual baseline or change published versions.
+
 ## Open items
 
 | Item                                                                                                                                          | Next step                                                                                 |

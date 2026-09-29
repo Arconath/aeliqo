@@ -345,9 +345,13 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   protected renderMessages(): TemplateResult {
     const description = this.effectiveDescription;
     return html`
-      ${description ? html`<span id="description" part="description">${description}</span>` : nothing}
-      ${this.validationState === 'pending' ? html`<span id="pending" part="pending" role="status">Checking…</span>` : nothing}
-      ${this.error ? html`<span id="error" part="error" role="alert">${this.error}</span>` : nothing}
+      ${description ? html`<span id="description" part="description" dir="auto">${description}</span>` : nothing}
+      ${
+        this.validationState === 'pending'
+          ? html`<span id="pending" part="pending" role="status" dir="auto">Checking…</span>`
+          : nothing
+      }
+      ${this.error ? html`<span id="error" part="error" role="alert" dir="auto">${this.error}</span>` : nothing}
     `;
   }
 
