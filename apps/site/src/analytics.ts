@@ -61,7 +61,9 @@ export function startGoogleAnalytics(
   script.dataset.aeliqoGa = config.measurementId;
   script.onload = () => {
     browser.dataLayer = browser.dataLayer ?? [];
-    browser.gtag = (...args: unknown[]) => browser.dataLayer?.push(args);
+    browser.gtag = function gtag() {
+      browser.dataLayer?.push(arguments);
+    };
     browser.gtag('js', new Date());
     const pageLocation = `${browser.location.origin}${browser.location.pathname}`;
     browser.gtag('config', config.measurementId, {

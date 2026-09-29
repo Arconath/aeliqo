@@ -154,7 +154,31 @@ describe('consented Google Analytics boundary', () => {
     expect(appended[0]!.src).toBe('https://www.googletagmanager.com/gtag/js?id=G-ABCDEF');
     expect(appended[0]!.referrerPolicy).toBe('no-referrer');
     appended[0]!.onload?.();
-    const sent = JSON.stringify((browser as Window).dataLayer);
+    const commands = (browser as Window).dataLayer ?? [];
+    expect(commands.map((command) => Object.prototype.toString.call(command))).toEqual([
+      '[object Arguments]',
+      '[object Arguments]',
+      '[object Arguments]',
+    ]);
+    const commandArguments = commands.map((command) => Array.from(command as IArguments));
+    expect(commandArguments[0]).toEqual(['js', expect.any(Date)]);
+    expect(commandArguments[1]).toEqual([
+      'config',
+      'G-ABCDEF',
+      {
+        send_page_view: false,
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false,
+        anonymize_ip: true,
+        client_storage: 'none',
+      },
+    ]);
+    expect(commandArguments[2]).toEqual([
+      'event',
+      'page_view',
+      { page_location: 'https://aeliqo.com/docs', page_path: '/docs' },
+    ]);
+    const sent = JSON.stringify(commands);
     expect(sent).toContain('client_storage');
     expect(sent).toContain('none');
     expect(sent).not.toMatch(/private|secret|\?|#/);
