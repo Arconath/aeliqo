@@ -8,6 +8,49 @@ const generatedRoot = resolve(repositoryRoot, 'artifacts/site-source');
 const generatedPublic = resolve(repositoryRoot, 'artifacts/site-public');
 
 describe('static page generation', () => {
+  it('publishes factual WebSite and SoftwareApplication structured data', async () => {
+    const html = await readFile(resolve(repositoryRoot, 'index.html'), 'utf8');
+    const jsonLd = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/u)?.[1];
+    const canonical = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/u)?.[1];
+    const description = html.match(/<meta\s+name="description"\s+content="([^"]+)"/u)?.[1];
+
+    expect(jsonLd).toBeDefined();
+    expect(canonical).toBe('https://aeliqo.com/');
+    expect(description).toBeDefined();
+    if (jsonLd === undefined || description === undefined) throw new Error('Landing metadata is incomplete.');
+
+    const structuredData = JSON.parse(jsonLd) as {
+      '@context': string;
+      '@graph': Array<Record<string, unknown>>;
+    };
+    expect(structuredData['@context']).toBe('https://schema.org');
+    expect(structuredData['@graph'].map((entity) => entity['@type'])).toEqual(['WebSite', 'SoftwareApplication']);
+
+    const [website, application] = structuredData['@graph'];
+    if (website === undefined || application === undefined) throw new Error('Structured data graph is incomplete.');
+    expect(website).toMatchObject({
+      '@id': 'https://aeliqo.com/#website',
+      '@type': 'WebSite',
+      name: 'Aeliqo',
+      url: canonical,
+      description,
+      inLanguage: 'en',
+      mainEntity: { '@id': 'https://aeliqo.com/#software' },
+    });
+    expect(application).toMatchObject({
+      '@id': 'https://aeliqo.com/#software',
+      '@type': 'SoftwareApplication',
+      name: 'Aeliqo',
+      url: canonical,
+      applicationCategory: 'DeveloperApplication',
+      description: expect.stringMatching(/^An open-source TypeScript UI runtime/u),
+      isAccessibleForFree: true,
+      license: 'https://www.apache.org/licenses/LICENSE-2.0',
+    });
+    expect(application).not.toHaveProperty('offers');
+    expect(application).not.toHaveProperty('softwareVersion');
+  });
+
   it('removes stale generated source and public files before regeneration', async () => {
     const staleSource = join(generatedRoot, 'removed-route/index.html');
     const stalePublic = join(generatedPublic, 'removed-public-input.json');
