@@ -59,15 +59,38 @@ catalog example. Its fixture now clears the displayed field and draft together,
 requires the field, and asserts the actual empty value. The prior fixture failed
 the new assertion; all nine browser/size variants and visual TypeScript checks
 passed after correction. No component, package or live site behavior changed.
-The changed fixture still requires fresh CI captures; this review does not
-approve the pixel baseline or the deferred performance workload.
+Current clean fixture source `4a7562f4f552ba1349c487243ad81aa047d1b6ae`
+passed required quality `36672716809`. Its pinned Linux full visual aggregate
+contains 1,830 tests and 2,862 PNGs: 610 tests/954 images per browser, two
+byte-identical captures, sourceBuilt=true and candidateDirty=false. Fixture
+SHA is `5f1e2c7b664412af5b79572b16db1935d1f835238f9a504f84932ebbbc096625`.
+
+**Baseline approval, 30 September 2026:** root deliberately approves this
+source/fixture and the exact recorded container, browsers and fonts after
+review by root, Luna visual reviewer and an independent Sol metadata reviewer.
+The retained Chromium review covers all 71 catalog components at three sizes
+and visualization/important states; current inventory matches, 951/954 images
+are byte-identical to that reviewed source, and all three corrected invalid-form
+frames were reviewed. Firefox and WebKit each had all 954 images inspected in
+contact sheets, all 71 desktop component images and 21 important state images
+inspected at full resolution. Narrow RTL tables retain intentional horizontal
+scrolling. This does not claim exhaustive full-resolution review of all 2,862
+images or assistive-technology acceptance. The exact runner and two-capture,
+zero-diff policy are recorded in `scripts/visual/baseline.json`.
+
+The existing full pinned-image comparison must now run on the approval commit;
+its result remains unverified until that run finishes. The earlier probe stays
+`probe-reproducible-unapproved`, never relabeled as an approved pixel pass.
+The paired performance job failed before measurement because its workload
+hash differs from the old baseline; qualification remains owner-deferred,
+without changing pins, accepting the hash or claiming measured performance.
 
 ## Open items
 
-| Item                                                                                                          | Next step                                                                                           |
-| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Container visual comparison has no approved baseline; advisory CI captures are reproducibility evidence only. | Review and approve the maintained baseline; do not accept all changes automatically.                |
-| Paired performance workload changed after `0.6.1` and remains unqualified.                                    | Deferred by the owner; retain that state without expanding this release into a performance project. |
+| Item                                                                               | Next step                                                                                           |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Reviewed baseline metadata is approved; strict pinned-image comparison is pending. | Run the existing comparison on the approval commit and inspect its fresh result.                    |
+| Paired performance workload changed after `0.6.1` and remains unqualified.         | Deferred by the owner; retain that state without expanding this release into a performance project. |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS
