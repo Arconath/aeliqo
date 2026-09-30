@@ -10,7 +10,7 @@ description: 'Connect application-owned data and authority, then render a filter
 
 <div class="docs-inline-cta"><p><strong>New to Aeliqo?</strong> Run the small local quickstart first. Come back when you need real app data.</p><a href="/start/">Open the local React quickstart →</a></div>
 
-<aside class="doc-callout" data-tone="note"><strong>Before you start</strong><p>You need Node.js 24, React 19.2, TypeScript, and an app that can provide rows plus the signed-in user's permissions. Keep every Aeliqo package on exactly version 0.6.2.</p></aside>
+<aside class="doc-callout" data-tone="note"><strong>Before you start</strong><p>You need Node.js 24, React 19.2, TypeScript, and an app that can provide rows plus the signed-in user's permissions. Keep every Aeliqo package on exactly version 0.6.3.</p></aside>
 
 <aeliqo-release-status></aeliqo-release-status>
 
@@ -25,11 +25,11 @@ This tutorial uses the app-level API in `@aeliqo/react/app`. You mount a named r
 
 ```bash
 npm install --save-exact \
-  @aeliqo/core@0.6.2 \
-  @aeliqo/runtime@0.6.2 \
-  @aeliqo/web@0.6.2 \
-  @aeliqo/react@0.6.2 \
-  @aeliqo/agent@0.6.2 \
+  @aeliqo/core@0.6.3 \
+  @aeliqo/runtime@0.6.3 \
+  @aeliqo/web@0.6.3 \
+  @aeliqo/react@0.6.3 \
+  @aeliqo/agent@0.6.3 \
   react@19.2.8 react-dom@19.2.8 zod@4.5.4
 ```
 

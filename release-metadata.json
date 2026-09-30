@@ -1,7 +1,7 @@
 {
-  "version": "0.6.2",
+  "version": "0.6.3",
   "line": "0.6",
-  "previousVersion": "0.6.1",
+  "previousVersion": "0.6.2",
   "status": "candidate",
   "publicPackages": [
     "core",

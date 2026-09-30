@@ -9,6 +9,16 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
+## Aeliqo 0.6.3
+
+- The Next.js SSR/hydration example uses Next.js 16.3.6, which fixes the
+  critical Node `next/og` ImageResponse vulnerability in earlier 16.3 releases.
+  The example does not use ImageResponse; its dependency is updated so copied
+  setups start from the patched version.
+- Package versions, peer dependencies, examples and installation guidance move
+  together to 0.6.3. Public APIs and runtime/wire contracts remain compatible
+  with 0.6.2.
+
 ## Aeliqo 0.6.2
 
 ### Site update, 30 September 2026

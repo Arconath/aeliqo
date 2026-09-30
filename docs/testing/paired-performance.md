@@ -30,9 +30,10 @@ candidate/baseline, baseline/candidate. The runner retains every raw sample repo
 and trace and compares the median of each source's three p95 observations. Reports
 include all three values plus their minimum, median, and maximum.
 
-The candidate relative policy rejects a metric only when the median increases by
-**more than 20% and more than 2 ms**. This policy remains unapproved until its raw
-same-source variation has been reviewed. The existing absolute assertions remain
+The reviewed relative policy rejects a metric only when the median increases by
+**more than 20% and more than 2 ms**. Each new workload or runner requires its own
+same-source stability review before it can use an approved reference. The existing
+absolute assertions remain
 mandatory on every run: planner p95 ≤16 ms, reducer dispatch p95 ≤4 ms, mounted
 rows ≤100, and available trace phases. A failed workload stops the comparison;
 partial observations and artifacts remain available.
@@ -88,11 +89,14 @@ handling, configuration preservation, and the unapproved gate's refusal to updat
 metadata. These checks validate orchestration; they do not substitute for the
 clean-source three-pair experiment or release comparison.
 
-## Required CI evidence
+## CI evidence
 
-The quality workflow runs `performance` in the pinned visual container on every
-eligible source. This required job executes the approved comparison and uploads
-raw artifacts even after failure. Its separate owner-dispatched
+The quality workflow runs `performance` in the pinned visual container on pushes
+to `main` and owner dispatches. The advisory job executes the approved comparison
+and uploads raw artifacts even after failure. Its separate owner-dispatched
 `performance_probe` input adds the bootstrap experiment; it never replaces or
-bypasses the required gate. A successful probe with an unapproved budget cannot
-qualify a release.
+bypasses the comparison. A passing probe remains unapproved until the maintainer
+reviews its evidence and records approval in a separate metadata commit. The
+release comparison must then pass against that approved reference before claiming
+paired-performance qualification; advisory status alone does not supply that
+evidence.

@@ -96,8 +96,52 @@ images across Chromium, Firefox and WebKit against the exact fixture SHA above.
 The required functional shards, aggregate and release contract also passed.
 The earlier probe stays `probe-reproducible-unapproved`; it is not relabeled.
 The paired performance job failed before measurement because its workload
-hash differs from the old baseline; qualification remains owner-deferred,
-without changing pins, accepting the hash or claiming measured performance.
+hash differs from the old baseline. Qualification was owner-deferred on
+30 September; the 1 October repair release now includes a fresh same-source
+stability experiment and independent evidence review before approval.
+
+## Active release: 0.6.3
+
+The owner requested all outstanding fixes and a release on 1 October 2026.
+This patch updates the Next.js integration fixture to the security-patched
+16.3.6 and requalifies the current paired layout/visualization workload.
+The lockfile change requires the verified package-publication flow; versions,
+peer pins, examples and current installation instructions move together to
+0.6.3. Public APIs and runtime/wire contracts remain compatible with 0.6.2.
+
+1. **Next.js security fix — focused checks passed:** alerts 3 and 5 identify
+   the same Node `next/og` ImageResponse RCE. Next.js 16.3.6, frozen installation,
+   optimized production build and real SSR/hydration checks passed before the
+   version-alignment change. The fixture does not use ImageResponse.
+2. **Integrated source A — in progress:** align versions and guides, review
+   the security/release diff independently, then run the full 92-command
+   matrix on a clean commit. Preserve the unrelated primary-checkout edits.
+3. **Performance qualification — pending source A:** run the existing
+   three-pair same-source probe in the pinned Linux/x64 Playwright container.
+   Review all raw reports, traces, source manifests, machine metadata and
+   variation independently. Keep the 20% plus 2 ms relative policy and all
+   absolute budgets. A passing probe alone does not approve the reference.
+4. **Approval source B — pending evidence:** record the reviewed source,
+   workload and runner in a separate metadata commit, then require an actual
+   approved comparison and same-SHA full-matrix main-push success.
+5. **Publication and deployment — pending source B:** publish verified
+   0.6.3-rc.1, verify its registry artifacts and provenance, publish stable
+   0.6.3, build/attest/scan the same-source image, review the bounded GitOps
+   promotion, and verify Flux, two exact-image replicas and public journeys.
+   Package and image publication and deployment are authorized by the owner.
+
+The performance failure is a workload-identity mismatch, not a measured
+regression: the current digest is `c9f7283566889e784043cc07703215c6ca882dfdd45da284dc9849e6326314fb`
+and the historical approved digest is `867fadc9677857bbbca368716c9d52a78d97e7e5cb419f66207e1d42ed65c913`.
+The changed fixture opens the collapsed exact-data disclosure and uses current
+row copy; the bundle threshold change was already owner-approved for 0.6.0.
+No automatic hash acceptance or budget weakening is planned.
+
+The site is stateless, so there is no data migration. Deployment rollback
+targets the currently accepted immutable `cebbb901` image and source
+`fb04d4a`; rollback does not unpublish npm versions. No disaster-restore or
+live rollback exercise is claimed. The next executable step is clean-source
+verification and the pinned same-source performance probe.
 
 ## Open items
 
@@ -143,7 +187,8 @@ deployed image or package artifacts.
 
 | Item                                                                       | Next step                                                                                           |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Paired performance workload changed after `0.6.1` and remains unqualified. | Deferred by the owner; retain that state without expanding this release into a performance project. |
+| Paired performance workload changed after `0.6.1` and remains unqualified. | Run and independently review the current same-source probe, then compare the approved metadata candidate. |
+| Two critical Next.js alerts affect the integration fixture and lockfile. | Patched to 16.3.6 in the 0.6.3 candidate; complete exact-source verification and release. |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS

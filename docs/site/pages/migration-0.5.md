@@ -8,7 +8,7 @@ description: 'Keep existing integrations and adopt transactional rendering, draf
 
 ## Update the packages together
 
-Use the same exact 0.6.2 version for every Aeliqo package you install. Check the
+Use the same exact 0.6.3 version for every Aeliqo package you install. Check the
 [package publication status](/reference/packages/) before upgrading. The wire
 contract version remains `1`; existing resource definitions, data adapters,
 React bindings, and headless runtime renders remain available.

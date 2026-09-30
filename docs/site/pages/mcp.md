@@ -30,7 +30,7 @@ pnpm dev
 ```
 
 `pnpm dev` typechecks and builds the Vanilla/Vite UI, then starts the Node
-host. The example pins `@aeliqo/core`, `runtime`, `web`, and `agent` to **0.6.2**.
+host. The example pins `@aeliqo/core`, `runtime`, `web`, and `agent` to **0.6.3**.
 Keep its `pnpm-workspace.yaml` when copying it: this gives the independent
 installation its own workspace boundary.
 

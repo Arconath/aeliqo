@@ -47,11 +47,11 @@ them together:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.6.2 \
-  @aeliqo/runtime@0.6.2 \
-  @aeliqo/web@0.6.2 \
-  @aeliqo/react@0.6.2 \
-  @aeliqo/agent@0.6.2
+  @aeliqo/core@0.6.3 \
+  @aeliqo/runtime@0.6.3 \
+  @aeliqo/web@0.6.3 \
+  @aeliqo/react@0.6.3 \
+  @aeliqo/agent@0.6.3
 ```
 
 Component-only consumers can install only `@aeliqo/web`; skip `@aeliqo/agent`
