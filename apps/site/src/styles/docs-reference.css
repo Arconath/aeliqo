@@ -178,9 +178,11 @@
 }
 .quickstart-results table {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 .quickstart-results table th:first-child {
   white-space: normal;
+  overflow-wrap: anywhere;
 }
 .quickstart-results code {
   white-space: nowrap;

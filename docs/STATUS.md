@@ -120,6 +120,11 @@ three no-JavaScript keyboard/reflow checks at 320 pixels. Independent source
 and focused screenshot review supported the changes. These checks used a
 modified local tree; they do not replace exact-commit CI or deployment evidence.
 
+The first release CI run caught a Linux font-dependent overflow at 320 pixels.
+Prose in the quickstart table now has additional word-wrap opportunities while
+intent identifiers stay unbroken. Regression coverage also exercises a wider
+fallback font; production delivery still waits for the corrected source gate.
+
 | Item                                                                       | Next step                                                                                           |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Paired performance workload changed after `0.6.1` and remains unqualified. | Deferred by the owner; retain that state without expanding this release into a performance project. |

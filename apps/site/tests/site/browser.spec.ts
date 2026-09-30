@@ -435,6 +435,11 @@ test('quickstart results reflow and remain keyboard accessible without JavaScrip
           ),
         ).toBe(true);
       }
+      await page.setViewportSize({ width: 320, height: 850 });
+      await results.locator('table').evaluate((table) => {
+        table.style.fontFamily = 'Verdana, sans-serif';
+      });
+      expect(await results.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
       if (javaScriptEnabled) expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     } finally {
       await context.close();
