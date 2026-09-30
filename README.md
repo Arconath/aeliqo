@@ -1,10 +1,13 @@
 # Aeliqo
 
-Aeliqo adapts registered components, workspaces, and pages to a user intent
-and the space available on screen. The host
-application owns identity, permissions, data access, routes, and business
-effects. Aeliqo validates the request, evaluates the permitted data, selects a
-registered view, and reports the outcome.
+Aeliqo turns typed requests into views of application data. Describe a dataset
+once, then request a list, a filtered result, a monthly trend, or a per-team
+chart. Aeliqo validates the request, evaluates the permitted data, and selects
+a registered view that fits the answer and the space available on screen.
+
+The host application owns identity, permissions, data access, routes, and
+business effects. Start with one region in an existing screen; registered
+workspaces and pages can follow when you need several results together.
 
 The same path works from application code or an optional agent. Agent input
 cannot supply HTML, executable code, permissions, or an unregistered view.
@@ -26,14 +29,16 @@ npm install --save-exact \
   @aeliqo/react@0.6.2
 ```
 
-The [local React quickstart](https://docs.aeliqo.com/start/) renders and filters
-an array without a model or backend. The
+The [React quickstart](https://docs.aeliqo.com/start/) registers one local People
+dataset and asks four questions: everyone, one team, hires per month, and hires
+per team. It renders tables and charts without a model or backend. The
 [registered app tutorial](https://docs.aeliqo.com/start/registered-app/)
-connects application-owned data and authority to a Region.
+extends that setup with application-owned permissions and actions.
 
 Never mix Aeliqo package versions in one application.
 
-For React, the local surface API renders a complete application-owned array:
+If React already owns a complete read-only array, the local surface API gives
+you a smaller setup:
 
 ```tsx
 import { AdaptiveSurface, useDataSurface } from '@aeliqo/react/surface';
@@ -44,9 +49,12 @@ export function People({ rows }: { rows: readonly { id: string; name: string }[]
 }
 ```
 
-The [local React quickstart](https://docs.aeliqo.com/start/) shows the full
-setup and how to run this example. The API is described in the
-[React package guide](docs/packages/react.md).
+Follow the [local data guide](https://docs.aeliqo.com/guides/local-data/) for
+this API's setup and limits, or the [React package guide](docs/packages/react.md)
+for its full contract. If your screen already chooses its views and owns its
+interaction state, use [standalone components](https://docs.aeliqo.com/start/standalone-components/)
+directly. Register an app when requests need shared resource definitions,
+permission checks, actions, or automatic view selection.
 
 The common application entry points are:
 

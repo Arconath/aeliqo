@@ -87,6 +87,35 @@ test('toolbar menu aligns with Inspect across responsive widths and pointer mode
   }
 });
 
+test('the narrow task chooser precedes the result and opens with the keyboard', async ({ page }) => {
+  for (const width of [360, 768]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/playground/');
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    const rail = page.locator('#pg-request');
+    const chooser = rail.locator('summary');
+    await expect(rail).not.toHaveAttribute('open');
+    await expect(chooser).toBeInViewport();
+    const chooserBox = await chooser.boundingBox();
+    const resultBox = await page.locator('.pg-result').boundingBox();
+    expect(chooserBox).not.toBeNull();
+    expect(resultBox).not.toBeNull();
+    expect(chooserBox!.y + chooserBox!.height).toBeLessThanOrEqual(resultBox!.y + 1);
+    await chooser.focus();
+    await page.keyboard.press('Enter');
+    await expect(rail).toHaveAttribute('open', '');
+    await page.getByRole('button', { name: 'Engineering only' }).click();
+    await expect(page.locator('#pg-region')).toContainText('Sam Rivera');
+    await expect(page.locator('#pg-region')).not.toContainText('Ada Chen');
+    await chooser.focus();
+    await page.keyboard.press('Enter');
+    await expect(rail).not.toHaveAttribute('open');
+    await expect(page.locator('#pg-model-calls')).toHaveText('0');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: test.info().outputPath(`task-chooser-${width}.png`), fullPage: true });
+  }
+});
+
 test('guided intents render real adaptive views without a model', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

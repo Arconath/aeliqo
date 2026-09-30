@@ -11,6 +11,18 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 
 ## Aeliqo 0.6.2
 
+### Site update, 30 September 2026
+
+- The quickstart results table fits narrow screens, keeps intent identifiers
+  intact, and remains keyboard accessible with or without JavaScript.
+- The playground task chooser precedes the result on narrow screens, matching
+  its keyboard order.
+- Introductory guides distinguish standalone components, the local React
+  surface, and the registered-resource quickstart so you can choose a smaller
+  setup for your first screen. npm packages remain at 0.6.2.
+
+### Package release
+
 - Tightens source-bound agent diagnostics and fixes the stalled row-policy test
   fixture so its real timeout is checked independently of CI planning load.
 - Keeps package, examples, and public installation guidance on one exact

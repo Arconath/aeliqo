@@ -8,7 +8,12 @@ description: 'Describe a People dataset once, then ask for a list, a filter, a m
 
 <p class="lead">Describe your data once. Then ask questions about it — “show everyone”, “how many people joined each month?” — and Aeliqo picks a view that fits each answer: a table, cards on a narrow screen, a line chart, or a bar chart.</p>
 
-<aside class="doc-callout" data-tone="note"><strong>Before you start</strong><p>You need Node.js 24 and about ten minutes. No account, backend, API key, or AI model is involved.</p></aside>
+<aside class="doc-callout" data-tone="note"><strong>Before you start</strong><p>You need Node.js 24. This tutorial registers one resource and uses a local data service. No account, backend, API key, or AI model is involved.</p></aside>
+
+Choose this setup when the same data needs several views selected from typed
+requests. For a complete read-only array already owned by React, start with
+the [local surface API](/guides/local-data/). If your screen already chooses its
+views and owns its interaction state, use [standalone components](/start/standalone-components/).
 
 <aeliqo-release-status></aeliqo-release-status>
 
@@ -212,9 +217,9 @@ npm run dev
 
 Open the URL printed by Vite, then press each button:
 
-<div class="doc-table"><table><thead><tr><th>Question</th><th>Intent</th><th>What you see</th></tr></thead><tbody><tr><th>Everyone</th><td><code>browse</code></td><td>A table of five people.</td></tr><tr><th>Engineering only</th><td><code>browse</code> + <code>filter</code></td><td>Sam and Jo. Aeliqo evaluated the filter; it did not hide rows in the DOM.</td></tr><tr><th>Hires per month</th><td><code>analyze</code> + <code>time</code></td><td>A line chart of hires from January to May.</td></tr><tr><th>Hires per team</th><td><code>analyze</code> + <code>dimensions</code></td><td>A bar chart: Design 2, Engineering 2, Product 1.</td></tr></tbody></table></div>
+<div class="doc-table quickstart-results" role="region" aria-label="Questions, intents, and expected views" tabindex="0"><table><thead><tr><th scope="col">Question</th><th scope="col">Intent</th><th scope="col">What you see</th></tr></thead><tbody><tr><th scope="row">Everyone</th><td><code>browse</code></td><td>A table of five people.</td></tr><tr><th scope="row">Engineering only</th><td><code>browse</code> + <code>filter</code></td><td>Sam and Jo. Aeliqo evaluated the filter; it did not hide rows in the DOM.</td></tr><tr><th scope="row">Hires per month</th><td><code>analyze</code> + <code>time</code></td><td>A line chart of hires from January to May.</td></tr><tr><th scope="row">Hires per team</th><td><code>analyze</code> + <code>dimensions</code></td><td>A bar chart: Design 2, Engineering 2, Product 1.</td></tr></tbody></table></div>
 
-Now narrow the browser window while **Everyone** is selected. The same table
+In your running React app, narrow the browser window while **Everyone** is selected. The same table
 becomes cards when its container is compact, and returns when it widens.
 
 You never chose a component. Each answer came from one data definition, and

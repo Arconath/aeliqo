@@ -21,6 +21,12 @@ hosted backend, license server, or model call.
 | Image    | `ghcr.io/arconath/aeliqo-web@sha256:e8d5d62539ee8bdef08c219752b4a3b566c9ec4cfb38aa5008bb32ee8ef3dab6`; two exact-image ready production replicas                                         |
 | Delivery | Quality `36632473766`, site-only owner build `36636757260`, GitOps pin `1429fdfb81e57c181bbbb01a5a8e3c930868be5f`, runtime receipt `34d6e06`; same immutable image, no package republish |
 
+GitHub release [Aeliqo 0.6.2](https://github.com/Arconath/aeliqo/releases/tag/v0.6.2)
+is published as latest. Its tag identifies the exact npm source
+`e86a6e2f8d7808d1a580a2d3c63ff33e7fa3b89b`; the release record links the
+same-source full quality and stable publication evidence. No packages or site
+image were republished to create this record.
+
 **Current live evidence (2026-09-30):** Flux Ready/Healthy; twelve apex/www version,
 health/readiness and public route checks passed against exact `dbd7dcd`. Chrome
 rendered the synthetic homepage demo with no console errors. Google Analytics
@@ -90,9 +96,34 @@ without changing pins, accepting the hash or claiming measured performance.
 
 ## Open items
 
+Focused live Chromium review on 30 September 2026 exercised the homepage,
+docs quickstart and playground at 360 and 1440 pixels. Homepage filtering and
+trend, docs shortcut/search, and playground filtered/chart/workspace/page
+journeys passed without page errors. The mobile quickstart table triggered
+axe's `scrollable-region-focusable` finding: its 608-pixel content sits in a
+326-pixel container without a keyboard tab stop. This review does not establish
+screen-reader acceptance or repeat all browser/component coverage.
+
+The findings above are now fixed in the reviewed site/docs change. The quickstart
+results table reflows at 320, 360, 768 and 1440 pixels, keeps intent identifiers
+on one line, and remains a named keyboard focus stop with or without JavaScript.
+The narrow playground task chooser now precedes the result in both visual and
+DOM order. README and introductory guides distinguish standalone components,
+the smaller local React surface, and the registered-resource quickstart.
+
+Fresh local verification passed `pnpm format:check`, `pnpm lint`,
+`pnpm site:test`, `pnpm test:docs-artifact` and `pnpm site:build`, plus the
+production image contract smoke. A focused review of that local image passed
+27 homepage/quickstart/playground renders in Chromium, Firefox and WebKit at
+360, 768 and 1440 pixels, with no page errors or settled axe findings, and
+three no-JavaScript keyboard/reflow checks at 320 pixels. Independent source
+and focused screenshot review supported the changes. These checks used a
+modified local tree; they do not replace exact-commit CI or deployment evidence.
+
 | Item                                                                       | Next step                                                                                           |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Paired performance workload changed after `0.6.1` and remains unqualified. | Deferred by the owner; retain that state without expanding this release into a performance project. |
+| Reviewed site/docs improvements await production delivery. | Owner authorized release on 30 September. Pass the site-surface CI gate at the exact committed revision, then use the maintainer site release flow and verify the public routes. |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS

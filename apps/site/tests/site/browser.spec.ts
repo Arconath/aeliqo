@@ -397,3 +397,47 @@ test('quickstart and component reference reflow at 320 CSS pixels', async ({ pag
     await expect(page.getByRole('link', { name: 'Docs', exact: true })).toBeVisible();
   }
 });
+
+test('quickstart results reflow and remain keyboard accessible without JavaScript', async ({ browser }, testInfo) => {
+  const baseURL = testInfo.project.use.baseURL;
+  if (baseURL === undefined) throw new Error('Quickstart accessibility requires a site base URL.');
+  for (const javaScriptEnabled of [false, true]) {
+    const context = await browser.newContext({
+      baseURL,
+      javaScriptEnabled,
+      viewport: { width: 320, height: 850 },
+    });
+    try {
+      const page = await context.newPage();
+      await page.goto('/start/');
+      const results = page.getByRole('region', { name: 'Questions, intents, and expected views' });
+      await expect(results).toBeVisible();
+      expect(await results.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+      await page.locator('#main').focus();
+      for (
+        let stop = 0;
+        stop < 40 && !(await results.evaluate((element) => element === document.activeElement));
+        stop++
+      )
+        await page.keyboard.press('Tab');
+      await expect(results).toBeFocused();
+      await expect(results.getByRole('columnheader', { name: 'What you see' })).toBeVisible();
+      for (const width of [320, 360, 768, 1440]) {
+        await page.setViewportSize({ width, height: 850 });
+        expect(await results.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+        expect(
+          await results.evaluate((element) =>
+            [...element.querySelectorAll('code')].every((code) => {
+              const text = document.createRange();
+              text.selectNodeContents(code);
+              return text.getClientRects().length === 1;
+            }),
+          ),
+        ).toBe(true);
+      }
+      if (javaScriptEnabled) expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    } finally {
+      await context.close();
+    }
+  }
+});

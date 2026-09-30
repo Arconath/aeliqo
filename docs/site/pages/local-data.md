@@ -33,7 +33,7 @@ export function People({ rows }: { rows: readonly Person[] }) {
 
 Update rows by passing a new array. If you mutate the same array in place, bump the hook's `version` option so the surface notices. For an empty starting array, also pass a Zod `schema` and the identity field name. A `getRowId` callback cannot reveal its field until a row exists.
 
-The server-rendered first view already shows read-only cells. The client starts its source-backed controller after commit. An invalid update reports a diagnostic and keeps the last authorized result. The full walkthrough is the [React quickstart](/start/).
+The server-rendered first view already shows read-only cells. The client starts its source-backed controller after commit. An invalid update reports a diagnostic and keeps the last authorized result. See the [React package guide](https://github.com/Arconath/aeliqo/blob/main/docs/packages/react.md) for the hook's complete contract. The [React quickstart](/start/) uses a registered resource instead, for filtering and charting the same dataset.
 
 ## 2. Own the surface outside React
 

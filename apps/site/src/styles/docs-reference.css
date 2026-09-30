@@ -176,6 +176,21 @@
   overflow-wrap: normal;
   white-space: nowrap;
 }
+.quickstart-results table {
+  min-width: 0;
+}
+.quickstart-results table th:first-child {
+  white-space: normal;
+}
+.quickstart-results code {
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .quickstart-results table th,
+  .quickstart-results table td {
+    padding: var(--space-2);
+  }
+}
 .doc-checklist {
   margin-block: var(--space-6);
   padding: 1.2rem 1.3rem;

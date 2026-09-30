@@ -8,8 +8,11 @@ description: 'Mount the same registered application in React, Vanilla, or Vue, a
 
 ## Start with a working resource
 
-The [React quickstart](/start/) is the shortest path to a local array. The
-examples here use the registered application from
+The [React quickstart](/start/) registers a People resource backed by a local
+array. To browse a complete read-only array already owned by React, use the
+[local surface API](/guides/local-data/) for a smaller setup.
+
+The examples here use the registered application from
 [Connect your data](/start/registered-app/). First create that tutorial's
 `src/app.ts` and install its packages. It exports `createTutorialApp` and
 `mountPeople`, so every example below uses the same data and authority contract.

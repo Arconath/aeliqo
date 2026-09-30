@@ -355,12 +355,9 @@
   .pg-workspace {
     grid-template-columns: 1fr;
   }
-  .pg-result {
-    order: -1;
-  }
   .pg-request {
     max-height: none;
-    border-block-start: 1px solid var(--line);
+    border-block-end: 1px solid var(--line);
     border-inline-end: 0;
   }
   .pg-request-body {

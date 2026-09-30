@@ -18,8 +18,9 @@ cards. The records still have the same identity. Resizing changes presentation;
 it does not grant access or require a model call.
 
 A button, a route, or an agent can submit the request. An agent is optional.
-The [quickstart](/start/) starts with an even smaller local data surface so you
-can see this adaptation before registering an application.
+The [quickstart](/start/) registers one local People dataset, then uses it for
+browsing, filtering, a monthly trend, and a per-team chart. You define the
+data once and change the request for each answer.
 
 ## The pieces you will use
 
@@ -38,11 +39,17 @@ draft exits, and scope changes must remain explicit across those transitions.
 
 ## Decide what to register
 
-Use a local surface when the host already owns a read-only array. Register an
-application when you need named resources, real authorization, actions, or
-shared agent access. Register custom views when your domain requires a specific
-presentation. The [component catalog](/components/) shows which built-in
-components support standalone use, semantic binding, or automatic adaptation.
+Use [standalone components](/start/standalone-components/) when your screen
+already chooses its views and owns its interaction state. For a complete
+read-only array supplied by React, the [local surface API](/guides/local-data/)
+handles browsing with a smaller setup.
+
+Register an application when the same data needs several task-driven views,
+named resources, permission checks, actions, or shared agent access. This is
+the path used by the quickstart. Register custom views when your domain needs
+a specific presentation. The [component catalog](/components/) shows which
+built-in components support standalone use, semantic binding, or automatic
+adaptation.
 
 Your application continues to authenticate users, authorize server requests,
 execute business commands, and own navigation. Aeliqo validates proposals and
@@ -59,7 +66,8 @@ update. Forced revocation has a separate duty to remove access.
 
 ## Choose the first step
 
-Run the [React quickstart](/start/) to filter five people and change the
-presentation by resizing. If you already have an application, follow
+Run the [React quickstart](/start/) to browse and filter five people, chart hires
+by month and team, and change the browse presentation by resizing. If you
+already have an application, follow
 [the adoption guide](/start/existing-app/). For the package boundaries and
 request lifecycle, continue to [system concepts](/concepts/) afterward.
