@@ -59,6 +59,13 @@ For `create`, a missing adapter means an empty draft. For `edit`, the request fa
 
 A submitted form produces an action preview, not a write. The registered action's confirmation policy decides what happens next — see [business actions](/guides/actions/).
 
+After a successful confirmed action, unchanged submitted fields return to the
+registered form defaults. A new create form is empty unless your `formState`
+adapter supplied defaults. Edits made while the action was running remain
+dirty; failed or ambiguous actions retain their drafts. To show freshly saved
+edit values and their current entity revision, the host requests the edit form
+again through its trusted `formState` adapter.
+
 ## Know the standard labels
 
 The standard form treats `resource.label` as the collection name. Its heading reads `Create a record in People` or `Edit a record in People`. Its submit button reads `Create record` or `Save changes`. A collection label may already be plural, so the form never guesses a singular noun. A custom host form can supply its own copy.

@@ -200,7 +200,7 @@ function shadowHost(root: Node): Node | undefined {
 }
 
 export function interactionLocked(region: WebRegion): boolean {
-  if (region.composing) return true;
+  if (region.composing || region.actionPending) return true;
   const active = deepActive(region.target.ownerDocument);
   if (active === null || !composedContains(region.element, active)) return false;
   return active.matches('input, textarea, select, [contenteditable="true"], [data-aeliqo-dirty="true"]');

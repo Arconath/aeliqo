@@ -184,6 +184,17 @@ Without a decision, replacement returns `needs-input`. Revocation and stale
 work cannot override this boundary. See the [application API](https://docs.aeliqo.com/reference/app-api/)
 for the decision shape.
 
+A successful current standard form action clears its unchanged submitted drafts
+and resets those fields to the registered form defaults. A new create form is
+empty unless the trusted `formState` supplied defaults. New edits made while
+the action was running remain dirty; failed or ambiguous actions retain their
+drafts. The host requests the edit form again to load freshly saved values and
+a current entity revision from `formState`.
+
+Responsive adaptation waits while an action preview or execution is pending,
+then resumes for the current region after cancellation or completion. A host
+request or revoked authority continues to fence the older action.
+
 `onPresentation` observes a `RendererReadyReceipt` after the DOM update,
 including adaptation caused by container or media changes. Use it for visible
 view labels and diagnostics. It does not grant permissions or trigger models.

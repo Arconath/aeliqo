@@ -460,6 +460,11 @@
       "kind": "unit",
       "argv": ["pnpm", "test:performance:paired:tooling"],
       "timeoutSeconds": 180
+    },
+    {
+      "kind": "browser",
+      "argv": ["pnpm", "test:site:action-review"],
+      "timeoutSeconds": 300
     }
   ]
 }

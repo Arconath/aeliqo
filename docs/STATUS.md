@@ -129,14 +129,33 @@ peer pins, examples and current installation instructions move together to
    identical repeats and exact equality with historical reviewed captures, plus
    24 fresh frame inspections across three browsers at `6c31d36`. The source
    fixture identity changed only for the catalog manifest version.
-4. **Approval source B — metadata recorded; final comparison pending:**
-   performance and visual metadata name those fixed sources and reviewed
-   workload/fixture and runner identities. The 20% plus 2 ms relative rule,
-   all absolute budgets, two-capture reproducibility and zero-diff pixel rule
-   are unchanged. Require actual strict comparisons and a same-SHA full-matrix
-   main-push success before publication. Diagnostic probes remain unapproved
-   machine reports and do not replace final release acceptance.
-5. **Publication and deployment — pending source B:** publish verified
+4. **Approval source B — performance passed; release contract found a focus defect:**
+   source `dcb9837` passed the actual strict paired comparison against `d90a2c8`
+   in [main quality run 36775350492](https://github.com/Arconath/aeliqo/actions/runs/36775350492).
+   All absolute budgets and the 20% plus 2 ms relative rule passed unchanged.
+   The release contract found that double-clicking Done can move focus away
+   from the form trigger. Chromium and Firefox report `pointerdown.detail=0`
+   for both presses, so the prior guard cannot distinguish the second press.
+   The local source B matrix was deliberately stopped after 58 passing
+   commands to repair this defect; that partial run is not release evidence.
+5. **Form and dialog repairs — focused checks passed; final qualification pending:** use `mousedown`,
+   whose click count distinguishes the second press before its default focus
+   behavior. Add a required three-browser action-review regression to the
+   acceptance matrix, now 93 commands. A subsequent save also exposed retained
+   widget values after semantic drafts were cleared; the repair resets only
+   unchanged saved fields to their registered defaults and preserves newer
+   edits. Expanded responsive tests also exposed a presentation update during
+   confirmation; adaptation now waits for the action to settle, then resumes
+   for the current region without weakening task or authority checks. Keep the
+   existing focus assertion, confirmation behavior and pixel/timing limits.
+   Independent review has no remaining findings. Fresh package builds, both
+   presentation TypeScript checks, 158 unit tests and 30 framework browser cases
+   passed; the site action suite passed all 36 browser/width cases, and all nine
+   saved-default frames were inspected. Integrated `pnpm site:test`, lint and
+   formatting passed. These checks used the changed working tree; require
+   exact-source checks on the candidate branch and a fresh full-matrix main
+   push before publishing.
+6. **Publication and deployment — pending final source:** publish verified
    0.6.3-rc.1, verify its registry artifacts and provenance, publish stable
    0.6.3, build/attest/scan the same-source image, review the bounded GitOps
    promotion, and verify Flux, two exact-image replicas and public journeys.
@@ -152,8 +171,9 @@ No automatic hash acceptance or budget weakening is planned.
 The site is stateless, so there is no data migration. Deployment rollback
 targets the currently accepted immutable `cebbb901` image and source
 `fb04d4a`; rollback does not unpublish npm versions. No disaster-restore or
-live rollback exercise is claimed. The next executable step is independent review of the approval metadata,
-followed by exact-source strict comparisons and full main-push verification.
+live rollback exercise is claimed. The next executable step is a reviewed
+candidate pull request, followed by exact-source strict comparisons and full
+main-push verification.
 
 ## Open items
 
@@ -197,10 +217,10 @@ source `fb04d4a` passed. A post-release fix to the live smoke test's search
 initialization wait was verified against production without changing the
 deployed image or package artifacts.
 
-| Item                                                                       | Next step                                                                                                      |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Paired performance workload changed after `0.6.1` and remains unqualified. | The probe and reviews are complete; require the final strict comparison and exact-source main-push acceptance. |
-| Two critical Next.js alerts affect the integration fixture and lockfile.   | Patched to 16.3.6 in the 0.6.3 candidate; complete exact-source verification and release.                      |
+| Item                                                                        | Next step                                                                               |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Paired performance passed on source B; final release source is pending.     | Require the final source strict comparison and exact-source main-push acceptance.       |
+| Next.js alerts 3 and 5 are fixed in GitHub; the patched release is pending. | Complete exact-source verification and publish the 0.6.3 candidate with Next.js 16.3.6. |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS

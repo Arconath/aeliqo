@@ -21,6 +21,13 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 - The HTTP cancellation test now holds its fixture stream until transport
   cancellation, removing a fixed-timer race while preserving the server's
   cancellation assertion.
+- Closing the playground action review with a double click preserves focus on
+  the original trigger. The second mouse press is blocked before it can move
+  focus to the page behind the dialog; deliberate later clicks still work.
+- Successful standard form actions reset unchanged saved fields to their
+  registered defaults, so visible values match the next action input. New
+  edits made during the save and failed or ambiguous drafts are retained.
+  Responsive presentation updates wait for the pending action to settle.
 - Visual and paired layout/visualization references are renewed from reviewed
   source and runner evidence. Existing coverage, pixel rules and timing/row
   budgets are unchanged; this does not claim a speedup over an earlier version.
