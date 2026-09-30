@@ -78,19 +78,21 @@ scrolling. This does not claim exhaustive full-resolution review of all 2,862
 images or assistive-technology acceptance. The exact runner and two-capture,
 zero-diff policy are recorded in `scripts/visual/baseline.json`.
 
-The existing full pinned-image comparison must now run on the approval commit;
-its result remains unverified until that run finishes. The earlier probe stays
-`probe-reproducible-unapproved`, never relabeled as an approved pixel pass.
+Strict pinned-image comparison passed on approval commit
+`6e1ab03f405c8c50b4238144fd952440c2c92e8d`, quality run `36682155398`.
+Its fresh aggregate reports approved=true, full scope, 1,830 tests and 2,862
+images across Chromium, Firefox and WebKit against the exact fixture SHA above.
+The required functional shards, aggregate and release contract also passed.
+The earlier probe stays `probe-reproducible-unapproved`; it is not relabeled.
 The paired performance job failed before measurement because its workload
 hash differs from the old baseline; qualification remains owner-deferred,
 without changing pins, accepting the hash or claiming measured performance.
 
 ## Open items
 
-| Item                                                                               | Next step                                                                                           |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Reviewed baseline metadata is approved; strict pinned-image comparison is pending. | Run the existing comparison on the approval commit and inspect its fresh result.                    |
-| Paired performance workload changed after `0.6.1` and remains unqualified.         | Deferred by the owner; retain that state without expanding this release into a performance project. |
+| Item                                                                       | Next step                                                                                           |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Paired performance workload changed after `0.6.1` and remains unqualified. | Deferred by the owner; retain that state without expanding this release into a performance project. |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS
