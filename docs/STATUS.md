@@ -50,6 +50,18 @@ Field/data-status direction and context-aware diagnostic hints are included in
 the published `0.6.2` source. The site-only factual JSON-LD and gtag queue fixes
 have passed their exact-source required quality/build checks and are live.
 
+The retained Chromium visual review of source `4b86ed9` inspected 513 images,
+including all 71 catalog components at three sizes and all visualization states.
+Table/comparison narrow RTL overflow is intentional; fresh focused keyboard
+scroll and geometry checks passed. The review found a synthetic form-flow
+invalid state claiming an empty required name while showing the populated
+catalog example. Its fixture now clears the displayed field and draft together,
+requires the field, and asserts the actual empty value. The prior fixture failed
+the new assertion; all nine browser/size variants and visual TypeScript checks
+passed after correction. No component, package or live site behavior changed.
+The changed fixture still requires fresh CI captures; this review does not
+approve the pixel baseline or the deferred performance workload.
+
 ## Open items
 
 | Item                                                                                                          | Next step                                                                                           |

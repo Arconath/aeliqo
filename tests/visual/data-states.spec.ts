@@ -313,6 +313,8 @@ async function assertCompoundSpecialState(page: StatePage, id: string, state: st
   } else if (id === 'form-flow') {
     await expect(host.locator('[part=root] > [part=status]')).toHaveAttribute('role', 'alert');
     await expect(host.locator('[part=root] > [part=status]')).toContainText('Name is required.');
+    await expect(host.locator('aeliqo-text-field input')).toHaveValue('');
+    await expect(host.locator('aeliqo-text-field input')).toHaveAttribute('required', '');
   }
 }
 
@@ -329,7 +331,14 @@ async function mutateCompoundSpecialState(page: StatePage, id: string, state: st
         host.invalid = nextState === 'invalid';
         host.disabled = nextState === 'disabled';
       }
-      if (componentId === 'form-flow') host.validation = { identity: 'Name is required.' };
+      if (componentId === 'form-flow') {
+        host.draft = { ...host.draft, name: '' };
+        const field = host.querySelector('aeliqo-text-field') as (HTMLElement & Record<string, any>) | null;
+        if (field === null) throw new Error('Missing form-flow name field');
+        field.value = '';
+        field.required = true;
+        host.validation = { identity: 'Name is required.' };
+      }
     },
     { componentId: id, nextState: state },
   );
