@@ -46,7 +46,9 @@ try {
     .locator('.docs-sidebar nav a[href^="/components/"]:not([href="/components/"])')
     .count();
   assert.equal(evidence.componentSidebarLinks, 71);
-  await page.waitForFunction(() => !document.querySelector('.search-trigger')?.hasAttribute('disabled'));
+  await page.waitForFunction(
+    () => document.querySelector('.search-trigger')?.getAttribute('aria-haspopup') === 'dialog',
+  );
   await page.keyboard.press('Control+k');
   await page.locator('.docs-search-field').fill('table');
   await page.locator('.search-results a[href="/components/data.table/"]').first().waitFor();

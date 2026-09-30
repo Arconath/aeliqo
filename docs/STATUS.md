@@ -1,6 +1,6 @@
 # Aeliqo status
 
-Last updated: 2026-09-30. This is the single maintained status record. Release
+Last updated: 2026-10-01. This is the single maintained status record. Release
 history lives in the [release notes](site/pages/release-notes.md) and on
 [GitHub releases](https://github.com/Arconath/aeliqo/releases).
 
@@ -14,12 +14,12 @@ hosted backend, license server, or model call.
 
 ## Published
 
-| Surface  | Current                                                                                                                                                                                  |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.2` (`latest`), published source `e86a6e2f8d7808d1a580a2d3c63ff33e7fa3b89b`                                                    |
-| Site     | Site/embedded SDK source `dbd7dcde686575896464c06f1be03e99d2761c56`, SDK `0.6.2`; anonymous OSS, no persistent staging                                                                   |
-| Image    | `ghcr.io/arconath/aeliqo-web@sha256:e8d5d62539ee8bdef08c219752b4a3b566c9ec4cfb38aa5008bb32ee8ef3dab6`; two exact-image ready production replicas                                         |
-| Delivery | Quality `36632473766`, site-only owner build `36636757260`, GitOps pin `1429fdfb81e57c181bbbb01a5a8e3c930868be5f`, runtime receipt `34d6e06`; same immutable image, no package republish |
+| Surface  | Current                                                                                                                                                                                              |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.2` (`latest`), published source `e86a6e2f8d7808d1a580a2d3c63ff33e7fa3b89b`                                                                |
+| Site     | Site/embedded SDK source `fb04d4a752fb1357a6ab2c6aaf4969aafbd22aa4`, SDK `0.6.2`; anonymous OSS, no persistent staging                                                                                 |
+| Image    | `ghcr.io/arconath/aeliqo-web@sha256:cebbb901d898ee677af05a4b79c1715fac87bfdfb44e3e578f2e8ab983a2b3ca`; two exact-image ready production replicas                                                      |
+| Delivery | Quality `36750567829`, production image `36759903067`, GitOps pin `658b6703a13e2bb7ab9afa9eaa069f211b3f3589`; runtime acceptance passed, no package republish                                           |
 
 GitHub release [Aeliqo 0.6.2](https://github.com/Arconath/aeliqo/releases/tag/v0.6.2)
 is published as latest. Its tag identifies the exact npm source
@@ -27,15 +27,20 @@ is published as latest. Its tag identifies the exact npm source
 same-source full quality and stable publication evidence. No packages or site
 image were republished to create this record.
 
-**Current live evidence (2026-09-30):** Flux Ready/Healthy; twelve apex/www version,
-health/readiness and public route checks passed against exact `dbd7dcd`. Chrome
-rendered the synthetic homepage demo with no console errors. Google Analytics
-property `556602732` realtime received an Aeliqo homepage view and `page_view`,
-`first_visit`, `session_start`; the tag remains consent-gated. Registry consumer
-checks verified all five packages, provenance and 166 exports for published
-`0.6.2`. This is separate from approval of a visual baseline. Rollback uses the
-previous qualified `996fb10e` image recorded in the existing GitOps receipt;
-application rollback does not change npm packages.
+**Current live evidence (2026-10-01):** Flux reports both Aeliqo kustomizations Ready
+at GitOps revision `658b6703a13e2bb7ab9afa9eaa069f211b3f3589`; both production
+replicas run the exact `cebbb90` image and source `fb04d4a`. Apex, www and docs
+report the exact site/SDK revision and SDK `0.6.2`; production health,
+readiness, cache/security headers and public routes passed. Thirty focused
+browser journeys passed across Chromium, Firefox and WebKit at 360, 768 and
+1440 pixels, plus no-JavaScript quickstart keyboard/reflow checks at 320 pixels.
+The live filter, documentation search, playground workspace/page journeys,
+experimental WebMCP checks, and 0.6.2 package export passed with zero model
+calls. No axe violations or page errors were observed across the 27 hydrated
+route captures. This is not full accessibility certification. Package registry
+checks verified all five 0.6.2 packages; no package was republished. Rollback
+uses the previous qualified immutable image in the GitOps record; application
+rollback does not change npm packages.
 
 ## Progress against the goal
 
@@ -130,12 +135,15 @@ rejected `scripts/visual/baseline.json` as a package change. The site-only
 classifier now permits that exact visual evidence file; package source,
 package guides, the lockfile and other scripts remain rejected. An executable
 regression reproduced the rejection before the fix and all 32 release-tooling
-tests passed afterward. Delivery waits for fresh CI on this correction.
+tests passed afterward. Exact-source quality run `36750567829` passed all
+required checks; production image run `36759903067` and live acceptance for
+source `fb04d4a` passed. A post-release fix to the live smoke test's search
+initialization wait was verified against production without changing the
+deployed image or package artifacts.
 
 | Item                                                                       | Next step                                                                                           |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Paired performance workload changed after `0.6.1` and remains unqualified. | Deferred by the owner; retain that state without expanding this release into a performance project. |
-| Reviewed site/docs improvements await production delivery. | Owner authorized release on 30 September. Pass the site-surface CI gate at the exact committed revision, then use the maintainer site release flow and verify the public routes. |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS
