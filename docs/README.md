@@ -45,6 +45,9 @@ The public website at [docs.aeliqo.com](https://docs.aeliqo.com/) is the primary
 - [Security package boundary test](testing/security.md)
 - [Internal test helpers](testing/testkit.md)
 - [Component review captures](testing/visual-review.md)
+- [0.6.3 visual reference review](testing/0.6.3-visual-reference.md)
+- [Paired performance procedure](testing/paired-performance.md)
+- [0.6.3 performance reference review](testing/0.6.3-performance-reference.md)
 
 Agent documentation describes the optional `@aeliqo/agent` product package. It is unrelated to repository automation or contributor tooling.
 

@@ -18,6 +18,12 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 - Package versions, peer dependencies, examples and installation guidance move
   together to 0.6.3. Public APIs and runtime/wire contracts remain compatible
   with 0.6.2.
+- The HTTP cancellation test now holds its fixture stream until transport
+  cancellation, removing a fixed-timer race while preserving the server's
+  cancellation assertion.
+- Visual and paired layout/visualization references are renewed from reviewed
+  source and runner evidence. Existing coverage, pixel rules and timing/row
+  budgets are unchanged; this does not claim a speedup over an earlier version.
 
 ## Aeliqo 0.6.2
 

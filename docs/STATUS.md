@@ -14,12 +14,12 @@ hosted backend, license server, or model call.
 
 ## Published
 
-| Surface  | Current                                                                                                                                                                                              |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.2` (`latest`), published source `e86a6e2f8d7808d1a580a2d3c63ff33e7fa3b89b`                                                                |
-| Site     | Site/embedded SDK source `fb04d4a752fb1357a6ab2c6aaf4969aafbd22aa4`, SDK `0.6.2`; anonymous OSS, no persistent staging                                                                                 |
-| Image    | `ghcr.io/arconath/aeliqo-web@sha256:cebbb901d898ee677af05a4b79c1715fac87bfdfb44e3e578f2e8ab983a2b3ca`; two exact-image ready production replicas                                                      |
-| Delivery | Quality `36750567829`, production image `36759903067`, GitOps pin `658b6703a13e2bb7ab9afa9eaa069f211b3f3589`; runtime acceptance passed, no package republish                                           |
+| Surface  | Current                                                                                                                                                       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.2` (`latest`), published source `e86a6e2f8d7808d1a580a2d3c63ff33e7fa3b89b`                         |
+| Site     | Site/embedded SDK source `fb04d4a752fb1357a6ab2c6aaf4969aafbd22aa4`, SDK `0.6.2`; anonymous OSS, no persistent staging                                        |
+| Image    | `ghcr.io/arconath/aeliqo-web@sha256:cebbb901d898ee677af05a4b79c1715fac87bfdfb44e3e578f2e8ab983a2b3ca`; two exact-image ready production replicas              |
+| Delivery | Quality `36750567829`, production image `36759903067`, GitOps pin `658b6703a13e2bb7ab9afa9eaa069f211b3f3589`; runtime acceptance passed, no package republish |
 
 GitHub release [Aeliqo 0.6.2](https://github.com/Arconath/aeliqo/releases/tag/v0.6.2)
 is published as latest. Its tag identifies the exact npm source
@@ -113,17 +113,29 @@ peer pins, examples and current installation instructions move together to
    the same Node `next/og` ImageResponse RCE. Next.js 16.3.6, frozen installation,
    optimized production build and real SSR/hydration checks passed before the
    version-alignment change. The fixture does not use ImageResponse.
-2. **Integrated source A — in progress:** align versions and guides, review
-   the security/release diff independently, then run the full 92-command
-   matrix on a clean commit. Preserve the unrelated primary-checkout edits.
-3. **Performance qualification — pending source A:** run the existing
-   three-pair same-source probe in the pinned Linux/x64 Playwright container.
-   Review all raw reports, traces, source manifests, machine metadata and
-   variation independently. Keep the 20% plus 2 ms relative policy and all
-   absolute budgets. A passing probe alone does not approve the reference.
-4. **Approval source B — pending evidence:** record the reviewed source,
-   workload and runner in a separate metadata commit, then require an actual
-   approved comparison and same-SHA full-matrix main-push success.
+2. **Integrated source A — candidate checks passed:** versions and guides
+   align, and independent security/release and cancellation-test reviews have
+   no remaining findings. [Exact-source diagnostic quality](https://github.com/Arconath/aeliqo/actions/runs/36768880081)
+   passed all 92 commands and the release contract at `6c31d36`, without source
+   changes. A local full run passed its first 81 commands, then failed during
+   Firefox trace close because the disk was full; the complete local Firefox
+   suite passed after disk headroom returned. No assertions or timeouts changed.
+3. **Reference reviews — approved for metadata source B:** the
+   [performance review](testing/0.6.3-performance-reference.md) independently
+   verifies twelve reports, raw samples, traces and source manifests from three
+   same-source pairs at `d90a2c8`. Two reviews support the existing policies;
+   planner variation and tails remain recorded. The
+   [visual review](testing/0.6.3-visual-reference.md) verifies all 2,862 PNGs,
+   identical repeats and exact equality with historical reviewed captures, plus
+   24 fresh frame inspections across three browsers at `6c31d36`. The source
+   fixture identity changed only for the catalog manifest version.
+4. **Approval source B — metadata recorded; final comparison pending:**
+   performance and visual metadata name those fixed sources and reviewed
+   workload/fixture and runner identities. The 20% plus 2 ms relative rule,
+   all absolute budgets, two-capture reproducibility and zero-diff pixel rule
+   are unchanged. Require actual strict comparisons and a same-SHA full-matrix
+   main-push success before publication. Diagnostic probes remain unapproved
+   machine reports and do not replace final release acceptance.
 5. **Publication and deployment — pending source B:** publish verified
    0.6.3-rc.1, verify its registry artifacts and provenance, publish stable
    0.6.3, build/attest/scan the same-source image, review the bounded GitOps
@@ -140,8 +152,8 @@ No automatic hash acceptance or budget weakening is planned.
 The site is stateless, so there is no data migration. Deployment rollback
 targets the currently accepted immutable `cebbb901` image and source
 `fb04d4a`; rollback does not unpublish npm versions. No disaster-restore or
-live rollback exercise is claimed. The next executable step is clean-source
-verification and the pinned same-source performance probe.
+live rollback exercise is claimed. The next executable step is independent review of the approval metadata,
+followed by exact-source strict comparisons and full main-push verification.
 
 ## Open items
 
@@ -185,10 +197,10 @@ source `fb04d4a` passed. A post-release fix to the live smoke test's search
 initialization wait was verified against production without changing the
 deployed image or package artifacts.
 
-| Item                                                                       | Next step                                                                                           |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Paired performance workload changed after `0.6.1` and remains unqualified. | Run and independently review the current same-source probe, then compare the approved metadata candidate. |
-| Two critical Next.js alerts affect the integration fixture and lockfile. | Patched to 16.3.6 in the 0.6.3 candidate; complete exact-source verification and release. |
+| Item                                                                       | Next step                                                                                                      |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Paired performance workload changed after `0.6.1` and remains unqualified. | The probe and reviews are complete; require the final strict comparison and exact-source main-push acceptance. |
+| Two critical Next.js alerts affect the integration fixture and lockfile.   | Patched to 16.3.6 in the 0.6.3 candidate; complete exact-source verification and release.                      |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS
