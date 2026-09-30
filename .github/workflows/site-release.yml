@@ -96,11 +96,12 @@ jobs:
             git fetch --quiet --depth=1 origin "$PUBLISHED_SHA"
             # Deploy-safe paths cannot change the published package bytes or
             # require new package evidence; anything else needs a republication.
+            # Visual baseline metadata only records approved test evidence.
             while IFS= read -r path; do
               case "$path" in
                 docs/packages/*)
                   echo "Package-affecting path changed since published source $PUBLISHED_SHA: $path" >&2; exit 1 ;;
-                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*|docs/*|README.md|AGENTS.md|CONTRIBUTING.md|SECURITY.md|CODE_OF_CONDUCT.md|.github/*|tests/*|quality/*) ;;
+                apps/site/*|docs/site/*|docs/public-site/*|catalog/*|examples/catalog/*|scripts/docs/*|scripts/visual/baseline.json|docs/*|README.md|AGENTS.md|CONTRIBUTING.md|SECURITY.md|CODE_OF_CONDUCT.md|.github/*|tests/*|quality/*) ;;
                 *)
                   echo "Package-affecting path changed since published source $PUBLISHED_SHA: $path" >&2; exit 1 ;;
               esac

@@ -134,3 +134,34 @@ test('image publication preserves same-source quality evidence after checkout', 
   assert.match(imageScript, /export-consumer\.json/);
   assert.match(releaseWorkflow, /-f event=push -f status=success/);
 });
+
+test('site redeploy permits visual baseline metadata while rejecting package-affecting paths', async () => {
+  const imageWorkflow = await readFile(new URL('../../.github/workflows/site-release.yml', import.meta.url), 'utf8');
+  const classifier = imageWorkflow.match(/case "\$path" in\n[\s\S]*?\n\s+esac/);
+  assert.ok(classifier, 'site release must classify changed paths before reusing package publication evidence');
+  function classify(path) {
+    return spawnSync('bash', ['-eu', '-o', 'pipefail', '-c', `path="$1"\n${classifier[0]}`, 'site-policy', path], {
+      encoding: 'utf8',
+      env: { PATH: process.env.PATH, PUBLISHED_SHA: 'a'.repeat(40) },
+    });
+  }
+  for (const path of [
+    'scripts/visual/baseline.json',
+    'apps/site/src/styles/docs-reference.css',
+    'docs/site/pages/quickstart.md',
+  ]) {
+    assert.equal(classify(path).status, 0, `${path} must permit a site-only redeploy`);
+  }
+  for (const path of [
+    'packages/core/src/index.ts',
+    'docs/packages/core.md',
+    'pnpm-lock.yaml',
+    'scripts/visual/run.mjs',
+    'scripts/visual/baseline.json.backup',
+    'scripts/release/candidate-lib.mjs',
+  ]) {
+    const result = classify(path);
+    assert.notEqual(result.status, 0, `${path} must require fresh package publication evidence`);
+    assert.match(result.stderr, /Package-affecting path changed/);
+  }
+});

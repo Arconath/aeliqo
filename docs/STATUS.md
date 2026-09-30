@@ -123,7 +123,14 @@ modified local tree; they do not replace exact-commit CI or deployment evidence.
 The first release CI run caught a Linux font-dependent overflow at 320 pixels.
 Prose in the quickstart table now has additional word-wrap opportunities while
 intent identifiers stay unbroken. Regression coverage also exercises a wider
-fallback font; production delivery still waits for the corrected source gate.
+fallback font. Clean source `b5b2cb054820f624e0095d96a690ca063419b9fa`
+passed all 92 local acceptance commands and required CI `36739295753`, plus
+the approved pinned Linux visual aggregate. Site build `36749158528` then
+rejected `scripts/visual/baseline.json` as a package change. The site-only
+classifier now permits that exact visual evidence file; package source,
+package guides, the lockfile and other scripts remain rejected. An executable
+regression reproduced the rejection before the fix and all 32 release-tooling
+tests passed afterward. Delivery waits for fresh CI on this correction.
 
 | Item                                                                       | Next step                                                                                           |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
