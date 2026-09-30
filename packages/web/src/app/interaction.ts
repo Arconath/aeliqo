@@ -10,12 +10,15 @@ import type {
 import type { AeliqoSemanticInteractionRequest } from '../region/types.js';
 import type { AeliqoAppActionEvent } from './types.js';
 import { diagnostic, type WebAppContext, type WebRegion } from './context.js';
+import { resetSavedFormControls } from './form-reset.js';
+import { cancelPendingPresentation } from './presentation-operation.js';
 
 type ActionRequestPayload = Extract<InteractionPayload, { readonly kind: 'action-request' }>;
 type RegionValuePayload = Extract<
   InteractionPayload,
   { readonly kind: 'selection' | 'filter' | 'range' | 'group' | 'page' }
 >;
+type ActionSettled = (region: WebRegion) => void;
 
 const REGION_VALUE_KINDS: ReadonlySet<InteractionPayload['kind']> = new Set([
   'selection',
@@ -37,6 +40,7 @@ interface ActionSession {
   active: boolean;
   readonly controller: AbortController;
   readonly preview: ActionPreview;
+  readonly settled?: () => void;
   cancel?: () => boolean;
 }
 
@@ -102,6 +106,7 @@ function clearPendingAction(region: WebRegion, session: ActionSession): void {
   if (region.actionAbort === session.controller) delete region.actionAbort;
   if (region.cancelAction === session.cancel) delete region.cancelAction;
   region.actionPending = false;
+  session.settled?.();
 }
 
 function cancelPreview(port: ActionPort, region: WebRegion, session: ActionSession): boolean {
@@ -189,9 +194,10 @@ function actionStillCurrent(context: WebAppContext, region: WebRegion, session: 
 
 function clearSavedDrafts(context: WebAppContext, region: WebRegion, session: ActionSession): void {
   if (!actionStillCurrent(context, region, session)) return;
+  const retained = resetSavedFormControls(region, session.capture.drafts);
   let changed = false;
   for (const [key, draft] of session.capture.drafts) {
-    if (region.drafts.get(key) !== draft) continue;
+    if (retained.has(key) || region.drafts.get(key) !== draft) continue;
     region.drafts.delete(key);
     changed = true;
   }
@@ -238,10 +244,12 @@ function previewFailed(
   region: WebRegion,
   controller: AbortController,
   diagnostics: readonly [Diagnostic, ...Diagnostic[]],
+  settled?: ActionSettled,
 ): void {
   if (region.actionAbort === controller) {
     delete region.actionAbort;
     region.actionPending = false;
+    settled?.(region);
   }
   notifyAction(context, { state: 'failed', regionId: region.id, diagnostics });
 }
@@ -253,8 +261,9 @@ function openPreview(
   preview: ActionPreview,
   controller: AbortController,
   capture: ActionCapture,
+  settled?: ActionSettled,
 ): void {
-  const session: ActionSession = { active: true, preview, controller, capture };
+  const session: ActionSession = { active: true, preview, controller, capture, settled: () => settled?.(region) };
   const cancel = (): boolean => cancelPreview(port, region, session);
   session.cancel = cancel;
   region.cancelAction = cancel;
@@ -277,13 +286,21 @@ function savedFormDrafts(
   return new Map(region.drafts);
 }
 
-async function previewAction(context: WebAppContext, region: WebRegion, payload: ActionRequestPayload): Promise<void> {
+async function previewAction(
+  context: WebAppContext,
+  region: WebRegion,
+  payload: ActionRequestPayload,
+  settled?: ActionSettled,
+): Promise<void> {
   const port = context.runtime.actionPort;
   if (port === undefined) {
     actionUnavailable(context, region);
     return;
   }
   if (region.actionPending) return;
+  // Keep the latest resize queued when submission interrupts an adaptive commit.
+  if (region.presentationAbort !== undefined && region.renderAbort === undefined) region.pendingAdapt = true;
+  cancelPendingPresentation(region);
   const snapshot = context.runtime.snapshot(region.id)?.region;
   if (snapshot === undefined) return;
   region.actionSequence += 1;
@@ -299,18 +316,19 @@ async function previewAction(context: WebAppContext, region: WebRegion, payload:
   const request = previewRequest(region, payload, snapshot.taskRevision);
   const preview = await port.preview(request, { signal: controller.signal });
   if (!preview.ok) {
-    previewFailed(context, region, controller, preview.diagnostics);
+    previewFailed(context, region, controller, preview.diagnostics, settled);
     return;
   }
   if (controller.signal.aborted || region.actionAbort !== controller) {
     port.cancel(preview.value);
     return;
   }
-  openPreview(context, region, port, preview.value, controller, capture);
+  openPreview(context, region, port, preview.value, controller, capture, settled);
 }
 
 export function createInteractionHandler(
   context: WebAppContext,
+  settled?: ActionSettled,
 ): (region: WebRegion, request: AeliqoSemanticInteractionRequest) => Promise<void> {
   return async (region, request) => {
     if (region.presentationTransaction !== undefined) return;
@@ -318,6 +336,6 @@ export function createInteractionHandler(
       saveInteraction(region, request);
       return;
     }
-    await previewAction(context, region, request.payload);
+    await previewAction(context, region, request.payload, settled);
   };
 }

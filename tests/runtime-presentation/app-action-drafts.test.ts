@@ -5,11 +5,17 @@ import type {
   ActionPreview,
   ActionExecution,
   ActionReceipt,
+  ActionOutcome,
 } from '../../packages/runtime/src/actions/index.js';
 import type { WebAppContext, WebRegion } from '../../packages/web/src/app/context.js';
 import type { AeliqoAppActionEvent } from '../../packages/web/src/app/types.js';
 import type { AeliqoSemanticInteractionRequest } from '../../packages/web/src/region/types.js';
 import { createInteractionHandler, cancelActiveAction } from '../../packages/web/src/app/interaction.js';
+import { AeliqoFieldElement } from '../../packages/web/src/input/base.js';
+import { adaptRegion } from '../../packages/web/src/app/render.js';
+import * as presentationPlan from '../../packages/web/src/app/presentation-plan.js';
+import * as presentationRenderer from '../../packages/web/src/app/presentation-renderer.js';
+import type { RuntimePresentationInput } from '../../packages/runtime/src/app/index.js';
 
 const draft: Extract<InteractionPayload, { kind: 'draft' }> = {
   kind: 'draft',
@@ -33,8 +39,19 @@ function fixture(actionMatches = true) {
   let taskRevision = 'task-1';
   let principalKey = 'user';
   let captured: Extract<AeliqoAppActionEvent, { state: 'preview' }> | undefined;
-  const execution = deferred<{ ok: true; value: ActionExecution }>();
+  const execution = deferred<ActionOutcome<ActionExecution>>();
   const beforePreview = deferred<{ ok: true; value: ActionPreview }>();
+  const reset = vi.fn();
+  const control = Object.assign(Object.create(AeliqoFieldElement.prototype), {
+    dataset: { aeliqoNodeId: 'name' },
+    reset,
+  });
+  const binding: Record<string, unknown> = {
+    entity: draft.entity,
+    key: draft.key,
+    field: draft.field,
+    entityRevision: draft.entityRevision,
+  };
   const port = {
     preview: vi.fn(() => beforePreview.promise),
     confirm: vi.fn(async () => ({ ok: true, value: { id: 'receipt-1' } as ActionReceipt })),
@@ -49,7 +66,11 @@ function fixture(actionMatches = true) {
     actionPending: false,
     values: new Map(),
     drafts: new Map([['name', draft]]),
-    element: { interaction: undefined },
+    element: {
+      interaction: undefined,
+      shadowRoot: { querySelectorAll: () => [control] },
+      presentation: { nodes: [{ node: { id: 'name' }, config: { values: binding, ports: [{ payload: 'draft' }] } }] },
+    },
   } as unknown as WebRegion;
   const context = {
     disposed: false,
@@ -86,17 +107,25 @@ function fixture(actionMatches = true) {
     portId: 'submit',
     payload: { kind: 'action-request', action, input: {} },
   } as unknown as AeliqoSemanticInteractionRequest;
-  const handler = createInteractionHandler(context);
+  const settled = vi.fn();
+  const handler = createInteractionHandler(context, settled);
   return {
     region,
     context,
     port,
+    reset,
+    binding,
+    settled,
     beforePreview,
     execution,
     start: () => handler(region, request),
     confirm: () => {
       if (!captured) throw new Error('No preview');
       return captured.confirm();
+    },
+    cancel: () => {
+      if (!captured) throw new Error('No preview');
+      return captured.cancel();
     },
     task: () => {
       taskRevision = 'new-task';
@@ -132,6 +161,7 @@ it('clears only draft objects captured before asynchronous preview', async () =>
   state.finish();
   await result;
   expect(state.region.drafts.get('name')).toBe(newer);
+  expect(state.reset).not.toHaveBeenCalled();
 });
 
 it('clears the saved current entries and republishes retained interaction', async () => {
@@ -142,6 +172,7 @@ it('clears the saved current entries and republishes retained interaction', asyn
   expect(state.region.drafts.size).toBe(0);
   expect(state.region.element.interaction?.drafts).toEqual([]);
   expect(state.region.draftRevision).toBe(1);
+  expect(state.reset).toHaveBeenCalledOnce();
 });
 
 it.each(['cancelled', 'disposed', 'task', 'principal', 'replacement', 'new-action', 'ambiguous'] as const)(
@@ -164,7 +195,11 @@ it.each(['cancelled', 'disposed', 'task', 'principal', 'replacement', 'new-actio
     state.finish(kind === 'ambiguous' ? 'ambiguous' : 'executed');
     await pending.result;
     expect(state.region.drafts.get('name')).toBe(draft);
-    if (kind === 'new-action') expect(state.region.actionPending).toBe(true);
+    expect(state.reset).not.toHaveBeenCalled();
+    if (kind === 'new-action') {
+      expect(state.region.actionPending).toBe(true);
+      expect(state.settled).not.toHaveBeenCalled();
+    }
   },
 );
 
@@ -173,5 +208,200 @@ it('does not treat an unrelated successful action as a saved form draft', async 
   const pending = await confirmed(state);
   state.finish();
   await pending.result;
+  expect(state.region.drafts.get('name')).toBe(draft);
+  expect(state.reset).not.toHaveBeenCalled();
+});
+
+it('does not reset a field whose registered entity revision differs', async () => {
+  const state = fixture();
+  state.binding.entityRevision = 'entity-2';
+  const pending = await confirmed(state);
+  state.finish();
+  await pending.result;
+  expect(state.reset).not.toHaveBeenCalled();
+});
+
+it('preserves both halves of a range when its other draft changes during the action', async () => {
+  const state = fixture();
+  const end = { ...draft, field: 'end', value: 'Saved end' };
+  state.region.drafts.set('end', end);
+  const startBinding = { ...state.binding };
+  delete state.binding.field;
+  state.binding.range = { start: startBinding, end: { ...startBinding, field: 'end' } };
+  const pending = await confirmed(state);
+  state.region.drafts.set('end', { ...end, value: 'New end' });
+  state.finish();
+  await pending.result;
+  expect(state.reset).not.toHaveBeenCalled();
+  expect(state.region.drafts.get('name')).toBe(draft);
+  expect(state.region.drafts.get('end')?.value).toBe('New end');
+});
+
+it('resets a saved range whose unedited sibling remains at its trusted default', async () => {
+  const state = fixture();
+  const start = { ...state.binding };
+  delete state.binding.field;
+  state.binding.range = { start, end: { ...start, field: 'end' } };
+  const pending = await confirmed(state);
+  state.finish();
+  await pending.result;
+  expect(state.reset).toHaveBeenCalledOnce();
+  expect(state.region.drafts.size).toBe(0);
+});
+
+it('does not reset a range when an uncaptured sibling receives a newer draft', async () => {
+  const state = fixture();
+  const start = { ...state.binding };
+  delete state.binding.field;
+  state.binding.range = { start, end: { ...start, field: 'end' } };
+  const pending = await confirmed(state);
+  state.region.drafts.set('end', { ...draft, field: 'end', value: 'New end' });
+  state.finish();
+  await pending.result;
+  expect(state.reset).not.toHaveBeenCalled();
+  expect(state.region.drafts.get('name')).toBe(draft);
+  expect(state.region.drafts.get('end')?.value).toBe('New end');
+});
+
+it.each(['action.expired-preview', 'action.confirmation-denied'])('does not reset after %s', async (code) => {
+  const state = fixture();
+  vi.mocked(state.port.confirm).mockResolvedValueOnce({
+    ok: false,
+    diagnostics: [{ code, message: 'Confirmation unavailable', retryable: false }],
+  });
+  const pending = await confirmed(state);
+  await pending.result;
+  expect(state.port.execute).not.toHaveBeenCalled();
+  expect(state.reset).not.toHaveBeenCalled();
+  expect(state.region.drafts.get('name')).toBe(draft);
+  expect(state.settled).toHaveBeenCalledOnce();
+});
+
+it('cancels an in-flight presentation before capturing a live action and resumes after cancellation', async () => {
+  const state = fixture();
+  const presentation = new AbortController();
+  state.region.presentationAbort = presentation;
+  const pending = state.start();
+  expect(presentation.signal.aborted).toBe(true);
+  expect(state.region.presentationAbort).toBeUndefined();
+  expect(state.region.pendingAdapt).toBe(true);
+  expect(state.region.actionPending).toBe(true);
+  state.beforePreview.resolve({ ok: true, value: preview });
+  await pending;
+  expect(state.cancel()).toBe(true);
+  expect(state.region.actionPending).toBe(false);
+  expect(state.settled).toHaveBeenCalledOnce();
+  expect(state.region.drafts.get('name')).toBe(draft);
+});
+
+it('does not requeue an explicit render as an interrupted adaptation', async () => {
+  const state = fixture();
+  state.region.presentationAbort = new AbortController();
+  state.region.renderAbort = new AbortController();
+  const pending = state.start();
+  expect(state.region.pendingAdapt).not.toBe(true);
+  state.beforePreview.resolve({ ok: true, value: preview });
+  await pending;
+  state.cancel();
+});
+
+it.each(['cancelled', 'executed'] as const)(
+  'retries interrupted in-flight adaptation with latest bounds after the action is %s',
+  async (outcome) => {
+    const state = fixture();
+    const gate = deferred<void>();
+    const began = deferred<void>();
+    let width = 800;
+    let held = true;
+    const measured: number[] = [];
+    const presentation = state.region.element.presentation!;
+    const prepare = vi.spyOn(presentationPlan, 'preparePresentation').mockImplementation(() => {
+      measured.push(width);
+      return {
+        ok: true,
+        value: {
+          presentation,
+          interaction: undefined,
+          environment: { inlineSize: { state: 'known', value: width } },
+        },
+      } as ReturnType<typeof presentationPlan.preparePresentation>;
+    });
+    const renderer = vi.spyOn(presentationRenderer, 'prepareRenderer').mockReturnValue({
+      projection: {
+        presentation: presentation.plan,
+        interaction: { version: '1', values: [], drafts: [] },
+        apply: () => ({ ok: true, value: undefined }),
+        rollback() {},
+      },
+      applied: () => presentation,
+      close() {},
+    });
+    const commit = vi.fn(async (request: RuntimePresentationInput) => {
+      if (held) {
+        began.resolve();
+        await gate.promise;
+      }
+      if (request.signal?.aborted)
+        return { ok: false as const, diagnostics: [{ code: 'cancelled', message: 'Interrupted', retryable: false }] };
+      return { ok: true as const, value: { state: { task: request.task } } };
+    });
+    Object.assign(state.context.runtime, { commitPresentation: commit });
+    Object.assign(state.region, {
+      target: { ownerDocument: { activeElement: null } },
+      last: { receipt: { task: { kind: 'form', action } }, results: [], descriptors: [] },
+    });
+    try {
+      const adapting = adaptRegion(state.context, state.region);
+      await began.promise;
+      expect(state.region.pendingAdapt).toBe(false);
+      width = 360;
+      const pending = state.start();
+      expect(state.region.pendingAdapt).toBe(true);
+      gate.resolve();
+      expect((await adapting)?.status).toBe('cancelled');
+      state.beforePreview.resolve({ ok: true, value: preview });
+      await pending;
+      held = false;
+      state.settled.mockImplementation((region: WebRegion) => {
+        if (region.pendingAdapt) void adaptRegion(state.context, region);
+      });
+      if (outcome === 'cancelled') state.cancel();
+      else {
+        const pending = state.confirm();
+        state.finish();
+        await pending;
+      }
+      await vi.waitFor(() => expect(commit).toHaveBeenCalledTimes(2));
+      expect(measured).toEqual([800, 360]);
+      expect(state.region.pendingAdapt).toBe(false);
+      expect(state.region.drafts.get('name')).toBe(outcome === 'cancelled' ? draft : undefined);
+      expect(state.reset).toHaveBeenCalledTimes(outcome === 'cancelled' ? 0 : 1);
+    } finally {
+      prepare.mockRestore();
+      renderer.mockRestore();
+    }
+  },
+);
+
+it('resumes after a rejected action preview', async () => {
+  const state = fixture();
+  vi.mocked(state.port.preview).mockResolvedValueOnce({
+    ok: false,
+    diagnostics: [{ code: 'action.preview-denied', message: 'Preview unavailable', retryable: false }],
+  });
+  await state.start();
+  expect(state.region.actionPending).toBe(false);
+  expect(state.settled).toHaveBeenCalledOnce();
+});
+
+it('does not reset after a rejected execution', async () => {
+  const state = fixture();
+  const pending = await confirmed(state);
+  state.execution.resolve({
+    ok: false,
+    diagnostics: [{ code: 'action.rejected', message: 'Rejected before write', retryable: false }],
+  });
+  await pending.result;
+  expect(state.reset).not.toHaveBeenCalled();
   expect(state.region.drafts.get('name')).toBe(draft);
 });

@@ -70,19 +70,19 @@ class ActionReviewState implements ActionReviewController {
   reset(): void {
     this.pending = undefined;
     this.returnFocus = undefined;
-    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.removeEventListener('mousedown', this.guardNextMouseDown, true);
     document.removeEventListener('click', this.guardNextClick, true);
   }
 
-  private guardNextPointerDown = (event: PointerEvent): void => {
+  private guardNextMouseDown = (event: MouseEvent): void => {
     if (event.detail < 2) return;
-    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.removeEventListener('mousedown', this.guardNextMouseDown, true);
     event.preventDefault();
     event.stopImmediatePropagation();
   };
 
   private guardNextClick = (event: MouseEvent): void => {
-    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.removeEventListener('mousedown', this.guardNextMouseDown, true);
     document.removeEventListener('click', this.guardNextClick, true);
     if (event.detail < 2) return;
     event.preventDefault();
@@ -128,9 +128,9 @@ class ActionReviewState implements ActionReviewController {
   }
 
   private close(): void {
-    document.removeEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.removeEventListener('mousedown', this.guardNextMouseDown, true);
     document.removeEventListener('click', this.guardNextClick, true);
-    document.addEventListener('pointerdown', this.guardNextPointerDown, true);
+    document.addEventListener('mousedown', this.guardNextMouseDown, true);
     document.addEventListener('click', this.guardNextClick, true);
     this.options.dialog.close();
   }

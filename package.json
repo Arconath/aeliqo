@@ -7,6 +7,7 @@
     "site:verify": "pnpm --dir apps/site typecheck",
     "site:build": "pnpm --dir apps/site build",
     "site:test": "pnpm --dir apps/site check",
+    "test:site:action-review": "pnpm --dir apps/site exec playwright test --config tests/site/action-review.playwright.config.mjs",
     "check": "python3 scripts/quality.py",
     "test:release-tooling": "node --test tests/release/*.test.mjs",
     "test:release:public-live": "node scripts/release/public-live-smoke.mjs",

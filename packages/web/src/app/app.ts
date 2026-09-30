@@ -56,12 +56,18 @@ function observePresentation(context: WebAppContext, receipt: WebRenderReceipt |
 
 export function createAeliqoApp(options: AeliqoAppOptions): AeliqoApp {
   const context = createContext(options);
-  const handleInteraction = createInteractionHandler(context);
   const adapt = async (region: Parameters<typeof adaptRegion>[1]) => {
     const receipt = await adaptRegion(context, region);
     observePresentation(context, receipt);
     return receipt;
   };
+  const handleInteraction = createInteractionHandler(context, (region) => {
+    if (!region.pendingAdapt) return;
+    queueMicrotask(() => {
+      if (context.disposed || context.regions.get(region.id) !== region || region.actionPending) return;
+      void adapt(region);
+    });
+  });
   const mount = createMountHandler(context, handleInteraction, adapt);
   return Object.freeze({
     runtime: context.runtime,
