@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import type { DataRecord } from '@aeliqo/runtime/data';
 import { createRemotePeopleFixture } from './fixtures/remote.js';
 
@@ -95,7 +95,12 @@ it('does not accept authority spoofing and enforces method, origin, content type
 });
 
 it('returns structured stale errors for malformed cursors and observes real cancellation', async () => {
-  const f = await createRemotePeopleFixture({ logicalRows: 100, pageSize: 10, aggregate: false });
+  const f = await createRemotePeopleFixture({
+    logicalRows: 100,
+    pageSize: 10,
+    aggregate: false,
+    waitForCancellationAfterDescriptor: true,
+  });
   const malformed = await f.client.plan({
     version: '1',
     requestId: 'remote-malformed-cursor',
@@ -138,13 +143,17 @@ it('returns structured stale errors for malformed cursors and observes real canc
   const controller = new AbortController();
   const events = f.client.execute(planned.value, { signal: controller.signal });
   const iterator = events[Symbol.asyncIterator]();
-  const first = await iterator.next();
-  expect(first.done).toBe(false);
-  controller.abort();
-  await iterator.next();
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  expect(f.server.cancelledRequests).toContain('remote-cancel');
-  await f.dispose();
+  try {
+    const first = await iterator.next();
+    expect(first.done).toBe(false);
+    controller.abort();
+    await iterator.next();
+    await vi.waitFor(() => expect(f.server.cancelledRequests).toContain('remote-cancel'));
+  } finally {
+    controller.abort();
+    await iterator.return?.();
+    await f.dispose();
+  }
 });
 
 it('rejects malformed request envelopes with a correlated diagnostic', async () => {

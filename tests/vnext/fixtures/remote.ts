@@ -184,6 +184,8 @@ export interface RemotePeopleFixtureOptions {
   readonly sameAuthorityLabels?: boolean;
   readonly cursorTtlMs?: number;
   readonly estimatedPopulation?: boolean;
+  /** Keep an emitted descriptor stream active until the HTTP client cancels it. */
+  readonly waitForCancellationAfterDescriptor?: boolean;
   /** Test barrier that deliberately does not listen for cancellation. */
   readonly executionGate?: {
     readonly started: () => void;
@@ -1067,7 +1069,10 @@ function remoteService(
         );
         if (options.executionGate?.wasCancelled()) lateDescriptors.push(first.descriptor);
         yield first;
-        await waitForCancellation(options.executionGate === undefined ? context.signal : undefined, 50);
+        await waitForCancellation(
+          options.executionGate === undefined ? context.signal : undefined,
+          options.waitForCancellationAfterDescriptor === true ? undefined : 50,
+        );
         if (rows.length > 0) yield { kind: 'batch', result: first.descriptor.ref, sequence: 0, rows };
         const next =
           !aggregateResult && window.hasMore
@@ -1116,11 +1121,11 @@ function remoteService(
   };
 }
 
-async function waitForCancellation(signal: AbortSignal | undefined, milliseconds: number): Promise<void> {
+async function waitForCancellation(signal: AbortSignal | undefined, milliseconds: number | undefined): Promise<void> {
   if (signal?.aborted) throw new DOMException('The request was cancelled.', 'AbortError');
-  if (milliseconds <= 0) return;
+  if (milliseconds !== undefined && milliseconds <= 0) return;
   await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, milliseconds);
+    const timer = milliseconds === undefined ? undefined : setTimeout(resolve, milliseconds);
     signal?.addEventListener(
       'abort',
       () => {
