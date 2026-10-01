@@ -1,5 +1,5 @@
 {
-  "status": "approved",
+  "status": "unapproved",
   "baselineSHA": "d90a2c8c11c695439d951b661f4071411e30b9b6",
   "workloadSHA": "c9f7283566889e784043cc07703215c6ca882dfdd45da284dc9849e6326314fb",
   "runner": {
@@ -51,7 +51,6 @@
     "milliseconds": 2
   },
   "absolute": {
-    "plannerP95Ms": 16,
     "reducerP95Ms": 4,
     "mountedRows": 100
   }

@@ -32,11 +32,15 @@ include all three values plus their minimum, median, and maximum.
 
 The reviewed relative policy rejects a metric only when the median increases by
 **more than 20% and more than 2 ms**. Each new workload or runner requires its own
-same-source stability review before it can use an approved reference. The existing
-absolute assertions remain
-mandatory on every run: planner p95 ≤16 ms, reducer dispatch p95 ≤4 ms, mounted
+same-source stability review before it can use an approved reference. The remaining
+absolute assertions are mandatory on every run: reducer dispatch p95 ≤4 ms, mounted
 rows ≤100, and available trace phases. A failed workload stops the comparison;
 partial observations and artifacts remain available.
+
+Presentation-planner timing is diagnostic only. Reports retain its raw samples,
+trace intervals and p95, without an absolute budget or pass/fail flag. It does
+not gate tests, CI, merges, publication or deployment, and has no replacement
+threshold. This follows the [owner decision of 1 October 2026](../adr/014-planner-timing-diagnostics.md).
 
 ## Bootstrap and approval
 

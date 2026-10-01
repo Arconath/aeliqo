@@ -246,10 +246,8 @@ test('records first/subsequent observations with a Chromium layout/paint trace',
     'utf8',
   );
   const budgetAssertions = {
-    presentationPlannerP95Ms: plannerP95Ms,
     targetedReducerDispatchP95Ms: reducerDispatchP95Ms,
     largeMountedRows: measured.large?.sample?.mountedRows,
-    presentationPlannerWithinBudget: plannerP95Ms !== null && plannerP95Ms <= 16,
     targetedReducerWithinBudget: reducerDispatchP95Ms !== null && reducerDispatchP95Ms <= 4,
     largeGeometryWithinBudget: measured.large?.sample?.mountedRows <= 100,
     tracePhasesAvailable,
@@ -260,7 +258,7 @@ test('records first/subsequent observations with a Chromium layout/paint trace',
   await mkdir(dirname(output), { recursive: true });
   await writeFile(
     output,
-    `${JSON.stringify({ sourceCommit, sourceChangedDuringRun, report, trace, budgetAssertions }, null, 2)}\n`,
+    `${JSON.stringify({ sourceCommit, sourceChangedDuringRun, report, trace, plannerP95Ms, budgetAssertions }, null, 2)}\n`,
     'utf8',
   );
   expect(report).toMatchObject({
@@ -271,7 +269,6 @@ test('records first/subsequent observations with a Chromium layout/paint trace',
   expect(sourceChangedDuringRun).toBe(false);
   if (budgetAssertions.enforced)
     expect(budgetAssertions).toMatchObject({
-      presentationPlannerWithinBudget: true,
       targetedReducerWithinBudget: true,
       largeGeometryWithinBudget: true,
     });

@@ -89,6 +89,14 @@ Keep package guidance in `docs/packages/`. Release staging may generate the npm 
 
 ## Working agreements
 
+### Owner decision: planner timing, 1 October 2026
+
+Presentation-planner latency is diagnostic data. No absolute planner-latency
+threshold gates tests, CI, merges, package publication, or deployment. Keep raw
+timings and traces; do not substitute a different planner timing threshold.
+This decision supersedes the former planner p95 acceptance rule. See
+[ADR 014](docs/adr/014-planner-timing-diagnostics.md).
+
 - Keep diffs focused and preserve unrelated changes and other contributors' work. One writer per file scope when working in parallel.
 - Do not weaken quality gates, invent supported frameworks, models, or scale claims, leak secrets, or bypass authorization. Paid calls, merges, package publication, and deployment each require their own explicit approval.
 - Releases are maintainer-run: packages and the site image are published only from one fully verified source revision. Contributors do not publish versions or deploy.

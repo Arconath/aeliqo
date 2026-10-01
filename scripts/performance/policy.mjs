@@ -19,7 +19,7 @@ function validatePolicy(budget) {
   if (budget.pairs !== 3 || budget.relative?.fraction !== 0.2 || budget.relative?.milliseconds !== 2)
     throw Error('Expected reviewed three-pair 20% AND 2ms candidate policy');
   const actual = budget.absolute;
-  if (actual?.plannerP95Ms !== 16 || actual?.reducerP95Ms !== 4 || actual?.mountedRows !== 100)
+  if (actual?.reducerP95Ms !== 4 || actual?.mountedRows !== 100)
     throw Error('Existing absolute performance budgets must be preserved');
 }
 
