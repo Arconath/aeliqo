@@ -29,13 +29,7 @@ export function measurements(layout, visualization, sourceSHA) {
   assert.equal(layout.sourceCommit, sourceSHA, 'Layout source mismatch');
   assert.equal(visualization.sourceCommit, sourceSHA, 'Visualization source mismatch');
   assert.equal(layout.sourceChangedDuringRun, false, 'Layout source changed during measurement');
-  for (const key of [
-    'enforced',
-    'presentationPlannerWithinBudget',
-    'targetedReducerWithinBudget',
-    'largeGeometryWithinBudget',
-    'tracePhasesAvailable',
-  ])
+  for (const key of ['enforced', 'targetedReducerWithinBudget', 'largeGeometryWithinBudget', 'tracePhasesAvailable'])
     assert.equal(layout.budgetAssertions?.[key], true, `Required absolute assertion: ${key}`);
   const result = {
     layoutEventP95Ms: layout.trace?.layout?.p95Ms,

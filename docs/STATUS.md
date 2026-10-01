@@ -108,6 +108,9 @@ This patch updates the Next.js integration fixture to the security-patched
 The lockfile change requires the verified package-publication flow; versions,
 peer pins, examples and current installation instructions move together to
 0.6.3. Public APIs and runtime/wire contracts remain compatible with 0.6.2.
+The owner permanently removed the absolute presentation-planner timing gate on
+1 October; planner timings are now diagnostic only, as recorded in
+[ADR 014](adr/014-planner-timing-diagnostics.md).
 
 1. **Next.js security fix — focused checks passed:** alerts 3 and 5 identify
    the same Node `next/og` ImageResponse RCE. Next.js 16.3.6, frozen installation,
@@ -154,26 +157,46 @@ peer pins, examples and current installation instructions move together to
    saved-default frames were inspected. Integrated `pnpm site:test`, lint and
    formatting passed. These checks used the changed working tree; require
    exact-source checks on the candidate branch and a fresh full-matrix main
-   push before publishing.
-6. **Publication and deployment — pending final source:** publish verified
+   push before publishing. Clean source `3bc0651` subsequently passed all
+   93 commands locally and in pull request CI, without source changes. The
+   identical merged source `4d499aa` passed all 93 main-push commands and the
+   release contract in [quality run 36786201359](https://github.com/Arconath/aeliqo/actions/runs/36786201359).
+   Its strict visual comparison passed 1,830 cases and 2,862 images across
+   Chromium, Firefox and WebKit with zero pixel differences and byte-identical
+   repeated captures.
+6. **Planner timing policy — removed by owner decision:** the final-source
+   comparison had recorded planner p95 of 17 ms under the former rule. An
+   unchanged-source recheck failed on the reference at 18.1 ms before measuring
+   the candidate. An exact-source probe recorded 14.9/16.3 ms and stopped early;
+   its companion comparison recorded 15.5/16.2 ms. These reports remain failed
+   historical evidence; no observations were discarded or relabeled as passing.
+   The owner withdrew the absolute planner timing rule after this investigation.
+   Configuration, policy validation, browser assertions, paired-report acceptance
+   and contributor guidance now treat planner timings as diagnostic, with no
+   replacement threshold. Existing reducer, row, relative comparison, provenance,
+   functional and visual policies remain. The changed workload identity retires
+   the earlier performance reference; updated comparison evidence remains
+   advisory and does not replace the required exact-source main-push matrix.
+7. **Publication and deployment — pending final source:** publish verified
    0.6.3-rc.1, verify its registry artifacts and provenance, publish stable
    0.6.3, build/attest/scan the same-source image, review the bounded GitOps
    promotion, and verify Flux, two exact-image replicas and public journeys.
    Package and image publication and deployment are authorized by the owner.
 
-The performance failure is a workload-identity mismatch, not a measured
-regression: the current digest is `c9f7283566889e784043cc07703215c6ca882dfdd45da284dc9849e6326314fb`
+The initial 0.6.2 performance failure was a workload-identity mismatch, not a
+measured regression: the digest at that time was `c9f7283566889e784043cc07703215c6ca882dfdd45da284dc9849e6326314fb`
 and the historical approved digest is `867fadc9677857bbbca368716c9d52a78d97e7e5cb419f66207e1d42ed65c913`.
 The changed fixture opens the collapsed exact-data disclosure and uses current
 row copy; the bundle threshold change was already owner-approved for 0.6.0.
-No automatic hash acceptance or budget weakening is planned.
+The subsequent owner decision removed the planner timing budget explicitly;
+workload identities and the remaining policies are still verified.
 
 The site is stateless, so there is no data migration. Deployment rollback
 targets the currently accepted immutable `cebbb901` image and source
 `fb04d4a`; rollback does not unpublish npm versions. No disaster-restore or
 live rollback exercise is claimed. The next executable step is a reviewed
-candidate pull request, followed by exact-source strict comparisons and full
-main-push verification.
+candidate pull request, followed by policy verification and the full exact-source
+main-push matrix. Paired comparison evidence remains advisory.
 
 ## Open items
 
@@ -217,10 +240,10 @@ source `fb04d4a` passed. A post-release fix to the live smoke test's search
 initialization wait was verified against production without changing the
 deployed image or package artifacts.
 
-| Item                                                                        | Next step                                                                               |
-| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Paired performance passed on source B; final release source is pending.     | Require the final source strict comparison and exact-source main-push acceptance.       |
-| Next.js alerts 3 and 5 are fixed in GitHub; the patched release is pending. | Complete exact-source verification and publish the 0.6.3 candidate with Next.js 16.3.6. |
+| Item                                                                                | Next step                                                                               |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| The owner removed the absolute planner timing gate; measurements remain diagnostic. | Verify the updated policy and fresh exact-source main-push acceptance.                  |
+| Next.js alerts 3 and 5 are fixed in GitHub; the patched release is pending.         | Complete exact-source verification and publish the 0.6.3 candidate with Next.js 16.3.6. |
 
 Visual and paired-performance jobs are advisory; the functional matrix in
 `quality/commands.json` is the required gate. Aeliqo keeps its GitHub-hosted OSS

@@ -17,3 +17,4 @@ ADR when the product changes.
 - [011 · Aeliqo 0.4 product boundaries](011-aeliqo-0.4-product-boundaries.md)
 - [012 · Scoped surface API and compatibility boundary](012-scoped-surface-api.md)
 - [013: Atomic app presentation](013-atomic-app-presentation.md)
+- [014 · Presentation-planner timing is diagnostic](014-planner-timing-diagnostics.md)

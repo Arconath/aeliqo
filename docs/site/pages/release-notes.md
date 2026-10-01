@@ -28,9 +28,12 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
   registered defaults, so visible values match the next action input. New
   edits made during the save and failed or ambiguous drafts are retained.
   Responsive presentation updates wait for the pending action to settle.
-- Visual and paired layout/visualization references are renewed from reviewed
-  source and runner evidence. Existing coverage, pixel rules and timing/row
-  budgets are unchanged; this does not claim a speedup over an earlier version.
+- Presentation-planner timing is diagnostic only. Its raw observations and
+  traces remain available, with no absolute planner latency acceptance budget.
+- Visual and paired layout/visualization references use reviewed source and
+  runner evidence. Coverage, pixel rules, reducer/row budgets and relative
+  comparison policies remain unchanged; this does not claim a speedup over an
+  earlier version.
 
 ## Aeliqo 0.6.2
 

@@ -13,7 +13,7 @@ const budget = {
   workloadSHA: 'b'.repeat(64),
   review: 'docs/review.md',
   relative: { fraction: 0.2, milliseconds: 2 },
-  absolute: { plannerP95Ms: 16, reducerP95Ms: 4, mountedRows: 100 },
+  absolute: { reducerP95Ms: 4, mountedRows: 100 },
   pairs: 3,
 };
 const sample = (layout, visualization) => ({
@@ -47,7 +47,8 @@ test('relative regression must exceed BOTH reviewed limits and reports baseline 
 test('unapproved budgets cannot gate and existing absolute budgets cannot be weakened', () => {
   assert.doesNotThrow(() => validateBudget(budget));
   assert.throws(() => validateBudget({ ...budget, status: 'candidate' }));
-  assert.throws(() => validateBudget({ ...budget, absolute: { ...budget.absolute, plannerP95Ms: 20 } }));
+  assert.throws(() => validateBudget({ ...budget, absolute: { ...budget.absolute, reducerP95Ms: 5 } }));
+  assert.throws(() => validateBudget({ ...budget, absolute: { ...budget.absolute, mountedRows: 101 } }));
 });
 function blob(text) {
   const bytes = Buffer.from(text);
@@ -108,16 +109,16 @@ test('pairs stop on a failed workload and preserve completed observations', asyn
   assert.deepEqual(calls, ['1:baseline', '1:candidate', '2:candidate']);
   assert.equal(observations.length, 2);
 });
-test('measurements require enforced successful absolute budgets and exact source reports', async () => {
+test('planner timing is diagnostic while remaining budgets and exact source reports stay enforced', async () => {
   const { measurements } = await import('../../scripts/performance/workloads.mjs');
   const source = 'a'.repeat(40);
   const layout = {
     sourceCommit: source,
     sourceChangedDuringRun: false,
+    plannerP95Ms: 500,
     trace: { layout: { p95Ms: 1 } },
     budgetAssertions: {
       enforced: true,
-      presentationPlannerWithinBudget: true,
       targetedReducerWithinBudget: true,
       largeGeometryWithinBudget: true,
       tracePhasesAvailable: true,
@@ -125,6 +126,16 @@ test('measurements require enforced successful absolute budgets and exact source
   };
   const visualization = { sourceCommit: source, timing: { p95Ms: 2 } };
   assert.deepEqual(measurements(layout, visualization, source), sample(1, 2));
+  assert.equal(layout.plannerP95Ms, 500);
+  for (const key of ['targetedReducerWithinBudget', 'largeGeometryWithinBudget', 'tracePhasesAvailable']) {
+    assert.throws(() =>
+      measurements(
+        { ...layout, budgetAssertions: { ...layout.budgetAssertions, [key]: false } },
+        visualization,
+        source,
+      ),
+    );
+  }
   assert.throws(() => measurements({ ...layout, sourceChangedDuringRun: true }, visualization, source));
   assert.throws(() => measurements(layout, { ...visualization, sourceCommit: 'b'.repeat(40) }, source));
   assert.throws(() =>
