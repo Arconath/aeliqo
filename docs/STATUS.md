@@ -1,6 +1,6 @@
 # Aeliqo status
 
-Last updated: 2026-10-01. This is the single maintained status record. Release
+Last updated: 2026-10-02. This is the single maintained status record. Release
 history lives in the [release notes](site/pages/release-notes.md) and on
 [GitHub releases](https://github.com/Arconath/aeliqo/releases).
 
@@ -255,6 +255,13 @@ required checks; production image run `36759903067` and live acceptance for
 source `fb04d4a` passed. A post-release fix to the live smoke test's search
 initialization wait was verified against production without changing the
 deployed image or package artifacts.
+
+## Repository follow-up, 2 October 2026
+
+The current support matrix points to the 0.6.3 release receipts and separates
+required functional acceptance from advisory visual and paired-performance
+evidence. The historical 0.6.0 records remain available. This documentation
+update does not publish packages or deploy a new site image.
 
 ## Open items
 

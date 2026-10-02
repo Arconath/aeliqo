@@ -234,8 +234,8 @@
     "status": "source-checks-recorded",
     "sourceRevision": null,
     "scope": "This file records observed revisions; it does not certify its own enclosing commit. Publication requires a full same-SHA main-push quality run. Publication and deployment receipts are external to the source snapshot.",
-    "record": "docs/testing/0.6.0-source-checks.md",
-    "releaseReceipts": "https://github.com/Arconath/aeliqo/releases/tag/v0.6.0",
+    "record": "docs/STATUS.md",
+    "releaseReceipts": "https://github.com/Arconath/aeliqo/releases/tag/v0.6.3",
     "historicalMatrix": "docs/releases/0.5.2/support-matrix.json"
   },
   "snapshotScope": "Prepublication source qualification. Candidate metadata and publication/deployment flags describe this source snapshot; use the versioned release receipts and public /version endpoint for live publication and deployment identity."
