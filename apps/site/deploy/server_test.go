@@ -30,6 +30,8 @@ func fixtureSite(t *testing.T) string {
 		"robots-docs.txt":                       "docs robots",
 		"sitemap-main.xml":                      "main sitemap",
 		"sitemap-docs.xml":                      "docs sitemap",
+		"llms-main.txt":                         "main llms",
+		"llms-docs.txt":                         "docs llms",
 		"assets/site-abcdefgh.js":               "console.log('aeliqo')",
 		"aeliqo.png":                            "not-a-real-png",
 	} {
@@ -442,6 +444,8 @@ func TestDocumentationHostUsesDocsRootAndSharedStaticRoutes(t *testing.T) {
 		{"https://docs.aeliqo.com/robots.txt", "docs robots"},
 		{"https://aeliqo.com/sitemap.xml", "main sitemap"},
 		{"https://docs.aeliqo.com/sitemap.xml", "docs sitemap"},
+		{"https://aeliqo.com/llms.txt", "main llms"},
+		{"https://docs.aeliqo.com/llms.txt", "docs llms"},
 	} {
 		response := request(t, handler, http.MethodGet, test.target)
 		if response.Code != http.StatusOK || response.Body.String() != test.want {

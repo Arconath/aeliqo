@@ -16,10 +16,31 @@
     />
     <meta property="og:url" content="https://aeliqo.com/" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Aeliqo" />
+    <meta property="og:image" content="https://aeliqo.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Aeliqo: Ask a question. Aeliqo picks the view." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Aeliqo — adaptive interfaces, with or without AI" />
+    <meta
+      name="twitter:description"
+      content="Adapt components, workspaces, and whole-page layouts using the data, permissions, and views your application registers."
+    />
+    <meta name="twitter:image" content="https://aeliqo.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Aeliqo: Ask a question. Aeliqo picks the view." />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://aeliqo.com/#organization",
+            "name": "Aeliqo",
+            "url": "https://aeliqo.com/",
+            "logo": "https://aeliqo.com/aeliqo.png",
+            "sameAs": ["https://github.com/Arconath/aeliqo", "https://www.npmjs.com/package/@aeliqo/core"]
+          },
           {
             "@type": "WebSite",
             "@id": "https://aeliqo.com/#website",
@@ -27,6 +48,7 @@
             "url": "https://aeliqo.com/",
             "description": "Adapt components, workspaces, and whole-page layouts to intent and available space, using application-owned data, permissions, and registered views.",
             "inLanguage": "en",
+            "publisher": { "@id": "https://aeliqo.com/#organization" },
             "mainEntity": { "@id": "https://aeliqo.com/#software" }
           },
           {
