@@ -173,18 +173,11 @@ func newHandlerWithReadiness(root, buildRevision string, ready *atomic.Bool) htt
 			host = name
 		}
 		isDocsHost := strings.EqualFold(host, "docs.aeliqo.com") || strings.EqualFold(host, "docs.localhost")
-		if requestPath == "/robots.txt" {
+		if files, perHost := hostCrawlerFiles[requestPath]; perHost {
 			if isDocsHost {
-				requestPath = "/robots-docs.txt"
+				requestPath = files.docs
 			} else {
-				requestPath = "/robots-main.txt"
-			}
-		}
-		if requestPath == "/sitemap.xml" {
-			if isDocsHost {
-				requestPath = "/sitemap-docs.xml"
-			} else {
-				requestPath = "/sitemap-main.xml"
+				requestPath = files.main
 			}
 		}
 		if canonical, legacy := routes.legacyDocs[requestPath]; legacy {
@@ -236,6 +229,13 @@ func loadPublicRoutes(root string) publicRoutes {
 		}
 	}
 	return publicRoutes{legacyDocs: routes.LegacyDocs, canonicalDocs: canonical}
+}
+
+// Crawler files share one public path but differ per host.
+var hostCrawlerFiles = map[string]struct{ main, docs string }{
+	"/robots.txt":  {main: "/robots-main.txt", docs: "/robots-docs.txt"},
+	"/sitemap.xml": {main: "/sitemap-main.xml", docs: "/sitemap-docs.xml"},
+	"/llms.txt":    {main: "/llms-main.txt", docs: "/llms-docs.txt"},
 }
 
 func isSharedAsset(requestPath string) bool {

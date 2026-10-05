@@ -218,6 +218,13 @@ function pageAttributes(page, isDocs) {
   return attributes.length === 0 ? '' : ` ${attributes.join(' ')}`;
 }
 
+const SOCIAL_IMAGE = 'https://aeliqo.com/og-image.png';
+const SOCIAL_IMAGE_ALT = 'Aeliqo: Ask a question. Aeliqo picks the view.';
+
+function socialMeta(title, description) {
+  return `<meta property="og:site_name" content="Aeliqo"><meta property="og:image" content="${SOCIAL_IMAGE}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="${escape(SOCIAL_IMAGE_ALT)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${SOCIAL_IMAGE}"><meta name="twitter:image:alt" content="${escape(SOCIAL_IMAGE_ALT)}">`;
+}
+
 function pageDocument(page, shell, docsPages) {
   const isDocs = page.surface === 'docs' && page.path !== '/playground/';
   const content = pageBody(page, isDocs);
@@ -227,7 +234,7 @@ function pageDocument(page, shell, docsPages) {
   const layout = pageLayout(page, isDocs);
   const canonicalOrigin = page.surface === 'docs' ? 'https://docs.aeliqo.com' : 'https://aeliqo.com';
   const canonicalUrl = `${canonicalOrigin}${page.path}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)} — Aeliqo</title><meta name="description" content="${escape(page.description)}"><link rel="canonical" href="${escape(canonicalUrl)}"><meta property="og:title" content="${escape(page.title)} — Aeliqo"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${escape(canonicalUrl)}"><meta property="og:type" content="website"><link rel="icon" href="/aeliqo.png"><link rel="stylesheet" href="/src/site.css"></head><body${pageAttributes(page, isDocs)}>${header}${shell.analyticsConsent}<main id="main" class="shell ${layout}" tabindex="-1">${navigation}${content.html}${toc}</main>${shell.footer}<script type="module" src="/src/site.ts"></script></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(page.title)} — Aeliqo</title><meta name="description" content="${escape(page.description)}"><link rel="canonical" href="${escape(canonicalUrl)}"><meta property="og:title" content="${escape(page.title)} — Aeliqo"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${escape(canonicalUrl)}"><meta property="og:type" content="website">${socialMeta(`${page.title} — Aeliqo`, page.description)}<link rel="icon" href="/aeliqo.png"><link rel="stylesheet" href="/src/site.css"></head><body${pageAttributes(page, isDocs)}>${header}${shell.analyticsConsent}<main id="main" class="shell ${layout}" tabindex="-1">${navigation}${content.html}${toc}</main>${shell.footer}<script type="module" src="/src/site.ts"></script></body></html>`;
 }
 
 async function writeGeneratedPages(all, shell, docsPages) {
@@ -284,6 +291,48 @@ async function writeSitemaps(all) {
   );
 }
 
+const LLMS_SUMMARY =
+  '> Aeliqo is an Apache-2.0 TypeScript UI runtime. Describe your data once; a button, your code, or an optional AI agent (MCP, WebMCP, or a bring-your-own-key model) sends a small typed intent. Aeliqo validates it and renders a registered view, such as a table, cards, a chart, or a detail, that fits the answer and the available space. The host application owns data, permissions, routes, and business effects. Aeliqo needs no account, hosted backend, or model call.';
+
+function llmsMain() {
+  return `# Aeliqo\n\n${LLMS_SUMMARY}\n\n## Start\n\n- [Documentation](https://docs.aeliqo.com/): Guides, the component catalog, and API reference.\n- [Quickstart](https://docs.aeliqo.com/start/): One React dataset, four questions, four views.\n- [Playground](https://docs.aeliqo.com/playground/): Run the real runtime on synthetic data in the browser.\n- [Source on GitHub](https://github.com/Arconath/aeliqo): Apache-2.0 source, issues, and releases.\n\n## Optional\n\n- [Documentation index for language models](https://docs.aeliqo.com/llms.txt): Every documentation page with a one-line summary.\n`;
+}
+
+function navigationPaths(item, docsPages) {
+  if (item.type === 'link') return [item.path];
+  if (item.type === 'component-families')
+    return docsPages
+      .filter((page) => page.component !== undefined)
+      .sort((left, right) => left.title.localeCompare(right.title))
+      .map((page) => page.path);
+  return item.items.map((link) => link.path);
+}
+
+function llmsLink(page) {
+  return `- [${page.title}](https://docs.aeliqo.com${page.path}): ${page.description}`;
+}
+
+function llmsDocs(all) {
+  const docsPages = all.filter((page) => page.surface === 'docs');
+  const byPath = new Map(docsPages.map((page) => [page.path, page]));
+  const listed = new Set();
+  const sections = DOC_NAVIGATION.map((group) => {
+    const pages = group.items
+      .flatMap((item) => navigationPaths(item, docsPages))
+      .filter((path) => byPath.has(path) && !listed.has(path));
+    for (const path of pages) listed.add(path);
+    return `## ${group.label}\n\n${pages.map((path) => llmsLink(byPath.get(path))).join('\n')}`;
+  });
+  const rest = docsPages.filter((page) => !listed.has(page.path)).map(llmsLink);
+  const more = rest.length === 0 ? '' : `\n\n## More\n\n${rest.join('\n')}`;
+  return `# Aeliqo documentation\n\n${LLMS_SUMMARY}\n\n${sections.join('\n\n')}${more}\n`;
+}
+
+async function writeLlmsFiles(all) {
+  await writeFile(join(generatedPublic, 'llms-main.txt'), llmsMain());
+  await writeFile(join(generatedPublic, 'llms-docs.txt'), llmsDocs(all));
+}
+
 export async function generatePages() {
   await rm(generatedRoot, { recursive: true, force: true });
   await rm(generatedPublic, { recursive: true, force: true });
@@ -296,11 +345,13 @@ export async function generatePages() {
   const home = (await readFile(join(siteRoot, 'index.html'), 'utf8')).replace('{{AELIQO_RELEASE_NOTE}}', releaseNote);
   await writeFile(join(generatedRoot, 'index.html'), home);
   await copyFile(join(siteRoot, 'public/aeliqo.png'), join(generatedPublic, 'aeliqo.png'));
+  await copyFile(join(siteRoot, 'public/og-image.png'), join(generatedPublic, 'og-image.png'));
   const shell = extractSiteShell(home);
   const { docs, docsPages, all } = await loadSitePages();
   const inputs = await writeGeneratedPages(all, shell, docsPages);
   await writeSearchIndex(docs);
   await writeRouteMap(docs, all);
   await writeSitemaps(all);
+  await writeLlmsFiles(all);
   return inputs;
 }

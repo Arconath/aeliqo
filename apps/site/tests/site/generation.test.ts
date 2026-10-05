@@ -8,7 +8,7 @@ const generatedRoot = resolve(repositoryRoot, 'artifacts/site-source');
 const generatedPublic = resolve(repositoryRoot, 'artifacts/site-public');
 
 describe('static page generation', () => {
-  it('publishes factual WebSite and SoftwareApplication structured data', async () => {
+  it('publishes factual Organization, WebSite, and SoftwareApplication structured data', async () => {
     const html = await readFile(resolve(repositoryRoot, 'index.html'), 'utf8');
     const jsonLd = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/u)?.[1];
     const canonical = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/u)?.[1];
@@ -24,10 +24,23 @@ describe('static page generation', () => {
       '@graph': Array<Record<string, unknown>>;
     };
     expect(structuredData['@context']).toBe('https://schema.org');
-    expect(structuredData['@graph'].map((entity) => entity['@type'])).toEqual(['WebSite', 'SoftwareApplication']);
+    expect(structuredData['@graph'].map((entity) => entity['@type'])).toEqual([
+      'Organization',
+      'WebSite',
+      'SoftwareApplication',
+    ]);
 
-    const [website, application] = structuredData['@graph'];
-    if (website === undefined || application === undefined) throw new Error('Structured data graph is incomplete.');
+    const [organization, website, application] = structuredData['@graph'];
+    if (organization === undefined || website === undefined || application === undefined)
+      throw new Error('Structured data graph is incomplete.');
+    expect(organization).toMatchObject({
+      '@id': 'https://aeliqo.com/#organization',
+      '@type': 'Organization',
+      name: 'Aeliqo',
+      url: canonical,
+      logo: 'https://aeliqo.com/aeliqo.png',
+      sameAs: ['https://github.com/Arconath/aeliqo', 'https://www.npmjs.com/package/@aeliqo/core'],
+    });
     expect(website).toMatchObject({
       '@id': 'https://aeliqo.com/#website',
       '@type': 'WebSite',
@@ -35,6 +48,7 @@ describe('static page generation', () => {
       url: canonical,
       description,
       inLanguage: 'en',
+      publisher: { '@id': 'https://aeliqo.com/#organization' },
       mainEntity: { '@id': 'https://aeliqo.com/#software' },
     });
     expect(application).toMatchObject({
@@ -131,6 +145,17 @@ describe('static page generation', () => {
     for (const page of search as { path: string }[]) {
       expect(startNav, `Unreachable documentation page ${page.path}`).toContain(`href="${page.path}"`);
     }
+    const llmsMain = await readFile(join(generatedPublic, 'llms-main.txt'), 'utf8');
+    const llmsDocs = await readFile(join(generatedPublic, 'llms-docs.txt'), 'utf8');
+    expect(llmsMain).toMatch(/^# Aeliqo\n\n> /u);
+    expect(llmsMain).toContain('(https://docs.aeliqo.com/llms.txt)');
+    expect(llmsDocs).toMatch(/^# Aeliqo documentation\n\n> /u);
+    for (const page of search as { path: string }[])
+      expect(llmsDocs, `llms.txt misses ${page.path}`).toContain(`](https://docs.aeliqo.com${page.path})`);
+    const startDoc = await pageAt('start');
+    expect(startDoc).toContain('<meta name="twitter:card" content="summary_large_image">');
+    expect(startDoc).toContain('<meta property="og:image" content="https://aeliqo.com/og-image.png">');
+    await expect(access(join(generatedPublic, 'og-image.png'))).resolves.toBeUndefined();
     const componentDoc = await pageAt('components/data.table');
     expect(componentDoc).toContain('aria-label="Breadcrumb"');
     expect(componentDoc).toContain('<a href="/components/">Components</a>');

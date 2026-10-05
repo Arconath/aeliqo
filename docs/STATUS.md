@@ -265,10 +265,11 @@ update does not publish packages or deploy a new site image.
 
 ## Open items
 
-| Item                                                           | Next step                                                                                         |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Real-model success rate and external adoption remain unproven. | Collect evidence from real integrations without inferring model success from deterministic tests. |
-| Native WebMCP requires an experimental browser flag.           | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
+| Item                                                                                                                                                                                                                            | Next step                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Real-model success rate and external adoption remain unproven.                                                                                                                                                                  | Collect evidence from real integrations without inferring model success from deterministic tests. |
+| Native WebMCP requires an experimental browser flag.                                                                                                                                                                            | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
+| Web SEO/GEO baseline: source adds per-host `llms.txt`, Open Graph/Twitter cards with a 1200×630 image, Organization JSON-LD and the `test:seo` CI check; not yet deployed. No FAQPage data because the site has no visible FAQ. | Merge, redeploy the site image, then verify `/llms.txt` on both hosts and the card metadata live. |
 
 The planner policy removal and patched Next.js release are complete; neither is
 an open release blocker. Visual and paired-performance jobs are advisory; the
