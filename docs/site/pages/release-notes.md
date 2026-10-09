@@ -3,7 +3,7 @@ id: 'release-notes'
 path: '/ship/release-notes/'
 section: 'Releases'
 title: 'Release notes'
-description: 'Aeliqo 0.7 candidate changes and source-bound records for earlier releases.'
+description: 'Aeliqo 0.7 changes and source-bound records for earlier releases.'
 ---
 
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
@@ -13,10 +13,8 @@ description: 'Aeliqo 0.7 candidate changes and source-bound records for earlier 
 
 ## Aeliqo 0.7.0
 
-This source checkout is the 0.7.0 release candidate. Publication and production
-deployment require their own verified receipts; these changes are not part of
-the published 0.6.3 packages. Upgrade all Aeliqo packages together and follow the
-[0.6 to 0.7 migration guide](/ship/migration-0.6/) for the breaking OAuth
+These changes belong to Aeliqo 0.7.0. Upgrade all Aeliqo packages together and
+follow the [0.6 to 0.7 migration guide](/ship/migration-0.6/) for the breaking OAuth
 requirement. The serialized contract version remains `1`.
 
 - Update the SSR/hydration fixture to Next.js 16.3.8 and the affected build

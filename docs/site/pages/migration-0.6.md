@@ -6,10 +6,11 @@ title: 'Migrate from 0.6 to 0.7'
 description: 'Pin the OAuth issuer, migrate stored credentials, and retain application action previews across authenticated MCP requests.'
 ---
 
+<aeliqo-release-status></aeliqo-release-status>
+
 ## Update the packages together
 
-This checkout targets the **0.7.0 candidate**. Use the same exact version for
-every Aeliqo package and check the [package publication status](/reference/packages/)
+Use **0.7.0** for every Aeliqo package and check the [package publication status](/reference/packages/)
 before installing it. The breaking change affects MCP HTTP clients that use
 OAuth. The wire contract version remains `1`; resource definitions, data
 adapters, React bindings, headless runtime rendering, and static bearer
