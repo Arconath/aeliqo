@@ -129,7 +129,7 @@ expiry. Restarting the host generates a new bearer token.
 
 ## Host-session and OAuth changes in 0.7
 
-The 0.7.0 candidate includes security corrections and a new host-owned
+Aeliqo 0.7.0 includes security corrections and a new host-owned
 `createAppToolSession` that retains action previews across
 fresh MCP requests. Each request must supply its authenticated principal and
 scope to `session.createEndpoint(identity)`; confirmation belongs to the

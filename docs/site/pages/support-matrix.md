@@ -3,10 +3,10 @@ id: 'support-matrix'
 path: '/ship/support-matrix/'
 section: 'Releases'
 title: 'Support matrix and release acceptance'
-description: 'Aeliqo 0.7 candidate profiles, tested source revisions, and release qualification boundaries.'
+description: 'Aeliqo 0.7 profiles, tested source revisions, and release qualification boundaries.'
 ---
 
-<p class="lead">The Aeliqo 0.7 candidate targets the maintained profiles below. Recorded source checks cover framework consumers, browser behavior, and bounded workloads. Release qualification, package publication, and production deployment are verified separately.</p>
+<p class="lead">Aeliqo 0.7 targets the maintained profiles below. Recorded source checks cover framework consumers, browser behavior, and bounded workloads. Release qualification, package publication, and production deployment are verified separately.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
 The [machine-readable source record](https://github.com/Arconath/aeliqo/blob/main/docs/support-matrix.json)
