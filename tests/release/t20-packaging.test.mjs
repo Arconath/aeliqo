@@ -356,7 +356,7 @@ async function readQualificationInputs() {
   assert.equal(matrix.candidate.version, metadata.version);
   assert.equal(matrix.candidate.baseVersion, metadata.previousVersion);
   assert.equal(matrix.candidate.status, metadata.status);
-  assert.equal(matrix.candidate.compatibility, 'breaking');
+  assert.equal(matrix.candidate.compatibility, previousLine === metadata.line ? 'compatible' : 'breaking');
   assert.equal(metadata.line, metadata.version.split('.').slice(0, 2).join('.'));
   for (const claim of ['unlimitedScale', 'everyFramework', 'everyProvider', 'stablePublished'])
     assert.equal(matrix.claims[claim], false);

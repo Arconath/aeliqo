@@ -1,5 +1,37 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
+
+test('a new request clears the previous ready receipt while its view family is loading', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/playground/');
+  const receipt = page.locator('#pg-receipt-state');
+  await expect(receipt).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-region aeliqo-table')).toContainText('Ada Chen');
+  let hold!: (route: Route) => void;
+  const loading = new Promise<Route>((resolve) => {
+    hold = resolve;
+  });
+  await page.route('**/register-data*.js*', hold);
+  const immediateState = await page.locator('#pg-scenario').evaluate((element: HTMLSelectElement) => {
+    element.value = 'products';
+    element.dispatchEvent(new Event('change', { bubbles: true }));
+    return document.querySelector('#pg-receipt-state')?.textContent;
+  });
+  const route = await loading;
+  try {
+    expect(immediateState).toBe('checking');
+    await expect(receipt).toHaveText('checking');
+    await expect(page.locator('#pg-journey-result')).toHaveText('Checking…');
+    await expect(page.locator('#pg-journey-view')).toHaveText('Waiting');
+    await expect(page.locator('#pg-region aeliqo-card-collection')).toHaveCount(0);
+  } finally {
+    await route.continue();
+  }
+  await expect(receipt).toHaveText('renderer-ready');
+  await expect(page.locator('#pg-region aeliqo-card-collection')).toBeVisible();
+  await expect(page.locator('#pg-result-title')).toHaveText('Browse products');
+  await expect(page.locator('#pg-error')).toBeHidden();
+});
 
 test('the first result precedes optional request details and stays in the initial viewport', async ({ page }) => {
   for (const width of [360, 768, 1440]) {

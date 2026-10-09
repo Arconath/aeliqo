@@ -236,6 +236,7 @@ async function runIntent(intent: Intent, trigger?: HTMLButtonElement, publicJour
   const controller = new AbortController();
   activeRequest = controller;
   setError();
+  receiptState.textContent = 'checking';
   journeyIntent.textContent = labelIntent(scenario, intent);
   showIntent(intent);
   journeyResult.textContent = 'Checking…';

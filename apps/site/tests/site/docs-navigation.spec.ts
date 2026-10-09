@@ -5,6 +5,58 @@ import { RELEASE_VERSION } from '../../../../scripts/release/metadata.mjs';
 
 const COMPONENT_ROUTES = componentCatalog.map(({ id }) => `/components/${id}/`);
 
+test('quickstart question labels wrap only between words on a narrow screen', async ({ browser }, testInfo) => {
+  for (const javaScriptEnabled of [true, false]) {
+    const context = await browser.newContext({ javaScriptEnabled, viewport: { width: 360, height: 800 } });
+    const page = await context.newPage();
+    try {
+      await page.goto('/start/');
+      const table = page.getByRole('region', { name: 'Questions, intents, and expected views' });
+      await expect(table).toBeVisible();
+      for (const [width, fontFamily] of [
+        [360, ''],
+        [320, 'Verdana, sans-serif'],
+      ] as const) {
+        await page.setViewportSize({ width, height: 800 });
+        await table.locator('table').evaluate((element, font) => {
+          element.style.fontFamily = font;
+        }, fontFamily);
+        const splitWords = await table.locator('th[scope="row"]').evaluateAll((cells) =>
+          cells.flatMap((cell) => {
+            const text = cell.firstChild!;
+            return [...(text.textContent ?? '').matchAll(/\S+/gu)].flatMap((match) => {
+              const range = document.createRange();
+              range.setStart(text, match.index);
+              range.setEnd(text, match.index + match[0].length);
+              return range.getClientRects().length > 1 ? [match[0]] : [];
+            });
+          }),
+        );
+        expect(splitWords).toEqual([]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        const geometry = await table.evaluate((element) => ({
+          clientWidth: element.clientWidth,
+          scrollWidth: element.scrollWidth,
+          columns: [...element.querySelectorAll('tbody tr:first-child > *')].map((cell) => ({
+            width: cell.getBoundingClientRect().width,
+            padding: getComputedStyle(cell).paddingInline,
+          })),
+        }));
+        await testInfo.attach(`table-${width}-js-${javaScriptEnabled}`, {
+          body: JSON.stringify(geometry),
+          contentType: 'application/json',
+        });
+        expect(geometry.scrollWidth, JSON.stringify(geometry)).toBeLessThanOrEqual(geometry.clientWidth);
+        await expect(table).toHaveAttribute('tabindex', '0');
+        await table.focus();
+        await expect(table).toBeFocused();
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
+
 test('each component page exposes the complete component menu and identifies its current entry', async ({ page }) => {
   for (const route of [
     '/components/foundation.button/',

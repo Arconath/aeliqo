@@ -10,7 +10,7 @@ description: 'Pin the OAuth issuer, migrate stored credentials, and retain appli
 
 ## Update the packages together
 
-Use **0.7.0** for every Aeliqo package and check the [package publication status](/reference/packages/)
+Use **0.7.1** for every Aeliqo package and check the [package publication status](/reference/packages/)
 before installing it. The breaking change affects MCP HTTP clients that use
 OAuth. The wire contract version remains `1`; resource definitions, data
 adapters, React bindings, headless runtime rendering, and static bearer
