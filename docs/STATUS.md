@@ -272,6 +272,18 @@ corrections and the revised landing page, documentation and playground at
 PR quality, all 93 acceptance commands and the release contract. Main-push
 verification is running; this merge does not itself publish or deploy.
 
+New dependency alerts reported during final release preflight are corrected
+with patched Next.js, sharp, source-map-js, smol-toml and fast-uri versions.
+Frozen installation, real Next SSR/hydration and the site build passed; fresh
+pnpm audit reports zero advisories. Independent security review found no blocker.
+Exact-source CI remains required before publication.
+
+Contributor rollout is verified: the accepted-base workflow passed for the
+signed release contribution. Remote main protection now requires `DCO`,
+`functional` and `policy`, each bound to GitHub Actions app `15368`, with strict
+branch freshness. Readback confirmed every other branch control was preserved.
+The additive provider configuration passed independent review and Linux CI.
+
 The next candidate is 0.7.0. OAuth integrations must explicitly pin the expected
 issuer and reconnect credentials without an issuer stamp; the 0.6-to-0.7
 migration guide documents that compatibility change. Publication requires a
@@ -298,7 +310,6 @@ unreleased and add no fresh remote production health or deployment receipt.
 
 | Item                                                                                                                                                                                                                            | Next step                                                                                         |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| New contributor DCO workflow is implemented; required remote status is not configured by this source change.                                                                                                                    | Require the trusted-base `DCO` status after the maintainer's initial workflow landing.            |
 | Real-model success rate and external adoption remain unproven.                                                                                                                                                                  | Collect evidence from real integrations without inferring model success from deterministic tests. |
 | Native WebMCP requires an experimental browser flag.                                                                                                                                                                            | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
 | Web SEO/GEO baseline: source adds per-host `llms.txt`, Open Graph/Twitter cards with a 1200×630 image, Organization JSON-LD and the `test:seo` CI check; not yet deployed. No FAQPage data because the site has no visible FAQ. | Merge, redeploy the site image, then verify `/llms.txt` on both hosts and the card metadata live. |

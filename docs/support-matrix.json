@@ -66,7 +66,7 @@
     },
     {
       "id": "next",
-      "version": "16.3.6",
+      "version": "16.3.8",
       "status": "source-checks-passed",
       "evidence": ["tests/next-platform", "tests/vnext/browser/ssr.spec.ts"],
       "qualificationScope": "Recorded local or diagnostic source checks; final release acceptance is separate."
