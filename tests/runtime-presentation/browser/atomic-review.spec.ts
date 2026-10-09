@@ -53,6 +53,81 @@ test('semantic interaction after synchronous publication remains available', asy
   expect(after.liveInteraction).toMatchObject({ values: [{ portId: 'selection', payload: { kind: 'selection' } }] });
 });
 
+test('selection accepted during adaptive element loading survives the stale preparation', async ({ page }) => {
+  type Snapshot = ReturnType<Fixture['snapshot']>;
+  type ProbeHost = Host & {
+    resizeObserved: Promise<void>;
+    releaseResize(): Promise<{ before: Snapshot; accepted: Snapshot; after: Snapshot }>;
+  };
+  await page.addInitScript(() => {
+    const host = window as ProbeHost;
+    const Observer = window.ResizeObserver;
+    const frame = window.requestAnimationFrame.bind(window);
+    const pending: (() => void)[] = [];
+    let holding = true;
+    let armed = false;
+    let observed = () => {};
+    let complete: (value: { before: Snapshot; accepted: Snapshot; after: Snapshot }) => void;
+    let before: Snapshot;
+    host.resizeObserved = new Promise<void>((resolve) => (observed = resolve));
+    window.ResizeObserver = class extends Observer {
+      constructor(callback: ResizeObserverCallback) {
+        super((entries, observer) => {
+          if (!entries.some((entry) => entry.target.id === 'target')) return callback(entries, observer);
+          observed();
+          if (holding) pending.push(() => callback(entries, observer));
+          else callback(entries, observer);
+        });
+      }
+    };
+    window.requestAnimationFrame = (callback) =>
+      frame((time) => {
+        callback(time);
+        if (!armed) return;
+        armed = false;
+        queueMicrotask(async () => {
+          host.transactionFixture.emitSelection();
+          const accepted = host.transactionFixture.snapshot();
+          // Use the real cached registration module, then a frame boundary, so
+          // the adaptive preparation settles before inspecting its publication.
+          await import(new URL('/packages/web/src/register.ts', location.href).href);
+          await new Promise<void>((resolve) => frame(() => resolve()));
+          complete({ before, accepted, after: host.transactionFixture.snapshot() });
+        });
+      });
+    host.releaseResize = () => {
+      before = host.transactionFixture.snapshot();
+      const completed = new Promise<{ before: Snapshot; accepted: Snapshot; after: Snapshot }>(
+        (resolve) => (complete = resolve),
+      );
+      holding = false;
+      armed = true;
+      for (const callback of pending.splice(0)) callback();
+      return completed;
+    };
+  });
+  await page.goto('/tests/runtime-presentation/browser/atomic-review.html');
+  await expect(page.locator('#status')).toHaveText('renderer-ready');
+  await page.evaluate(() => (window as ProbeHost).resizeObserved);
+  const { before, accepted, after } = await page.evaluate(() => (window as ProbeHost).releaseResize());
+  expect(accepted.liveInteraction).toMatchObject({
+    values: [{ portId: 'selection', payload: { kind: 'selection' } }],
+  });
+  expect(after.liveInteraction).toEqual(accepted.liveInteraction);
+  expect(after.runtime).toEqual(before.runtime);
+  expect(after.plan).toEqual(before.plan);
+
+  // Rejecting the stale preparation must still allow a fresh resize to retain
+  // and canonically publish the accepted, declared selection.
+  await page.setViewportSize({ width: 700, height: 720 });
+  await expect
+    .poll(() => page.evaluate(() => (window as Host).transactionFixture.snapshot().canonicalInteraction))
+    .toEqual(accepted.liveInteraction);
+  expect((await page.evaluate(() => (window as Host).transactionFixture.snapshot())).liveInteraction).toEqual(
+    accepted.liveInteraction,
+  );
+});
+
 test('deterministic host-owned repeat callback failure restores the prior template', async ({ page }) => {
   const input = page.getByRole('textbox', { name: 'Host draft' });
   await input.fill('Nested host directive draft');

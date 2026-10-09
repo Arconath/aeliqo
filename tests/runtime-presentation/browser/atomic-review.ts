@@ -38,7 +38,12 @@ const view = defineView({
     extension: true,
     resolveConfig: (values) => ({
       ok: true,
-      value: { values, fields: ['id', 'name'], ports: [], operations: [{ id: 'data.read', revision: '1' }] },
+      value: {
+        values,
+        fields: ['id', 'name'],
+        ports: [{ id: 'selection', direction: 'inout', payload: 'selection', entity: 'people', identity: ['id'] }],
+        operations: [{ id: 'data.read', revision: '1' }],
+      },
     }),
   },
   render({ result }) {

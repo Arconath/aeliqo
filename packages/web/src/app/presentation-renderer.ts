@@ -39,6 +39,8 @@ export async function prepareRegisteredRenderer(
   results: readonly AeliqoRegionResult[],
   active: () => boolean,
 ): Promise<Outcome<ReturnType<typeof prepareRenderer>>> {
+  const previousPresentation = region.element.presentation;
+  const previousInteraction = region.element.interaction;
   const authority = owner(context, region);
   let loaded = true;
   try {
@@ -54,6 +56,9 @@ export async function prepareRegisteredRenderer(
     return failure('web.app.denied', 'Presentation authority changed during element loading.');
   }
   if (!loaded) return failure('web.app.registration', 'The required view elements could not be registered.');
+  // Projection was prepared before loading; never overwrite an interaction accepted during that await.
+  if (region.element.presentation !== previousPresentation || region.element.interaction !== previousInteraction)
+    return failure('web.app.cancelled', 'The presentation or interaction changed during element loading.');
   return { ok: true, value: prepareRenderer(context, region, prepared, results, active) };
 }
 
