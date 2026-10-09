@@ -176,9 +176,10 @@
   overflow-wrap: normal;
   white-space: nowrap;
 }
+/* Let descriptions shrink while question labels keep whole words. */
 .quickstart-results table {
   min-width: 0;
-  overflow-wrap: normal;
+  overflow-wrap: anywhere;
 }
 .quickstart-results table th:first-child {
   white-space: normal;
