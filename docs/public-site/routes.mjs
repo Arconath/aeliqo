@@ -52,6 +52,7 @@ export const DOC_ROUTES = Object.freeze([
   route('migration', '/ship/migration-0.3/', 'Releases'),
   route('migration-0-4', '/ship/migration-0.4/', 'Releases'),
   route('migration-0-5', '/ship/migration-0.5/', 'Releases'),
+  route('migration-0-6', '/ship/migration-0.6/', 'Releases'),
   route('support-matrix', '/ship/support-matrix/', 'Releases'),
   route('release-notes', '/ship/release-notes/', 'Releases'),
 
@@ -315,6 +316,7 @@ export const DOC_NAVIGATION = Object.freeze([
       'migration',
       'migration-0-4',
       'migration-0-5',
+      'migration-0-6',
       'release-notes',
     ]),
     navSubgroup('Project & community', ['contribute', 'about', 'support', 'security', 'license', 'privacy']),

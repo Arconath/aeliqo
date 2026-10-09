@@ -14,7 +14,7 @@ description: 'Five public packages, their root APIs, and the subpaths for specia
 | `@aeliqo/runtime` | `createAeliqoRuntime` and runtime types                                    | `actions`, `app`, `audit`, `data`, `evaluation`, `interaction`, `meaning`, `persistence`, `presentation`, `regions`, `results`, `scopes`, `surfaces`        |
 | `@aeliqo/web`     | Element registration and recipe policy types                               | `app`, `server`, `region`, `recipes`, `register`, `events`, `styles`, `table`, `chart`, plus the family and component entries below                         |
 | `@aeliqo/react`   | Provider, Region, render and surface hooks, element registration           | `app`, `surface`, `ssr`, `foundation`, `inputs`, `navigation`, `feedback`, `data`, `plot`, `visualization`, `compound`                                      |
-| `@aeliqo/agent`   | `createAppToolEndpoint` and endpoint types                                 | `app`, `browser`, `capabilities`, `mcp`, `meaning`, `model`, `model/openai`, `model/responses`, `protocol`, `session`, `webmcp`                             |
+| `@aeliqo/agent`   | `createAppToolEndpoint`, `createAppToolSession`, and host session types      | `app`, `browser`, `capabilities`, `mcp`, `meaning`, `model`, `model/openai`, `model/responses`, `protocol`, `session`, `webmcp`                             |
 
 `@aeliqo/web` also publishes family entries: `foundation`, `inputs`,
 `navigation`, `feedback`, `data`, `plot`, `visualization`, and `compound`.
@@ -47,11 +47,11 @@ them together:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.6.3 \
-  @aeliqo/runtime@0.6.3 \
-  @aeliqo/web@0.6.3 \
-  @aeliqo/react@0.6.3 \
-  @aeliqo/agent@0.6.3
+  @aeliqo/core@0.7.0 \
+  @aeliqo/runtime@0.7.0 \
+  @aeliqo/web@0.7.0 \
+  @aeliqo/react@0.7.0 \
+  @aeliqo/agent@0.7.0
 ```
 
 Component-only consumers can install only `@aeliqo/web`; skip `@aeliqo/agent`

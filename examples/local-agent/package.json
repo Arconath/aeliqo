@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/local-agent-example",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.24.0",
@@ -16,10 +16,10 @@
     "test": "node --test runner/*.test.mjs"
   },
   "dependencies": {
-    "@aeliqo/core": "0.6.3",
-    "@aeliqo/runtime": "0.6.3",
-    "@aeliqo/web": "0.6.3",
-    "@aeliqo/agent": "0.6.3",
+    "@aeliqo/core": "0.7.0",
+    "@aeliqo/runtime": "0.7.0",
+    "@aeliqo/web": "0.7.0",
+    "@aeliqo/agent": "0.7.0",
     "zod": "4.5.4",
     "@modelcontextprotocol/server": "2.0.0",
     "@modelcontextprotocol/client": "2.2.0",

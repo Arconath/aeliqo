@@ -1,8 +1,8 @@
 # `@aeliqo/agent`
 
 `@aeliqo/agent` connects an optional agent session to an existing Aeliqo
-application. Its root entry exposes the application tool endpoint; protocol and
-model integrations stay on explicit subpaths.
+application. Its root entry exposes application tool endpoints and host-owned
+sessions; protocol and model integrations stay on explicit subpaths.
 
 ## Main entry point
 
@@ -127,7 +127,7 @@ import { AELIQO_AGENT_INSTRUCTIONS } from '@aeliqo/agent';
 
 | Subpath                         | Responsibility                                         |
 | ------------------------------- | ------------------------------------------------------ |
-| `@aeliqo/agent/app`             | Application tool endpoint; identical to the root entry |
+| `@aeliqo/agent/app`             | Application tool endpoints and host sessions; identical to the root entry |
 | `@aeliqo/agent/mcp`             | MCP client and server adapters                         |
 | `@aeliqo/agent/webmcp`          | Browser WebMCP capability adapter                      |
 | `@aeliqo/agent/model`           | Provider-neutral model tool loop                       |

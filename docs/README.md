@@ -10,7 +10,7 @@ The public website at [docs.aeliqo.com](https://docs.aeliqo.com/) is the primary
 - [Framework integration](framework-integration.md): Vanilla, React, Vue, SSR, hydration, and package boundaries.
 - [Meaning authoring](meaning-authoring.md): define, register, review, and activate versioned business meaning.
 - [Presentation adaptation](presentation-adaptation.md): bind Results to responsive presentations without changing their claim.
-- [Migration from 0.5 to 0.6](site/pages/migration-0.5.md): the current upgrade guide.
+- [Migration from 0.6 to 0.7](site/pages/migration-0.6.md): the current upgrade guide.
 - [OSS boundary](business/oss-commercial-boundary.md): what ships under Apache-2.0 and runs without a hosted service.
 
 ## Components and composition

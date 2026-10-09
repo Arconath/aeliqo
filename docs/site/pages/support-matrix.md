@@ -3,10 +3,10 @@ id: 'support-matrix'
 path: '/ship/support-matrix/'
 section: 'Releases'
 title: 'Support matrix and release acceptance'
-description: 'Aeliqo 0.6 maintained profiles, tested source revisions, and release qualification boundaries.'
+description: 'Aeliqo 0.7 candidate profiles, tested source revisions, and release qualification boundaries.'
 ---
 
-<p class="lead">Aeliqo 0.6 supports the maintained profiles below. Recorded source checks cover framework consumers, browser behavior, and bounded workloads. Release qualification, package publication, and production deployment are verified separately.</p>
+<p class="lead">The Aeliqo 0.7 candidate targets the maintained profiles below. Recorded source checks cover framework consumers, browser behavior, and bounded workloads. Release qualification, package publication, and production deployment are verified separately.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
 The [machine-readable source record](https://github.com/Arconath/aeliqo/blob/main/docs/support-matrix.json)
@@ -15,8 +15,10 @@ publication, so its candidate identity and publication flags describe that
 source snapshot. They are not a live registry or deployment inventory.
 
 A successful full main-push quality run is required before publication. See the
-[0.6.3 release record](https://github.com/Arconath/aeliqo/releases/tag/v0.6.3)
-for the published version, exact source and acceptance receipts when available.
+[0.7.0 release record](https://github.com/Arconath/aeliqo/releases/tag/v0.7.0)
+for the exact source and acceptance receipts once publication is verified.
+The [0.6.3 record](https://github.com/Arconath/aeliqo/releases/tag/v0.6.3)
+preserves the previous published version's evidence.
 The publication banner above follows registry verification. The public
 [`/version`](https://aeliqo.com/version) endpoint identifies the deployed site.
 
@@ -35,8 +37,9 @@ The publication banner above follows registry verification. The public
 ## Recorded source checks
 
 The [current status record](https://github.com/Arconath/aeliqo/blob/main/docs/STATUS.md)
-names the exact 0.6.3 published source, its successful 93-command main-push
-matrix, and production verification. The
+tracks the current candidate separately from the exact 0.6.3 published source,
+its successful 93-command main-push matrix, and production verification. Those
+historical receipts do not qualify changed 0.7.0 source. The
 [visual reference review](https://github.com/Arconath/aeliqo/blob/main/docs/testing/0.6.3-visual-reference.md)
 records the approved comparison evidence and its review scope. Container visual
 and paired-performance CI jobs are advisory; the functional matrix and release
@@ -63,7 +66,7 @@ passed a quality evaluation. Read the [shipping guide](/ship/) for application c
 The former matrix is preserved byte for byte in
 [`docs/releases/0.5.2/support-matrix.json`](https://github.com/Arconath/aeliqo/blob/main/docs/releases/0.5.2/support-matrix.json).
 Its original candidate metadata and qualified profiles describe that historical
-record. They are not acceptance for 0.6.3.
+record. They are not acceptance for 0.7.0.
 
 That record includes a bounded DeepSeek `deepseek-flash` run: 12/12 synthetic
 J1–J3 browser/provider/renderer cases on tree-equivalent PR head `21afcca`

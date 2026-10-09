@@ -1,2 +1,2 @@
 /** Package compatibility marker generated from the active release metadata. */
-export const AELIQO_AGENT_VERSION = '0.6.3';
+export const AELIQO_AGENT_VERSION = '0.7.0';

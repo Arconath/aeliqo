@@ -356,7 +356,7 @@ async function readQualificationInputs() {
   assert.equal(matrix.candidate.version, metadata.version);
   assert.equal(matrix.candidate.baseVersion, metadata.previousVersion);
   assert.equal(matrix.candidate.status, metadata.status);
-  assert.equal(matrix.candidate.compatibility, 'additive');
+  assert.equal(matrix.candidate.compatibility, 'breaking');
   assert.equal(metadata.line, metadata.version.split('.').slice(0, 2).join('.'));
   for (const claim of ['unlimitedScale', 'everyFramework', 'everyProvider', 'stablePublished'])
     assert.equal(matrix.claims[claim], false);
@@ -366,6 +366,9 @@ async function readQualificationInputs() {
   assert.ok(releaseNotes.includes(`/ship/${migrationPath}/`));
   assert.ok(packagePage.includes(`@aeliqo/core@${metadata.version}`));
   for (const contract of [
+    'policy.expectedIssuer',
+    'issuer',
+    'createAppToolSession',
     'onDraftExit',
     'needs-input',
     'renderer-ready',

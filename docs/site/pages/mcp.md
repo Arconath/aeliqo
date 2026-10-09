@@ -15,8 +15,10 @@ render returns `renderer-ready` after the browser commits it.
 ## Install a standalone copy
 
 Use Node.js **24.20.0**, pnpm **11.24.0**, and Git. These commands copy only the
-example out of the source checkout; its dependencies are published packages,
-not workspace links:
+example out of the source checkout; its dependencies use exact registry
+versions rather than workspace links. This checkout targets the 0.7.0
+candidate. Check the [package publication status](/reference/packages/) before
+installing that version:
 
 ```bash
 git clone --depth 1 --filter=blob:none --sparse https://github.com/Arconath/aeliqo.git aeliqo-source
@@ -30,7 +32,7 @@ pnpm dev
 ```
 
 `pnpm dev` typechecks and builds the Vanilla/Vite UI, then starts the Node
-host. The example pins `@aeliqo/core`, `runtime`, `web`, and `agent` to **0.6.3**.
+host. The example pins `@aeliqo/core`, `runtime`, `web`, and `agent` to **0.7.0**.
 Keep its `pnpm-workspace.yaml` when copying it: this gives the independent
 installation its own workspace boundary.
 
@@ -125,10 +127,10 @@ bounded acknowledgments. Disconnect and expiry reject late results and close
 the pairing. Choose **Start a new session** and reconnect the client after
 expiry. Restarting the host generates a new bearer token.
 
-## Upcoming host-session and OAuth changes
+## Host-session and OAuth changes in 0.7
 
-The source checkout includes security corrections that are **not yet published
-in 0.6.3**. A host-owned `createAppToolSession` retains action previews across
+The 0.7.0 candidate includes security corrections and a new host-owned
+`createAppToolSession` that retains action previews across
 fresh MCP requests. Each request must supply its authenticated principal and
 scope to `session.createEndpoint(identity)`; confirmation belongs to the
 trusted host UI. Close the session when authentication ends. A client workspace
@@ -141,9 +143,9 @@ Issuer-validation bypasses are rejected. Static bearer authentication, including
 the standalone example above, remains supported.
 
 See the canonical [agent package guide](https://github.com/Arconath/aeliqo/blob/main/docs/packages/agent.md)
-for the source API and the [migration guide](/ship/migration-0.5/) for the
-compatibility change. Use the matching source guide when working on an
-unreleased branch.
+for the source API and the [0.6 to 0.7 migration guide](/ship/migration-0.6/)
+for the breaking OAuth change. Candidate source is separate from verified
+package publication.
 
 ## Recover from connection problems
 

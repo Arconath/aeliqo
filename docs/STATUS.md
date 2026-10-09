@@ -263,6 +263,22 @@ required functional acceptance from advisory visual and paired-performance
 evidence. The historical 0.6.0 records remain available. This documentation
 update does not publish packages or deploy a new site image.
 
+## Release preparation: 0.7.0
+
+The owner authorized publication and production deployment on 9 October.
+[PR 57](https://github.com/Arconath/aeliqo/pull/57) merged the eleven audit
+corrections and the revised landing page, documentation and playground at
+`3205517231e455c23756c8ee917a598479db5917`. Its signed contribution passed
+PR quality, all 93 acceptance commands and the release contract. Main-push
+verification is running; this merge does not itself publish or deploy.
+
+The next candidate is 0.7.0. OAuth integrations must explicitly pin the expected
+issuer and reconnect credentials without an issuer stamp; the 0.6-to-0.7
+migration guide documents that compatibility change. Publication requires a
+fully verified main revision, an accepted registry RC, stable registry consumers
+and the same-source production image. The published table above remains 0.6.3
+until those steps and live acceptance complete.
+
 ## Open items
 
 The [9 October launch audit](testing/2026-10-09-launch-audit.md) records the
