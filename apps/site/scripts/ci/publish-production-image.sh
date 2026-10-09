@@ -14,13 +14,17 @@ test "$GH_REPO" = "Arconath/aeliqo"
 test "$GH_ACTOR" = "hermawan22"
 test "$GH_TRIGGERING_ACTOR" = "hermawan22"
 test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-branch_sha="$(curl --fail --silent --show-error --location \
-	--header "Authorization: Bearer $GH_TOKEN" \
-	--header 'Accept: application/vnd.github+json' \
-	--header 'X-GitHub-Api-Version: 2022-11-28' \
-	"https://api.github.com/repos/$GH_REPO/branches/main" | \
-	jq -er '.commit.sha | select(test("^[0-9a-f]{40}$"))')"
-test "$branch_sha" = "$SOURCE_SHA"
+verify_current_main() {
+	local branch_sha
+	branch_sha="$(curl --fail --silent --show-error --location \
+		--header "Authorization: Bearer $GH_TOKEN" \
+		--header 'Accept: application/vnd.github+json' \
+		--header 'X-GitHub-Api-Version: 2022-11-28' \
+		"https://api.github.com/repos/$GH_REPO/branches/main" | \
+		jq -er '.commit.sha | select(test("^[0-9a-f]{40}$"))')"
+	test "$branch_sha" = "$SOURCE_SHA"
+}
+verify_current_main
 git diff --quiet
 git diff --cached --quiet
 
@@ -44,6 +48,7 @@ jq -e --arg version "$release_version" --arg sha "$registry_source" \
 image="ghcr.io/arconath/aeliqo-web"
 tag="${SOURCE_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 reference="$image:$tag"
+quarantine_reference="$image:quarantine-$tag"
 output="apps/site/artifacts/production-image"
 mkdir -p "$output"
 
@@ -65,8 +70,8 @@ PY
 
 trap 'rm -rf "$docker_config" "$trivy_dir"' EXIT
 
-# The tag includes the immutable source, workflow run, and run attempt. GitHub
-# never reuses a run attempt, so this build cannot overwrite a prior execution.
+# The candidate tag cannot match Flux's source-run-attempt policy. The final
+# unique tag is published only after this exact index passes every gate.
 builder_id="https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT"
 builder_name="aeliqo-web-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
 docker buildx create --name "$builder_name" --driver docker-container --use >/dev/null
@@ -82,7 +87,7 @@ docker buildx build \
 	--label "com.aeliqo.sdk.revision=$sdk_revision" \
 	--label "com.aeliqo.sdk.version=$sdk_version" \
 	--attest "type=provenance,mode=max,builder-id=$builder_id" \
-	--output "type=image,name=$reference,push=true,oci-mediatypes=true,oci-artifact=true" \
+	--output "type=image,name=$quarantine_reference,push=true,oci-mediatypes=true,oci-artifact=true" \
 	--metadata-file "$output/build-metadata.json" \
 	--file apps/site/Dockerfile \
 	.
@@ -106,19 +111,6 @@ jq -e \
 	"$output/provenance-summary.json" >/dev/null
 subject_digest="$(jq -er '.subjectDigest | select(test("^sha256:[0-9a-f]{64}$"))' "$output/provenance-summary.json")"
 statement_digest="$(jq -er '.statementDigest | select(test("^sha256:[0-9a-f]{64}$"))' "$output/provenance-summary.json")"
-jq -n \
-	--arg image "$image" \
-	--arg tag "$tag" \
-	--arg digest "$digest" \
-	--arg revision "$SOURCE_SHA" \
-	--arg sdkRevision "$sdk_revision" \
-	--arg sdkVersion "$sdk_version" \
-	--arg builderId "$builder_id" \
-	--arg subjectDigest "$subject_digest" \
-	--arg statementDigest "$statement_digest" \
-	'{schemaVersion:2,image:$image,tag:$tag,digest:$digest,siteRevision:$revision,sdkRevision:$sdkRevision,sdkVersion:$sdkVersion,reference:($image+"@"+$digest),builderId:$builderId,provenance:{format:"https://slsa.dev/provenance/v1",storage:"attached OCI attestation",verifiedFromRegistry:true,subjectDigest:$subjectDigest,statementDigest:$statementDigest}}' \
-	> "$output/image.json"
-
 curl --fail --silent --show-error --location \
 	"https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-64bit.tar.gz" \
 	--output "$trivy_dir/trivy.tar.gz"
@@ -142,10 +134,43 @@ mkdir -p "$TRIVY_CACHE_DIR"
 	--exit-code 1 \
 	"$image@$digest"
 
+# A single OCI index source is copied without reconstructing its manifests or
+# attestations. Never use the mutable candidate tag as the promotion source.
+verify_current_main
+docker buildx imagetools create \
+	--prefer-index=false \
+	--metadata-file "$output/promotion-metadata.json" \
+	--tag "$reference" \
+	"$image@$digest"
+jq -e --arg digest "$digest" --arg image "$image" \
+	'."containerimage.descriptor".digest == $digest and
+	 ."containerimage.descriptor".mediaType == "application/vnd.oci.image.index.v1+json" and
+	 ."image.name" == $image' \
+	"$output/promotion-metadata.json" >/dev/null
+docker buildx imagetools inspect "$reference" --format '{{json .Manifest}}' > "$output/registry-index.json"
+jq -e --arg digest "$digest" \
+	'.digest == $digest and .mediaType == "application/vnd.oci.image.index.v1+json"' \
+	"$output/registry-index.json" >/dev/null
+
+jq -n \
+	--arg image "$image" \
+	--arg tag "$tag" \
+	--arg digest "$digest" \
+	--arg revision "$SOURCE_SHA" \
+	--arg sdkRevision "$sdk_revision" \
+	--arg sdkVersion "$sdk_version" \
+	--arg builderId "$builder_id" \
+	--arg subjectDigest "$subject_digest" \
+	--arg statementDigest "$statement_digest" \
+	'{schemaVersion:2,image:$image,tag:$tag,digest:$digest,siteRevision:$revision,sdkRevision:$sdkRevision,sdkVersion:$sdkVersion,reference:($image+"@"+$digest),builderId:$builderId,provenance:{format:"https://slsa.dev/provenance/v1",storage:"attached OCI attestation",verifiedFromRegistry:true,subjectDigest:$subjectDigest,statementDigest:$statementDigest}}' \
+	> "$output/image.json"
+
 (
 	cd "$output"
 	sha256sum \
 		build-metadata.json \
+		promotion-metadata.json \
+		registry-index.json \
 		image.json \
 		provenance-summary.json \
 		provenance.intoto.json \

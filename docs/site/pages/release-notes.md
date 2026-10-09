@@ -23,6 +23,9 @@ requirement. The serialized contract version remains `1`.
   dependencies to sharp 0.35.5, source-map-js 1.2.2, smol-toml 1.9.0
   and fast-uri 3.1.8.
   These updates address the dependency advisories reported before publication.
+- Build the static server with Go 1.27.2 and keep the production image in
+  quarantine until provenance and security scans pass. Promote the same
+  immutable image digest only after those gates succeed.
 - OAuth HTTP clients use the patched MCP client and require an explicit
   expected issuer. Existing OAuth client information and tokens must carry
   the matching issuer stamp; legacy storage must be migrated from a trusted

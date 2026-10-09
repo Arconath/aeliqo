@@ -115,7 +115,7 @@ adapter without changing its data and permission rules.
 ## Development
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md#local-setup) for the complete setup.
-Use Node.js `24.20.0`, pnpm `11.24.0`, Python 3, and Go `1.27.0`. The full
+Use Node.js `24.20.0`, pnpm `11.24.0`, Python 3, and Go `1.27.2`. The full
 check also needs the Playwright browsers installed:
 
 ```sh

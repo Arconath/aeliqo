@@ -278,6 +278,13 @@ Frozen installation, real Next SSR/hydration and the site build passed; fresh
 pnpm audit reports zero advisories. Independent security review found no blocker.
 Exact-source CI remains required before publication.
 
+Final image preparation updates the static-server builder to security-patched
+Go 1.27.2. The publisher keeps its build under a quarantine tag until provenance,
+SBOM and HIGH/CRITICAL vulnerability checks pass, then promotes the same digest.
+Nine publisher behavior checks, all 14 server tests on Go 1.27.2, workflow
+policy checks, formatting and lint passed. Exact-source CI remains required
+before release.
+
 Contributor rollout is verified: the accepted-base workflow passed for the
 signed release contribution. Remote main protection now requires `DCO`,
 `functional` and `policy`, each bound to GitHub Actions app `15368`, with strict
