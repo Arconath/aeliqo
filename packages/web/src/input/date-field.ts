@@ -31,6 +31,10 @@ export class AeliqoDateFieldElement extends AeliqoFieldElement<string> {
     this.syncNative();
   }
 
+  protected override isCurrentValidationValue(value: string): boolean {
+    return value === this.value;
+  }
+
   protected override resetField(): void {
     this.value = dateOnly(this.defaultValue) ?? '';
     this.syncNative();

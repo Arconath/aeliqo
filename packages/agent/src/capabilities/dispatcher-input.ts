@@ -24,6 +24,12 @@ const REQUEST_FIELDS = new Set([
   'transport',
 ]);
 
+function snapshot(value: AgentJsonValue): AgentJsonValue {
+  if (value === null || typeof value !== 'object') return value;
+  if (Array.isArray(value)) return Object.freeze(value.map(snapshot));
+  return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, child]) => [key, snapshot(child)])));
+}
+
 function normalizeRef(input: unknown): Outcome<VersionRef> {
   if (!isRecord(input) || !validId(input.id) || !validId(input.revision))
     return failure('agent.capability.invalid', 'The capability reference is malformed.', ['capability']);
@@ -53,7 +59,7 @@ function normalizeInput(value: Record<string, unknown>): Outcome<AgentJsonValue>
     return failure('agent.capability.denied', 'Capability input cannot declare actor or approval authority.', [
       'input',
     ]);
-  return { ok: true, value: payload.value as AgentJsonValue };
+  return { ok: true, value: snapshot(payload.value as AgentJsonValue) };
 }
 
 function normalizeMetadata(value: Record<string, unknown>): Outcome<AgentJsonValue | undefined> {
@@ -66,7 +72,7 @@ function normalizeMetadata(value: Record<string, unknown>): Outcome<AgentJsonVal
   const metadataBytes = utf8Bytes(checked.value);
   if (metadataBytes !== undefined && metadataBytes > MAX_METADATA_BYTES)
     return failure('agent.capability.bytes', 'Capability metadata exceeds its byte budget.', ['metadata']);
-  return { ok: true, value: checked.value as AgentJsonValue };
+  return { ok: true, value: snapshot(checked.value as AgentJsonValue) };
 }
 
 function requestTransport(value: Record<string, unknown>): Outcome<AgentCapabilityRequest['transport']> {

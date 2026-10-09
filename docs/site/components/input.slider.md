@@ -44,6 +44,11 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
+Changing `value` or `unit` or replacing `validator` cancels validation for the
+previous value and clears its validator-owned error. An independently supplied
+host `error` survives the change. Late results after a reset or disconnect are
+ignored.
+
 ## Keyboard, focus, and accessibility
 
 Keyboard behavior:

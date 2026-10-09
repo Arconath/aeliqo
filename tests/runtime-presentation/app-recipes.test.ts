@@ -33,6 +33,7 @@ import {
 import { createFormBindings } from '../../packages/web/src/app/form-bindings.js';
 import { present } from '../../packages/web/src/app/presentation.js';
 import { createAeliqoPresentationRegistry } from '../../packages/web/src/region/registry.js';
+import { createRegistrationDocument } from './registration-document.js';
 
 const current = {
   scopeDigest: 'scope-1',
@@ -878,6 +879,7 @@ describe('0.3 standard recipes', () => {
     });
     const bindings = [{ ref: fixture.result.ref, rows: [{ id: 'p-1', name: 'Ada' }] }];
     const elementState = {
+      ownerDocument: createRegistrationDocument(),
       presentation: undefined as ValidatedPresentation | undefined,
       results: [] as readonly (typeof bindings)[number][],
       interaction: undefined,
@@ -991,6 +993,7 @@ describe('0.3 standard recipes', () => {
     let publicationCalls = 0;
     let rollbackCalls = 0;
     const elementState = {
+      ownerDocument: createRegistrationDocument(),
       presentation: initial.plan,
       results: priorBindings as readonly (typeof bindings)[number][],
       interaction: undefined,

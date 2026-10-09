@@ -25,6 +25,22 @@ export class AeliqoFileInputElement extends AeliqoFieldElement<readonly AeliqoFi
     this.syncNative();
   }
 
+  protected override isCurrentValidationValue(value: readonly AeliqoFileMetadata[]): boolean {
+    return (
+      value.length === this.selected.length &&
+      value.every((file, index) => {
+        const selected = this.selected[index];
+        return (
+          selected !== undefined &&
+          file.name === selected.name &&
+          file.size === selected.size &&
+          file.type === selected.type &&
+          file.lastModified === selected.lastModified
+        );
+      })
+    );
+  }
+
   protected override resetField(): void {
     this.selected = [];
     const input = this.native();

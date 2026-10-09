@@ -14,6 +14,8 @@ interface ActionCapabilityState {
   readonly actionPort: ActionPort | undefined;
   readonly previews: Map<string, ActionPreview>;
   readonly confirmations: Map<string, ActionReceipt>;
+  closed: boolean;
+  readonly lifetime: AbortController;
 }
 
 type ReceiptStep =
@@ -48,9 +50,13 @@ async function previewAction(
       ...(input.entity === undefined ? {} : { entity: input.entity }),
       ...(input.idempotencyKey === undefined ? {} : { idempotencyKey: input.idempotencyKey }),
     },
-    { signal: context.signal },
+    { signal: AbortSignal.any([state.lifetime.signal, context.signal]) },
   );
   if (!preview.ok) return { state: 'failed', diagnostics: preview.diagnostics };
+  if (state.closed || context.signal.aborted) {
+    actionPort.cancel(preview.value);
+    return previewStale();
+  }
   state.previews.set(preview.value.id, preview.value);
   return {
     state: preview.value.confirmation === 'required' ? 'needs-choice' : 'accepted',
@@ -172,6 +178,7 @@ export function createActionCapability(
       'Previews a registered action. Execution requires a separate execute grant and any required confirmation must come from the host UI.',
     parse: parseAction,
     async invoke(input, context): Promise<AgentCapabilityHandlerResult<AgentJsonValue>> {
+      if (state.closed) return previewStale();
       if (state.actionPort === undefined) return unavailable();
       if (input.mode === 'preview') return previewAction(state, input, context);
       return executeAction(state, input, context);
@@ -186,7 +193,7 @@ export async function confirmAction(
 ): Promise<import('@aeliqo/core').Outcome<ActionReceipt>> {
   const preview = state.previews.get(previewId);
   const actionPort = state.actionPort;
-  if (preview === undefined || actionPort === undefined)
+  if (state.closed || preview === undefined || actionPort === undefined)
     return {
       ok: false,
       diagnostics: [
@@ -197,13 +204,17 @@ export async function confirmAction(
         },
       ],
     };
-  const confirmed = await actionPort.confirm(preview, input);
-  if (confirmed.ok) state.confirmations.set(previewId, confirmed.value);
+  const signal =
+    input.signal === undefined ? state.lifetime.signal : AbortSignal.any([state.lifetime.signal, input.signal]);
+  const confirmed = await actionPort.confirm(preview, { signal });
+  if (confirmed.ok && !state.closed && !input.signal?.aborted) state.confirmations.set(previewId, confirmed.value);
   else clearPreview(state, previewId);
   return confirmed;
 }
 
 export function closeActionState(state: ActionCapabilityState): void {
+  state.closed = true;
+  state.lifetime.abort();
   for (const preview of state.previews.values()) state.actionPort?.cancel(preview);
   state.previews.clear();
   state.confirmations.clear();
@@ -214,5 +225,7 @@ export function createActionCapabilityState(options: AppToolEndpointOptions): Ac
     actionPort: options.runtime.actionPort,
     previews: new Map(),
     confirmations: new Map(),
+    closed: false,
+    lifetime: new AbortController(),
   };
 }

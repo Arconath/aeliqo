@@ -5,6 +5,7 @@ import type { RuntimePreparedRender } from '@aeliqo/runtime/app';
 import type { AeliqoRegionResult } from '../region/types.js';
 import { diagnostic, type WebAppContext, type WebRegion } from './context.js';
 import type { PreparedPresentation } from './presentation-plan.js';
+import { registerPresentationElements } from './presentation-elements.js';
 
 function failure(code: string, message: string): Outcome<never> {
   return { ok: false, diagnostics: [diagnostic(code, message)] };
@@ -29,6 +30,31 @@ function owner(context: WebAppContext, region: WebRegion): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+export async function prepareRegisteredRenderer(
+  context: WebAppContext,
+  region: WebRegion,
+  prepared: PreparedPresentation,
+  results: readonly AeliqoRegionResult[],
+  active: () => boolean,
+): Promise<Outcome<ReturnType<typeof prepareRenderer>>> {
+  const authority = owner(context, region);
+  let loaded = true;
+  try {
+    const registry = region.element.ownerDocument.defaultView?.customElements;
+    if (registry === undefined) throw new Error('No browser registry.');
+    await registerPresentationElements(prepared.presentation, registry, context.views);
+  } catch {
+    loaded = false;
+  }
+  if (!active()) return failure('web.app.cancelled', 'The presentation was cancelled during element loading.');
+  if (authority === undefined || owner(context, region) !== authority) {
+    region.element.revoke();
+    return failure('web.app.denied', 'Presentation authority changed during element loading.');
+  }
+  if (!loaded) return failure('web.app.registration', 'The required view elements could not be registered.');
+  return { ok: true, value: prepareRenderer(context, region, prepared, results, active) };
 }
 
 /** Reuses the mounted keyed tree; no candidate can publish outside the Region's final recheck. */

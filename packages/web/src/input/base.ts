@@ -202,6 +202,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   private currentFormValue: string | File | FormData | null = null;
   private validationSequence = 0;
   private validationAbort: AbortController | undefined;
+  private validationValidator: AeliqoValidator<T> | undefined;
   private validationValue: T | undefined;
   private hasValidationValue = false;
   /**
@@ -259,6 +260,14 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   }
 
   protected restoreFormState(_value: string): void {}
+
+  protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
+    if (
+      changed.has('validator') ||
+      (this.validationValue !== undefined && !this.isCurrentValidationValue(this.validationValue))
+    )
+      this.invalidateValidation(false);
+  }
 
   disconnectedCallback(): void {
     this.validationAbort?.abort();
@@ -357,6 +366,7 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
 
   protected async validateProposed(value: T): Promise<void> {
     const validator = this.validator;
+    this.validationValidator = validator;
     this.validationAbort?.abort();
     this.validationAbort = undefined;
     this.validationSequence += 1;
@@ -410,7 +420,12 @@ export abstract class AeliqoFieldElement<T = unknown> extends AeliqoFoundationEl
   }
 
   private isActiveValidation(sequence: number, controller: AbortController): boolean {
-    return !controller.signal.aborted && sequence === this.validationSequence && this.isConnected;
+    return (
+      !controller.signal.aborted &&
+      sequence === this.validationSequence &&
+      this.isConnected &&
+      this.validator === this.validationValidator
+    );
   }
 
   private acceptCurrentValidationValue(value: T): boolean {

@@ -14,8 +14,9 @@ import { createInteractionHandler, cancelActiveAction } from '../../packages/web
 import { AeliqoFieldElement } from '../../packages/web/src/input/base.js';
 import { adaptRegion } from '../../packages/web/src/app/render.js';
 import * as presentationPlan from '../../packages/web/src/app/presentation-plan.js';
-import * as presentationRenderer from '../../packages/web/src/app/presentation-renderer.js';
 import type { RuntimePresentationInput } from '../../packages/runtime/src/app/index.js';
+import type { RegionSnapshot } from '../../packages/runtime/src/regions/index.js';
+import { createRegistrationDocument } from './registration-document.js';
 
 const draft: Extract<InteractionPayload, { kind: 'draft' }> = {
   kind: 'draft',
@@ -314,7 +315,12 @@ it.each(['cancelled', 'executed'] as const)(
     let width = 800;
     let held = true;
     const measured: number[] = [];
-    const presentation = state.region.element.presentation!;
+    const previous = state.region.element.presentation!;
+    const presentation = {
+      ...previous,
+      plan: { ...previous.plan, id: 'draft-form', revision: '1' },
+      nodes: previous.nodes.map((node) => ({ ...node, manifest: { id: 'input.text-field', revision: '1' } })),
+    };
     const prepare = vi.spyOn(presentationPlan, 'preparePresentation').mockImplementation(() => {
       measured.push(width);
       return {
@@ -322,20 +328,27 @@ it.each(['cancelled', 'executed'] as const)(
         value: {
           presentation,
           interaction: undefined,
-          environment: { inlineSize: { state: 'known', value: width } },
+          environment: {
+            inlineSize: { state: 'known', value: width },
+            blockSize: { state: 'unknown' },
+            textScale: { state: 'unknown' },
+            pointer: 'unknown',
+            hover: 'unknown',
+            keyboard: 'unknown',
+            locale: 'en-US',
+            direction: 'ltr',
+            reducedMotion: false,
+            forcedColors: false,
+          },
         },
       } as ReturnType<typeof presentationPlan.preparePresentation>;
     });
-    const renderer = vi.spyOn(presentationRenderer, 'prepareRenderer').mockReturnValue({
-      projection: {
-        presentation: presentation.plan,
-        interaction: { version: '1', values: [], drafts: [] },
-        apply: () => ({ ok: true, value: undefined }),
-        rollback() {},
-      },
-      applied: () => presentation,
-      close() {},
+    const publication = { apply: vi.fn(), rollback: vi.fn(), complete: vi.fn() };
+    Object.assign(state.region.element, {
+      ownerDocument: createRegistrationDocument(),
+      preparePublication: () => publication,
     });
+    Object.assign(state.context, { views: [] });
     const commit = vi.fn(async (request: RuntimePresentationInput) => {
       if (held) {
         began.resolve();
@@ -343,7 +356,13 @@ it.each(['cancelled', 'executed'] as const)(
       }
       if (request.signal?.aborted)
         return { ok: false as const, diagnostics: [{ code: 'cancelled', message: 'Interrupted', retryable: false }] };
-      return { ok: true as const, value: { state: { task: request.task } } };
+      const next = { state: { task: request.task, presentation: request.presentation } } as RegionSnapshot;
+      const applied = request.projection?.apply(next);
+      if (applied !== undefined && !applied.ok) {
+        request.projection?.rollback();
+        return applied;
+      }
+      return { ok: true as const, value: next };
     });
     Object.assign(state.context.runtime, { commitPresentation: commit });
     Object.assign(state.region, {
@@ -376,9 +395,10 @@ it.each(['cancelled', 'executed'] as const)(
       expect(state.region.pendingAdapt).toBe(false);
       expect(state.region.drafts.get('name')).toBe(outcome === 'cancelled' ? draft : undefined);
       expect(state.reset).toHaveBeenCalledTimes(outcome === 'cancelled' ? 0 : 1);
+      await vi.waitFor(() => expect(publication.apply).toHaveBeenCalledOnce());
+      expect(state.region.element.ownerDocument.defaultView?.customElements.get('aeliqo-text-field')).toBeDefined();
     } finally {
       prepare.mockRestore();
-      renderer.mockRestore();
     }
   },
 );

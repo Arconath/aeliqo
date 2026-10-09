@@ -1,19 +1,11 @@
 <header class="pg-intro" aria-labelledby="playground-title">
   <div>
-    <p class="pg-kicker">Public runtime · synthetic data</p>
-    <h1 id="playground-title">See the interface take shape.</h1>
-    <p class="pg-intro-dek">A live path from request to result to view.</p>
+    <p class="pg-kicker">Interactive workspace</p>
+    <h1 id="playground-title">Playground</h1>
+    <p class="pg-intro-dek">Choose a question. Explore the view it creates.</p>
   </div>
   <div class="pg-intro-copy">
-    <p>
-      Pick a task using synthetic data. See what the runtime accepts, evaluates, and shows. The default path needs no
-      account, API key, or AI provider.
-    </p>
-    <ol class="pg-intro-flow" aria-label="Playground flow">
-      <li><b>1</b><span>Choose a task</span></li>
-      <li><b>2</b><span>See the result</span></li>
-      <li><b>3</b><span>Inspect the view</span></li>
-    </ol>
+    <p>Explore four scenarios with local synthetic data. No account or API key needed.</p>
   </div>
 </header>
 
@@ -134,6 +126,11 @@
           <h2 id="pg-result-title">Employees</h2>
         </div>
       </header>
+
+      <p id="pg-result-definition" class="pg-result-definition" hidden></p>
+      <p id="pg-committed-filter" class="pg-result-definition" hidden></p>
+      <div id="pg-error" class="pg-error" role="alert" hidden></div>
+      <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
       <section class="pg-progress" aria-label="Request progress">
         <ol class="pg-journey" aria-label="Current request progress">
           <li data-stage="intent" data-state="pending">
@@ -151,14 +148,10 @@
         </ol>
         <p id="pg-status" class="pg-status" role="status" aria-live="polite">Choose a task to show the first view.</p>
       </section>
-      <details id="pg-intent" class="pg-intent" open hidden>
-        <summary>Intent sent to Aeliqo</summary>
+      <details id="pg-intent" class="pg-intent" hidden>
+        <summary>Request details</summary>
         <pre tabindex="0"><code id="pg-intent-json"></code></pre>
       </details>
-      <p id="pg-result-definition" class="pg-result-definition" hidden></p>
-      <p id="pg-committed-filter" class="pg-result-definition" hidden></p>
-      <div id="pg-error" class="pg-error" role="alert" hidden></div>
-      <div id="pg-region" class="pg-region" aria-label="Rendered Aeliqo interface"></div>
       <footer class="pg-evidence">
         <span>Synthetic local data</span><span>Website model calls: <strong id="pg-model-calls">0</strong></span
         ><span hidden>Receipt <strong id="pg-receipt-state">None</strong></span>

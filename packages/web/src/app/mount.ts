@@ -1,6 +1,6 @@
 import type { AeliqoApp } from './types.js';
 import type { AeliqoSemanticInteractionRequest } from '../region/types.js';
-import { registerAeliqoElements } from '../register.js';
+import { registerBaseElements } from '../register-base.js';
 import { AeliqoRegionElement } from '../region/aeliqo-region.js';
 import { bridgeRuntimeState } from './lifecycle.js';
 import {
@@ -31,7 +31,7 @@ function targetWindow(input: WebMountInput): Window | undefined {
 
 function registerElements(view: Window): boolean {
   try {
-    registerAeliqoElements(view.customElements);
+    registerBaseElements(view.customElements);
     return true;
   } catch {
     return false;

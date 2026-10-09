@@ -114,14 +114,20 @@ adapter without changing its data and permission rules.
 
 ## Development
 
-Use Node.js `24.20.0` and pnpm `11.24.0`:
+Follow [CONTRIBUTING.md](CONTRIBUTING.md#local-setup) for the complete setup.
+Use Node.js `24.20.0`, pnpm `11.24.0`, Python 3, and Go `1.27.0`. The full
+check also needs the Playwright browsers installed:
 
 ```sh
 corepack enable
 corepack prepare pnpm@11.24.0 --activate
 pnpm install --frozen-lockfile
+pnpm exec playwright install --with-deps chromium firefox webkit
 pnpm check
 ```
+
+On macOS, plain `pnpm exec playwright install chromium firefox webkit` is enough;
+`--with-deps` also installs the required system libraries on Linux.
 
 See [AGENTS.md](AGENTS.md) for repository boundaries and the verification
 matrix. Technical guides are maintained under [`docs/`](docs/README.md).

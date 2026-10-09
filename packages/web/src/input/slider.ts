@@ -35,6 +35,10 @@ export class AeliqoSliderElement extends AeliqoFieldElement<AeliqoSliderValue> {
     this.syncNative();
   }
 
+  protected override isCurrentValidationValue(value: AeliqoSliderValue): boolean {
+    return value.value === this.value && value.unit === this.unit;
+  }
+
   protected override resetField(): void {
     this.value = this.safeNumber(this.defaultValue, this.min);
     this.syncNative();

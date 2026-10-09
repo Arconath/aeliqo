@@ -90,9 +90,13 @@ const target = document.querySelector<HTMLElement>('#target')!;
 const mounted = app.mount({ target, regionId: 'main', resourceId: 'people' });
 if (!mounted.ok) throw new Error('mount');
 const initial: Intent = { version: '1', id: 'first', kind: 'browse', resource: 'people', preferredView: view.ref.id };
-const receipt = await app.render({ regionId: 'main', intent: initial });
+const ready = app.render({ regionId: 'main', intent: initial }).then((receipt) => {
+  if (receipt.status !== 'renderer-ready') throw new Error(JSON.stringify(receipt.diagnostics));
+  return receipt;
+});
+Object.assign(window, { transactionReady: ready });
+const receipt = await ready;
 document.querySelector('#status')!.textContent = receipt.status;
-if (receipt.status !== 'renderer-ready') throw new Error(JSON.stringify(receipt.diagnostics));
 const input = mounted.value.shadowRoot!.querySelector('input')!;
 Object.assign(window, {
   transactionFixture: {

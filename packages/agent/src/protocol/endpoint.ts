@@ -2,9 +2,10 @@ import { parseWireValue, WIRE_LIMITS, type Outcome } from '@aeliqo/core';
 import {
   awaitAgentBoundary,
   createAgentCapabilityDispatcher,
+  normalizeAgentCapabilityRequest,
   normalizeAgentCapabilityAuthority,
 } from '../capabilities/dispatcher.js';
-import type { AgentCapabilityAuthority, AgentCapabilityHost, AgentCapabilityRequest } from '../capabilities/types.js';
+import type { AgentCapabilityAuthority, AgentCapabilityHost } from '../capabilities/types.js';
 import { boundedId as id, isRecord, localSchemaReferences, strictId } from '../guards.js';
 import type {
   AgentModelScope,
@@ -354,23 +355,22 @@ async function invokeTool(
   payload: unknown,
   options: Parameters<AgentModelToolEndpoint['invoke']>[2],
 ): ReturnType<AgentModelToolEndpoint['invoke']> {
+  if (!options || !id(options.requestId))
+    return failure('agent.protocol.invalid', 'A tool call requires a bounded request identity.');
+  const tool = state.tools.get(name);
+  if (tool === undefined) return failure('agent.protocol.unsupported', 'The requested tool is not registered.');
+  const request = normalizeAgentCapabilityRequest({
+    version: '1',
+    requestId: options.requestId,
+    ...state.target,
+    capability: tool.capability,
+    operation: tool.operation,
+    input: payload,
+  });
+  if (!request.ok) return request;
   return within(
     state,
-    async (signal) => {
-      if (!options || !id(options.requestId))
-        return failure('agent.protocol.invalid', 'A tool call requires a bounded request identity.');
-      const tool = state.tools.get(name);
-      if (tool === undefined) return failure('agent.protocol.unsupported', 'The requested tool is not registered.');
-      const request: AgentCapabilityRequest = {
-        version: '1',
-        requestId: options.requestId,
-        ...state.target,
-        capability: tool.capability,
-        operation: tool.operation,
-        input: payload,
-      };
-      return dispatcher.dispatch(request, { signal, transport: state.transport });
-    },
+    (signal) => dispatcher.dispatch(request.value, { signal, transport: state.transport }),
     options?.signal,
   );
 }

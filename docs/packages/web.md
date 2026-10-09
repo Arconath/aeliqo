@@ -29,6 +29,16 @@ recipes. It does not create authority or infer application permissions. The
 Registration is explicit so server module evaluation does not touch
 `customElements`.
 
+Mounting an app registers the region, table, and chart. Rendering and container
+adaptation load other component families needed by the validated plan before
+publishing the result. Automatic resize and media updates wait for an in-flight
+presentation, then apply the latest environment. A loading or incompatible-version
+failure returns `web.app.registration` and retains the previous valid result. Applications that
+use custom view callbacks load the full shared catalog when that view is
+selected, so callbacks can keep using compound elements and their children.
+Calling `registerAeliqoElements()` still registers the complete catalog eagerly;
+use it for direct custom-element usage.
+
 ## Adaptive recipe policy
 
 The application facade derives a presentation policy from each mounted

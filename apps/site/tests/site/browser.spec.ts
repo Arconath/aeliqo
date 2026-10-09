@@ -3,6 +3,47 @@ import { expect, test } from '@playwright/test';
 import { componentCatalog } from '../shared/catalog.js';
 import { RELEASE_VERSION } from '../../../../scripts/release/metadata.mjs';
 
+test('local preview navigation stays local and preserves production metadata and external links', async ({
+  page,
+  baseURL,
+}) => {
+  if (baseURL === undefined) throw new Error('The local preview needs a base URL.');
+  await page.goto('/');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://aeliqo.com/');
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', 'https://aeliqo.com/');
+  const navigation = page.getByRole('navigation', { name: 'Main', exact: true });
+  await expect(navigation.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+    'href',
+    'https://github.com/Arconath/aeliqo',
+  );
+  await expect(navigation.getByRole('link', { name: 'Docs', exact: true })).toHaveAttribute('href', '/docs/');
+  await navigation.getByRole('link', { name: 'Docs', exact: true }).click();
+  await expect(page).toHaveURL(new URL('/docs/', baseURL).href);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://docs.aeliqo.com/');
+  await page
+    .getByRole('navigation', { name: 'Documentation', exact: true })
+    .getByRole('link', { name: 'Overview', exact: true })
+    .click();
+  await expect(page).toHaveURL(new URL('/docs/', baseURL).href);
+  await page.locator('.docs-sidebar-brand').click();
+  await expect(page).toHaveURL(new URL('/docs/', baseURL).href);
+  await page.getByRole('navigation', { name: 'Main', exact: true }).getByRole('link', { name: 'Playground' }).click();
+  await expect(page).toHaveURL(new URL('/playground/', baseURL).href);
+  await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+  await page.getByRole('banner').getByRole('link', { name: 'Aeliqo home' }).click();
+  await expect(page).toHaveURL(new URL('/', baseURL).href);
+  await page.getByRole('link', { name: 'Start the quickstart', exact: true }).click();
+  await expect(page).toHaveURL(new URL('/start/', baseURL).href);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://docs.aeliqo.com/start/');
+  await page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Get started' }).click();
+  await expect(page).toHaveURL(new URL('/docs/', baseURL).href);
+  await page.getByRole('navigation', { name: 'Footer', exact: true }).getByRole('link', { name: 'Privacy' }).click();
+  await expect(page).toHaveURL(new URL('/legal/privacy/', baseURL).href);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://docs.aeliqo.com/legal/privacy/');
+  await page.locator('.footer-brand').click();
+  await expect(page).toHaveURL(new URL('/', baseURL).href);
+});
+
 test('the public playground uses the app facade without AI and through scenario steps', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -388,7 +429,7 @@ test('quickstart and component reference reflow at 320 CSS pixels', async ({ pag
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const brand = page.getByRole('link', { name: 'Aeliqo home', exact: true });
-    await expect(brand).toHaveAttribute('href', 'https://aeliqo.com/');
+    await expect(brand).toHaveAttribute('href', '/');
     const example = page.locator('details.component-example > summary');
     if (await example.count()) await example.click();
     await expect(page.locator('main pre').first()).toBeVisible();

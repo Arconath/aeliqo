@@ -107,6 +107,7 @@ test('repository exposes quality, package publication, and site image lanes', as
   const workflowDirectory = new URL('../../.github/workflows/', import.meta.url);
   const { readdir } = await import('node:fs/promises');
   assert.deepEqual((await readdir(workflowDirectory)).sort(), [
+    'contributor-policy.yml',
     'quality.yml',
     'release-publish.yml',
     'site-release.yml',

@@ -10,7 +10,7 @@ const origin = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: configDirectory,
-  testMatch: 'browser.spec.ts',
+  testMatch: ['browser.spec.ts', 'regressions.spec.ts'],
   timeout: 30_000,
   use: { baseURL: origin, browserName: 'chromium', trace: 'retain-on-failure' },
   webServer: {

@@ -213,7 +213,7 @@ function applyReadyReceipt(intent: Intent, receipt: WebRenderReceipt): void {
   journeyResult.textContent = 'Evaluated';
   journeyView.textContent = viewLabel(selectedView(receipt));
   setJourney('done', 'done', 'done');
-  status.textContent = `${resultTitle.textContent} is ready. The intent above chose this view; Inspect shows the full evidence.`;
+  status.textContent = `${resultTitle.textContent} is ready. Open the request details or Inspect to see how this view was chosen.`;
 }
 
 function applyFailedReceipt(receipt: WebRenderReceipt): void {
@@ -340,10 +340,12 @@ exportButton.addEventListener('click', async () => {
   window.setTimeout(() => URL.revokeObjectURL(href), 0);
   status.textContent = `Exported the ${scenario.label} source project with synthetic data and no credentials. Install after its pinned package version is published.`;
 });
-required<HTMLButtonElement>('#pg-inspect').addEventListener('click', () => {
+const inspectButton = required<HTMLButtonElement>('#pg-inspect');
+inspectButton.addEventListener('click', () => {
   renderInspector();
   inspector.showModal();
 });
+inspector.addEventListener('close', () => inspectButton.focus());
 required<HTMLButtonElement>('#pg-inspector-close').addEventListener('click', () => inspector.close());
 for (const button of inspectorButtons)
   button.addEventListener('click', () => {

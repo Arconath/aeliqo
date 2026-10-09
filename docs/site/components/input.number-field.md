@@ -44,6 +44,15 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
+Changing `value` or `text` or replacing `validator` cancels validation for the
+previous value and clears its validator-owned error. An independently supplied
+host `error` survives the change. Late results after a reset or disconnect are
+ignored.
+
+Minimum, maximum, and step checks use exact decimal arithmetic. Signed zero,
+including `-0.00`, compares equally to `0`; its sign and decimal places remain
+in the value and displayed text.
+
 ## Keyboard, focus, and accessibility
 
 Keyboard behavior:

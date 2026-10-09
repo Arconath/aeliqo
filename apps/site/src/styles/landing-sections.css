@@ -1,7 +1,7 @@
 .how,
 .scenarios,
 .developers {
-  padding-block: clamp(4rem, 8vw, 7rem);
+  padding-block: clamp(3rem, 6vw, 5rem);
   border-top: 1px solid var(--line);
 }
 .how h2,
@@ -12,7 +12,7 @@
 .how-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-5);
+  gap: var(--space-8);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -22,17 +22,13 @@
   min-width: 0;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-6);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--surface-raised);
+  padding: var(--space-6) 0 0;
+  border-top: 1px solid var(--line-strong);
 }
 .how-step {
   align-self: flex-start;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-pill);
-  color: var(--accent);
-  background: var(--accent-soft);
+  padding: 0;
+  color: var(--muted);
   font-size: var(--type-small);
   font-weight: var(--weight-strong);
 }
@@ -89,11 +85,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-5);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  padding: var(--space-5) 0;
+  border-block: 1px solid var(--line);
   color: inherit;
-  background: var(--surface-raised);
+  background: transparent;
   text-decoration: none;
   transition:
     border-color 140ms ease,
@@ -119,7 +114,7 @@
 }
 .mini {
   display: grid;
-  height: 5.5rem;
+  height: 4rem;
   margin-bottom: var(--space-2);
   padding: var(--space-3);
   border: 1px solid var(--line);
@@ -271,17 +266,17 @@
   gap: 0.7rem;
   margin-top: var(--space-6);
 }
-@media (max-width: 1000px) {
+@media (max-width: 1200px) {
   .hero {
     grid-template-columns: 1fr;
     gap: var(--space-8);
     padding-block: 3.5rem;
   }
   .hero-copy {
-    max-width: 48rem;
+    max-width: 56rem;
   }
   .product-window {
-    width: min(100%, 52rem);
+    width: min(100%, 68rem);
   }
   .how-steps,
   .developers,
@@ -300,12 +295,18 @@
     padding-block: var(--space-12) var(--space-10);
   }
   .hero h1 {
-    max-width: 14ch;
-    font-size: clamp(2.1rem, 10vw, 3rem);
+    max-width: 19ch;
+    font-size: clamp(2.65rem, 9vw, 3.4rem);
   }
   .demo-bar {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .demo-panel {
+    padding: 0.9rem;
+  }
+  .hero .lead {
+    font-size: 1rem;
   }
   .scenario-grid {
     grid-template-columns: 1fr;

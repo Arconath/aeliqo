@@ -149,7 +149,8 @@ const compositionFixture = {
   environment: fixture.environment,
 };
 const probe = `
-import { AELIQO_AGENT_INSTRUCTIONS, createAppToolEndpoint } from '@aeliqo/agent';
+import { AELIQO_AGENT_INSTRUCTIONS, createAppToolEndpoint, createAppToolSession } from '@aeliqo/agent';
+import { createAppToolSession as createSessionFromApp } from '@aeliqo/agent/app';
 import {
   createAgentCapabilityDispatcher,
   createAgentCapabilityRegistry,
@@ -255,6 +256,16 @@ export async function probe() {
   check(renderTool.description.includes('aeliqo_context') && !JSON.stringify(renderTool.inputSchema.oneOf[0].required).includes('version'), 'installed agent-friendly render tool');
   check(AELIQO_AGENT_INSTRUCTIONS.includes('aeliqo_context'), 'installed recommended agent instructions');
   endpoint.value.close();
+  check(createSessionFromApp === createAppToolSession, 'root/app session export parity');
+  const appSession = createAppToolSession({ runtime, regionId: 'main', goalEpoch: 'host-session', transport: 'manual', expiresAt: Date.now() + 60_000 });
+  check(appSession.ok, 'host-owned application session');
+  const borrowed = appSession.value.createEndpoint({ principalKey: 'person-1', scopeDigest: 'scope-1' });
+  check(borrowed.ok, 'borrowed endpoint');
+  borrowed.value.close();
+  const fresh = appSession.value.createEndpoint({ principalKey: 'person-1', scopeDigest: 'scope-1' });
+  check(fresh.ok && (await fresh.value.discover()).ok, 'fresh endpoint survives earlier close');
+  appSession.value.close();
+  check(!appSession.value.createEndpoint({ principalKey: 'person-1', scopeDigest: 'scope-1' }).ok && !(await fresh.value.discover()).ok, 'host close fences borrowed endpoints');
   runtime.dispose();
 
   const inspected = {
@@ -330,7 +341,7 @@ export async function probe() {
     'agent cannot omit required coverage');
   check(!validateAgentComposition(viewPlan,viewRegistry.value,{...viewContext,results:[]}).ok,
     'agent cannot invent authorized descriptor');
-  return {appEndpoint:true,capabilityParity:true,trustedSessionTransport:true,externalEgress:true,
+  return {appEndpoint:true,appToolSession:true,capabilityParity:true,trustedSessionTransport:true,externalEgress:true,
     canonicalCompositionParity:true};
 }
 `;
@@ -346,6 +357,7 @@ for(const specifier of ['@aeliqo/core',
   '@aeliqo/runtime/data',
   '@aeliqo/runtime/results',
   '@aeliqo/agent',
+  '@aeliqo/agent/app',
   '@aeliqo/agent/capabilities',
   '@aeliqo/agent/session',
   '@aeliqo/agent/model']){const path=await realpath(fileURLToPath(import.meta.resolve(specifier)));if(!path.startsWith(${JSON.stringify(consumerReal)}+'/node_modules/'))throw Error('Non-installed resolution');}
@@ -355,7 +367,8 @@ console.log(JSON.stringify(await probe()));
 const nodeReport = JSON.parse(run(['node', '--disallow-code-generation-from-strings', 'node.mjs'], consumer).trim());
 await writeFile(
   join(consumer, 'consumer.ts'),
-  `import { createAppToolEndpoint } from '@aeliqo/agent';
+  `import { createAppToolEndpoint, createAppToolSession, type AeliqoAppToolSession } from '@aeliqo/agent';
+import { createAppToolSession as createSessionFromApp } from '@aeliqo/agent/app';
 import { createAgentCapabilityRegistry, type AgentCapabilityDispatcher } from '@aeliqo/agent/capabilities';
 import { createAgentSession } from '@aeliqo/agent/session';
 import type { OperationGrant } from '@aeliqo/core/agent';
@@ -363,6 +376,9 @@ import type { AeliqoRuntime } from '@aeliqo/runtime/app';
 declare const runtime: AeliqoRuntime;
 const endpoint = createAppToolEndpoint({ runtime, regionId: 'main', goalEpoch: 'goal', transport: 'manual', expiresAt: Date.now() + 60_000 });
 void endpoint;
+const appSession = createAppToolSession({ runtime, regionId: 'main', goalEpoch: 'goal', transport: 'manual', expiresAt: Date.now() + 60_000 });
+if (appSession.ok) { const typed: AeliqoAppToolSession = appSession.value; void typed.createEndpoint({ principalKey: 'person-1', scopeDigest: 'scope-1' }); typed.close(); }
+void createSessionFromApp;
 // @ts-expect-error Model quality does not create an act grant.
 const invalid:OperationGrant='act';void invalid;
 declare const dispatcher: AgentCapabilityDispatcher;

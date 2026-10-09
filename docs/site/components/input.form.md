@@ -43,11 +43,20 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
+Form data and constraint validation follow native disabled-fieldset rules.
+Controls in the first legend of a disabled fieldset remain enabled unless
+another disabled state applies; controls in later legends or the fieldset
+body are excluded. A valid, enabled [DateRange](/components/input.date-range/)
+contributes both named endpoints to the form data.
+
 ## Keyboard, focus, and accessibility
 
 Keyboard behavior:
 
 {{aeliqo:keyboard}}
+
+An invalid submit focuses the rendered error summary after a slotted submit
+button click, Enter in a field, or `requestSubmit()`.
 
 Exposed semantics:
 

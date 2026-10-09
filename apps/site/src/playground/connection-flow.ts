@@ -24,7 +24,7 @@ export function createConnectionFlow(elements: ConnectionElements, session: () =
     session().disconnectWebMcp();
     elements.connectButton.disabled = false;
     elements.connectButton.textContent = 'Enable WebMCP';
-    show('Manual controls ready. Enable WebMCP to let a browser agent use this page.', 'disconnected');
+    show('Manual controls ready · no agent connected.', 'disconnected');
   };
   return {
     async prepare(): Promise<void> {
@@ -35,7 +35,7 @@ export function createConnectionFlow(elements: ConnectionElements, session: () =
         show(
           supported
             ? 'Browser API available. Tools are not registered yet.'
-            : 'WebMCP is unavailable in this browser. All manual controls remain available.',
+            : 'Browser tools unavailable. Manual controls still work.',
           supported ? 'disconnected' : 'unavailable',
         );
     },

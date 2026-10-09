@@ -30,6 +30,10 @@ export class AeliqoSelectElement extends AeliqoFieldElement<string> {
     this.syncNative();
   }
 
+  protected override isCurrentValidationValue(value: string): boolean {
+    return value === this.value;
+  }
+
   protected override resetField(): void {
     this.value = this.defaultValue;
     this.syncNative();

@@ -27,7 +27,10 @@ Create the `AeliqoApp` at the application boundary and pass that instance into
 the provider. The provider exposes the app to its descendants; the host still
 owns the app's data and authority adapters. Call
 `registerAeliqoReactElements()` from the client entry point when the page uses
-custom elements.
+custom elements directly. The app API from `@aeliqo/react/app` mounts and loads
+its required shared elements through `createAeliqoApp`; it needs no separate
+registration call. Standard app views load component families as needed, while
+custom view callbacks load the full shared catalog for compatibility.
 
 For an advanced, host-created runtime, pass `runtime` instead of `app`. The
 provider accepts exactly one of those values and never disposes either one.

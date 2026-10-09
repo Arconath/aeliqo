@@ -1,4 +1,5 @@
 import type { Outcome } from '@aeliqo/core';
+import type { ActionReceipt } from '@aeliqo/runtime/actions';
 import type {
   AgentCapabilityHost,
   AgentCapabilityHostContext,
@@ -80,9 +81,15 @@ function standardTools(): readonly AgentToolBinding[] {
   ];
 }
 
-function pairedHost(options: AppToolEndpointOptions, initialScopeDigest: string): AgentCapabilityHost {
+function pairedHost(
+  options: AppToolEndpointOptions,
+  initialScopeDigest: string,
+  guard?: () => Outcome<void>,
+): AgentCapabilityHost {
   return {
     readContext: (): Outcome<AgentCapabilityHostContext> => {
+      const active = guard?.();
+      if (active !== undefined && !active.ok) return active;
       const current = options.runtime.context(options.regionId);
       if (!current.ok) return current;
       if (current.value.authority.scopeDigest !== initialScopeDigest)
@@ -132,14 +139,34 @@ function validateOptions(options: AppToolEndpointOptions): Outcome<AeliqoAppTool
 function wrapEndpoint(
   inner: AgentModelToolEndpoint,
   actionState: ReturnType<typeof createActionCapabilityState>,
+  closeActions: boolean,
+  guard?: () => Outcome<void>,
+  onClose?: () => void,
 ): AeliqoAppToolEndpoint {
+  let closed = false;
+  const lifetime = new AbortController();
   return Object.freeze({
     ...inner,
-    confirmAction: (previewId: string, input: { readonly signal?: AbortSignal } = {}) =>
-      confirmAction(actionState, previewId, input),
+    confirmAction: async (
+      previewId: string,
+      input: { readonly signal?: AbortSignal } = {},
+    ): Promise<Outcome<ActionReceipt>> => {
+      if (closed) return failure('agent.app.stale', 'The tool endpoint is closed.');
+      const active = guard?.();
+      if (active !== undefined && !active.ok) return active;
+      const signal = input.signal === undefined ? lifetime.signal : AbortSignal.any([lifetime.signal, input.signal]);
+      const result = await confirmAction(actionState, previewId, { signal });
+      if (closed) return failure('agent.app.stale', 'The tool endpoint closed during confirmation.');
+      const fresh = guard?.();
+      return fresh !== undefined && !fresh.ok ? fresh : result;
+    },
     close: () => {
-      closeActionState(actionState);
+      if (closed) return;
+      closed = true;
+      lifetime.abort();
+      if (closeActions) closeActionState(actionState);
       inner.close();
+      onClose?.();
     },
   });
 }
@@ -148,11 +175,32 @@ function wrapEndpoint(
 export function createAppToolEndpoint(options: AppToolEndpointOptions): Outcome<AeliqoAppToolEndpoint> {
   const invalid = validateOptions(options);
   if (invalid !== undefined) return invalid;
+  return buildEndpoint(Object.freeze({ ...options }), createActionCapabilityState(options), true);
+}
+
+/** Internal borrowing path: the trusted session, rather than one transport request, owns action state. */
+export function createSharedAppToolEndpoint(
+  options: AppToolEndpointOptions,
+  actionState: ReturnType<typeof createActionCapabilityState>,
+  guard: () => Outcome<void>,
+  onClose: () => void,
+): Outcome<AeliqoAppToolEndpoint> {
+  return buildEndpoint(options, actionState, false, guard, onClose);
+}
+
+function buildEndpoint(
+  options: AppToolEndpointOptions,
+  actionState: ReturnType<typeof createActionCapabilityState>,
+  closeActions: boolean,
+  guard?: () => Outcome<void>,
+  onClose?: () => void,
+): Outcome<AeliqoAppToolEndpoint> {
+  const invalid = validateOptions(options);
+  if (invalid !== undefined) return invalid;
   const initial = options.runtime.context(options.regionId);
   if (!initial.ok) return initial;
   const registry = createRegistry();
   if (!registry.ok) return registry;
-  const actionState = createActionCapabilityState(options);
   const registered = registerCapabilities(registry.value, options, actionState);
   if (!registered.ok) return registered;
   const endpoint = createAgentToolEndpoint({
@@ -163,9 +211,9 @@ export function createAppToolEndpoint(options: AppToolEndpointOptions): Outcome<
     expiresAt: options.expiresAt,
     registry: registry.value,
     tools: standardTools(),
-    host: pairedHost(options, initial.value.authority.scopeDigest),
+    host: pairedHost(options, initial.value.authority.scopeDigest, guard),
     ...endpointLimits(options),
   });
   if (!endpoint.ok) return endpoint;
-  return { ok: true, value: wrapEndpoint(endpoint.value, actionState) };
+  return { ok: true, value: wrapEndpoint(endpoint.value, actionState, closeActions, guard, onClose) };
 }

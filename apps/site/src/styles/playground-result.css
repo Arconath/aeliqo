@@ -2,14 +2,22 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: 1.65rem clamp(var(--space-5), 2.8vw, 2.8rem) 1.2rem;
-  background: color-mix(in srgb, var(--surface) 46%, var(--surface-raised));
+  padding: 1.5rem clamp(var(--space-5), 2.4vw, 2rem) 1.2rem;
+  background: var(--surface-raised);
 }
 .pg-result-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-5);
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+.pg-result h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.045em;
 }
 .pg-view-badge {
   display: inline-flex;
@@ -24,9 +32,7 @@
   padding: 0.3rem 0.6rem;
   color: var(--accent);
   background: var(--accent-soft);
-  font:
-    600 0.72rem ui-monospace,
-    monospace;
+  font: 600 var(--type-caption) var(--font-mono);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -52,7 +58,7 @@
   margin: var(--space-3) 0 var(--space-5);
 }
 .pg-intent {
-  margin: 0 0 var(--space-4);
+  margin: var(--space-4) 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--surface-raised);
@@ -92,11 +98,10 @@
   display: grid;
   min-width: 0;
   align-content: start;
-  gap: 0.3rem;
-  padding: 0.8rem 0.95rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--surface-raised);
+  gap: 0.2rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
@@ -108,10 +113,10 @@
   inset-inline-end: -0.55rem;
   z-index: 1;
   color: var(--faint);
-  font-size: 0.68rem;
+  font-size: var(--type-caption);
   font-weight: var(--weight-bold);
   transform: translateY(-50%);
-  content: '→';
+  content: '';
 }
 .pg-journey small {
   display: inline-flex;
@@ -205,15 +210,10 @@
   flex-wrap: wrap;
   gap: 0.3rem 0.9rem;
   margin-top: var(--space-5);
-  padding: 0.5rem 0.85rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
   color: var(--muted);
-  background: linear-gradient(
-    180deg,
-    var(--surface-raised),
-    color-mix(in srgb, var(--surface) 55%, var(--surface-raised))
-  );
+  background: transparent;
   font-size: var(--type-caption);
 }
 .pg-evidence span[hidden] {
@@ -320,8 +320,8 @@
   .pg-intro {
     grid-template-columns: 1fr;
     align-items: start;
-    gap: 0.7rem;
-    padding-block: var(--space-6) var(--space-4);
+    gap: 0.5rem;
+    padding-block: var(--space-5) var(--space-3);
   }
   .pg-intro h1 {
     max-width: 14ch;
@@ -332,8 +332,9 @@
   .pg-toolbar {
     position: sticky;
     z-index: 5;
-    top: 0;
+    top: 5.5rem;
     grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0.7rem 0.85rem;
   }
   .pg-toolbar > label {
     grid-column: 1;
@@ -354,11 +355,13 @@
   }
   .pg-workspace {
     grid-template-columns: 1fr;
+    padding: 0;
   }
   .pg-request {
     max-height: none;
     border-block-end: 1px solid var(--line);
     border-inline-end: 0;
+    border-radius: 0;
   }
   .pg-request-body {
     max-height: none;
@@ -386,7 +389,7 @@
     inset-inline-end: auto;
     inset-inline-start: 1.2rem;
     transform: none;
-    content: '↓';
+    content: '';
   }
   .pg-journey li span {
     grid-column: 2;
@@ -396,15 +399,6 @@
   }
   .pg-intro-copy > p {
     font-size: var(--type-body-small);
-  }
-  .pg-intro-flow {
-    grid-template-columns: 1fr;
-    gap: 0.55rem;
-  }
-  .pg-intro-flow li {
-    grid-template-columns: 1.4rem minmax(0, 1fr);
-    align-items: baseline;
-    padding-top: 0.55rem;
   }
   .pg-toolbar {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -425,6 +419,9 @@
   .pg-result-header {
     align-items: start;
     flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
   }
   .pg-evidence {
     border-radius: var(--radius-card);

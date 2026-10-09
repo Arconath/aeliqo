@@ -1,8 +1,8 @@
 # Protocol compatibility
 
 Aeliqo pins the official MCP TypeScript packages
-`@modelcontextprotocol/server`, `@modelcontextprotocol/node` and
-`@modelcontextprotocol/client` at 2.0.0. This SDK release implements the 2026-07-28 protocol;
+`@modelcontextprotocol/server` and `@modelcontextprotocol/node` at 2.0.0,
+and the patched `@modelcontextprotocol/client` at 2.2.0. These SDK packages implement the 2026-07-28 protocol;
 its modern discovery exchange differs from the earlier `initialize` handshake.
 Tests must report the negotiated era rather than assume the client supports it.
 See the [official SDK documentation](https://ts.sdk.modelcontextprotocol.io/v2/)

@@ -1,10 +1,10 @@
-import type { Outcome } from '@aeliqo/core';
+import type { Diagnostic, Outcome } from '@aeliqo/core';
 import type { RuntimeCommittedReceipt, RuntimeRenderPreparation, RuntimePreparedRender } from '@aeliqo/runtime/app';
 import type { WebRenderReceipt } from './types.js';
 import { diagnostic, materialize, withoutDataRevision, type WebAppContext, type WebRegion } from './context.js';
 import { resolveFormBindings } from './form-state.js';
 import { preparePresentation } from './presentation-plan.js';
-import { prepareRenderer } from './presentation-renderer.js';
+import { prepareRegisteredRenderer, type prepareRenderer } from './presentation-renderer.js';
 import { prepareRenderContinuity } from './render-continuity.js';
 import { retainAppInteraction } from './interaction-projection.js';
 
@@ -32,12 +32,12 @@ export function createRenderTransaction(
       };
     inputs = await resolveFormBindings(context, region, receipt, signal);
     if (!inputs.ok) {
-      rejected = {
-        status: receipt.intent.kind === 'edit' ? 'needs-input' : 'failed',
-        regionId: region.id,
-        requestId: candidate.requestId,
-        diagnostics: inputs.diagnostics,
-      };
+      rejected = rejection(
+        region,
+        candidate.requestId,
+        receipt.intent.kind === 'edit' ? 'needs-input' : 'failed',
+        inputs.diagnostics,
+      );
       return inputs;
     }
     const blocked = recheck();
@@ -70,15 +70,15 @@ export function createRenderTransaction(
       continuity.value,
     );
     if (!prepared.ok) {
-      rejected = {
-        status: prepared.status,
-        regionId: region.id,
-        requestId: candidate.requestId,
-        diagnostics: prepared.diagnostics,
-      };
+      rejected = rejection(region, candidate.requestId, prepared.status, prepared.diagnostics);
       return prepared;
     }
-    preparedRenderer = prepareRenderer(context, region, prepared.value, bindings.results, active);
+    const renderer = await prepareRegisteredRenderer(context, region, prepared.value, bindings.results, active);
+    if (!renderer.ok) {
+      rejected = recheck() ?? rejection(region, candidate.requestId, 'failed', renderer.diagnostics);
+      return renderer;
+    }
+    preparedRenderer = renderer.value;
     return { ok: true, value: preparedRenderer.projection };
   }
   return {
@@ -88,6 +88,15 @@ export function createRenderTransaction(
     rejected: () => rejected,
     close: () => preparedRenderer?.close(),
   };
+}
+
+function rejection(
+  region: WebRegion,
+  requestId: string,
+  status: 'unsupported' | 'failed' | 'needs-input',
+  diagnostics: readonly Diagnostic[],
+): WebRenderReceipt {
+  return { status, regionId: region.id, requestId, diagnostics };
 }
 
 function completeTransaction(
