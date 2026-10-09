@@ -337,6 +337,42 @@ labels. It requires a new fully verified main revision, registry RC, stable
 publication, image and complete public acceptance. The published table remains
 0.7.0 until those actual steps complete.
 
+[PR 63](https://github.com/Arconath/aeliqo/pull/63), source
+`0abfb55b5429179801af6d06b8ba05f8b55db863`, passed all 93 commands in
+[run 37906770693](https://github.com/Arconath/aeliqo/actions/runs/37906770693).
+Independent verification matched all 93 raw log hashes and confirmed that its
+tree equals merged main `c802208cf5cb9d0a2546c725ce623999fef4d404`. However,
+attempt 1 of that main source's required push
+[run 37910239474](https://github.com/Arconath/aeliqo/actions/runs/37910239474)
+failed shard 0: `tests/runtime-presentation/browser/atomic-review.spec.ts:50`
+lost the accepted semantic interaction. The release-contract job completed
+successfully; independent review matched its five tarballs, 166 exports,
+canonical guides/legal files, generated documentation and local image inputs.
+That job does not replace the failed full-matrix qualification.
+
+A private controlled browser probe confirmed that a stale projected interaction
+can overwrite an accepted value across the renderer-registration await during
+automatic layout preparation, including a control using the published 0.7.0
+implementation and a valid declared selection port. The correction captures
+the live presentation and interaction before that await and rejects stale
+preparation. The new maintained regression failed before the correction and
+passed after it in Chromium, Firefox and WebKit. The full unchanged
+presentation browser command passed 123 cases, including all 21 original
+atomic cases and the three new regression cases; independent security review
+found no blocker. These local results do not replace required main CI.
+There is no new API, wire contract or version change. The unpublished `c802208c`
+candidate is superseded as the intended publication source and is not qualified
+for release. Version 0.7.1 has not been published or deployed; the corrected
+source requires a fresh full same-SHA main-push success and all subsequent
+registry, image and public acceptance steps.
+
+The optional visual comparison for `c802208c` also stopped before build or
+capture: the only changed hashed fixture was the private catalog example's
+version, from 0.6.3 to 0.7.1. Paired performance stopped before measurement on
+its unapproved budget. The retained advisory audit establishes neither pixel
+comparison nor performance results; these jobs remain separate from the
+required shard failure. No baseline approval or quality gate was changed.
+
 Optional approved-reference visual comparison on final 0.7.0 main stopped
 before build or capture: only the private catalog example version changed,
 which changed the fixture hash. No final-source pixel or repeat-capture result
@@ -368,11 +404,12 @@ authored by Codex without human contribution certification; it does not replace
 accepted main-push CI or a maintainer release revision. The local snapshot remains historical evidence; the accepted publication,
 deployment, and post-deployment findings are recorded above.
 
-| Item                                                                                       | Next step                                                                                         |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| Real-model success rate and external adoption remain unproven.                             | Collect evidence from real integrations without inferring model success from deterministic tests. |
-| Native WebMCP requires an experimental browser flag.                                       | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
-| Initial-render cancellation can leave a temporary result reference in the Region read set. | Complete the 0.7.1 runtime patch, required release checks, and public form/dialog acceptance.     |
+| Item                                                                                                              | Next step                                                                                                        |
+| ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Real-model success rate and external adoption remain unproven.                                                    | Collect evidence from real integrations without inferring model success from deterministic tests.                |
+| Native WebMCP requires an experimental browser flag.                                                              | Keep the experimental scope explicit while baseline browser availability remains unproven.                       |
+| Initial-render cancellation can leave a temporary result reference in the Region read set.                        | Complete the 0.7.1 runtime patch, required release checks, and public form/dialog acceptance.                    |
+| Automatic layout preparation can overwrite an accepted semantic interaction after awaiting renderer registration. | Complete fresh full main qualification and registry, image and public acceptance for the corrected 0.7.1 source. |
 
 The planner policy removal and patched Next.js release are complete; neither is
 an open release blocker. Visual and paired-performance jobs are advisory; the

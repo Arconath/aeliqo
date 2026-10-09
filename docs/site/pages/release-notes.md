@@ -20,6 +20,8 @@ continues to apply when upgrading from 0.6.
 - Keep temporary evaluation results out of the initial Region read set.
   Aborting or superseding the first data render no longer leaves an unavailable
   result reference that cancels a subsequent create form.
+- Preserve accepted semantic interaction while an automatic layout prepares
+  its renderer. Cancel stale preparation instead of overwriting the newer state.
 - Show a pending receipt while the playground evaluates a new request.
 - Keep quickstart question labels readable at narrow viewport widths.
 
