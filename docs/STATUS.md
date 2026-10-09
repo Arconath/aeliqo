@@ -16,14 +16,30 @@ hosted backend, license server, or model call.
 
 | Surface  | Current                                                                                                                                                      |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| npm      | All five public packages at `0.7.1` on `latest`, source `1c0e9a4f0db95a08fd964890cb38204cae86826d`.                                                          |
+| Site     | Site and embedded SDK source `1c0e9a4f0db95a08fd964890cb38204cae86826d`, SDK `0.7.1`.                                                                        |
+| Image    | `ghcr.io/arconath/aeliqo-web@sha256:93ac05c7d2269353b27129abfd66259f103babdc1f0e94028de65faa0755fd54`; two Ready replicas with zero restarts.                |
+| Delivery | Main-push quality `37917114993`, RC `37920436512`, stable publication `37922564840`, image `37923842277`, GitOps `b7cc12a790e474ac16d401a36c89be00f473bcb4`. |
+
+Publication, deployment and the recorded public acceptance are complete for
+0.7.1. [GitHub release 0.7.1](https://github.com/Arconath/aeliqo/releases/tag/v0.7.1)
+is published; its tag resolves to the exact source above. The production receipts
+and their coverage limits are recorded below. Package versions are never overwritten.
+
+### Historical 0.7.0 published evidence
+
+| Surface  | Published                                                                                                                                                    |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | npm      | All five public packages at `0.7.0` on `latest`, source `253b792d1bd870097ca5211727613dafdadab4e6`.                                                          |
 | Site     | Site and embedded SDK source `253b792d1bd870097ca5211727613dafdadab4e6`, SDK `0.7.0`.                                                                        |
 | Image    | `ghcr.io/arconath/aeliqo-web@sha256:3985097b71ce542e007bc7a83125f5c2194e8590a30fd10e5f11cf393322fc46`; two Ready replicas with zero restarts.                |
 | Delivery | Main-push quality `37896852849`, RC `37899895151`, stable publication `37901439296`, image `37902968422`, GitOps `6e449cccc7d198a8a816db4e12a569048b967e07`. |
 
-Publication and deployment are verified. Post-deployment acceptance found an
-initial-render cancellation bug, so complete live acceptance is not claimed.
-Patch 0.7.1 is being prepared below; package versions are never overwritten.
+Publication and deployment of 0.7.0 were verified. Post-deployment acceptance
+found an initial-render cancellation bug, so complete live acceptance was not
+claimed for that release. The failed acceptance and subsequent 0.7.1 correction
+remain recorded below. The historical GitHub release body is preserved, with an
+appended link to the patch release.
 
 ### Historical 0.6.3 published evidence
 
@@ -276,7 +292,7 @@ required functional acceptance from advisory visual and paired-performance
 evidence. The historical 0.6.0 records remain available. This documentation
 update does not publish packages or deploy a new site image.
 
-## Release 0.7.0 and patch preparation 0.7.1
+## Release 0.7.0 and initial 0.7.1 qualification
 
 The owner authorized publication and production deployment on 9 October.
 [PR 57](https://github.com/Arconath/aeliqo/pull/57) integrated the eleven audit
@@ -330,12 +346,12 @@ result reference. Waiting for the aborted request to settle does not repair it.
 Earlier supersession tests began from an already committed view and missed this
 initial-mount case. This is a runtime defect, not a passing live acceptance.
 
-Patch 0.7.1 keeps the 0.7 API and wire version 1. It excludes unpublished results
-from the initial Region read set, adds initial-mount cancellation regressions,
-shows the current playground request as pending, and improves narrow question
-labels. It requires a new fully verified main revision, registry RC, stable
-publication, image and complete public acceptance. The published table remains
-0.7.0 until those actual steps complete.
+The initial 0.7.1 candidate kept the 0.7 API and wire version 1. It excluded
+unpublished results from the initial Region read set, added initial-mount
+cancellation regressions, showed the current playground request as pending,
+and improved narrow question labels. At that stage it still required a new
+fully verified main revision, registry RC, stable publication, image and complete
+public acceptance; the published table remained at 0.7.0.
 
 [PR 63](https://github.com/Arconath/aeliqo/pull/63), source
 `0abfb55b5429179801af6d06b8ba05f8b55db863`, passed all 93 commands in
@@ -359,12 +375,12 @@ preparation. The new maintained regression failed before the correction and
 passed after it in Chromium, Firefox and WebKit. The full unchanged
 presentation browser command passed 123 cases, including all 21 original
 atomic cases and the three new regression cases; independent security review
-found no blocker. These local results do not replace required main CI.
-There is no new API, wire contract or version change. The unpublished `c802208c`
-candidate is superseded as the intended publication source and is not qualified
-for release. Version 0.7.1 has not been published or deployed; the corrected
-source requires a fresh full same-SHA main-push success and all subsequent
-registry, image and public acceptance steps.
+found no blocker. These local results did not replace required main CI.
+The correction introduced no new API, wire contract or version change. The
+unpublished `c802208c` candidate was superseded as the intended publication
+source and was not qualified for release. At that point 0.7.1 had not been
+published or deployed; the corrected source still required a fresh full same-SHA
+main-push success and all subsequent registry, image and public acceptance steps.
 
 The optional visual comparison for `c802208c` also stopped before build or
 capture: the only changed hashed fixture was the private catalog example's
@@ -387,6 +403,83 @@ Contributor rollout is verified: remote main requires `DCO`, `functional` and
 Readback preserved every other protection setting. The additive provider
 configuration passed independent review and Linux CI.
 
+## Release 0.7.1 production acceptance
+
+[PR 64](https://github.com/Arconath/aeliqo/pull/64) integrated the interaction
+correction. Final frozen main source
+`1c0e9a4f0db95a08fd964890cb38204cae86826d` passed all 93 unchanged acceptance
+commands in [run 37917114993](https://github.com/Arconath/aeliqo/actions/runs/37917114993).
+Independent verification matched all 93 raw log hashes and the exact source.
+This successful main revision supersedes the failed, unpublished `c802208c`
+candidate; it preserves the 0.7 API and wire version 1.
+
+[RC 37920436512](https://github.com/Arconath/aeliqo/actions/runs/37920436512)
+and [stable 37922564840](https://github.com/Arconath/aeliqo/actions/runs/37922564840)
+published all five packages from that same source. Canonical registry consumers
+and independent public-registry audits matched all five tarballs byte for byte,
+their SHA256/SHA512 integrities, exact internal pins, canonical guides/legal
+files and all 166 exports. Cryptographic verification passed npm registry
+signatures and Sigstore-backed publication and SLSA provenance for every package,
+bound to the expected source, workflow and run. Stable `latest` is 0.7.1;
+`next` remains 0.7.1-rc.1 at the recorded registry readback.
+
+[Image 37923842277](https://github.com/Arconath/aeliqo/actions/runs/37923842277)
+published the exact OCI index shown in the current table. Attached registry
+provenance, SBOM and quarantine-to-final identity checks passed; the retained
+scan reported zero HIGH/CRITICAL findings. Independent security review matched
+all eight artifact checksums, source/version, index and runtime configuration.
+Anonymous GHCR re-fetch returned 401, so attached registry verification remains
+evidenced by trusted CI; no independent image scan rerun is claimed. The SBOM and
+scan cover the reported image contents, not an exhaustive future advisory check.
+
+Automatic GitOps revision `b7cc12a790e474ac16d401a36c89be00f473bcb4` changed
+only the image reference. Deployment generation 8 was observed, with two ready,
+updated and available replicas, zero terminating replicas and zero restarts.
+Both non-terminating pods matched the exact desired index and configuration and
+ran as UID/GID 101. Both Flux controllers were Ready and Healthy, with applied
+and attempted revisions equal to that GitOps revision. Both public domains
+reported site/SDK source `1c0e9a4f0db95a08fd964890cb38204cae86826d` and SDK 0.7.1.
+
+All 18 public HTTP checks passed: health/readiness, version identity, both
+`llms.txt` endpoints, 404 behavior, representative home/docs/quickstart/playground/
+migration/release-note routes, canonical/social metadata, security/cache headers,
+immutable hashed assets and the actual 1200×630 social card. Public smoke passed
+search, all 71 sidebar components, four application journeys, native experimental
+WebMCP and ZIP export with all three Aeliqo dependencies pinned to 0.7.1. These
+checks made zero model calls.
+
+All 45 public form/dialog cases and all 30 public UI cases passed in Chromium,
+Firefox and WebKit, with no skipped, unexpected or flaky tests and no retries.
+The UI cases cover 360/768/1440 layouts and 320-pixel no-JavaScript keyboard/reflow.
+The first UI attempt passed 29 of 30; its WebKit native keyboard-scroll failure
+and an isolated reproduction are retained. A plain native HTML control also
+reproduced zero scroll with immediate synthetic keydown/keyup, while three
+production and three plain native controls scrolled with a 100 ms native key
+duration. This supports a private synthetic-input timing explanation; WebKit's
+internal mechanism was not instrumented. The corrected private harness retained
+all four native ArrowRight inputs, focus, no-JavaScript, reflow and scroll
+assertions, and the original polling and test deadlines. No product source or
+CSS correction, assertion weakening or retry was used for this diagnosis.
+
+Independent review inspected nine actual Chromium full-page production captures:
+home, quickstart and playground at 360, 768 and 1440 pixels. No blocking visible
+defect was found. These still images and recorded browser checks do not establish
+an approved-reference pixel comparison, exhaustive assistive-technology support,
+real-model success or external adoption. Optional visual and paired-performance
+evidence remains advisory and does not acquire baseline approval from this release.
+On final source `1c0e9a4f`, optional visual comparison stopped before build or
+capture on the catalog-version fixture hash; paired performance stopped before
+observations because its budget was unapproved.
+
+The retained `release-0.7.1-identity.json` and
+`production-0.7.1-final-acceptance.json` under
+`artifacts/remediation-2026-10-09/` bind these receipts to the source and image.
+The final 30-case report and sidecars are retained in
+`public-ui-0.7.1-native-key-duration-evidence/`; the archived failures and
+`public-ui-0.7.1-webkit-keyboard-diagnosis/diagnosis-report.json` preserve the
+diagnosis separately. The two runtime defects above are closed by this source's
+regressions, required main qualification and complete recorded public acceptance.
+
 ## Open items
 
 The [9 October launch audit](testing/2026-10-09-launch-audit.md) records the
@@ -404,12 +497,10 @@ authored by Codex without human contribution certification; it does not replace
 accepted main-push CI or a maintainer release revision. The local snapshot remains historical evidence; the accepted publication,
 deployment, and post-deployment findings are recorded above.
 
-| Item                                                                                                              | Next step                                                                                                        |
-| ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Real-model success rate and external adoption remain unproven.                                                    | Collect evidence from real integrations without inferring model success from deterministic tests.                |
-| Native WebMCP requires an experimental browser flag.                                                              | Keep the experimental scope explicit while baseline browser availability remains unproven.                       |
-| Initial-render cancellation can leave a temporary result reference in the Region read set.                        | Complete the 0.7.1 runtime patch, required release checks, and public form/dialog acceptance.                    |
-| Automatic layout preparation can overwrite an accepted semantic interaction after awaiting renderer registration. | Complete fresh full main qualification and registry, image and public acceptance for the corrected 0.7.1 source. |
+| Item                                                           | Next step                                                                                         |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Real-model success rate and external adoption remain unproven. | Collect evidence from real integrations without inferring model success from deterministic tests. |
+| Native WebMCP requires an experimental browser flag.           | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
 
 The planner policy removal and patched Next.js release are complete; neither is
 an open release blocker. Visual and paired-performance jobs are advisory; the
