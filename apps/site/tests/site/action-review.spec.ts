@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
 
 async function openCreateDraft(page: Page): Promise<void> {
   await page.goto('/playground/');
@@ -43,6 +43,32 @@ async function expectDraftAndReopen(page: Page): Promise<void> {
   await expect(page.getByRole('dialog', { name: 'Review action' })).toBeVisible();
   await expect(page.locator('#pg-action-content')).toContainText('Travel ruler');
 }
+
+test('create supersedes the first browse while its renderer family is still loading', async ({ page }) => {
+  let hold!: (route: Route) => void;
+  const loading = new Promise<Route>((resolve) => {
+    hold = resolve;
+  });
+  await page.route('**/register-data*.js*', hold);
+  await page.goto('/playground/?scenario=products', { waitUntil: 'domcontentloaded' });
+  const route = await loading;
+  try {
+    const tasks = page.locator('#pg-request');
+    if (!(await tasks.evaluate((element) => (element as HTMLDetailsElement).open)))
+      await tasks.locator('summary').click();
+    await page.getByRole('button', { name: 'Create product' }).click();
+    await expect(page.getByRole('textbox', { name: 'Product ID', exact: true })).toBeVisible();
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    await expect(page.locator('#pg-result-title')).toHaveText('Create product');
+  } finally {
+    await route.continue();
+  }
+  await expect(page.locator('aeliqo-form')).toBeVisible();
+  await expect(page.locator('#pg-region aeliqo-card-collection')).toHaveCount(0);
+  await fillProductDraft(page);
+  await page.getByRole('button', { name: 'Create record' }).click();
+  await expect(page.getByRole('dialog', { name: 'Review action' })).toBeVisible();
+});
 
 test('double-clicking Done preserves form focus after a confirmed write', async ({ page }) => {
   await openCreateDraft(page);

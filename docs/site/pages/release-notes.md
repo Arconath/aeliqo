@@ -11,6 +11,18 @@ description: 'Aeliqo 0.7 changes and source-bound records for earlier releases.'
 
 <span id="unreleased-launch-audit-corrections"></span>
 
+## Aeliqo 0.7.1
+
+This patch preserves the 0.7 API and serialized contract. Upgrade all Aeliqo
+packages together. The [0.6 to 0.7 migration guide](/ship/migration-0.6/)
+continues to apply when upgrading from 0.6.
+
+- Keep temporary evaluation results out of the initial Region read set.
+  Aborting or superseding the first data render no longer leaves an unavailable
+  result reference that cancels a subsequent create form.
+- Show a pending receipt while the playground evaluates a new request.
+- Keep quickstart question labels readable at narrow viewport widths.
+
 ## Aeliqo 0.7.0
 
 These changes belong to Aeliqo 0.7.0. Upgrade all Aeliqo packages together and

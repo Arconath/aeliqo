@@ -3,10 +3,10 @@
   "schemaVersion": 1,
   "product": "aeliqo",
   "candidate": {
-    "version": "0.7.0",
+    "version": "0.7.1",
     "status": "candidate",
-    "baseVersion": "0.6.3",
-    "compatibility": "breaking"
+    "baseVersion": "0.7.0",
+    "compatibility": "compatible"
   },
   "testedToolchain": {
     "node": {
@@ -235,7 +235,7 @@
     "sourceRevision": null,
     "scope": "This file records observed revisions; it does not certify its own enclosing commit. Publication requires a full same-SHA main-push quality run. Publication and deployment receipts are external to the source snapshot.",
     "record": "docs/STATUS.md",
-    "releaseReceipts": "https://github.com/Arconath/aeliqo/releases/tag/v0.7.0",
+    "releaseReceipts": "https://github.com/Arconath/aeliqo/releases/tag/v0.7.1",
     "historicalMatrix": "docs/releases/0.5.2/support-matrix.json"
   },
   "snapshotScope": "Prepublication source qualification. Candidate metadata and publication/deployment flags describe this source snapshot; use the versioned release receipts and public /version endpoint for live publication and deployment identity."

@@ -16,7 +16,7 @@ render returns `renderer-ready` after the browser commits it.
 
 Use Node.js **24.20.0**, pnpm **11.24.0**, and Git. These commands copy only the
 example out of the source checkout; its dependencies use exact registry
-versions rather than workspace links. This checkout targets the 0.7.0
+versions rather than workspace links. This checkout targets the 0.7.1
 candidate. Check the [package publication status](/reference/packages/) before
 installing that version:
 
@@ -32,7 +32,7 @@ pnpm dev
 ```
 
 `pnpm dev` typechecks and builds the Vanilla/Vite UI, then starts the Node
-host. The example pins `@aeliqo/core`, `runtime`, `web`, and `agent` to **0.7.0**.
+host. The example pins `@aeliqo/core`, `runtime`, `web`, and `agent` to **0.7.1**.
 Keep its `pnpm-workspace.yaml` when copying it: this gives the independent
 installation its own workspace boundary.
 

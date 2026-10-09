@@ -264,6 +264,69 @@ it('rolls back a prepared superseded render without restoring over the newer sna
   expect(newer.status).toBe('committed');
   state.runtime.dispose();
 });
+it.each(['superseded', 'aborted-and-settled', 'committed-previous'] as const)(
+  'commits a create after a %s browse without retaining unpublished results',
+  async (mode) => {
+    const app = fixture();
+    const runtime = createAeliqoRuntime({
+      resources: [{ resource: app.resource, data: app.local }],
+      authority: app.authority,
+    });
+    runtime.mount({ regionId: 'main', resourceId: 'people' });
+    const prior =
+      mode === 'committed-previous'
+        ? await runtime.render({ regionId: 'main', intent: browse('published') })
+        : undefined;
+    const publishedRefs = prior?.status === 'committed' ? prior.region.readSet!.results : [];
+    if (prior !== undefined) expect(prior.status).toBe('committed');
+    const waiting = deferred<void>();
+    const entered = deferred<RuntimeRenderPreparation>();
+    const controller = new AbortController();
+    const pending = runtime.render(
+      { regionId: 'main', intent: browse('pending'), signal: controller.signal },
+      {
+        async prepare(candidate) {
+          entered.resolve(candidate);
+          await waiting.promise;
+          return ok();
+        },
+      },
+    );
+    try {
+      const candidate = await entered.promise;
+      expect(candidate.outputs).toHaveLength(1);
+      expect(candidate.current.results).toContainEqual(candidate.outputs[0]!.ref);
+      if (mode === 'aborted-and-settled') {
+        controller.abort();
+        waiting.resolve();
+        expect((await pending).status).toBe('cancelled');
+      }
+      let replacementCandidate: RuntimeRenderPreparation | undefined;
+      const replacement = await runtime.render(
+        { regionId: 'main', intent: { version: '1', id: 'create', kind: 'create', resource: 'people' } },
+        {
+          prepare(next) {
+            replacementCandidate = next;
+            return ok();
+          },
+        },
+      );
+      const committed = runtime.snapshot('main');
+      waiting.resolve();
+      expect((await pending).status).toBe('cancelled');
+      expect(replacement.status, JSON.stringify(replacement.diagnostics)).toBe('committed');
+      expect(replacementCandidate?.outputs).toEqual([]);
+      expect(replacementCandidate?.current.results).toEqual(publishedRefs);
+      expect(committed?.task?.id).toBe('create');
+      expect(committed?.results).toEqual([]);
+      expect(runtime.snapshot('main')).toBe(committed);
+    } finally {
+      waiting.resolve();
+      await pending;
+      runtime.dispose();
+    }
+  },
+);
 it('rechecks authority changed synchronously by apply before publishing', async () => {
   const state = await setup();
   const rollback = vi.fn();

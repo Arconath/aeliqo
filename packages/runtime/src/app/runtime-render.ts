@@ -228,7 +228,6 @@ export class RuntimeRenderCoordinator {
   ): Promise<RuntimeRenderReceipt> {
     const { slot, sequence, requestId } = request;
     request.outputs = outputs;
-    slot.pendingRefs = outputs.map((output) => output.ref);
     const region = this.ensureRegion(request, compiled.task);
     if (!region.ok) return this.fail(slot, sequence, requestId, region.diagnostics, compiled.task);
     const before = region.value.snapshot();
@@ -240,6 +239,8 @@ export class RuntimeRenderCoordinator {
         [diagnostic('runtime.region-stale', 'The Region has no active read set.')],
         compiled.task,
       );
+    // A new Region starts with committed dependencies, never this unpublished candidate's results.
+    slot.pendingRefs = outputs.map((output) => output.ref);
     const current = frozen({
       ...before.readSet,
       results: uniqueRefs([...before.readSet.results, ...slot.pendingRefs]),

@@ -15,10 +15,10 @@ publication, so its candidate identity and publication flags describe that
 source snapshot. They are not a live registry or deployment inventory.
 
 A successful full main-push quality run is required before publication. See the
-[0.7.0 release record](https://github.com/Arconath/aeliqo/releases/tag/v0.7.0)
+[0.7.1 release record](https://github.com/Arconath/aeliqo/releases/tag/v0.7.1)
 for the exact source and acceptance receipts once publication is verified.
 The [0.6.3 record](https://github.com/Arconath/aeliqo/releases/tag/v0.6.3)
-preserves the previous published version's evidence.
+preserves an earlier published version's evidence.
 The publication banner above follows registry verification. The public
 [`/version`](https://aeliqo.com/version) endpoint identifies the deployed site.
 
@@ -37,9 +37,9 @@ The publication banner above follows registry verification. The public
 ## Recorded source checks
 
 The [current status record](https://github.com/Arconath/aeliqo/blob/main/docs/STATUS.md)
-tracks the current candidate separately from the exact 0.6.3 published source,
-its successful 93-command main-push matrix, and production verification. Those
-historical receipts do not qualify changed 0.7.0 source. The
+tracks each candidate separately from published source revisions and their
+93-command main-push matrices, package receipts, and production verification.
+Earlier release receipts do not qualify changed 0.7.1 source. The
 [visual reference review](https://github.com/Arconath/aeliqo/blob/main/docs/testing/0.6.3-visual-reference.md)
 records the approved comparison evidence and its review scope. Container visual
 and paired-performance CI jobs are advisory; the functional matrix and release
@@ -66,7 +66,7 @@ passed a quality evaluation. Read the [shipping guide](/ship/) for application c
 The former matrix is preserved byte for byte in
 [`docs/releases/0.5.2/support-matrix.json`](https://github.com/Arconath/aeliqo/blob/main/docs/releases/0.5.2/support-matrix.json).
 Its original candidate metadata and qualified profiles describe that historical
-record. They are not acceptance for 0.7.0.
+record. They are not acceptance for 0.7.1.
 
 That record includes a bounded DeepSeek `deepseek-flash` run: 12/12 synthetic
 J1–J3 browser/provider/renderer cases on tree-equivalent PR head `21afcca`

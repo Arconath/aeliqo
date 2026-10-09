@@ -13,8 +13,8 @@ pnpm dev
 ```
 
 Open http://127.0.0.1:4174/ and follow the terminal output. Startup makes no
-model request. Requires Node.js 24.20.0 and matching `0.7.0` packages. This
-checkout targets the 0.7.0 candidate; check the
+model request. Requires Node.js 24.20.0 and matching `0.7.1` packages. This
+checkout targets the 0.7.1 candidate; check the
 [package publication status](https://docs.aeliqo.com/reference/packages/)
 before installing its registry dependencies.
 

@@ -14,6 +14,19 @@ hosted backend, license server, or model call.
 
 ## Published
 
+| Surface  | Current                                                                                                                                                      |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| npm      | All five public packages at `0.7.0` on `latest`, source `253b792d1bd870097ca5211727613dafdadab4e6`.                                                          |
+| Site     | Site and embedded SDK source `253b792d1bd870097ca5211727613dafdadab4e6`, SDK `0.7.0`.                                                                        |
+| Image    | `ghcr.io/arconath/aeliqo-web@sha256:3985097b71ce542e007bc7a83125f5c2194e8590a30fd10e5f11cf393322fc46`; two Ready replicas with zero restarts.                |
+| Delivery | Main-push quality `37896852849`, RC `37899895151`, stable publication `37901439296`, image `37902968422`, GitOps `6e449cccc7d198a8a816db4e12a569048b967e07`. |
+
+Publication and deployment are verified. Post-deployment acceptance found an
+initial-render cancellation bug, so complete live acceptance is not claimed.
+Patch 0.7.1 is being prepared below; package versions are never overwritten.
+
+### Historical 0.6.3 published evidence
+
 | Surface  | Current                                                                                                                                                                                                           |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | npm      | `@aeliqo/core`, `runtime`, `web`, `react`, `agent` at `0.6.3` (`latest`), published source `f697627b65aec0a1b0e81159fe13b9f19ddce74c`                                                                             |
@@ -118,7 +131,7 @@ hash differed from the old baseline. Qualification was owner-deferred on
 30 September. The later 1 October planner timing policy and 0.6.3 release
 evidence are recorded below; this historical report is not relabeled.
 
-## Current release: 0.6.3
+## Historical release: 0.6.3
 
 The owner requested all outstanding fixes and a release on 1 October 2026.
 All five packages and the same-source production image are published and live.
@@ -263,40 +276,80 @@ required functional acceptance from advisory visual and paired-performance
 evidence. The historical 0.6.0 records remain available. This documentation
 update does not publish packages or deploy a new site image.
 
-## Release preparation: 0.7.0
+## Release 0.7.0 and patch preparation 0.7.1
 
 The owner authorized publication and production deployment on 9 October.
-[PR 57](https://github.com/Arconath/aeliqo/pull/57) merged the eleven audit
-corrections and the revised landing page, documentation and playground at
-`3205517231e455c23756c8ee917a598479db5917`. Its signed contribution passed
-PR quality, all 93 acceptance commands and the release contract. Main-push
-verification is running; this merge does not itself publish or deploy.
+[PR 57](https://github.com/Arconath/aeliqo/pull/57) integrated the eleven audit
+corrections and revised landing page, documentation, and playground.
+[PR 62](https://github.com/Arconath/aeliqo/pull/62) prepared the breaking OAuth
+migration, patched dependency advisories, Go 1.27.2 server builder, and the
+quarantine-first production publisher at final source
+`253b792d1bd870097ca5211727613dafdadab4e6`.
 
-New dependency alerts reported during final release preflight are corrected
-with patched Next.js, sharp, source-map-js, smol-toml and fast-uri versions.
-Frozen installation, real Next SSR/hydration and the site build passed; fresh
-pnpm audit reports zero advisories. Independent security review found no blocker.
-Exact-source CI remains required before publication.
+That source passed all 93 acceptance commands in main-push
+[run 37896852849](https://github.com/Arconath/aeliqo/actions/runs/37896852849).
+Independent verification matched all 93 raw log hashes, the unchanged matrix,
+and the unchanged source. Its release contract verified the five tarballs and
+166 exports, documentation, and the local production-image contract.
 
-Final image preparation updates the static-server builder to security-patched
-Go 1.27.2. The publisher keeps its build under a quarantine tag until provenance,
-SBOM and HIGH/CRITICAL vulnerability checks pass, then promotes the same digest.
-Nine publisher behavior checks, all 14 server tests on Go 1.27.2, workflow
-policy checks, formatting and lint passed. Exact-source CI remains required
-before release.
+[RC 37899895151](https://github.com/Arconath/aeliqo/actions/runs/37899895151)
+and [stable 37901439296](https://github.com/Arconath/aeliqo/actions/runs/37901439296)
+published all five packages through trusted publishing. Canonical registry
+consumers passed; independent public-registry review matched tarball bytes,
+integrities, signatures, exact internal pins, and source-bound provenance.
+[Image 37902968422](https://github.com/Arconath/aeliqo/actions/runs/37902968422)
+verified attached registry provenance and SBOM, reported zero HIGH/CRITICAL
+findings, and promoted the identical OCI index from quarantine. Eight retained
+artifact checksums and independent identity checks passed. Anonymous GHCR
+re-fetch was unavailable; registry verification is evidenced by the successful
+trusted CI. No independent scan rerun is claimed.
 
-Contributor rollout is verified: the accepted-base workflow passed for the
-signed release contribution. Remote main protection now requires `DCO`,
-`functional` and `policy`, each bound to GitHub Actions app `15368`, with strict
-branch freshness. Readback confirmed every other branch control was preserved.
-The additive provider configuration passed independent review and Linux CI.
+Flux automatically promoted GitOps revision `6e449cccc7d198a8a816db4e12a569048b967e07`.
+Both controllers were Ready and Healthy; deployment generation 7 was observed,
+all replica counts were two, and both non-terminating pods ran the exact image
+above with zero restarts. Both public `/version` endpoints reported SDK 0.7.0
+and the exact source. Health/readiness, cache/security headers, representative
+routes, both `llms.txt` endpoints, canonical/social metadata and the 1200×630
+card passed. Live smoke passed search, the 71-component sidebar, component,
+workspace and registered-page journeys, native experimental WebMCP and a ZIP
+with the three required Aeliqo dependencies pinned to 0.7.0, with zero model calls.
 
-The next candidate is 0.7.0. OAuth integrations must explicitly pin the expected
-issuer and reconnect credentials without an issuer stamp; the 0.6-to-0.7
-migration guide documents that compatibility change. Publication requires a
-fully verified main revision, an accepted registry RC, stable registry consumers
-and the same-source production image. The published table above remains 0.6.3
-until those steps and live acceptance complete.
+Thirty public UI cases passed across Chromium, Firefox and WebKit, including
+360/768/1440 layouts and 320-pixel no-JavaScript keyboard/reflow checks. The first
+private harness incorrectly required an `aria-label` on a code block that uses
+a figure caption; that failed run is retained. The corrected harness checks the
+actual caption and preserves keyboard, reflow, content and accessibility checks.
+Nine Chromium public screenshots received independent review. One minor narrow
+quickstart table readability issue is included in the patch.
+
+The separate 36-case production form/dialog run passed 29 and failed seven.
+Traces and a deterministic headless runtime reproduction show that the initial
+Region captured a temporary result before the first render committed. Aborting
+or superseding that render leaves the next create request with an unavailable
+result reference. Waiting for the aborted request to settle does not repair it.
+Earlier supersession tests began from an already committed view and missed this
+initial-mount case. This is a runtime defect, not a passing live acceptance.
+
+Patch 0.7.1 keeps the 0.7 API and wire version 1. It excludes unpublished results
+from the initial Region read set, adds initial-mount cancellation regressions,
+shows the current playground request as pending, and improves narrow question
+labels. It requires a new fully verified main revision, registry RC, stable
+publication, image and complete public acceptance. The published table remains
+0.7.0 until those actual steps complete.
+
+Optional approved-reference visual comparison on final 0.7.0 main stopped
+before build or capture: only the private catalog example version changed,
+which changed the fixture hash. No final-source pixel or repeat-capture result
+is claimed. The approved comparison on earlier integration source `3205517`
+remains earlier-source evidence. Required three-engine visual behavior tests
+passed within the 93-command matrix. Paired performance stopped before
+measurement because its budget/reference is unapproved; it remains advisory.
+No baseline approval, latency threshold, or quality gate was changed.
+
+Contributor rollout is verified: remote main requires `DCO`, `functional` and
+`policy`, each bound to GitHub Actions app `15368`, with strict branch freshness.
+Readback preserved every other protection setting. The additive provider
+configuration passed independent review and Linux CI.
 
 ## Open items
 
@@ -312,14 +365,14 @@ cases across three engines, 60 final input regressions, and same-source local
 production image contracts plus five representative routes. Independent review
 verified the command/log receipts and source identity. The snapshot is locally
 authored by Codex without human contribution certification; it does not replace
-accepted main-push CI or a maintainer release revision. These changes remain
-unreleased and add no fresh remote production health or deployment receipt.
+accepted main-push CI or a maintainer release revision. The local snapshot remains historical evidence; the accepted publication,
+deployment, and post-deployment findings are recorded above.
 
-| Item                                                                                                                                                                                                                            | Next step                                                                                         |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Real-model success rate and external adoption remain unproven.                                                                                                                                                                  | Collect evidence from real integrations without inferring model success from deterministic tests. |
-| Native WebMCP requires an experimental browser flag.                                                                                                                                                                            | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
-| Web SEO/GEO baseline: source adds per-host `llms.txt`, Open Graph/Twitter cards with a 1200×630 image, Organization JSON-LD and the `test:seo` CI check; not yet deployed. No FAQPage data because the site has no visible FAQ. | Merge, redeploy the site image, then verify `/llms.txt` on both hosts and the card metadata live. |
+| Item                                                                                       | Next step                                                                                         |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| Real-model success rate and external adoption remain unproven.                             | Collect evidence from real integrations without inferring model success from deterministic tests. |
+| Native WebMCP requires an experimental browser flag.                                       | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
+| Initial-render cancellation can leave a temporary result reference in the Region read set. | Complete the 0.7.1 runtime patch, required release checks, and public form/dialog acceptance.     |
 
 The planner policy removal and patched Next.js release are complete; neither is
 an open release blocker. Visual and paired-performance jobs are advisory; the
