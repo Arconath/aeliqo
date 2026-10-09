@@ -13,23 +13,12 @@ Use the same exact 0.6.3 version for every Aeliqo package you install. Check the
 contract version remains `1`; existing resource definitions, data adapters,
 React bindings, and headless runtime renders remain available.
 
-## Upcoming OAuth client requirement
+## Continue from 0.6 to 0.7
 
-The [unreleased launch-audit corrections](/ship/release-notes/#unreleased-launch-audit-corrections)
-tighten the optional MCP HTTP OAuth profile. Before adopting that source,
-configure `policy.expectedIssuer` with the authorization server your host
-trusts. Existing OAuth client information and tokens must carry the same
-issuer stamp. Migrate legacy credentials only when their original issuer is
-known; otherwise clear the stored credentials and reconnect. Keep issuer
-metadata validation enabled. Static bearer authentication does not need an
-OAuth issuer.
-
-For MCP application actions, use the new host-owned tool session and bind
-each borrowed endpoint to the identity your HTTP host authenticated. Close
-the endpoint after each request and close the session when its pairing ends.
-Follow the [MCP guide](/agents/mcp/) for the host boundary. The canonical
-`docs/packages/agent.md` guide in the repository explains the upcoming session
-contract; the published 0.6.3 packages do not export the new session yet.
+The OAuth issuer requirement and `createAppToolSession` API belong to 0.7,
+and are not part of the 0.6.3 packages. After completing this upgrade, follow
+the [0.6 to 0.7 migration guide](/ship/migration-0.6/) for issuer-bound
+credentials and authenticated host-session ownership.
 
 ## Handle unsaved forms
 

@@ -3,10 +3,10 @@
   "schemaVersion": 1,
   "product": "aeliqo",
   "candidate": {
-    "version": "0.6.3",
+    "version": "0.7.0",
     "status": "candidate",
-    "baseVersion": "0.6.2",
-    "compatibility": "additive"
+    "baseVersion": "0.6.3",
+    "compatibility": "breaking"
   },
   "testedToolchain": {
     "node": {
@@ -66,7 +66,7 @@
     },
     {
       "id": "next",
-      "version": "16.3.6",
+      "version": "16.3.8",
       "status": "source-checks-passed",
       "evidence": ["tests/next-platform", "tests/vnext/browser/ssr.spec.ts"],
       "qualificationScope": "Recorded local or diagnostic source checks; final release acceptance is separate."
@@ -235,7 +235,7 @@
     "sourceRevision": null,
     "scope": "This file records observed revisions; it does not certify its own enclosing commit. Publication requires a full same-SHA main-push quality run. Publication and deployment receipts are external to the source snapshot.",
     "record": "docs/STATUS.md",
-    "releaseReceipts": "https://github.com/Arconath/aeliqo/releases/tag/v0.6.3",
+    "releaseReceipts": "https://github.com/Arconath/aeliqo/releases/tag/v0.7.0",
     "historicalMatrix": "docs/releases/0.5.2/support-matrix.json"
   },
   "snapshotScope": "Prepublication source qualification. Candidate metadata and publication/deployment flags describe this source snapshot; use the versioned release receipts and public /version endpoint for live publication and deployment identity."

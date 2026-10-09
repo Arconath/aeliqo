@@ -25,7 +25,7 @@ RUN pnpm install --frozen-lockfile \
   && test -f /workspace/apps/site/dist/404.html \
   && test -f /workspace/apps/site/dist/docs/components/data.table/index.html
 
-FROM golang:1.27.0-alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc AS server-build
+FROM golang:1.27.2-alpine@sha256:85dc1069ac644ea3c527b177303a406eb3358192816cd7f9e5848eb658851673 AS server-build
 
 ARG SOURCE_REVISION
 ARG SDK_SOURCE_REVISION

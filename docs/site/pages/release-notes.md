@@ -3,17 +3,27 @@ id: 'release-notes'
 path: '/ship/release-notes/'
 section: 'Releases'
 title: 'Release notes'
-description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
+description: 'Aeliqo 0.7 changes and source-bound records for earlier releases.'
 ---
 
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
-## Unreleased: launch audit corrections
+<span id="unreleased-launch-audit-corrections"></span>
 
-These changes are under development in the source checkout. They are not part
-of the published 0.6.3 packages or the deployed site.
+## Aeliqo 0.7.0
 
+These changes belong to Aeliqo 0.7.0. Upgrade all Aeliqo packages together and
+follow the [0.6 to 0.7 migration guide](/ship/migration-0.6/) for the breaking OAuth
+requirement. The serialized contract version remains `1`.
+
+- Update the SSR/hydration fixture to Next.js 16.3.8 and the affected build
+  dependencies to sharp 0.35.5, source-map-js 1.2.2, smol-toml 1.9.0
+  and fast-uri 3.1.8.
+  These updates address the dependency advisories reported before publication.
+- Build the static server with Go 1.27.2 and keep the production image in
+  quarantine until provenance and security scans pass. Promote the same
+  immutable image digest only after those gates succeed.
 - OAuth HTTP clients use the patched MCP client and require an explicit
   expected issuer. Existing OAuth client information and tokens must carry
   the matching issuer stamp; legacy storage must be migrated from a trusted

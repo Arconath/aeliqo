@@ -31,7 +31,7 @@ cd attendance-ui
 npm init -y
 npm pkg set type=module scripts.dev=vite
 npm install --save-dev --save-exact vite@8.2.2 typescript@7.0.2
-npm install --save-exact @aeliqo/core@0.6.3 @aeliqo/runtime@0.6.3 @aeliqo/web@0.6.3 lit@3.3.3 zod@4.5.4
+npm install --save-exact @aeliqo/core@0.7.0 @aeliqo/runtime@0.7.0 @aeliqo/web@0.7.0 lit@3.3.3 zod@4.5.4
 mkdir src
 ```
 

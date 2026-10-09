@@ -30,7 +30,7 @@ const overrides = [];
 for (const name of packages) {
   const tarball = join(artifacts, `${name}.tgz`);
   run('pnpm', ['pack', '--out', tarball], join(root, 'packages', name));
-  assert.equal(manifest.dependencies[`@aeliqo/${name}`], '0.6.3');
+  assert.equal(manifest.dependencies[`@aeliqo/${name}`], '0.7.0');
   overrides.push(`  '@aeliqo/${name}': 'file:${tarball}'`);
 }
 // Candidate tarballs stand in for the not-yet-published registry version. All other

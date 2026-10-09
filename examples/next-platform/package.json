@@ -1,6 +1,6 @@
 {
   "name": "@aeliqo/next-platform-fixture",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,7 @@
     "@aeliqo/react": "workspace:*",
     "@aeliqo/runtime": "workspace:*",
     "@aeliqo/web": "workspace:*",
-    "next": "16.3.6",
+    "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "lit": "3.3.3",

@@ -16,17 +16,17 @@ cannot supply HTML, executable code, permissions, or an unregistered view.
 
 ## Quick start
 
-This checkout targets **0.6.3**. Published versions and installation status are
+This checkout targets **0.7.0**. Published versions and installation status are
 shown in the [package guide](https://docs.aeliqo.com/reference/packages/).
 For the React example below, use React 19.2 or a newer 19.x release and install matching
 Aeliqo package versions:
 
 ```sh
 npm install --save-exact \
-  @aeliqo/core@0.6.3 \
-  @aeliqo/runtime@0.6.3 \
-  @aeliqo/web@0.6.3 \
-  @aeliqo/react@0.6.3
+  @aeliqo/core@0.7.0 \
+  @aeliqo/runtime@0.7.0 \
+  @aeliqo/web@0.7.0 \
+  @aeliqo/react@0.7.0
 ```
 
 The [React quickstart](https://docs.aeliqo.com/start/) registers one local People
@@ -67,7 +67,7 @@ import { AeliqoProvider, AeliqoRegion } from '@aeliqo/react';
 import { createAppToolEndpoint } from '@aeliqo/agent';
 ```
 
-The optional agent entry point additionally requires `@aeliqo/agent@0.6.3`.
+The optional agent entry point additionally requires `@aeliqo/agent@0.7.0`.
 Each package root contains its primary API. Component families, query planning,
 transport adapters, and other advanced APIs use explicit package subpaths.
 
@@ -115,7 +115,7 @@ adapter without changing its data and permission rules.
 ## Development
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md#local-setup) for the complete setup.
-Use Node.js `24.20.0`, pnpm `11.24.0`, Python 3, and Go `1.27.0`. The full
+Use Node.js `24.20.0`, pnpm `11.24.0`, Python 3, and Go `1.27.2`. The full
 check also needs the Playwright browsers installed:
 
 ```sh
