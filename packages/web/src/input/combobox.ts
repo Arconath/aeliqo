@@ -52,18 +52,15 @@ export class AeliqoComboboxElement extends AeliqoFieldElement<string> {
       this.error = '';
     }
     if (changed.has('value') && !changed.has('query')) this.query = this.labelForValue(this.value);
+    super.willUpdate(changed);
   }
 
   protected override updated(changed: Map<PropertyKey, unknown>): void {
-    if (
-      changed.has('options') ||
-      changed.has('value') ||
-      changed.has('disabled') ||
-      changed.has('required') ||
-      changed.has('error')
-    ) {
-      this.syncNative();
-    }
+    if (['options', 'value', 'disabled', 'required', 'error'].some((key) => changed.has(key))) this.syncNative();
+  }
+
+  protected override isCurrentValidationValue(value: string): boolean {
+    return value === this.value;
   }
 
   override disconnectedCallback(): void {

@@ -63,3 +63,21 @@ export interface AeliqoAppToolEndpoint extends AgentModelToolEndpoint {
   /** Trusted host UI path. This method is not advertised as an agent tool. */
   confirmAction(previewId: string, options?: { readonly signal?: AbortSignal }): Promise<Outcome<ActionReceipt>>;
 }
+
+export interface AppToolSessionIdentity {
+  /** Resolve from authenticated host state for this request, never from tool arguments. */
+  readonly principalKey: string;
+  readonly scopeDigest: string;
+}
+
+export interface AeliqoAppToolSession {
+  readonly regionId: string;
+  readonly goalEpoch: string;
+  readonly expiresAt: number;
+  /** Each transport request borrows an endpoint and must close it independently. */
+  createEndpoint(identity: AppToolSessionIdentity): Outcome<AeliqoAppToolEndpoint>;
+  /** Trusted host confirmation; never exposed as an agent tool. */
+  confirmAction(previewId: string, options?: { readonly signal?: AbortSignal }): Promise<Outcome<ActionReceipt>>;
+  /** Revoke the pairing, cancel its previews, and abort all borrowed endpoints. */
+  close(): void;
+}

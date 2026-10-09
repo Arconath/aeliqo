@@ -5,7 +5,7 @@ import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
  * The consumer is deliberately outside the pnpm workspace. It verifies the
  * published web and React entry points, strict declarations, Lit SSR, and a
  * real Chromium flow covering native form state, defaults/reset, IME input,
- * controlled event echoing, file metadata and the form boundary.
+ * controlled event echoing, file metadata, stale validation, and form parity.
  */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -519,9 +519,167 @@ try {
   assert.deepEqual(interactions.files, ['proof.txt']);
   assert.equal(interactions.submitted, 1);
   assert.equal(interactions.resetCount, 1);
+  const regressions = await page.evaluate(async () => {
+    const wrapper = document.createElement('aeliqo-form');
+    const native = document.createElement('form');
+    const ranges = [wrapper, native].map((form) => {
+      const range = document.createElement('aeliqo-date-range');
+      range.name = 'period';
+      range.defaultStart = '2026-09-01';
+      range.defaultEnd = '2026-09-08';
+      form.append(range);
+      document.body.append(form);
+      return range;
+    });
+    const readRanges = () => [wrapper.formData(), new FormData(native)].map((data) => [...data.entries()]);
+    const settleRanges = () => Promise.all(ranges.map((range) => range.updateComplete));
+    await Promise.all([wrapper.updateComplete, settleRanges()]);
+    const rangeInitial = readRanges();
+    ranges.forEach((range) => (range.end = '2026-09-09'));
+    await settleRanges();
+    const rangeUpdated = readRanges();
+    ranges.forEach((range) => (range.start = '2026-09-10'));
+    await settleRanges();
+    const rangeInvalid = readRanges();
+    wrapper.reset();
+    native.reset();
+    await settleRanges();
+    const rangeReset = readRanges();
+    ranges.forEach((range) => (range.disabled = true));
+    await settleRanges();
+    const rangeDisabled = readRanges();
+    wrapper.remove();
+    native.remove();
+
+    const number = document.createElement('aeliqo-number-field');
+    number.min = '0';
+    number.max = '0';
+    number.step = '0.1';
+    document.body.append(number);
+    const zeroBounds = [];
+    for (const value of ['-0', '-0.00', '0', '0.00', '-0.1', '0.1']) {
+      number.value = value;
+      await number.updateComplete;
+      zeroBounds.push({ value: number.value, valid: number.checkValidity() });
+    }
+    number.remove();
+
+    const legendForm = document.createElement('aeliqo-form');
+    const legendNative = document.createElement('form');
+    const legendMarkup =
+      '<fieldset disabled><legend><input name="first" value="included"><aeliqo-text-field name="custom-first" default-value="included"></aeliqo-text-field></legend><legend><input name="later" value="excluded"><aeliqo-text-field name="custom-later" default-value="excluded"></aeliqo-text-field></legend><input name="body" value="excluded"><aeliqo-text-field name="custom-body" default-value="excluded"></aeliqo-text-field><fieldset disabled><legend><aeliqo-text-field name="inner-first" default-value="excluded"></aeliqo-text-field></legend></fieldset></fieldset>';
+    legendForm.innerHTML = legendMarkup;
+    legendNative.innerHTML = legendMarkup;
+    document.body.append(legendForm, legendNative);
+    await Promise.all([
+      legendForm.updateComplete,
+      ...[legendForm, legendNative].flatMap((form) =>
+        [...form.querySelectorAll('aeliqo-text-field')].map((field) => field.updateComplete),
+      ),
+    ]);
+    const legendEntries = [[...legendForm.formData().entries()], [...new FormData(legendNative).entries()]];
+    legendForm.remove();
+    legendNative.remove();
+
+    const validation = [];
+    for (const kind of ['number-field', 'date-range']) {
+      for (const hostError of ['', 'Host rejected this record']) {
+        const field = document.createElement('aeliqo-' + kind);
+        field.start = '2026-09-01';
+        field.end = '2026-09-03';
+        let finish;
+        let signal;
+        field.validator = (_value, validationSignal) => {
+          signal = validationSignal;
+          return new Promise((resolve) => {
+            finish = resolve;
+          });
+        };
+        document.body.append(field);
+        await field.updateComplete;
+        const input = field.shadowRoot.querySelector(kind === 'date-range' ? 'input.end' : '[part=input]');
+        input.value = kind === 'date-range' ? '2026-09-04' : '1';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        await field.updateComplete;
+        field.error = hostError;
+        if (kind === 'date-range') field.end = '2026-09-08';
+        else field.value = '2';
+        await field.updateComplete;
+        finish('Old value invalid');
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await field.updateComplete;
+        validation.push({
+          kind,
+          error: field.error,
+          state: field.validationState,
+          valid: field.checkValidity(),
+          aborted: signal.aborted,
+        });
+        field.remove();
+      }
+    }
+
+    const summaryForm = document.createElement('aeliqo-form');
+    summaryForm.id = 'installed-summary';
+    summaryForm.innerHTML =
+      '<aeliqo-text-field label="Required name" required></aeliqo-text-field><button type="submit">Save</button>';
+    document.body.append(summaryForm);
+    await summaryForm.updateComplete;
+    return {
+      rangeInitial,
+      rangeUpdated,
+      rangeInvalid,
+      rangeReset,
+      rangeDisabled,
+      zeroBounds,
+      legendEntries,
+      validation,
+    };
+  });
+  const initialRange = [
+    ['period[start]', '2026-09-01'],
+    ['period[end]', '2026-09-08'],
+  ];
+  const updatedRange = [
+    ['period[start]', '2026-09-01'],
+    ['period[end]', '2026-09-09'],
+  ];
+  assert.deepEqual(regressions, {
+    rangeInitial: [initialRange, initialRange],
+    rangeUpdated: [updatedRange, updatedRange],
+    rangeInvalid: [[], []],
+    rangeReset: [initialRange, initialRange],
+    rangeDisabled: [[], []],
+    zeroBounds: ['-0', '-0.00', '0', '0.00', '-0.1', '0.1'].map((value, index) => ({ value, valid: index < 4 })),
+    legendEntries: [
+      [
+        ['first', 'included'],
+        ['custom-first', 'included'],
+      ],
+      [
+        ['first', 'included'],
+        ['custom-first', 'included'],
+      ],
+    ],
+    validation: ['number-field', 'date-range'].flatMap((kind) => [
+      { kind, error: '', state: 'idle', valid: true, aborted: true },
+      { kind, error: 'Host rejected this record', state: 'idle', valid: false, aborted: true },
+    ]),
+  });
+  const summaryForm = page.locator('#installed-summary');
+  for (const method of ['click', 'Enter']) {
+    if (method === 'click') await summaryForm.locator('button').click();
+    else await summaryForm.locator('aeliqo-text-field').locator('input').press('Enter');
+    await page.waitForFunction(() => {
+      const form = document.querySelector('#installed-summary');
+      return form.shadowRoot.activeElement === form.shadowRoot.querySelector('[part=error-summary]');
+    });
+  }
+  await page.evaluate(() => document.querySelector('#installed-summary').remove());
   browserReport.defaults = defaults;
   browserReport.formEntries = formData.length;
   browserReport.interactions = interactions;
+  browserReport.regressions = { ...regressions, invalidSubmitSummaryFocus: ['click', 'Enter'] };
   browserReport.failures = failures;
   await page.screenshot({ path: join(runDirectory, 'installed-inputs.png'), fullPage: true });
   assert.deepEqual(failures, []);
@@ -538,7 +696,7 @@ await writeFile(
       sourceDigest: before,
       sourceChangedDuringRun: false,
       scope:
-        'Installed @aeliqo/core, @aeliqo/web input-family entry points and @aeliqo/react input wrappers from actual tarballs; strict TypeScript; Node Lit SSR and React SSR; Chromium native forms, defaults/reset, IME, controlled value/query events, search, file metadata and submit/reset.',
+        'Installed @aeliqo/core, @aeliqo/web input-family entry points and @aeliqo/react input wrappers from actual tarballs; strict TypeScript; Node Lit SSR and React SSR; Chromium native and wrapper form parity, defaults/reset, disabled first-legend semantics, invalid submit focus, signed zero bounds, stale validation with host-error preservation, IME, controlled value/query events, search, file metadata and submit/reset.',
       artifacts: artifacts.map(({ bytes, entries, ...item }) => item),
       consumerDirectory: consumer,
       consumerLock: { path: join(runDirectory, 'consumer-package-lock.json'), sha256: hash(lockBytes) },

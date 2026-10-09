@@ -25,6 +25,58 @@ Region. Protected actions still require host policy and user confirmation.
 Agent proposals cannot add a resource, action, permission, renderer, endpoint,
 or executable code.
 
+### Action continuity across MCP requests
+
+MCP server factories create and close a fresh endpoint for discovery and each
+tool call. Use `createAppToolSession` when an action preview must survive those
+request boundaries. The trusted host owns one session for one authenticated
+principal, Region, scope, goal, and expiry; it supplies fresh borrowed endpoints
+to the server factory and confirms required actions through its own UI.
+
+```ts
+import { createAppToolSession } from '@aeliqo/agent';
+import { createMcpHttpHandler } from '@aeliqo/agent/mcp';
+
+const session = createAppToolSession({
+  runtime: app.runtime,
+  render: app,
+  regionId: 'people-main',
+  goalEpoch: 'people-session-1',
+  transport: 'mcp',
+  expiresAt: Date.now() + 30 * 60_000,
+});
+if (!session.ok) throw new Error(session.diagnostics[0].message);
+
+const handler = createMcpHttpHandler({
+  authenticate: authenticateThisPrincipal,
+  createEndpoint({ authInfo }) {
+    // This host function resolves identity from authenticated server state.
+    const identity = authorizedPairingFor(authInfo);
+    const endpoint = session.value.createEndpoint(identity);
+    if (!endpoint.ok) throw new Error(endpoint.diagnostics[0].message);
+    return endpoint.value;
+  },
+});
+// Trusted UI, after the user reviews the preview:
+await session.value.confirmAction(previewId);
+// The host closes both resources when its authenticated session ends:
+session.value.close();
+await handler.close();
+```
+
+`authenticateThisPrincipal` verifies each request, and `authorizedPairingFor`
+resolves its trusted `{ principalKey, scopeDigest }`. `createEndpoint(identity)`
+rejects either identity mismatch without cancelling the original caller's
+session. Resolve identity and select sessions using host authentication, never
+tool arguments or a client-supplied workspace ID. Each borrowed endpoint still
+closes independently.
+Closing the host session cancels its retained previews and aborts its endpoints.
+Expiry or an observed principal/scope change permanently fences the session,
+including a subsequent return to the old scope. Action execution remains
+subject to the runtime's fresh execute grant, confirmation, revocation, and
+single-use receipt checks. `createAppToolEndpoint` continues to own and cancel
+its previews when used directly.
+
 A trusted `context.read()` adapter may add `customIntents` and `patterns` to
 each routable resource in `aeliqo_context`. A custom intent entry contains its
 registered version reference and JSON input schema. A pattern entry contains
@@ -130,6 +182,47 @@ never unioned. `manual` pairings can never carry `model.egress`.
 Install optional provider or transport dependencies only for the integrations
 the host enables. Keep credentials in the host and outside prompts or tool
 arguments.
+
+## MCP HTTP OAuth issuer binding
+
+The MCP HTTP adapter requires `@modelcontextprotocol/client` `2.2.0`.
+For an OAuth provider, configure `policy.expectedIssuer` and bind all stored
+client information and tokens to that same trusted issuer. Bundled providers
+accept `expectedIssuer` in their constructor:
+
+```ts
+import { ClientCredentialsProvider } from '@modelcontextprotocol/client';
+import { connectMcpHttpClient } from '@aeliqo/agent/mcp';
+
+const client = await connectMcpHttpClient({
+  url: 'https://tools.example.com/mcp',
+  targetRegionId: 'people-main',
+  goalEpoch: 'people-session-1',
+  policy: {
+    allowedOrigins: ['https://tools.example.com'],
+    expectedIssuer: 'https://auth.example.com',
+  },
+  authProvider: new ClientCredentialsProvider({
+    clientId: hostClientId,
+    clientSecret: hostClientSecret,
+    expectedIssuer: 'https://auth.example.com',
+  }),
+});
+```
+
+Custom OAuth providers must preserve the `issuer` fields passed to
+`saveClientInformation()` and `saveTokens()`. Migrate legacy credentials without
+an issuer using their independently trusted original issuer, or clear them and
+sign in again. Missing or mismatched credential stamps are rejected before a
+network request. Discovery cannot select another issuer for later credential
+reads, and `skipIssuerMetadataValidation: true` is rejected. The endpoint origin
+allowlist and redirect rejection remain in force. A simple static bearer
+provider (`{ token: async () => hostToken }`) does not require an OAuth issuer.
+
+Capability input and advisory metadata are copied and deeply frozen during
+admission, before authorization awaits. Later caller mutations cannot change
+the admitted payload, its byte budget, or its authority checks; the caller's
+own objects remain mutable.
 
 ## Model profile configuration
 

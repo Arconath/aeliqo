@@ -341,7 +341,7 @@ export async function generatePages() {
   const releaseNote =
     releaseStatus === 'stable'
       ? `Try the local demo with synthetic data. The React starter uses the published ${RELEASE_VERSION} packages.`
-      : `Try the local demo with synthetic data. The React starter shows upcoming ${RELEASE_VERSION} APIs; matching packages are not published yet.`;
+      : 'Local demo with synthetic data. See the quickstart for installation and release status.';
   const home = (await readFile(join(siteRoot, 'index.html'), 'utf8')).replace('{{AELIQO_RELEASE_NOTE}}', releaseNote);
   await writeFile(join(generatedRoot, 'index.html'), home);
   await copyFile(join(siteRoot, 'public/aeliqo.png'), join(generatedPublic, 'aeliqo.png'));

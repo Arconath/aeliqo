@@ -44,6 +44,15 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
+Changing `selected` metadata or replacing `validator` cancels validation for the
+previous value and clears its validator-owned error. An independently supplied
+host `error` survives the change. Late results after a reset or disconnect are
+ignored.
+
+Replace the readonly `selected` metadata array to change the host value.
+Mutating the existing array or its entries in place is unsupported and does
+not schedule a component update.
+
 `maxFiles` and `maxBytes` mark a selected set invalid when its file count or
 combined byte size exceeds the configured bound; the metadata event still
 reports that selection. They are not upload quotas or server-side validation.

@@ -84,12 +84,18 @@ export async function renderRequest(context: WebAppContext, input: WebRenderInpu
 
 export async function adaptRegion(context: WebAppContext, region: WebRegion): Promise<WebRenderReceipt | undefined> {
   if (context.disposed || context.regions.get(region.id) !== region) return undefined;
-  if (region.renderAbort !== undefined || region.last === undefined || interactionLocked(region)) {
+  if (
+    region.renderAbort !== undefined ||
+    region.presentationAbort !== undefined ||
+    region.last === undefined ||
+    interactionLocked(region)
+  ) {
     region.pendingAdapt = true;
     return undefined;
   }
   region.pendingAdapt = false;
-  const requestId = ('adapt-' + region.id + '-' + ++region.sequence).slice(0, 160);
+  const sequence = ++region.sequence;
+  const requestId = ('adapt-' + region.id + '-' + sequence).slice(0, 160);
   cancelPendingPresentation(region);
   const result = await present(
     context,
@@ -98,9 +104,9 @@ export async function adaptRegion(context: WebAppContext, region: WebRegion): Pr
     region.last.results,
     region.last.descriptors,
     requestId,
-    region.sequence,
+    sequence,
     region.last.inputs,
   );
   if (result.status === 'renderer-ready') region.last = { ...region.last, receipt: result.runtime };
-  return result;
+  return finishAdapt(context, region, sequence, result);
 }

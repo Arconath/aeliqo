@@ -9,6 +9,39 @@ description: 'Aeliqo 0.6 changes and source-bound records for earlier releases.'
 <p class="lead">Read the changes and acceptance evidence for each version. Publication is verified separately from source changes.</p>
 <aeliqo-release-status></aeliqo-release-status>
 
+## Unreleased: launch audit corrections
+
+These changes are under development in the source checkout. They are not part
+of the published 0.6.3 packages or the deployed site.
+
+- OAuth HTTP clients use the patched MCP client and require an explicit
+  expected issuer. Existing OAuth client information and tokens must carry
+  the matching issuer stamp; legacy storage must be migrated from a trusted
+  issuer or cleared. Static bearer authentication remains available.
+- A host-owned application tool session preserves action previews across
+  freshly authenticated MCP calls. Each request still owns and closes its
+  endpoint; the session owns confirmation, expiry, revocation, and single-use
+  execution within a fixed principal and scope.
+- Capability admission captures immutable input and metadata before awaiting
+  authorization, preserving the admitted contents and byte limits.
+- Form submission includes DateRange endpoints, honors the disabled-fieldset
+  first-legend exception, and focuses its error summary after invalid slotted
+  submissions. Input controls reject stale asynchronous validation without
+  erasing independent host errors. NumberField treats signed zero equally at
+  numeric bounds.
+- Application mounting registers its base elements first, then loads the
+  required component families before publishing a validated presentation.
+  Custom extension renderers retain the full-registration fallback. Loading
+  failure preserves the previous authorized result; cancellation and authority
+  changes are checked again after loading. Bundle diagnostics now include the
+  actual React quickstart and separate initial from deferred JavaScript.
+- The site adopts a quieter editorial layout. Documentation reduces repeated
+  introductory copy, and the playground shows its result before optional
+  request details while retaining its existing scenarios and inspector.
+- Contributor setup points to the complete prerequisites. The contribution
+  policy checks new author signoffs and documents integration commits and
+  accepted historical commits separately.
+
 ## Aeliqo 0.6.3
 
 - The Next.js SSR/hydration example uses Next.js 16.3.6, which fixes the

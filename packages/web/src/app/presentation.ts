@@ -1,4 +1,5 @@
-import type { Result } from '@aeliqo/core';
+import type { Result, Task } from '@aeliqo/core';
+import type { ValidatedPresentation, PresentationEnvironment } from '@aeliqo/core/presentation';
 import type { RuntimeCommittedReceipt } from '@aeliqo/runtime/app';
 import type { AeliqoRegionResult } from '../region/types.js';
 import type { AeliqoInputBindings } from '../region/input-registry.js';
@@ -6,7 +7,7 @@ import type { WebRenderReceipt } from './types.js';
 import { diagnostic, failedAfterRuntime, type WebAppContext, type WebRegion } from './context.js';
 import { beginPresentation, presentationCurrent } from './presentation-operation.js';
 import { preparePresentation } from './presentation-plan.js';
-import { prepareRenderer } from './presentation-renderer.js';
+import { prepareRegisteredRenderer } from './presentation-renderer.js';
 import { retainAppInteraction } from './interaction-projection.js';
 
 export async function present(
@@ -40,7 +41,10 @@ export async function present(
       inputs,
     );
     if (!prepared.ok) return failedAfterRuntime(prepared.status, receipt, requestId, prepared.diagnostics);
-    const renderer = prepareRenderer(context, region, prepared.value, results, active);
+    const registered = await prepareRegisteredRenderer(context, region, prepared.value, results, active);
+    if (!registered.ok)
+      return failedAfterRuntime(active() ? 'failed' : 'cancelled', receipt, requestId, registered.diagnostics);
+    const renderer = registered.value;
     closeRenderer = renderer.close;
     const committed = await context.runtime.commitPresentation({
       regionId: region.id,
@@ -56,19 +60,15 @@ export async function present(
       const status = cancelledCommit(active(), code) ? 'cancelled' : 'failed';
       return failedAfterRuntime(status, receipt, requestId, committed.diagnostics);
     }
-    const presentation = renderer.applied();
-    const task = committed.value.state?.task;
-    if (!active() || presentation === undefined || task === undefined) return cancelled();
-    retainAppInteraction(region, region.element.interaction);
-    return {
-      status: 'renderer-ready',
+    return completedPresentation(
+      region,
+      receipt,
       requestId,
-      regionId: region.id,
-      runtime: { ...receipt, task, region: committed.value },
-      presentation,
-      environment: prepared.value.environment,
-      diagnostics: [],
-    };
+      prepared.value.environment,
+      renderer.applied(),
+      committed.value,
+      active(),
+    );
   } finally {
     try {
       closeRenderer();
@@ -76,6 +76,32 @@ export async function present(
       operation.close();
     }
   }
+}
+
+function completedPresentation(
+  region: WebRegion,
+  receipt: RuntimeCommittedReceipt,
+  requestId: string,
+  environment: PresentationEnvironment,
+  presentation: ValidatedPresentation | undefined,
+  committed: RuntimeCommittedReceipt['region'] & { readonly state?: { readonly task?: Task } },
+  active: boolean,
+): WebRenderReceipt {
+  const task = committed.state?.task;
+  if (!active || presentation === undefined || task === undefined)
+    return failedAfterRuntime('cancelled', receipt, requestId, [
+      diagnostic('web.app.cancelled', 'A newer web operation replaced this presentation.'),
+    ]);
+  retainAppInteraction(region, region.element.interaction);
+  return {
+    status: 'renderer-ready',
+    requestId,
+    regionId: region.id,
+    runtime: { ...receipt, task, region: committed },
+    presentation,
+    environment,
+    diagnostics: [],
+  };
 }
 
 function cancelledCommit(active: boolean, code: string): boolean {

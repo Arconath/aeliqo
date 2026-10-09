@@ -4,6 +4,16 @@ import { readFile, copyFile } from 'node:fs/promises';
 import { generatePages, generatedRoot, generatedPublic } from './generate-pages.mjs';
 import { RELEASE_VERSION } from '../../scripts/release/metadata.mjs';
 const root = dirname(new URL(import.meta.url).pathname);
+
+function localAnchor(destination, routes) {
+  const url = new URL(destination);
+  const path = url.hostname === 'docs.aeliqo.com' && url.pathname === '/' ? '/docs/' : url.pathname;
+  if (url.hostname === 'aeliqo.com' && path !== '/') return destination;
+  if (!routes.has(path) && !routes.has(path + '/') && !routes.has(`/docs${path}`) && !routes.has(`/docs${path}/`))
+    return destination;
+  return `${path}${url.search}${url.hash}`;
+}
+
 export default defineConfig(async () => {
   const inputs = await generatePages();
   const routes = new Set(inputs.map((path) => '/' + relative(generatedRoot, path).replace(/index\.html$/, '')));
@@ -25,6 +35,22 @@ export default defineConfig(async () => {
       },
     },
     plugins: [
+      {
+        name: 'aeliqo-local-preview-links',
+        apply: 'serve',
+        transformIndexHtml(html, context) {
+          // The route middleware resolves documentation aliases under /docs/.
+          if (context.path.startsWith('/docs/'))
+            html = html.replace(
+              /(<a\b[^>]*?\s)href=(["'])\/([?#][^"']*)?\2/giu,
+              (_match, prefix, quote, suffix = '') => `${prefix}href=${quote}/docs/${suffix}${quote}`,
+            );
+          return html.replace(
+            /(<a\b[^>]*?\s)href=(["'])(https:\/\/(?:docs\.)?aeliqo\.com(?:\/[^"']*)?)\2/giu,
+            (_match, prefix, quote, destination) => `${prefix}href=${quote}${localAnchor(destination, routes)}${quote}`,
+          );
+        },
+      },
       {
         name: 'aeliqo-static-routes',
         configResolved(config) {

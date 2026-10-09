@@ -14,6 +14,7 @@ import type { WebAppContext, WebRegion } from '../../packages/web/src/app/contex
 import { createRenderTransaction } from '../../packages/web/src/app/render-transaction.js';
 import { createResultStore, type ResultStore, type ResultLease } from '../../packages/runtime/src/results/index.js';
 import type { RegionSnapshot } from '../../packages/runtime/src/regions/index.js';
+import { createRegistrationDocument } from './registration-document.js';
 
 function fixture() {
   const resource = defineResource({
@@ -565,6 +566,7 @@ it('bounds committed result pins and Region leases across repeated renders throu
       getBoundingClientRect: () => ({ width: 800, height: 600 }),
     },
     element: {
+      ownerDocument: createRegistrationDocument(),
       presentation: undefined,
       results: [],
       interaction: undefined,

@@ -22,7 +22,7 @@
     "@aeliqo/agent": "0.6.3",
     "zod": "4.5.4",
     "@modelcontextprotocol/server": "2.0.0",
-    "@modelcontextprotocol/client": "2.0.0",
+    "@modelcontextprotocol/client": "2.2.0",
     "openai": "7.10.0"
   },
   "devDependencies": {

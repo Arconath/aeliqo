@@ -18,3 +18,4 @@ ADR when the product changes.
 - [012 · Scoped surface API and compatibility boundary](012-scoped-surface-api.md)
 - [013: Atomic app presentation](013-atomic-app-presentation.md)
 - [014 · Presentation-planner timing is diagnostic](014-planner-timing-diagnostics.md)
+- [015 · Selective browser registration](015-selective-browser-registration.md)

@@ -22,11 +22,32 @@ type PackageName = (typeof packageNames)[number];
 type SourceNode = Node;
 type SourceFile = TsSourceFile;
 type Finding = { file: string; message: string };
-type ModuleEdge = { specifier: string; file: string; dynamic?: boolean; node: SourceNode };
+type ModuleEdge = { specifier: string; file: string; dynamic?: 'import' | 'require'; node: SourceNode };
 
 const packageRoot = (name: PackageName): string => join(root, 'packages', name);
 const sourceRoot = (name: PackageName): string => join(packageRoot(name), 'src');
 const fixtureRoot = join(root, 'tests/security');
+const presentationLoader = join(sourceRoot('web'), 'app/presentation-elements.ts');
+const presentationImports = new Set([
+  '../register-foundation.js',
+  '../register-input.js',
+  '../register-navigation.js',
+  '../register-feedback.js',
+  '../register-data.js',
+  '../register-cartesian.js',
+  '../register-temporal.js',
+  '../register-hierarchy.js',
+  '../register.js',
+]);
+
+function reviewedPresentationImport(name: PackageName, edge: ModuleEdge): boolean {
+  return (
+    name === 'web' &&
+    resolve(edge.file) === presentationLoader &&
+    edge.dynamic === 'import' &&
+    presentationImports.has(edge.specifier)
+  );
+}
 
 function sourceText(node: SourceNode, sourceFile: SourceFile): string {
   return node.getText(sourceFile);
@@ -57,7 +78,7 @@ function collectEdges(sourceFile: SourceFile): ModuleEdge[] {
         edges.push({
           specifier: first && isStringLiteralLikeNode(first) ? first.text : '<non-literal>',
           file: sourceFile.fileName,
-          dynamic: true,
+          dynamic: 'import',
           node,
         });
       } else if (isIdentifier(expression) && expression.text === 'require') {
@@ -65,7 +86,7 @@ function collectEdges(sourceFile: SourceFile): ModuleEdge[] {
         edges.push({
           specifier: first && isStringLiteralLikeNode(first) ? first.text : '<non-literal>',
           file: sourceFile.fileName,
-          dynamic: true,
+          dynamic: 'require',
           node,
         });
       }
@@ -177,8 +198,12 @@ function ambientEffectFindings(sourceFile: SourceFile): Finding[] {
   return findings;
 }
 
-function parseProjects(): { api: API; snapshot: Snapshot; files: Map<string, SourceFile> } {
-  const api = new API({ cwd: root });
+function parseProjects(overrides: Record<string, string> = {}): {
+  api: API;
+  snapshot: Snapshot;
+  files: Map<string, SourceFile>;
+} {
+  const api = new API({ cwd: root, fs: { readFile: (file) => overrides[resolve(file)] } });
   const projectConfigs = packageNames.map((name) => join(packageRoot(name), 'tsconfig.json'));
   const fixtureFiles = [
     join(fixtureRoot, 'package-boundaries-forbidden-relative.fixture.ts'),
@@ -218,7 +243,7 @@ function reachableEntries(
       return;
     }
     for (const edge of collectEdges(source)) {
-      if (edge.dynamic) {
+      if (edge.dynamic && !reviewedPresentationImport(name, edge)) {
         findings.push({ file: edge.file, message: `dynamic module edge ${edge.specifier}` });
         continue;
       }
@@ -253,6 +278,63 @@ function assertNoAmbientEffects(files: Iterable<string>, sourceMap: Map<string, 
 }
 
 describe('package boundary graph', () => {
+  it('follows every reviewed presentation import into its implementation and external dependency graph', () => {
+    const loader = join(sourceRoot('web'), 'app/presentation-elements.ts');
+    const input = join(sourceRoot('web'), 'register-input.ts');
+    const { api, snapshot, files } = parseProjects({
+      [input]: "import '../../runtime/src/index.js'; import '@aeliqo/agent';",
+    });
+    try {
+      const graph = reachableEntries('web', [loader], files);
+      const imports = collectEdges(files.get(loader)!).filter((edge) => edge.dynamic);
+      expect(imports).toHaveLength(9);
+      for (const edge of imports) expect(graph.files.has(resolveRelativeModule(loader, edge.specifier)!)).toBe(true);
+      expect(graph.findings).toEqual([
+        { file: input, message: 'relative import escapes web: ../../runtime/src/index.js' },
+      ]);
+      expect(externalImports(graph)).toContain('@aeliqo/agent');
+      expect(graph.files.has(join(sourceRoot('web'), 'foundation/button.ts'))).toBe(true);
+    } finally {
+      snapshot.dispose();
+      api.close();
+    }
+  });
+
+  it('rejects unreviewed, nonliteral, external and require edges in the presentation loader', () => {
+    const loader = join(sourceRoot('web'), 'app/presentation-elements.ts');
+    const { api, snapshot, files } = parseProjects({
+      [loader]: `const selected = '../register-input.js';
+        import('../register-base.js'); import(selected); import('@aeliqo/agent'); require('../register-input.js');`,
+    });
+    try {
+      const graph = reachableEntries('web', [loader], files);
+      expect(graph.findings.map((finding) => finding.message)).toEqual([
+        'dynamic module edge ../register-base.js',
+        'dynamic module edge <non-literal>',
+        'dynamic module edge @aeliqo/agent',
+        'dynamic module edge ../register-input.js',
+      ]);
+      expect([...graph.files]).toEqual([loader]);
+      expect(externalImports(graph)).toEqual([]);
+    } finally {
+      snapshot.dispose();
+      api.close();
+    }
+  });
+
+  it.each(packageNames)('rejects the same literal dynamic edge outside the reviewed web loader in %s', (name) => {
+    const entry = join(sourceRoot(name), 'index.ts');
+    const { api, snapshot, files } = parseProjects({ [entry]: "import('../register-input.js');" });
+    try {
+      const graph = reachableEntries(name, [entry], files);
+      expect(graph.findings).toEqual([{ file: entry, message: 'dynamic module edge ../register-input.js' }]);
+      expect([...graph.files]).toEqual([entry]);
+    } finally {
+      snapshot.dispose();
+      api.close();
+    }
+  });
+
   it('uses TS7 ASTs to resolve every declared source export and local edge', async () => {
     const manifests = await Promise.all(packageNames.map(readManifest));
     const { api, snapshot, files } = parseProjects();

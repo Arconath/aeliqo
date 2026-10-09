@@ -96,7 +96,7 @@ run(
     '@types/node@24.13.3',
     'openai@7.10.0',
     '@modelcontextprotocol/server@2.0.0',
-    '@modelcontextprotocol/client@2.0.0',
+    '@modelcontextprotocol/client@2.2.0',
   ],
   consumer,
 );

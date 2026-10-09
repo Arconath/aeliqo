@@ -1,6 +1,6 @@
 # Aeliqo status
 
-Last updated: 2026-10-02. This is the single maintained status record. Release
+Last updated: 2026-10-09. This is the single maintained status record. Release
 history lives in the [release notes](site/pages/release-notes.md) and on
 [GitHub releases](https://github.com/Arconath/aeliqo/releases).
 
@@ -265,8 +265,24 @@ update does not publish packages or deploy a new site image.
 
 ## Open items
 
+The [9 October launch audit](testing/2026-10-09-launch-audit.md) records the
+original OAuth, form, validation, MCP action, input-admission, performance and
+contributor-flow findings. Its local matrix stopped on a controller-commit
+performance gate; an isolated repeat and the remaining commands passed.
+The [remediation record](testing/2026-10-09-remediation.md) tracks source
+corrections for all eleven findings and the revised site/docs/playground design.
+Clean local snapshot `21c427b063ac537e0b4bbfa84c6a8e5263b00338` passed the
+complete site gate and all 93 unchanged acceptance commands, 1,830 full visual
+cases across three engines, 60 final input regressions, and same-source local
+production image contracts plus five representative routes. Independent review
+verified the command/log receipts and source identity. The snapshot is locally
+authored by Codex without human contribution certification; it does not replace
+accepted main-push CI or a maintainer release revision. These changes remain
+unreleased and add no fresh remote production health or deployment receipt.
+
 | Item                                                                                                                                                                                                                            | Next step                                                                                         |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| New contributor DCO workflow is implemented; required remote status is not configured by this source change.                                                                                                                    | Require the trusted-base `DCO` status after the maintainer's initial workflow landing.            |
 | Real-model success rate and external adoption remain unproven.                                                                                                                                                                  | Collect evidence from real integrations without inferring model success from deterministic tests. |
 | Native WebMCP requires an experimental browser flag.                                                                                                                                                                            | Keep the experimental scope explicit while baseline browser availability remains unproven.        |
 | Web SEO/GEO baseline: source adds per-host `llms.txt`, Open Graph/Twitter cards with a 1200×630 image, Organization JSON-LD and the `test:seo` CI check; not yet deployed. No FAQPage data because the site has no visible FAQ. | Merge, redeploy the site image, then verify `/llms.txt` on both hosts and the card metadata live. |

@@ -45,6 +45,18 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
     this.syncNative();
   }
 
+  protected override isCurrentValidationValue(value: AeliqoDateRangeValue): boolean {
+    const current = this.rangeValue();
+    return (
+      value.start === current.start &&
+      value.end === current.end &&
+      value.boundary === current.boundary &&
+      value.timezone === current.timezone &&
+      value.calendar === current.calendar &&
+      value.valid === current.valid
+    );
+  }
+
   protected override resetField(): void {
     this.start = dateOnly(this.defaultStart) ?? '';
     this.end = dateOnly(this.defaultEnd) ?? '';
@@ -175,17 +187,17 @@ export class AeliqoDateRangeElement extends AeliqoFieldElement<AeliqoDateRangeVa
 
   private syncFormValue(valid: boolean, start: string | undefined, end: string | undefined, missing: boolean): void {
     if (this.fieldDisabled || !valid || missing) {
-      this.internals?.setFormValue(null);
+      this.setFormValue(null);
       return;
     }
     if (!this.name || start === undefined || end === undefined) {
-      this.internals?.setFormValue(null);
+      this.setFormValue(null);
       return;
     }
     const data = new FormData();
     data.append(`${this.name}[start]`, start);
     data.append(`${this.name}[end]`, end);
-    this.internals?.setFormValue(data);
+    this.setFormValue(data);
   }
 
   private syncAriaInvalid(valid: boolean, missing: boolean): void {

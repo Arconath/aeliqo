@@ -46,6 +46,11 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
+Changing `value` or replacing `validator` cancels validation for the
+previous value and clears its validator-owned error. An independently supplied
+host `error` survives the change. Late results after a reset or disconnect are
+ignored.
+
 With a static `options` array, the component filters the bounded list as the
 query changes. `optionsLoader(query, signal)` is the optional remote path: the
 host owns the request and its authorization, while the component aborts the

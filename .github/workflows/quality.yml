@@ -78,6 +78,40 @@ jobs:
               ;;
           esac
 
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        if: github.event_name == 'push'
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        if: github.event_name == 'push'
+        with:
+          node-version-file: .node-version
+      - name: Verify contributor commit signoffs
+        if: github.event_name == 'push'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          AELIQO_DCO_INTEGRATION_HEAD: ${{ github.sha }}
+          # Only the reviewed first main push may bootstrap from head bytes. Later
+          # changes always execute the checker already accepted at the base SHA.
+          BOOTSTRAP_BASE_SHA: d3cf8fbc8644f0828c32cb9064f8556b4c58b19f
+          BOOTSTRAP_CHECKER_SHA256: 261ab0c2ce0868ca1d23cc9782525aa979a1181be689715690d7fa78852c8a13
+        run: |
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          checker="$RUNNER_TEMP/aeliqo-check-dco.mjs"
+          if git cat-file -e "$BASE_SHA:scripts/check-dco.mjs" 2>/dev/null; then
+            git show "$BASE_SHA:scripts/check-dco.mjs" > "$checker"
+          else
+            test "$BASE_SHA" = "$BOOTSTRAP_BASE_SHA"
+            git show "$HEAD_SHA:scripts/check-dco.mjs" > "$checker"
+            actual=$(node --input-type=module -e 'import {createHash} from "node:crypto"; import {readFileSync} from "node:fs"; console.log(createHash("sha256").update(readFileSync(process.argv[1])).digest("hex"));' "$checker")
+            test "$actual" = "$BOOTSTRAP_CHECKER_SHA256"
+          fi
+          node "$checker" "$BASE_SHA" "$HEAD_SHA"
+
   scope:
     needs: policy
     runs-on: ubuntu-latest

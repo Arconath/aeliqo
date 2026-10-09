@@ -67,7 +67,7 @@ Common focused commands by area:
 | Framework/SSR integrations     | `pnpm test:framework:consumers`, `pnpm test:next-platform`                                             |
 | Component docs or examples     | `pnpm test:catalog-examples`, `pnpm test:docs-artifact`, `pnpm test:docs-inventory`                    |
 | `apps/site` (site, playground) | `pnpm site:build`, `pnpm site:test`                                                                    |
-| Standalone MCP/BYOK example | `pnpm test:local-agent` |
+| Standalone MCP/BYOK example    | `pnpm test:local-agent`                                                                                |
 | Visual changes                 | `pnpm test:visual` (Chromium, Firefox, WebKit at 360/768/1440 px)                                      |
 
 `pnpm` scripts in [package.json](package.json) are the source of truth for the
@@ -143,12 +143,37 @@ Commit subjects follow `type(scope): subject`, for example `feat(site): …`,
 `perf:`, `style:`, `security:`, `ci:`. Scope is optional; keep the subject in
 the imperative mood.
 
-Every commit must include a `Signed-off-by: Name <email>` trailer under the
+Every new contribution commit must include a `Signed-off-by: Name <email>`
+trailer matching its author's name and email under the
 [Developer Certificate of Origin 1.1](https://developercertificate.org/):
 
 ```sh
 git commit --signoff
 ```
+
+Sign only contributions you can personally certify, including work prepared
+with an AI assistant. Do not add another person's signoff for them. The `DCO`
+pull request check and the `policy` main-push check validate every contribution
+commit; a signed final commit does not cover earlier unsigned commits.
+
+Merge commits contributed in a pull request require their author's signoff.
+For a main push, only the exact integration head identified by that CI event is
+exempt when it has multiple parents; its contributed parent commits are still
+checked. This is an integration-record policy, not a claim about who created
+the merge. When squashing, preserve the contributor's own trailer in the final
+commit. Previously accepted history is not rewritten or retroactively certified;
+the check examines commits not already reachable from the target revision.
+
+The pull request check runs in a base-owned `pull_request_target` workflow with
+read-only permissions. It fetches commit objects and executes only the checker
+from the accepted base, so changes to the PR's checker or workflow cannot bypass
+the check. It never installs dependencies or runs PR code. The first main-push
+rollout has one explicit bootstrap base SHA and reviewed checker hash; missing
+checkers outside that pinned rollout fail closed.
+
+After this workflow first lands on `main`, the maintainer must add its `DCO`
+status to the required branch-protection checks alongside `policy` and
+`functional`. Repository source changes do not update those remote settings.
 
 Open pull requests against `main` and fill in the
 [pull request template](.github/pull_request_template.md): describe the

@@ -68,6 +68,7 @@ export default {
   workspaces: {
     '.': {
       entry: [
+        'scripts/check-dco.mjs',
         'scripts/source-digest.mjs',
         'docs/public-site/routes.mjs',
         'examples/framework-recipes.ts',
@@ -97,6 +98,7 @@ export default {
         'tests/runtime-presentation/browser/app-resize.ts',
         'tests/runtime-presentation/browser/app-draft-exit.ts',
         'tests/runtime-presentation/browser/app-transaction.ts',
+        'tests/runtime-presentation/browser/app-registration.ts',
         'tests/runtime-presentation/browser/app-continuity.ts',
         'tests/runtime-presentation/browser/atomic-review.ts',
         'scripts/visual/describe.mjs',

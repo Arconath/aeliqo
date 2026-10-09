@@ -63,11 +63,11 @@ test('documentation information architecture exposes distinct adoption routes', 
 
   await page.goto('/docs/');
   await expect(page.locator('.docs-nav-group > summary')).toHaveText(['Get started', 'Components', 'Advanced']);
-  await expect(page.locator('header .brand')).toHaveAttribute('href', 'https://aeliqo.com/');
-  await expect(page.locator('.footer-brand')).toHaveAttribute('href', 'https://aeliqo.com/');
+  await expect(page.locator('header .brand')).toHaveAttribute('href', '/');
+  await expect(page.locator('.footer-brand')).toHaveAttribute('href', '/');
   await expect(page.locator('#site-nav').getByRole('link', { name: 'Docs', exact: true })).toHaveAttribute(
     'href',
-    'https://docs.aeliqo.com/',
+    '/docs/',
   );
   for (const route of ADOPTION_ROUTES) await expect(page.locator(`.docs-sidebar a[href="${route}"]`)).toHaveCount(1);
   for (const route of [

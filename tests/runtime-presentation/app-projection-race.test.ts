@@ -17,6 +17,8 @@ import { standardDataRecipe } from '../../packages/web/src/recipes/index.js';
 import type { WebAppContext, WebRegion } from '../../packages/web/src/app/context.js';
 import { present } from '../../packages/web/src/app/presentation.js';
 import { createInteractionHandler } from '../../packages/web/src/app/interaction.js';
+import { adaptRegion } from '../../packages/web/src/app/render.js';
+import { createRegistrationDocument } from './registration-document.js';
 
 const current = {
   scopeDigest: 'scope-1',
@@ -132,7 +134,7 @@ function input(kind: 'browse' | 'compare', width: number, preferredView?: string
   };
 }
 
-it('cancels an adaptive candidate when selection changes during authorization and retains it on retry', async () => {
+function projectionFixture() {
   const fixture = input('browse', 800);
   const resource = defineResource({
     id: 'people',
@@ -144,6 +146,7 @@ it('cancels an adaptive candidate when selection changes during authorization an
   });
   const bindings = [{ ref: fixture.result.ref, rows: [{ id: 'p-1', name: 'Ada' }] }];
   const elementState = {
+    ownerDocument: createRegistrationDocument(),
     presentation: undefined as ValidatedPresentation | undefined,
     results: bindings,
     interaction: undefined as InteractionState | undefined,
@@ -151,10 +154,11 @@ it('cancels an adaptive candidate when selection changes during authorization an
       return { apply() {}, rollback() {}, complete() {} };
     },
   };
+  let width = 800;
   const target = {
     lang: '',
-    ownerDocument: { documentElement: { lang: 'en-US' }, defaultView: null },
-    getBoundingClientRect: () => ({ width: 800, height: 600 }),
+    ownerDocument: { documentElement: { lang: 'en-US' }, defaultView: null, activeElement: null },
+    getBoundingClientRect: () => ({ width, height: 600 }),
   } as unknown as HTMLElement;
   const region = {
     id: 'main',
@@ -243,7 +247,7 @@ it('cancels an adaptive candidate when selection changes during authorization an
     stateListeners: new Map(),
     disposed: false,
   } as unknown as WebAppContext;
-  let receipt = {
+  const receipt = {
     status: 'committed',
     requestId: 'runtime-request',
     regionId: 'main',
@@ -253,11 +257,33 @@ it('cancels an adaptive candidate when selection changes during authorization an
     region: { id: 'main', readSet: { ...current, dataRevision: 1 } },
     diagnostics: [],
   } as unknown as RuntimeCommittedReceipt;
+  return {
+    fixture,
+    context,
+    region,
+    elementState,
+    bindings,
+    receipt,
+    began,
+    release,
+    block: (value: boolean) => {
+      block = value;
+    },
+    resize: (value: number) => {
+      width = value;
+    },
+  };
+}
+
+it('cancels an adaptive candidate when selection changes during authorization and retains it on retry', async () => {
+  const state = projectionFixture();
+  const { fixture, context, region, elementState, bindings, began, release } = state;
+  let receipt = state.receipt;
   const initial = await present(context, region, receipt, bindings, [fixture.result], 'initial', 1);
   expect(initial.status).toBe('renderer-ready');
   if (initial.status !== 'renderer-ready') throw Error(JSON.stringify(initial));
   receipt = initial.runtime;
-  block = true;
+  state.block(true);
   region.last = { receipt, results: bindings, descriptors: [fixture.result] };
   const priorPresentation = elementState.presentation;
   const pending = present(context, region, receipt, bindings, [fixture.result], 'race', 1);
@@ -278,9 +304,45 @@ it('cancels an adaptive candidate when selection changes during authorization an
   expect(elementState.presentation).toBe(priorPresentation);
   expect(elementState.interaction?.values).toHaveLength(1);
   expect(region.values.size).toBe(1);
-  block = false;
+  state.block(false);
   const retry = await present(context, region, receipt, bindings, [fixture.result], 'retry', 1);
   expect(retry.status, JSON.stringify(retry.diagnostics)).toBe('renderer-ready');
   expect(elementState.interaction?.values).toHaveLength(1);
   expect(region.values.size).toBe(1);
 });
+
+it.each(['loading', 'commit'] as const)(
+  'coalesces overlapping automatic adaptations during %s and returns the latest committed environment',
+  async (stage) => {
+    const state = projectionFixture();
+    const { fixture, context, region, elementState, bindings } = state;
+    const initial = await present(context, region, state.receipt, bindings, [fixture.result], 'initial', 1);
+    expect(initial.status).toBe('renderer-ready');
+    if (initial.status !== 'renderer-ready') throw Error(JSON.stringify(initial));
+    region.last = { receipt: initial.runtime, results: bindings, descriptors: [fixture.result] };
+    state.block(true);
+    const adapting = adaptRegion(context, region);
+    if (stage === 'commit') await state.began;
+    const sequence = region.sequence;
+    const controller = region.presentationAbort;
+    state.resize(360);
+    const overlapping = adaptRegion(context, region);
+    try {
+      expect(region.sequence).toBe(sequence);
+      expect(controller?.signal.aborted).toBe(false);
+      expect(region.pendingAdapt).toBe(true);
+    } finally {
+      state.block(false);
+      state.release();
+    }
+    expect(await overlapping).toBeUndefined();
+    const adapted = await adapting;
+    expect(adapted?.status, JSON.stringify(adapted?.diagnostics)).toBe('renderer-ready');
+    if (adapted?.status !== 'renderer-ready') throw Error(JSON.stringify(adapted));
+    expect(adapted.environment.inlineSize).toEqual({ state: 'known', value: 360 });
+    expect(adapted.runtime.task.id).toBe(initial.runtime.task.id);
+    expect(region.last.results).toBe(bindings);
+    expect(elementState.presentation).toBe(adapted.presentation);
+    expect(region.pendingAdapt).toBe(false);
+  },
+);

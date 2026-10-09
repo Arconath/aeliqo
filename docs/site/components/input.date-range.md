@@ -44,13 +44,20 @@ Relevant states:
 
 {{aeliqo:outcome}}
 
+Changing the range or its boundary policy or replacing `validator` cancels validation for the
+previous value and clears its validator-owned error. An independently supplied
+host `error` survives the change. Late results after a reset or disconnect are
+ignored.
+
 The range is invalid when a required endpoint is missing or the endpoints are
 out of order. Inclusive ranges allow equal endpoints; exclusive ranges require
 the start to precede the end. The event detail includes both dates, the
 boundary policy, `timezone: 'calendar'`, `calendar: 'gregory'`, and validity.
-Native form submission contributes only `${name}[start]` and `${name}[end]`
-when the pair is valid; the host carries the boundary and calendar policy
-into any query or action.
+An ordinary native form and [Form](/components/input.form/) both contribute
+`${name}[start]` and `${name}[end]` when the named pair is valid and enabled.
+Host updates and reset update both endpoints together; an invalid or disabled
+pair contributes neither endpoint. The host carries the boundary and calendar
+policy into any query or action.
 
 ## Keyboard, focus, and accessibility
 

@@ -21,7 +21,7 @@ List the exact commands and results:
 - [ ] No secrets, private records, local configuration, caches, or generated build artifacts are included.
 - [ ] Application code still owns identity, authorization, routes, actions, and business effects.
 - [ ] Agent input remains validated and cannot supply executable UI or widen permissions.
-- [ ] Every commit includes a DCO `Signed-off-by` trailer.
+- [ ] Every contribution commit in this pull request, including contributed merges, includes its author's DCO `Signed-off-by` trailer.
 
 ## Release impact
 

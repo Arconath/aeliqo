@@ -125,6 +125,26 @@ bounded acknowledgments. Disconnect and expiry reject late results and close
 the pairing. Choose **Start a new session** and reconnect the client after
 expiry. Restarting the host generates a new bearer token.
 
+## Upcoming host-session and OAuth changes
+
+The source checkout includes security corrections that are **not yet published
+in 0.6.3**. A host-owned `createAppToolSession` retains action previews across
+fresh MCP requests. Each request must supply its authenticated principal and
+scope to `session.createEndpoint(identity)`; confirmation belongs to the
+trusted host UI. Close the session when authentication ends. A client workspace
+ID or tool argument cannot establish this identity.
+
+OAuth HTTP clients must configure `policy.expectedIssuer`. Stored client
+information and tokens must carry the same issuer stamp; migrate legacy
+storage only from a trusted issuer or clear it and authenticate again.
+Issuer-validation bypasses are rejected. Static bearer authentication, including
+the standalone example above, remains supported.
+
+See the canonical [agent package guide](https://github.com/Arconath/aeliqo/blob/main/docs/packages/agent.md)
+for the source API and the [migration guide](/ship/migration-0.5/) for the
+compatibility change. Use the matching source guide when working on an
+unreleased branch.
+
 ## Recover from connection problems
 
 If a client gets `401`, open the local UI, confirm it says Connected, and use

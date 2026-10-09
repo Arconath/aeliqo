@@ -8,7 +8,6 @@ import type {
 } from '@modelcontextprotocol/server';
 import type { StdioServerHandle } from '@modelcontextprotocol/server/stdio';
 import type {
-  AuthProvider,
   CallToolResult,
   ClientOptions,
   FetchLike,
@@ -84,12 +83,14 @@ export interface McpStdioClientOptions extends McpClientCommonOptions {
 export interface McpHttpClientPolicy {
   readonly allowInsecureLoopback?: boolean;
   readonly allowedOrigins?: readonly string[];
+  /** Required for OAuth providers; persisted credentials must carry this issuer stamp. */
+  readonly expectedIssuer?: string;
 }
 
 export interface McpHttpClientOptions extends McpClientCommonOptions {
   readonly url: URL | string;
   readonly policy?: McpHttpClientPolicy;
-  readonly authProvider?: AuthProvider;
+  readonly authProvider?: StreamableHTTPClientTransportOptions['authProvider'];
   readonly requestInit?: RequestInit;
   readonly fetch?: FetchLike;
   readonly transportOptions?: Omit<StreamableHTTPClientTransportOptions, 'authProvider' | 'requestInit' | 'fetch'>;

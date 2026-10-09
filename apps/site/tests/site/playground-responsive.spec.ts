@@ -1,6 +1,30 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
+test('the first result precedes optional request details and stays in the initial viewport', async ({ page }) => {
+  for (const width of [360, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/playground/');
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    const request = page.locator('#pg-intent');
+    await expect(request).not.toHaveAttribute('open');
+    const result = await page.locator('#pg-region').boundingBox();
+    const details = await request.boundingBox();
+    expect(result).not.toBeNull();
+    expect(details).not.toBeNull();
+    expect(result!.y, `first result at ${width}px`).toBeLessThan(650);
+    expect(result!.y + result!.height).toBeLessThanOrEqual(details!.y + 1);
+    await request.locator('summary').focus();
+    await page.keyboard.press('Enter');
+    await expect(request).toHaveAttribute('open', '');
+    await expect(page.locator('#pg-intent-json')).toContainText('people');
+    await page.keyboard.press('Enter');
+    await expect(request).not.toHaveAttribute('open');
+    await expect(page.locator('#pg-model-calls')).toHaveText('0');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});
+
 async function openScenario(page: Page, scenario: 'people' | 'products' | 'support' | 'knowledge'): Promise<void> {
   await page.locator('#pg-scenario').selectOption(scenario);
   await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
@@ -84,6 +108,29 @@ test('toolbar menu aligns with Inspect across responsive widths and pointer mode
     } finally {
       await context.close();
     }
+  }
+});
+
+test('scroll keeps narrow playground controls below the site header', async ({ page }) => {
+  for (const width of [360, 768]) {
+    await page.setViewportSize({ width, height: 850 });
+    await page.goto('/playground/');
+    await expect(page.locator('#pg-receipt-state')).toHaveText('renderer-ready');
+    await page.evaluate(() => window.scrollTo(0, 400));
+    const controls = await page.locator('#pg-scenario, #pg-inspect, #pg-menu > summary').evaluateAll((elements) => {
+      const header = document.querySelector('.topbar')!.getBoundingClientRect();
+      return elements.map((element) => {
+        const box = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return { belowHeader: box.top >= header.bottom, reachable: hit === element || element.contains(hit) };
+      });
+    });
+    expect(controls).toHaveLength(3);
+    expect(controls.every((control) => control.belowHeader && control.reachable)).toBe(true);
+    await page.getByRole('button', { name: 'Inspect', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Inspector' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Inspect', exact: true })).toBeFocused();
   }
 });
 

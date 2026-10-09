@@ -1,5 +1,6 @@
 import { css, html, nothing } from 'lit';
 import { AeliqoFoundationElement } from '../foundation/base.js';
+import { isFormControlDisabled } from './form-disabled.js';
 import { AeliqoFormResetEvent, AeliqoFormSubmitEvent } from './events.js';
 import { aeliqoInputStyles } from './base.js';
 
@@ -44,7 +45,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
         submitter as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement,
       )
     ) {
-      if (this.isEffectivelyDisabled(submitter)) return;
+      if (isFormControlDisabled(submitter)) return;
       this.submitSlotted(submitter);
       return;
     }
@@ -61,20 +62,24 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   checkValidity(): boolean {
     const form = this.nativeForm();
     const nativeValid = form?.checkValidity() ?? true;
-    const slottedNativeValid = this.slottedNativeControls().every((control) => control.checkValidity());
+    const slottedNativeValid = this.slottedNativeControls().every(
+      (control) => isFormControlDisabled(control) || control.checkValidity(),
+    );
     return (
       nativeValid &&
       slottedNativeValid &&
-      this.slottedFields().every((control) => this.isEffectivelyDisabled(control) || control.checkValidity())
+      this.slottedFields().every((control) => isFormControlDisabled(control) || control.checkValidity())
     );
   }
 
   reportValidity(): boolean {
     const form = this.nativeForm();
     const nativeValid = form?.reportValidity() ?? true;
-    const slottedNativeValid = this.slottedNativeControls().every((control) => control.reportValidity());
+    const slottedNativeValid = this.slottedNativeControls().every(
+      (control) => isFormControlDisabled(control) || control.reportValidity(),
+    );
     const slottedValid = this.slottedFields().every(
-      (control) => this.isEffectivelyDisabled(control) || (control.reportValidity?.() ?? control.checkValidity()),
+      (control) => isFormControlDisabled(control) || (control.reportValidity?.() ?? control.checkValidity()),
     );
     return nativeValid && slottedNativeValid && slottedValid;
   }
@@ -98,7 +103,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   private isSuccessfulNativeControl(
     control: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | HTMLButtonElement,
   ): boolean {
-    if (this.isEffectivelyDisabled(control) || control.form !== null || !control.name) return false;
+    if (isFormControlDisabled(control) || control.form !== null || !control.name) return false;
     if (control instanceof HTMLInputElement && !this.isCheckedInput(control)) return false;
     return !this.isSubmitOnlyControl(control);
   }
@@ -118,7 +123,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
 
   private appendSlottedFieldValues(data: FormData): void {
     for (const control of this.slottedFields()) {
-      if (this.isEffectivelyDisabled(control)) continue;
+      if (isFormControlDisabled(control)) continue;
       const name = this.fieldName(control);
       const value = control.formValue;
       if (!name || value === null || value === undefined) continue;
@@ -169,7 +174,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
     this.summary = this.noValidate || this.submitterSkipsValidation(submitter) ? [] : this.collectErrors(form);
     this.requestUpdate();
     if (this.summary.length > 0) {
-      queueMicrotask(() => this.renderRoot.querySelector<HTMLElement>('[part=error-summary]')?.focus());
+      this.focusSummary();
       return;
     }
     this.emitSubmit(submitter);
@@ -184,7 +189,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
     if (event.defaultPrevented || !this.ownsEvent(event)) return;
     const target = this.nativeControlFromEvent(event);
     if (!(target instanceof HTMLButtonElement) && !(target instanceof HTMLInputElement)) return;
-    if (this.isEffectivelyDisabled(target) || target.form !== null) return;
+    if (isFormControlDisabled(target) || target.form !== null) return;
     switch (target.type) {
       case 'reset':
         event.preventDefault();
@@ -227,16 +232,23 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   private submitSlotted(submitter: HTMLElement | null): void {
     const form = this.nativeForm();
     if (form === undefined) return;
-    if (submitter !== null && this.isEffectivelyDisabled(submitter)) return;
+    if (submitter !== null && isFormControlDisabled(submitter)) return;
     this.summary = this.noValidate || this.submitterSkipsValidation(submitter) ? [] : this.collectErrors(form);
     this.requestUpdate();
-    if (this.summary.length > 0) return;
+    if (this.summary.length > 0) {
+      this.focusSummary();
+      return;
+    }
     this.emitSubmit(submitter);
+  }
+
+  private focusSummary(): void {
+    void this.updateComplete.then(() => this.renderRoot.querySelector<HTMLElement>('[part=error-summary]')?.focus());
   }
 
   private defaultSlottedSubmitter(): HTMLButtonElement | HTMLInputElement | null {
     for (const control of this.slottedNativeControls()) {
-      if (this.isEffectivelyDisabled(control) || control.form !== null) continue;
+      if (isFormControlDisabled(control) || control.form !== null) continue;
       if (control instanceof HTMLButtonElement && control.type === 'submit') return control;
       if (control instanceof HTMLInputElement && (control.type === 'submit' || control.type === 'image'))
         return control;
@@ -288,7 +300,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   private unownedNativeControlErrors(): string[] {
     const messages: string[] = [];
     for (const control of this.slottedNativeControls()) {
-      if (!this.isEffectivelyDisabled(control) && control.form === null && !control.checkValidity())
+      if (!isFormControlDisabled(control) && control.form === null && !control.checkValidity())
         messages.push(this.nativeControlError(control));
     }
     return messages;
@@ -297,7 +309,7 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
   private slottedFieldErrors(): string[] {
     const messages: string[] = [];
     for (const control of this.slottedFields()) {
-      if (this.isEffectivelyDisabled(control) || control.checkValidity()) continue;
+      if (isFormControlDisabled(control) || control.checkValidity()) continue;
       messages.push(`${this.fieldLabel(control)}: ${control.validationMessage || 'Enter a valid value.'}`);
     }
     return messages;
@@ -381,10 +393,6 @@ export class AeliqoFormElement extends AeliqoFoundationElement {
       .composedPath()
       .find((target): target is AeliqoFormElement => target instanceof AeliqoFormElement);
     return owner === this;
-  }
-
-  private isEffectivelyDisabled(control: HTMLElement): boolean {
-    return control.matches(':disabled') || control.closest('fieldset:disabled') !== null;
   }
 
   private resetSlottedNativeControls(): void {

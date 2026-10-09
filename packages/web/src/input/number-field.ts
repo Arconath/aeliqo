@@ -10,9 +10,9 @@ export interface AeliqoNumberChange {
 }
 
 function decimalParts(value: string): { negative: boolean; integer: string; fraction: string } {
-  const negative = value.startsWith('-');
   const unsigned = value.replace(/^[+-]/u, '');
   const [integer = '0', fraction = ''] = unsigned.split('.');
+  const negative = value.startsWith('-') && /[1-9]/u.test(`${integer}${fraction}`);
   return { negative, integer: integer.replace(/^0+(?=\d)/u, ''), fraction };
 }
 
@@ -76,10 +76,21 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
     if (changed.has('value') && this.value !== undefined && (this.text.length === 0 || !changed.has('text'))) {
       this.text = formatLocalizedDecimal(this.value, this.locale);
     }
+    super.willUpdate(changed);
   }
 
   protected override updated(): void {
     this.syncNative();
+  }
+
+  protected override isCurrentValidationValue(value: AeliqoNumberChange): boolean {
+    const current = this.numberValue();
+    return (
+      value.value === this.value &&
+      value.text === current.text &&
+      value.value === current.value &&
+      value.valid === current.valid
+    );
   }
 
   protected override resetField(): void {
@@ -135,12 +146,7 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
     const input = event.target;
     if (!(input instanceof HTMLInputElement) || this.readOnly || this.fieldDisabled) return;
     this.text = input.value;
-    const parsed = parseLocalizedDecimal(this.text, this.locale);
-    const detail: AeliqoNumberChange = {
-      text: this.text,
-      value: this.isValid(parsed.canonical) ? parsed.canonical : undefined,
-      valid: this.isValid(parsed.canonical),
-    };
+    const detail = this.numberValue();
     this.value = detail.value;
     this.dispatchEvent(new AeliqoInputChangeEvent({ source: 'user', value: detail }));
     void this.validateProposed(detail);
@@ -148,14 +154,14 @@ export class AeliqoNumberFieldElement extends AeliqoFieldElement<AeliqoNumberCha
   };
 
   private readonly handleCommit = (): void => {
-    const parsed = parseLocalizedDecimal(this.text, this.locale);
-    const detail: AeliqoNumberChange = {
-      text: this.text,
-      value: this.isValid(parsed.canonical) ? parsed.canonical : undefined,
-      valid: this.isValid(parsed.canonical),
-    };
-    this.dispatchEvent(new AeliqoInputCommitEvent({ source: 'user', value: detail }));
+    this.dispatchEvent(new AeliqoInputCommitEvent({ source: 'user', value: this.numberValue() }));
   };
+
+  private numberValue(): AeliqoNumberChange {
+    const parsed = parseLocalizedDecimal(this.text, this.locale);
+    const valid = this.isValid(parsed.canonical);
+    return { text: this.text, value: valid ? parsed.canonical : undefined, valid };
+  }
 
   private native(): HTMLInputElement | undefined {
     const root = this.renderRoot;

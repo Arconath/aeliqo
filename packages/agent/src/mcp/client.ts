@@ -31,6 +31,7 @@ import {
 } from './shared.js';
 import { normalizeTool } from './definitions.js';
 import { resultToOutcome } from './receipts.js';
+import { boundMcpAuthProvider } from './oauth-policy.js';
 
 interface McpClientState {
   readonly options: McpClientEndpointOptions;
@@ -293,12 +294,13 @@ function mcpHttpUrl(options: McpHttpClientOptions): URL {
 
 export async function connectMcpHttpClient(options: McpHttpClientOptions): Promise<AgentToolEndpoint> {
   const url = mcpHttpUrl(options);
+  const authProvider = await boundMcpAuthProvider(options);
   const request = options.fetch ?? globalThis.fetch;
   if (typeof request !== 'function') throw new TypeError('The MCP HTTP client requires a fetch implementation.');
   const guardedFetch: FetchLike = (input, init) => request(input, { ...init, redirect: 'error' });
   const transportOptions: StreamableHTTPClientTransportOptions = {
     ...(options.transportOptions ?? {}),
-    ...(options.authProvider === undefined ? {} : { authProvider: options.authProvider }),
+    ...(authProvider === undefined ? {} : { authProvider }),
     ...(options.requestInit === undefined ? {} : { requestInit: options.requestInit }),
     fetch: guardedFetch,
   };

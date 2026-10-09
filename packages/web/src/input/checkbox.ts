@@ -26,6 +26,10 @@ export class AeliqoCheckboxElement extends AeliqoFieldElement<boolean> {
     this.syncNative();
   }
 
+  protected override isCurrentValidationValue(value: boolean): boolean {
+    return value === this.checked;
+  }
+
   protected override resetField(): void {
     this.checked = this.defaultChecked;
     this.indeterminate = false;

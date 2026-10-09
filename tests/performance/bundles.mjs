@@ -22,7 +22,7 @@ await mkdir(join(root, 'artifacts/performance-bundles'), { recursive: true });
 const output = await mkdtemp(join(root, 'artifacts/performance-bundles/run-'));
 const consumer = await mkdtemp(join(tmpdir(), 'aeliqo-performance-consumer-'));
 const packages = [];
-for (const name of ['core', 'runtime', 'web']) {
+for (const name of ['core', 'runtime', 'web', 'react']) {
   const cwd = join(root, 'packages', name);
   run(['pnpm', 'build'], cwd);
   const tarball = join(output, `aeliqo-${name}-${RELEASE_VERSION}.tgz`);
@@ -32,18 +32,31 @@ for (const name of ['core', 'runtime', 'web']) {
   assert.equal(manifest.name, `@aeliqo/${name}`);
   packages.push({ name: manifest.name, path: tarball, sha256: hash(await readFile(tarball)) });
 }
+const rootManifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 await writeFile(
   join(consumer, 'package.json'),
   JSON.stringify({
     private: true,
     type: 'module',
-    dependencies: Object.fromEntries(packages.map((p) => [p.name, `file:${p.path}`])),
+    dependencies: {
+      ...Object.fromEntries(packages.map((p) => [p.name, `file:${p.path}`])),
+      ...Object.fromEntries(['react', 'react-dom', 'zod'].map((name) => [name, rootManifest.devDependencies[name]])),
+    },
   }),
 );
 run(['npm', 'install', '--ignore-scripts', '--no-audit', '--no-fund'], consumer);
 for (const p of packages) assert.equal((await lstat(join(consumer, 'node_modules', p.name))).isSymbolicLink(), false);
 const lock = await readFile(join(consumer, 'package-lock.json'));
 await writeFile(join(output, 'consumer-package-lock.json'), lock);
+const quickstartPath = 'docs/site/pages/quickstart.md';
+const quickstartSource = await readFile(join(root, quickstartPath), 'utf8');
+function sourceBlock(language) {
+  const matches = [...quickstartSource.matchAll(new RegExp('```' + language + '\\n([\\s\\S]*?)```', 'g'))];
+  assert.equal(matches.length, 1, `Expected one complete ${language} quickstart source`);
+  return matches[0][1];
+}
+await writeFile(join(consumer, 'people.ts'), sourceBlock('ts'));
+await writeFile(join(consumer, 'people.css'), sourceBlock('css'));
 const workloads = [
   {
     id: 'button',
@@ -90,10 +103,17 @@ const workloads = [
       ":where([data-aeliqo-theme]:not([data-aeliqo-theme='inherit']))",
     ],
   },
+  {
+    id: 'react-quickstart',
+    code: sourceBlock('tsx'),
+    extension: 'tsx',
+    diagnostic: true,
+    source: { path: quickstartPath, sha256: hash(quickstartSource) },
+  },
 ];
 const rows = [];
 for (const workload of workloads) {
-  const entry = join(consumer, `${workload.id}.js`);
+  const entry = join(consumer, `${workload.id}.${workload.extension ?? 'js'}`);
   await writeFile(entry, workload.code);
   const modes = workload.incremental ? ['total', 'excluding-lit'] : ['total'];
   const measurements = [];
@@ -102,6 +122,7 @@ for (const workload of workloads) {
       configFile: false,
       root: consumer,
       logLevel: 'error',
+      oxc: { jsx: { runtime: 'automatic' } },
       build: {
         write: false,
         minify: true,
@@ -138,7 +159,11 @@ for (const workload of workloads) {
       }
       chunks.push({
         path,
+        fileName: chunk.fileName,
         kind: chunk.type,
+        ...(chunk.type === 'chunk'
+          ? { entry: chunk.isEntry, imports: chunk.imports, dynamicImports: chunk.dynamicImports }
+          : {}),
         bytes: bytes.length,
         gzipBytes: gzipSync(bytes).length,
         sha256: hash(bytes),
@@ -156,6 +181,20 @@ for (const workload of workloads) {
             id.includes('@aeliqo/core/dist/presentation/') ||
             id.includes('@aeliqo/web/dist/visualization/'))),
     );
+    const initialFiles = new Set();
+    function includeInitial(fileName) {
+      if (initialFiles.has(fileName)) return;
+      initialFiles.add(fileName);
+      const chunk = chunks.find((item) => item.fileName === fileName);
+      for (const imported of chunk?.imports ?? []) includeInitial(imported);
+    }
+    for (const chunk of chunks) if (chunk.entry) includeInitial(chunk.fileName);
+    const initialJsGzipBytes = chunks
+      .filter((c) => c.kind === 'chunk' && initialFiles.has(c.fileName))
+      .reduce((sum, c) => sum + c.gzipBytes, 0);
+    const deferredJsGzipBytes = chunks
+      .filter((c) => c.kind === 'chunk' && !initialFiles.has(c.fileName))
+      .reduce((sum, c) => sum + c.gzipBytes, 0);
     measurements.push({
       mode,
       chunks,
@@ -163,6 +202,8 @@ for (const workload of workloads) {
       forbidden,
       unusedStyleRules: [...unusedStyleRules],
       jsGzipBytes: chunks.filter((c) => c.kind === 'chunk').reduce((sum, c) => sum + c.gzipBytes, 0),
+      initialJsGzipBytes,
+      deferredJsGzipBytes,
       cssBytes: chunks.filter((c) => c.path.endsWith('.css')).reduce((sum, c) => sum + c.bytes, 0),
     });
   }
@@ -170,10 +211,16 @@ for (const workload of workloads) {
   rows.push({
     id: workload.id,
     entry: workload.code,
-    budgetBytes: workload.budget,
-    budgetMetric: workload.incremental ? 'JS gzip with only Lit packages external' : 'total JS gzip',
+    ...(workload.source ? { source: workload.source } : {}),
+    diagnostic: workload.diagnostic ?? false,
+    budgetBytes: workload.budget ?? null,
+    budgetMetric: workload.diagnostic
+      ? 'diagnostic only: initial static JS graph and deferred chunks'
+      : workload.incremental
+        ? 'JS gzip with only Lit packages external'
+        : 'total JS gzip',
     passed:
-      measured.jsGzipBytes <= workload.budget &&
+      (workload.diagnostic || measured.jsGzipBytes <= workload.budget) &&
       measurements.every((m) => m.forbidden.length === 0 && m.unusedStyleRules.length === 0),
     measurements,
   });
@@ -213,7 +260,8 @@ const report = {
   functionalPassed,
   performanceQualification: deferred ? 'deferred' : 'blocked',
   limits: [
-    'This proves selected browser export byte sizes and rendered module graphs, not actual interaction correctness or execution/parse latency.',
+    'This proves selected browser export byte sizes and bundle module graphs, not actual interaction correctness or execution/parse latency.',
+    'The promoted React quickstart is copied from public documentation and measured diagnostically with installed core/runtime/web/react tarballs and React included. Initial bytes follow static imports; all deferred bytes are also retained. No new byte budget is imposed.',
     'Incremental builds externalize only Lit and retain all Aeliqo shared platform code; total builds include Lit.',
     'Timing, browser traces, large workloads, cleanup/heap and real mobile hardware remain required.',
   ],
@@ -228,7 +276,14 @@ console.log(
         id: r.id,
         passed: r.passed,
         budget: r.budgetBytes,
-        measurements: r.measurements.map((m) => ({ mode: m.mode, gzip: m.jsGzipBytes, forbidden: m.forbidden })),
+        diagnostic: r.diagnostic,
+        measurements: r.measurements.map((m) => ({
+          mode: m.mode,
+          gzip: m.jsGzipBytes,
+          initialGzip: m.initialJsGzipBytes,
+          deferredGzip: m.deferredJsGzipBytes,
+          forbidden: m.forbidden,
+        })),
       })),
     },
     null,
